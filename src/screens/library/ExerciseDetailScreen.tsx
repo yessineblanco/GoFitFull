@@ -26,7 +26,7 @@ import { workoutService, Exercise } from '@/services/workouts';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedExerciseName } from '@/utils/exerciseTranslations';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type NavigationProp = StackNavigationProp<LibraryStackParamList, 'ExerciseDetail'>;
 type RouteProp = RNRouteProp<LibraryStackParamList, 'ExerciseDetail'>;
@@ -57,13 +57,13 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
         setLoading(true);
         // First try to find by ID (UUID for custom workouts)
         let found = await workoutService.getExerciseById(route.params.exerciseId);
-        
+
         // If not found by ID and we have exercise name, try to find by name (for native workouts with string IDs)
         const exerciseName = route.params.exerciseName;
         if (!found && exerciseName) {
           found = await workoutService.getExerciseByName(exerciseName);
         }
-        
+
         setExercise(found);
       } catch (error) {
         console.error('Error loading exercise:', error);
@@ -99,16 +99,16 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
     ? exercise.difficulty.toLowerCase() === 'beginner'
       ? { backgroundColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.15)', borderColor: 'rgba(76, 175, 80, 0.5)' }
       : exercise.difficulty.toLowerCase() === 'intermediate'
-      ? { backgroundColor: isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.15)', borderColor: 'rgba(255, 152, 0, 0.5)' }
-      : { backgroundColor: isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.15)', borderColor: 'rgba(244, 67, 54, 0.5)' }
+        ? { backgroundColor: isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.15)', borderColor: 'rgba(255, 152, 0, 0.5)' }
+        : { backgroundColor: isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.15)', borderColor: 'rgba(244, 67, 54, 0.5)' }
     : {};
 
   const difficultyTextStyle = exercise?.difficulty
     ? exercise.difficulty.toLowerCase() === 'beginner'
       ? { color: '#4CAF50' }
       : exercise.difficulty.toLowerCase() === 'intermediate'
-      ? { color: '#FF9800' }
-      : { color: '#F44336' }
+        ? { color: '#FF9800' }
+        : { color: '#F44336' }
     : {};
 
   const dynamicStyles = React.useMemo(() => ({
@@ -116,28 +116,26 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
       flex: 1,
       backgroundColor: BRAND_BLACK,
     },
-    header: {
-      paddingTop: insets.top + getResponsiveSpacing(8),
-      paddingBottom: getResponsiveSpacing(12),
-      paddingHorizontal: getResponsiveSpacing(24),
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      gap: getResponsiveSpacing(16),
-    },
     backButton: {
+      position: 'absolute' as const,
+      top: insets.top + getResponsiveSpacing(10),
+      left: getResponsiveSpacing(16),
+      zIndex: 10,
       width: scaleWidth(40),
       height: scaleHeight(40),
       borderRadius: scaleWidth(20),
-      backgroundColor: isDark ? '#373737' : getTextColorWithOpacity(false, 0.1),
+      backgroundColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.5)',
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
-    headerTitle: {
-      flex: 1,
-      fontSize: getResponsiveFontSize(20),
-      fontWeight: '600' as const,
-      color: BRAND_WHITE,
-      fontFamily: 'Barlow_600SemiBold',
+    contentCard: {
+      backgroundColor: BRAND_BLACK,
+      borderTopLeftRadius: getResponsiveSpacing(50),
+      borderTopRightRadius: getResponsiveSpacing(50),
+      marginTop: -getResponsiveSpacing(50),
+      paddingTop: getResponsiveSpacing(30),
+      paddingBottom: getResponsiveSpacing(50),
+      minHeight: SCREEN_HEIGHT - scaleHeight(250),
     },
     content: {
       flex: 1,
@@ -230,19 +228,23 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
     section: {
       gap: getResponsiveSpacing(12),
     },
-    sectionTitle: {
+    sectionTitleContainer: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: getResponsiveSpacing(24),
+    },
+    sectionTitleText: {
       fontSize: getResponsiveFontSize(20),
       fontWeight: '700' as const,
       color: BRAND_WHITE,
       fontFamily: 'Barlow_700Bold',
-      flexDirection: 'row' as const,
-      alignItems: 'center' as const,
-      gap: getResponsiveSpacing(8),
     },
     sectionContent: {
-      backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5',
-      borderRadius: getResponsiveSpacing(12),
-      padding: getResponsiveSpacing(16),
+      // backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5',
+      borderRadius: getResponsiveSpacing(24),
+      padding: getResponsiveSpacing(24),
+      borderWidth: 1,
+      borderColor: '#266637',
     },
     instructionsText: {
       fontSize: getScaledFontSize(15),
@@ -287,24 +289,22 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
     },
     setsRepsContainer: {
       flexDirection: 'row' as const,
-      gap: getResponsiveSpacing(12),
-      flexWrap: 'wrap' as const,
+      justifyContent: 'space-around' as const,
+      alignItems: 'center' as const,
+      paddingVertical: getResponsiveSpacing(16),
     },
     setsRepsItem: {
       flex: 1,
-      minWidth: scaleWidth(100),
-      backgroundColor: isDark ? '#1A1A1A' : '#F5F5F5',
-      borderRadius: getResponsiveSpacing(12),
-      padding: getResponsiveSpacing(16),
-      flexDirection: 'row' as const,
       alignItems: 'center' as const,
-      gap: getResponsiveSpacing(12),
+      justifyContent: 'center' as const,
+      gap: getResponsiveSpacing(8),
     },
     setsRepsIcon: {
-      width: scaleWidth(40),
-      height: scaleHeight(40),
-      borderRadius: scaleWidth(20),
-      backgroundColor: getPrimaryWithOpacity(0.2),
+      width: scaleWidth(48),
+      height: scaleHeight(48),
+      borderRadius: scaleWidth(24),
+      backgroundColor: '#050505',
+      marginBottom: getResponsiveSpacing(8),
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
@@ -313,15 +313,23 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
     },
     setsRepsLabel: {
       fontSize: getScaledFontSize(12),
-      color: getTextColorWithOpacity(isDark, 0.6),
-      fontFamily: 'Barlow_400Regular',
-      marginBottom: getResponsiveSpacing(4),
+      fontWeight: '700' as const,
+      color: getTextColorWithOpacity(isDark, 0.5),
+      fontFamily: 'Barlow_700Bold',
+      textTransform: 'uppercase' as const,
+      letterSpacing: 1,
     },
     setsRepsValue: {
-      fontSize: getResponsiveFontSize(18),
+      fontSize: getResponsiveFontSize(32),
       fontWeight: '700' as const,
       color: BRAND_WHITE,
       fontFamily: 'Barlow_700Bold',
+      marginBottom: -4,
+    },
+    divider: {
+      width: 1,
+      height: '60%' as DimensionValue,
+      backgroundColor: getTextColorWithOpacity(isDark, 0.1),
     },
   }), [isDark, textSize, BRAND_BLACK, BRAND_WHITE, BRAND_PRIMARY, insets.top]);
 
@@ -349,8 +357,12 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
 
   return (
     <View style={dynamicStyles.container}>
-      {/* Header */}
-      <View style={dynamicStyles.header}>
+      <ScrollView
+        style={dynamicStyles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 0 }}
+      >
+        {/* Back Button */}
         <TouchableOpacity
           style={dynamicStyles.backButton}
           onPress={() => navigation.goBack()}
@@ -358,16 +370,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
         >
           <ArrowLeft size={20} color={BRAND_WHITE} />
         </TouchableOpacity>
-        <Text style={dynamicStyles.headerTitle} numberOfLines={1}>
-          {t('library.exerciseDetail.title')}
-        </Text>
-      </View>
 
-      <ScrollView
-        style={dynamicStyles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + getResponsiveSpacing(100) + getResponsiveSpacing(24) }}
-      >
         {/* Image/Video Section */}
         <View style={dynamicStyles.imageContainer}>
           {showVideoPlayer ? (
@@ -413,8 +416,8 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                 </TouchableOpacity>
               )}
               <LinearGradient
-                colors={isDark 
-                  ? ['transparent', 'rgba(0,0,0,0.6)'] 
+                colors={isDark
+                  ? ['transparent', 'rgba(0,0,0,0.6)']
                   : ['transparent', 'rgba(0,0,0,0.4)']
                 }
                 style={dynamicStyles.imageOverlay}
@@ -423,167 +426,216 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
           )}
         </View>
 
-        {/* Info Section */}
-        <View style={dynamicStyles.infoSection}>
-          {/* Title and Metadata */}
-          <View style={dynamicStyles.titleSection}>
-            <Text style={dynamicStyles.exerciseName}>
-              {getTranslatedExerciseName(exercise.name, t)}
-            </Text>
-            <View style={dynamicStyles.metadataRow}>
-              {exercise.category && (
-                <View style={[dynamicStyles.badge, {
-                  backgroundColor: isDark ? '#373737' : getTextColorWithOpacity(false, 0.1),
-                  borderColor: getTextColorWithOpacity(isDark, 0.3),
-                }]}>
-                  <Target size={14} color={BRAND_PRIMARY} />
-                  <Text style={[dynamicStyles.badgeText, { color: BRAND_WHITE }]}>
-                    {exercise.category}
-                  </Text>
-                </View>
-              )}
-              {exercise.difficulty && (
-                <View style={[dynamicStyles.badge, difficultyStyle]}>
-                  <Award size={14} color={difficultyTextStyle.color || BRAND_WHITE} />
-                  <Text style={[dynamicStyles.badgeText, difficultyTextStyle]}>
-                    {exercise.difficulty}
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Sets/Reps/Rest Time */}
-          {(exercise.default_sets || exercise.default_reps || exercise.default_rest_time) && (
-            <View style={dynamicStyles.section}>
-              <Text style={dynamicStyles.sectionTitle}>
-                <Repeat size={20} color={BRAND_PRIMARY} />
-                {t('library.exerciseDetail.recommendedSetsReps')}
+        {/* Content Card with Overlap */}
+        <View style={dynamicStyles.contentCard}>
+          <View style={dynamicStyles.infoSection}>
+            {/* Title and Metadata */}
+            <View style={dynamicStyles.titleSection}>
+              <Text style={dynamicStyles.exerciseName}>
+                {getTranslatedExerciseName(exercise.name, t)}
               </Text>
-              <View style={dynamicStyles.sectionContent}>
-                <View style={dynamicStyles.setsRepsContainer}>
-                  {exercise.default_sets !== undefined && exercise.default_sets !== null && (
-                    <View style={dynamicStyles.setsRepsItem}>
-                      <View style={dynamicStyles.setsRepsIcon}>
-                        <Repeat size={20} color={BRAND_PRIMARY} />
-                      </View>
-                      <View style={dynamicStyles.setsRepsContent}>
-                        <Text style={dynamicStyles.setsRepsLabel}>
-                          {t('library.sets')}
-                        </Text>
+              <View style={dynamicStyles.metadataRow}>
+                {exercise.category && (
+                  <View style={[dynamicStyles.badge, {
+                    backgroundColor: isDark ? '#373737' : getTextColorWithOpacity(false, 0.1),
+                    borderColor: getTextColorWithOpacity(isDark, 0.3),
+                  }]}>
+                    <Target size={14} color={BRAND_PRIMARY} />
+                    <Text style={[dynamicStyles.badgeText, { color: BRAND_WHITE }]}>
+                      {exercise.category}
+                    </Text>
+                  </View>
+                )}
+                {exercise.difficulty && (
+                  <View style={[dynamicStyles.badge, difficultyStyle]}>
+                    <Award size={14} color={difficultyTextStyle.color || BRAND_WHITE} />
+                    <Text style={[dynamicStyles.badgeText, difficultyTextStyle]}>
+                      {exercise.difficulty}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Sets/Reps/Rest Time */}
+            {(exercise.default_sets || exercise.default_reps || exercise.default_rest_time) && (
+              <View style={dynamicStyles.section}>
+                <View style={dynamicStyles.sectionTitleContainer}>
+                  <Repeat size={20} color={BRAND_PRIMARY} />
+                  <Text style={dynamicStyles.sectionTitleText}>
+                    {t('library.exerciseDetail.recommendedSetsReps')}
+                  </Text>
+                </View>
+                <LinearGradient
+                  colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                  style={dynamicStyles.sectionContent}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={dynamicStyles.setsRepsContainer}>
+                    {/* Sets */}
+                    {exercise.default_sets !== undefined && exercise.default_sets !== null && (
+                      <View style={dynamicStyles.setsRepsItem}>
+                        <View style={dynamicStyles.setsRepsIcon}>
+                          <Repeat size={20} color={BRAND_PRIMARY} />
+                        </View>
                         <Text style={dynamicStyles.setsRepsValue}>
                           {exercise.default_sets}
                         </Text>
-                      </View>
-                    </View>
-                  )}
-                  {exercise.default_reps !== undefined && exercise.default_reps !== null && (
-                    <View style={dynamicStyles.setsRepsItem}>
-                      <View style={dynamicStyles.setsRepsIcon}>
-                        <Repeat size={20} color={BRAND_PRIMARY} />
-                      </View>
-                      <View style={dynamicStyles.setsRepsContent}>
                         <Text style={dynamicStyles.setsRepsLabel}>
-                          {t('library.reps')}
+                          {t('library.sets')}
                         </Text>
+                      </View>
+                    )}
+
+                    {/* Divider */}
+                    <View style={dynamicStyles.divider} />
+
+                    {/* Reps */}
+                    {exercise.default_reps !== undefined && exercise.default_reps !== null && (
+                      <View style={dynamicStyles.setsRepsItem}>
+                        <View style={dynamicStyles.setsRepsIcon}>
+                          <Repeat size={20} color={BRAND_PRIMARY} />
+                        </View>
                         <Text style={dynamicStyles.setsRepsValue}>
                           {exercise.default_reps}
                         </Text>
+                        <Text style={dynamicStyles.setsRepsLabel}>
+                          {t('library.reps')}
+                        </Text>
                       </View>
-                    </View>
-                  )}
-                  {exercise.default_rest_time !== undefined && exercise.default_rest_time !== null && (
-                    <View style={dynamicStyles.setsRepsItem}>
-                      <View style={dynamicStyles.setsRepsIcon}>
-                        <Clock size={20} color={BRAND_PRIMARY} />
-                      </View>
-                      <View style={dynamicStyles.setsRepsContent}>
+                    )}
+
+                    {/* Divider */}
+                    <View style={dynamicStyles.divider} />
+
+                    {/* Rest Time */}
+                    {exercise.default_rest_time !== undefined && exercise.default_rest_time !== null && (
+                      <View style={dynamicStyles.setsRepsItem}>
+                        <View style={dynamicStyles.setsRepsIcon}>
+                          <Clock size={20} color={BRAND_PRIMARY} />
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+                          <Text style={dynamicStyles.setsRepsValue}>
+                            {exercise.default_rest_time}
+                          </Text>
+                          <Text style={[dynamicStyles.setsRepsLabel, { marginBottom: 6, fontSize: 10 }]}>S</Text>
+                        </View>
                         <Text style={dynamicStyles.setsRepsLabel}>
                           {t('library.restTime')}
                         </Text>
-                        <Text style={dynamicStyles.setsRepsValue}>
-                          {exercise.default_rest_time}s
-                        </Text>
                       </View>
-                    </View>
-                  )}
-                </View>
+                    )}
+                  </View>
+                </LinearGradient>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Muscle Groups */}
-          {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
-            <View style={dynamicStyles.section}>
-              <Text style={dynamicStyles.sectionTitle}>
-                <Target size={20} color={BRAND_PRIMARY} />
-                {t('library.exerciseDetail.muscleGroups')}
-              </Text>
-              <View style={dynamicStyles.sectionContent}>
-                <View style={dynamicStyles.tagsContainer}>
-                  {exercise.muscle_groups.map((mg, idx) => (
-                    <View key={idx} style={dynamicStyles.tag}>
-                      <Text style={dynamicStyles.tagText}>{mg}</Text>
-                    </View>
-                  ))}
+            {/* Muscle Groups */}
+            {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
+              <View style={dynamicStyles.section}>
+                <View style={dynamicStyles.sectionTitleContainer}>
+                  <Target size={20} color={BRAND_PRIMARY} />
+                  <Text style={dynamicStyles.sectionTitleText}>
+                    {t('library.exerciseDetail.muscleGroups')}
+                  </Text>
                 </View>
+                <LinearGradient
+                  colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                  style={dynamicStyles.sectionContent}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={dynamicStyles.tagsContainer}>
+                    {exercise.muscle_groups.map((mg, idx) => (
+                      <View key={idx} style={dynamicStyles.tag}>
+                        <Text style={dynamicStyles.tagText}>{mg}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </LinearGradient>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Equipment */}
-          {exercise.equipment && exercise.equipment.length > 0 && (
-            <View style={dynamicStyles.section}>
-              <Text style={dynamicStyles.sectionTitle}>
-                <Dumbbell size={20} color={BRAND_PRIMARY} />
-                {t('library.exerciseDetail.equipment')}
-              </Text>
-              <View style={dynamicStyles.sectionContent}>
-                <View style={dynamicStyles.tagsContainer}>
-                  {exercise.equipment.map((eq, idx) => (
-                    <View key={idx} style={[dynamicStyles.tag, {
-                      flexDirection: 'row' as const,
-                      alignItems: 'center' as const,
-                      gap: getResponsiveSpacing(6),
-                    }]}>
-                      <Dumbbell size={14} color={BRAND_PRIMARY} />
-                      <Text style={dynamicStyles.tagText}>{eq}</Text>
+            {/* Equipment */}
+            {
+              exercise.equipment && exercise.equipment.length > 0 && (
+                <View style={dynamicStyles.section}>
+                  <View style={dynamicStyles.sectionTitleContainer}>
+                    <Dumbbell size={20} color={BRAND_PRIMARY} />
+                    <Text style={dynamicStyles.sectionTitleText}>
+                      {t('library.exerciseDetail.equipment')}
+                    </Text>
+                  </View>
+                  <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={dynamicStyles.sectionContent}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <View style={dynamicStyles.tagsContainer}>
+                      {exercise.equipment.map((eq, idx) => (
+                        <View key={idx} style={[dynamicStyles.tag, {
+                          flexDirection: 'row' as const,
+                          alignItems: 'center' as const,
+                          gap: getResponsiveSpacing(6),
+                        }]}>
+                          <Dumbbell size={14} color={BRAND_PRIMARY} />
+                          <Text style={dynamicStyles.tagText}>{eq}</Text>
+                        </View>
+                      ))}
                     </View>
-                  ))}
+                  </LinearGradient>
                 </View>
-              </View>
-            </View>
-          )}
+              )
+            }
 
-          {/* Instructions */}
-          {exercise.instructions ? (
-            <View style={dynamicStyles.section}>
-              <Text style={dynamicStyles.sectionTitle}>
-                <Info size={20} color={BRAND_PRIMARY} />
-                {t('library.exerciseDetail.instructions')}
-              </Text>
-              <BlurView intensity={20} tint={isDark ? "dark" : "light"} style={dynamicStyles.sectionContent}>
-                <Text style={dynamicStyles.instructionsText}>
-                  {exercise.instructions}
-                </Text>
-              </BlurView>
-            </View>
-          ) : (
-            <View style={dynamicStyles.section}>
-              <Text style={dynamicStyles.sectionTitle}>
-                <Info size={20} color={BRAND_PRIMARY} />
-                {t('library.exerciseDetail.instructions')}
-              </Text>
-              <BlurView intensity={20} tint={isDark ? "dark" : "light"} style={dynamicStyles.sectionContent}>
-                <Text style={[dynamicStyles.instructionsText, { color: getTextColorWithOpacity(isDark, 0.5) }]}>
-                  {t('library.exerciseDetail.noInstructions')}
-                </Text>
-              </BlurView>
-            </View>
-          )}
+            {/* Instructions */}
+            {
+              exercise.instructions ? (
+                <View style={dynamicStyles.section}>
+                  <View style={dynamicStyles.sectionTitleContainer}>
+                    <Info size={20} color={BRAND_PRIMARY} />
+                    <Text style={dynamicStyles.sectionTitleText}>
+                      {t('library.exerciseDetail.instructions')}
+                    </Text>
+                  </View>
+                  <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={dynamicStyles.sectionContent}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Text style={dynamicStyles.instructionsText}>
+                      {exercise.instructions}
+                    </Text>
+                  </LinearGradient>
+                </View>
+              ) : (
+                <View style={dynamicStyles.section}>
+                  <View style={dynamicStyles.sectionTitleContainer}>
+                    <Info size={20} color={BRAND_PRIMARY} />
+                    <Text style={dynamicStyles.sectionTitleText}>
+                      {t('library.exerciseDetail.instructions')}
+                    </Text>
+                  </View>
+                  <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={dynamicStyles.sectionContent}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Text style={[dynamicStyles.instructionsText, { color: getTextColorWithOpacity(isDark, 0.5) }]}>
+                      {t('library.exerciseDetail.noInstructions')}
+                    </Text>
+                  </LinearGradient>
+                </View>
+              )
+            }
+          </View>
         </View>
-      </ScrollView>
-    </View>
+      </ScrollView >
+    </View >
   );
 };
 

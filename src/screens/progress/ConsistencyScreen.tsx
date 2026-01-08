@@ -177,7 +177,12 @@ const ConsistencyScreen = () => {
             >
 
                 {/* Streak Card */}
-                <View style={styles.streakCard}>
+                <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={styles.streakCard}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
                     <View style={styles.streakHeader}>
                         <View style={styles.streakTag}>
                             <View style={styles.activeDot} />
@@ -209,7 +214,7 @@ const ConsistencyScreen = () => {
                             <Text style={styles.statValue}>{bestStreak}</Text>
                         </View>
                     </View>
-                </View>
+                </LinearGradient>
 
                 {/* Recent Activity (Weekly Cards) */}
                 <View style={styles.calendarSection}>
@@ -228,7 +233,12 @@ const ConsistencyScreen = () => {
                         {weeklyData.map((week, index) => (
                             <View key={index} style={styles.weekGroup}>
                                 <Text style={styles.weekDateRange}>{week.rangeLabel}</Text>
-                                <View style={styles.weekCard}>
+                                <LinearGradient
+                                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                                    style={styles.weekCard}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                >
                                     <View style={styles.weekBarsRow}>
                                         {week.days.map((day, dIndex) => {
                                             // Determine color based on intensity/activity
@@ -265,14 +275,19 @@ const ConsistencyScreen = () => {
                                             );
                                         })}
                                     </View>
-                                </View>
+                                </LinearGradient>
                             </View>
                         ))}
                     </ScrollView>
                 </View>
 
                 {/* Yearly Activity */}
-                <View style={styles.yearSection}>
+                <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={styles.yearSection}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
                     <View style={styles.yearHeader}>
                         <Text style={styles.sectionTitleSmall}>YEARLY ACTIVITY</Text>
                         <Text style={[styles.sectionTitleSmall, { color: THEME.primary }]}>{today.getFullYear()}</Text>
@@ -294,7 +309,7 @@ const ConsistencyScreen = () => {
                         <Text style={styles.chartLabel}>{yearlyLabels[6]}</Text>
                         <Text style={styles.chartLabel}>{yearlyLabels[11]}</Text>
                     </View>
-                </View>
+                </LinearGradient>
 
             </Animated.ScrollView>
         </View>
@@ -329,12 +344,12 @@ const styles = StyleSheet.create({
         gap: 24
     },
     streakCard: {
-        backgroundColor: '#111',
+        // backgroundColor: '#111',
         borderRadius: 32,
         padding: 24,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)'
+        borderColor: '#266637'
     },
     streakHeader: {
         marginBottom: 16
@@ -437,12 +452,12 @@ const styles = StyleSheet.create({
         marginLeft: 4
     },
     weekCard: {
-        backgroundColor: '#111',
+        // backgroundColor: '#111',
         borderRadius: 24,
         padding: 16,
         paddingHorizontal: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)'
+        borderColor: '#266637'
     },
     weekBarsRow: {
         flexDirection: 'row',
@@ -473,11 +488,11 @@ const styles = StyleSheet.create({
 
     // Yearly
     yearSection: {
-        backgroundColor: '#111',
+        // backgroundColor: '#111',
         borderRadius: 32,
         padding: 24,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.05)'
+        borderColor: '#266637'
     },
     yearHeader: {
         flexDirection: 'row',

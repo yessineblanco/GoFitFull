@@ -180,7 +180,7 @@ const SectionHeader = ({ title, action }: { title: string, action?: React.ReactN
 // --- Sections ---
 
 // --- 1. Personal Records Component ---
-const PersonalRecordsParams = ({ records }: { records: PersonalRecord[] }) => {
+const PersonalRecordsParams = ({ records, unit }: { records: PersonalRecord[], unit: 'lbs' | 'kg' }) => {
   const navigation = useNavigation<any>();
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth * 0.85;
@@ -210,7 +210,7 @@ const PersonalRecordsParams = ({ records }: { records: PersonalRecord[] }) => {
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => navigation.navigate('RecordDetails', { record, bgImage })}
+              onPress={() => navigation.navigate('RecordDetails', { record, bgImage, unit })}
               activeOpacity={0.9}
             >
               <View style={[styles.prCardContainer, { width: cardWidth }]}>
@@ -242,8 +242,8 @@ const PersonalRecordsParams = ({ records }: { records: PersonalRecord[] }) => {
                   <View style={styles.prBody}>
                     <Text style={styles.exerciseName} numberOfLines={1} adjustsFontSizeToFit>{record.exercise}</Text>
                     <View style={styles.weightRow}>
-                      <Text style={styles.bigWeight} numberOfLines={1} adjustsFontSizeToFit>{record.weight}</Text>
-                      <Text style={styles.unitText}>LBS</Text>
+                      <Text style={styles.bigWeight} numberOfLines={1} adjustsFontSizeToFit>{unit === 'kg' ? Math.round(record.weight * 0.453592) : record.weight}</Text>
+                      <Text style={styles.unitText}>{unit.toUpperCase()}</Text>
                     </View>
 
                     {/* Simulated Chart Bars */}
@@ -478,7 +478,7 @@ const RecoverySection = ({ recoveryData }: { recoveryData: Record<string, number
   );
 };
 
-const TotalVolumeChart = ({ volumeHistory }: { volumeHistory: VolumeProgressItem[] }) => {
+const TotalVolumeChart = ({ volumeHistory, unit }: { volumeHistory: VolumeProgressItem[], unit: 'lbs' | 'kg' }) => {
   // 1. Aggregate daily data into monthly buckets
   const [monthlyData, setMonthlyData] = useState<{ month: string, year: number, volume: number, label: string }[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
@@ -536,12 +536,17 @@ const TotalVolumeChart = ({ volumeHistory }: { volumeHistory: VolumeProgressItem
   };
 
   return (
-    <GlassPanel style={styles.volumePanel}>
+    <LinearGradient
+      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+      style={styles.volumePanel}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <View style={{ marginBottom: 20 }}>
         <Text style={styles.labelSmall}>TOTAL VOLUME LOAD</Text>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-          <Text style={styles.heroNumber} numberOfLines={1} adjustsFontSizeToFit>{formatVolume(selectedData.volume)}</Text>
-          <Text style={styles.unitTextLarge}>lbs</Text>
+          <Text style={styles.heroNumber} numberOfLines={1} adjustsFontSizeToFit>{formatVolume(unit === 'kg' ? selectedData.volume * 0.453592 : selectedData.volume)}</Text>
+          <Text style={styles.unitTextLarge}>{unit}</Text>
           <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginLeft: 'auto' }} numberOfLines={1}>
             {selectedData.label} {selectedData.year}
           </Text>
@@ -579,7 +584,7 @@ const TotalVolumeChart = ({ volumeHistory }: { volumeHistory: VolumeProgressItem
           );
         })}
       </View>
-    </GlassPanel>
+    </LinearGradient>
   );
 };
 
@@ -673,7 +678,12 @@ const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }
 
 const StatGrid = ({ duration, workouts }: { duration: number, workouts: number }) => (
   <View style={styles.gridContainer}>
-    <View style={styles.statCard}>
+    <LinearGradient
+      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+      style={styles.statCard}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <View style={styles.iconBox}>
         <BreathingIcon>
           <Timer size={20} color="#fff" />
@@ -686,9 +696,14 @@ const StatGrid = ({ duration, workouts }: { duration: number, workouts: number }
           <Text style={styles.statUnit}>min</Text>
         </View>
       </View>
-    </View>
+    </LinearGradient>
 
-    <View style={styles.statCard}>
+    <LinearGradient
+      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+      style={styles.statCard}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
       <View style={styles.iconBox}>
         <BreathingIcon duration={3500}>
           <Flame size={20} color={THEME.primary} fill={THEME.primary} />
@@ -701,7 +716,7 @@ const StatGrid = ({ duration, workouts }: { duration: number, workouts: number }
           <Text style={styles.statUnit}>this mo.</Text>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   </View>
 );
 
@@ -1047,7 +1062,7 @@ export default function WorkoutStatisticsScreen() {
         </View>
         {/* 1. Horizontal PRs */}
         <View style={{ marginBottom: 24 }}>
-          <PersonalRecordsParams records={prs} />
+          <PersonalRecordsParams records={prs} unit={unit} />
         </View>
 
         {/* 2. Consistency Calendar */}
@@ -1079,7 +1094,7 @@ export default function WorkoutStatisticsScreen() {
 
         {/* 5. Total Volume Load */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <TotalVolumeChart volumeHistory={volumeHistory || []} />
+          <TotalVolumeChart volumeHistory={volumeHistory || []} unit={unit} />
         </View>
 
         {/* 6. Grid Stats */}
@@ -1464,7 +1479,9 @@ const styles = StyleSheet.create({
   // Volume
   volumePanel: {
     borderRadius: 32,
-    padding: 24
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#266637',
   },
   heroNumber: {
     fontSize: 28,
@@ -1518,7 +1535,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)'
+    borderColor: '#266637',
   },
   highlightIconBg: {
     position: 'absolute',
@@ -1563,10 +1580,10 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     height: 144,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    // backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: '#266637',
     padding: 20,
     justifyContent: 'space-between',
     overflow: 'hidden'
@@ -1617,7 +1634,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     overflow: 'hidden',
     position: 'relative',
-    minHeight: 110
+    minHeight: 110,
+    borderWidth: 1,
+    borderColor: '#266637',
   },
   currentWorkoutHeader: {
     flexDirection: 'row',
@@ -1702,7 +1721,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f110d', // Dark card
     borderRadius: 24,
     padding: 24,
-    gap: 20
+    gap: 20,
+    borderWidth: 1,
+    borderColor: '#266637',
   },
   consistencyHeaderNew: {
     flexDirection: 'row',
@@ -1745,7 +1766,7 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: 'rgba(132, 196, 64, 0.3)',
+    borderColor: '#266637',
     marginBottom: 24,
     overflow: 'hidden'
   },

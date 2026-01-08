@@ -18,7 +18,12 @@ const THEME = {
 
 // Helper for detail cards
 const DetailCard = ({ label, value, unit, icon: Icon }: { label: string, value: string, unit?: string, icon: any }) => (
-    <View style={styles.detailCard}>
+    <LinearGradient
+        colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+        style={styles.detailCard}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+    >
         <View style={styles.detailCardBgIcon}>
             <Icon size={80} color="rgba(255,255,255,0.03)" />
         </View>
@@ -30,7 +35,7 @@ const DetailCard = ({ label, value, unit, icon: Icon }: { label: string, value: 
             {unit && <Text style={styles.detailUnit}>{unit}</Text>}
         </View>
         <Icon size={24} color={THEME.primary} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.8 }} />
-    </View>
+    </LinearGradient>
 );
 
 const RecordDetailsScreen = () => {
@@ -157,7 +162,12 @@ const RecordDetailsScreen = () => {
                 </View>
 
                 {/* Progress Path */}
-                <View style={styles.progressSection}>
+                <LinearGradient
+                    colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+                    style={styles.progressSection}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
                     <View style={styles.progressHeader}>
                         <Text style={styles.sectionTitle}>PROGRESS PATH</Text>
                         <View style={styles.yearlyBadge}>
@@ -188,7 +198,7 @@ const RecordDetailsScreen = () => {
                             );
                         })}
                     </View>
-                </View>
+                </LinearGradient>
 
                 {/* Share Button */}
                 <TouchableOpacity style={styles.shareButton}>
@@ -253,7 +263,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         padding: 24,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: '#266637',
         backgroundColor: '#000' // Ensure no transparent bleed
     },
     heroContent: {
@@ -314,11 +324,11 @@ const styles = StyleSheet.create({
     detailCard: {
         flex: 1,
         minWidth: '45%',
-        backgroundColor: 'rgba(28, 28, 30, 0.5)', // Glassy
+        // backgroundColor: 'rgba(28, 28, 30, 0.5)', // Glassy
         borderRadius: 30, // More rounded 
         padding: 20,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
+        borderColor: '#266637',
         minHeight: 140,
         justifyContent: 'center', // Center content
         alignItems: 'center',
@@ -359,11 +369,11 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     progressSection: {
-        backgroundColor: 'rgba(28, 28, 30, 0.5)', // Glassy
+        // backgroundColor: 'rgba(28, 28, 30, 0.5)', // Glassy
         borderRadius: 30,
         padding: 24,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
+        borderColor: '#266637',
     },
     progressHeader: {
         flexDirection: 'row',

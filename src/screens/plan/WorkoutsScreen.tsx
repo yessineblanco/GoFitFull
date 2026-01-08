@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   StatusBar,
@@ -51,6 +51,24 @@ export const WorkoutsScreen: React.FC = () => {
   const [contentHeight, setContentHeight] = useState(1);
   const [layoutHeight, setLayoutHeight] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 6000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 6000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   // Barre de progression en haut
   const indicatorWidth = scrollY.interpolate({
@@ -77,16 +95,65 @@ export const WorkoutsScreen: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: '#030303' }}>
       <StatusBar barStyle="light-content" />
 
+      {/* Global Mesh Gradient Background */}
+      <View style={styles.glowContainer}>
+        <Animated.View
+          style={[
+            styles.glowPoint,
+            styles.glowTopLeft,
+            {
+              opacity: glowAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.1, 0.3]
+              }),
+              transform: [{
+                scale: glowAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.4]
+                })
+              }]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={['rgba(38, 102, 55, 0.4)', 'transparent']}
+            style={styles.full}
+          />
+        </Animated.View>
+        <Animated.View
+          style={[
+            styles.glowPoint,
+            styles.glowBottomRight,
+            {
+              opacity: glowAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.3, 0.1]
+              }),
+              transform: [{
+                scale: glowAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1.4, 1]
+                })
+              }]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={['rgba(38, 102, 55, 0.6)', 'transparent']}
+            style={styles.full}
+          />
+        </Animated.View>
+      </View>
 
       <ScreenHeader
         title="MY PLAN"
         rightElement={
           <View style={styles.progressBarBackground}>
             <Animated.View
-              style={[styles.progressBar, { backgroundColor: colors.primary, width: indicatorWidth }]}
+              style={[styles.progressBar, { backgroundColor: '#266637', width: indicatorWidth }]}
             />
           </View>
         }
@@ -161,6 +228,30 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  glowContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
+    overflow: 'hidden',
+    backgroundColor: '#030303',
+  },
+  glowPoint: {
+    position: 'absolute',
+    width: 500,
+    height: 500,
+    borderRadius: 250,
+  },
+  glowTopLeft: {
+    top: -150,
+    left: -150,
+  },
+  glowBottomRight: {
+    bottom: -150,
+    right: -150,
+  },
+  full: {
+    flex: 1,
+    borderRadius: 250,
   },
 });
 

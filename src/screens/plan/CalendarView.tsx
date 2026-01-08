@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import {
   View,
   TouchableOpacity,
@@ -23,8 +23,6 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
   const colors = useThemeColors();
   const { selectedDate, setSelectedDate } = useCalendarStore();
   const [isYearPickerVisible, setIsYearPickerVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const selected = new Date(selectedDate);
   const year = selected.getFullYear();
@@ -109,196 +107,248 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
     setIsYearPickerVisible(false);
   };
 
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const entryAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Entry Animation
+    Animated.spring(entryAnim, {
+      toValue: 1,
+      tension: 40,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   const years = Array.from({ length: 20 }, (_, i) => year - 6 + i);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleContainer}>
-          <TouchableOpacity
-            style={styles.monthSelector}
-            onPress={() => {
-              triggerHaptic();
-              setIsYearPickerVisible(!isYearPickerVisible);
-            }}
-          >
-            <AppText variant="h3" style={styles.monthTitle}>
-              {isYearPickerVisible
-                ? `${year}`
-                : format(selected, "MMMM")}
-            </AppText>
-            {!isYearPickerVisible && <AppText variant="bodyBold" style={styles.yearSubTitle}>{year}</AppText>}
-          </TouchableOpacity>
-        </View>
-
-        {!isYearPickerVisible && (
-          <View style={styles.navButtons}>
-            <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navButton}>
-              <ChevronLeft size={20} color="#fff" />
-            </TouchableOpacity>
-            <View style={styles.navDivider} />
-            <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navButton}>
-              <ChevronRight size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      <BlurView intensity={10} tint="dark" style={styles.frameContainer}>
-        {isYearPickerVisible ? (
-          <View style={styles.yearGrid}>
-            {years.map((y) => (
+      <Animated.View
+        style={[
+          styles.mainCard,
+          {
+            opacity: entryAnim,
+            transform: [
+              {
+                translateY: entryAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [30, 0],
+                }),
+              },
+              {
+                scale: entryAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.95, 1],
+                }),
+              },
+            ],
+          }
+        ]}
+      >
+        <BlurView intensity={20} tint="dark" style={styles.glassContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerTitleContainer}>
               <TouchableOpacity
-                key={y}
-                style={[
-                  styles.yearCell,
-                  y === year && { backgroundColor: TEMPLATE_COLOR, borderColor: TEMPLATE_COLOR }
-                ]}
-                onPress={() => selectYear(y)}
+                style={styles.monthSelector}
+                onPress={() => {
+                  triggerHaptic();
+                  setIsYearPickerVisible(!isYearPickerVisible);
+                }}
               >
-                <AppText
-                  variant="bodyBold"
-                  style={[
-                    styles.yearText,
-                    y === year && { color: '#000', fontWeight: '800' }
-                  ]}
-                >
-                  {y}
+                <AppText variant="h3" style={styles.monthTitle}>
+                  {isYearPickerVisible ? `${year}` : format(selected, "MMMM")}
                 </AppText>
+                {!isYearPickerVisible && (
+                  <View style={styles.yearBadge}>
+                    <AppText variant="small" style={styles.yearBadgeText}>{year}</AppText>
+                  </View>
+                )}
               </TouchableOpacity>
-            ))}
+            </View>
+
+            {!isYearPickerVisible && (
+              <View style={styles.navButtons}>
+                <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navButton}>
+                  <ChevronLeft size={18} color="rgba(255,255,255,0.7)" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navButton}>
+                  <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        ) : (
-          <Animated.View style={{ transform: [{ translateX: slideAnim }] }}>
-            {/* Days Header */}
-            <View style={styles.headerRow}>
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
-                <AppText key={i} variant="small" style={styles.headerText}>{d}</AppText>
+
+          {isYearPickerVisible ? (
+            <View style={styles.yearGrid}>
+              {years.map((y) => (
+                <TouchableOpacity
+                  key={y}
+                  style={[
+                    styles.yearCell,
+                    y === year && { backgroundColor: TEMPLATE_COLOR, borderColor: TEMPLATE_COLOR }
+                  ]}
+                  onPress={() => selectYear(y)}
+                >
+                  <AppText
+                    variant="bodyBold"
+                    style={[
+                      styles.yearText,
+                      y === year && { color: '#000', fontWeight: '800' }
+                    ]}
+                  >
+                    {y}
+                  </AppText>
+                </TouchableOpacity>
               ))}
             </View>
+          ) : (
+            <Animated.View style={{ transform: [{ translateX: slideAnim }] }}>
+              {/* Days Header */}
+              <View style={styles.headerRow}>
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
+                  <AppText key={i} variant="small" style={styles.headerText}>{d}</AppText>
+                ))}
+              </View>
 
-            {/* Days Grid */}
-            <View style={styles.grid}>
-              {days.map((day, index) => {
-                if (!day) {
-                  return <View key={index} style={styles.cell} />;
-                }
+              {/* Days Grid */}
+              <View style={styles.grid}>
+                {days.map((day, index) => {
+                  if (!day) {
+                    return <View key={index} style={styles.cell} />;
+                  }
 
-                const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-                  day
-                ).padStart(2, "0")}`;
+                  const iso = `${year}-${String(month + 1).padStart(2, "0")}-${String(
+                    day
+                  ).padStart(2, "0")}`;
 
-                const dayPlans = plansByDate.get(iso) ?? [];
-                const isSelected = iso === selectedDate;
-                const isToday = iso === todayIso;
+                  const dayPlans = plansByDate.get(iso) ?? [];
+                  const isSelected = iso === selectedDate;
+                  const isToday = iso === todayIso;
 
-                // Determine status priority
-                const isCompleted = dayPlans.length > 0 && dayPlans.every(p => p.status === 'completed');
-                const hasPlanned = dayPlans.length > 0 && !isCompleted;
+                  // Determine status priority
+                  const isCompleted = dayPlans.length > 0 && dayPlans.every(p => p.status === 'completed');
+                  const hasPlanned = dayPlans.length > 0 && !isCompleted;
 
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.cell}
-                    onPress={() => {
-                      triggerHaptic();
-                      setSelectedDate(iso);
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.cell}
+                      onPress={() => {
+                        triggerHaptic();
+                        setSelectedDate(iso);
 
-                      // Scale animation on select
-                      Animated.sequence([
-                        Animated.timing(scaleAnim, { toValue: 0.9, duration: 100, useNativeDriver: true }),
-                        Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
-                      ]).start();
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Animated.View
-                      style={[
-                        styles.dayCircle,
-                        isToday && styles.todayCircle,
-                        isSelected && styles.selectedCircle,
-                        isSelected && { transform: [{ scale: scaleAnim }] },
-                        !isSelected && !isToday && hasPlanned && styles.plannedCircle,
-                        !isSelected && !isToday && isCompleted && styles.completedCircle,
-                      ]}
+                        // Scale animation on select
+                        Animated.sequence([
+                          Animated.timing(scaleAnim, { toValue: 0.9, duration: 100, useNativeDriver: true }),
+                          Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+                        ]).start();
+                      }}
+                      activeOpacity={0.7}
                     >
-                      <AppText
-                        variant={isToday || isSelected ? "bodyBold" : "body"}
+                      <Animated.View
                         style={[
-                          styles.dayText,
-                          isToday && styles.todayDayText,
-                          isSelected && styles.selectedDayText,
+                          styles.dayCircle,
+                          isToday && styles.todayCircle,
+                          isSelected && styles.selectedCircle,
+                          isSelected && { transform: [{ scale: scaleAnim }] },
+                          !isSelected && !isToday && hasPlanned && styles.plannedCircle,
+                          !isSelected && !isToday && isCompleted && styles.completedCircle,
                         ]}
                       >
-                        {day}
-                      </AppText>
-                    </Animated.View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Animated.View>
-        )}
-      </BlurView>
+                        <AppText
+                          variant={isToday || isSelected ? "bodyBold" : "body"}
+                          style={[
+                            styles.dayText,
+                            isToday && styles.todayDayText,
+                            isSelected && styles.selectedDayText,
+                          ]}
+                        >
+                          {day}
+                        </AppText>
+                      </Animated.View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Animated.View>
+          )}
+        </BlurView>
+      </Animated.View>
     </View>
   );
 };
 
-const TEMPLATE_COLOR = "#a3e635";
+const TEMPLATE_COLOR = "#266637";
 
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 10,
-    marginHorizontal: 16,
+    position: 'relative',
+  },
+  mainCard: {
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 102, 55, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  glassContent: {
+    padding: 20,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 4,
+    marginBottom: 24,
   },
   headerTitleContainer: {
     flex: 1,
   },
   monthSelector: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 8,
+    alignItems: 'center',
+    gap: 12,
   },
   monthTitle: {
     color: "#fff",
+    fontSize: 26,
+    fontWeight: '800',
     textTransform: 'capitalize',
+    letterSpacing: -0.5,
   },
-  yearSubTitle: {
-    color: 'rgba(255,255,255,0.3)',
+  yearBadge: {
+    backgroundColor: 'rgba(38, 102, 55, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(38, 102, 55, 0.3)',
+  },
+  yearBadgeText: {
+    color: '#266637',
+    fontWeight: '700',
   },
   navButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    overflow: 'hidden',
+    gap: 8,
   },
   navButton: {
-    padding: 10,
-    paddingHorizontal: 12,
-  },
-  navDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  frameContainer: {
-    borderRadius: 24,
-    padding: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
-    overflow: 'hidden',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   yearGrid: {
     flexDirection: 'row',
@@ -360,38 +410,39 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(163, 230, 53, 0.1)',
   },
   todayDayText: {
-    color: TEMPLATE_COLOR,
+    color: '#266637',
   },
   selectedCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: TEMPLATE_COLOR,
-    shadowColor: TEMPLATE_COLOR,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    backgroundColor: '#266637',
+    shadowColor: '#266637',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
   selectedDayText: {
-    color: "#030303",
-    fontWeight: '700',
+    color: "#fff",
+    fontWeight: '800',
   },
   plannedCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    borderWidth: 1,
-    borderColor: 'rgba(163, 230, 53, 0.5)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(38, 102, 55, 0.4)',
     borderStyle: 'solid',
   },
   completedCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    borderWidth: 1.5,
-    borderColor: TEMPLATE_COLOR,
+    borderWidth: 2,
+    borderColor: '#266637',
     borderStyle: 'solid',
+    backgroundColor: 'rgba(38, 102, 55, 0.1)',
   },
 });
 

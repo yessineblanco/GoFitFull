@@ -7,17 +7,17 @@ export const theme = {
     primaryLight: '#8dbb5a', // Lighter green - secondary brand color
 
     // Secondary colors
-    secondary: '#8dbb5a', // Lighter muted green
-    secondaryDark: '#6fa335',
-    secondaryLight: '#a5d06f',
+    secondary: '#3d8c52', // Matching primaryLight
+    secondaryDark: '#266637',
+    secondaryLight: '#5fb378',
 
     // Neutral colors (from Figma)
     black: '#030303', // Pure black from palette
     white: '#ffffff', // Pure white from palette
 
     // Accent colors - Unified Alert System
-    accent: '#84c441',
-    success: '#84c441',
+    accent: '#266637',
+    success: '#266637',
     warning: '#f1c40f', // Golden-yellow, energy-focused
     error: '#ff4757', // Vibrant coral-red
     info: '#52c1b8', // Cyan-teal, in green family
@@ -37,11 +37,11 @@ export const theme = {
     divider: '#E1E6EB',
 
     // Fitness specific (using brand colors)
-    workout: '#84c441',
-    cardio: '#84c441',
-    strength: '#8dbb5a',
-    flexibility: '#84c441',
-    nutrition: '#8dbb5a',
+    workout: '#266637',
+    cardio: '#266637',
+    strength: '#3d8c52',
+    flexibility: '#266637',
+    nutrition: '#3d8c52',
   },
 
   spacing: {

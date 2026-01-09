@@ -281,7 +281,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
   );
 };
 
-const TEMPLATE_COLOR = "#266637";
+const TEMPLATE_COLOR = "#84c441";
 
 const styles = StyleSheet.create({
   container: {
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   mainCard: {
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: 'rgba(38, 102, 55, 0.3)',
+    borderColor: 'rgba(132, 196, 65, 0.3)',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     overflow: 'hidden',
     shadowColor: '#000',
@@ -325,15 +325,15 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   yearBadge: {
-    backgroundColor: 'rgba(38, 102, 55, 0.2)',
+    backgroundColor: 'rgba(132, 196, 65, 0.2)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: 'rgba(38, 102, 55, 0.3)',
+    borderColor: 'rgba(132, 196, 65, 0.3)',
   },
   yearBadgeText: {
-    color: '#266637',
+    color: '#84c441',
     fontWeight: '700',
   },
   navButtons: {
@@ -406,18 +406,18 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 1.5,
-    borderColor: 'rgba(163, 230, 53, 0.4)',
-    backgroundColor: 'rgba(163, 230, 53, 0.1)',
+    borderColor: 'rgba(132, 196, 65, 0.4)',
+    backgroundColor: 'rgba(132, 196, 65, 0.1)',
   },
   todayDayText: {
-    color: '#266637',
+    color: '#84c441',
   },
   selectedCircle: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#266637',
-    shadowColor: '#266637',
+    backgroundColor: '#84c441',
+    shadowColor: '#84c441',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.5,
     shadowRadius: 12,
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 1.5,
-    borderColor: 'rgba(38, 102, 55, 0.4)',
+    borderColor: 'rgba(132, 196, 65, 0.4)',
     borderStyle: 'solid',
   },
   completedCircle: {
@@ -440,9 +440,9 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 2,
-    borderColor: '#266637',
+    borderColor: '#84c441',
     borderStyle: 'solid',
-    backgroundColor: 'rgba(38, 102, 55, 0.1)',
+    backgroundColor: 'rgba(132, 196, 65, 0.1)',
   },
 });
 

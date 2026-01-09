@@ -99,6 +99,10 @@ export const SignupScreen: React.FC = () => {
       await signUp(data.email, data.password);
       await clearFormData('signup');
       toastManager.success(t('auth.signup.accountCreated'));
+      // Navigate to login screen after successful registration
+      setTimeout(() => {
+        navigation.replace('Login');
+      }, 1500); // Brief delay to show success message
     } catch (error: any) {
       const errorMessage = error.message || t('auth.signup.failedToCreate');
       let friendlyMessage = errorMessage;

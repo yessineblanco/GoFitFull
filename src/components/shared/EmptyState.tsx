@@ -46,44 +46,44 @@ interface EmptyStateProps {
 }
 
 const getDefaultContent = (type: EmptyStateType, isDark: boolean): { title: string; message: string; icon: React.ReactNode } => {
-    const iconColor = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.3)';
+    const iconColor = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
     
     switch (type) {
         case 'workouts':
             return {
                 title: 'No Workouts Yet',
                 message: 'Start building your fitness journey by creating your first workout plan.',
-                icon: <Dumbbell size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Dumbbell size={48} color={iconColor} strokeWidth={1.5} />,
             };
         case 'exercises':
             return {
                 title: 'No Exercises Found',
                 message: 'Try adjusting your search or filters to find what you\'re looking for.',
-                icon: <Search size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Search size={48} color={iconColor} strokeWidth={1.5} />,
             };
         case 'sessions':
             return {
                 title: 'No Workout Sessions',
                 message: 'Complete your first workout to start tracking your progress.',
-                icon: <Calendar size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Calendar size={48} color={iconColor} strokeWidth={1.5} />,
             };
         case 'plans':
             return {
                 title: 'No Plans Scheduled',
                 message: 'Create a workout plan to stay organized and reach your goals.',
-                icon: <Package size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Package size={48} color={iconColor} strokeWidth={1.5} />,
             };
         case 'search':
             return {
                 title: 'No Results Found',
                 message: 'Try different keywords or check your filters.',
-                icon: <Search size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Search size={48} color={iconColor} strokeWidth={1.5} />,
             };
         default:
             return {
                 title: 'Nothing Here Yet',
                 message: 'Content will appear here once available.',
-                icon: <Inbox size={64} color={iconColor} strokeWidth={1.5} />,
+                icon: <Inbox size={48} color={iconColor} strokeWidth={1.5} />,
             };
     }
 };
@@ -135,32 +135,30 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: getResponsiveSpacing(32),
-        paddingVertical: getResponsiveSpacing(48),
-        backgroundColor: getThemedBackground('primary'),
+        paddingHorizontal: getResponsiveSpacing(24),
+        paddingVertical: getResponsiveSpacing(32),
     },
     iconContainer: {
-        marginBottom: getResponsiveSpacing(24),
-        opacity: 0.6,
+        marginBottom: getResponsiveSpacing(16),
+        opacity: 0.5,
     },
     title: {
-        fontSize: getResponsiveFontSize(20),
+        fontSize: getResponsiveFontSize(18),
         fontWeight: '600',
         color: themeColors.text.primary,
         fontFamily: 'Barlow_600SemiBold',
         textAlign: 'center',
-        marginBottom: getResponsiveSpacing(12),
+        marginBottom: getResponsiveSpacing(8),
     },
     message: {
-        fontSize: getResponsiveFontSize(15),
+        fontSize: getResponsiveFontSize(14),
         color: themeColors.text.secondary,
         fontFamily: 'Barlow_400Regular',
         textAlign: 'center',
-        lineHeight: getResponsiveFontSize(22),
-        marginBottom: getResponsiveSpacing(32),
+        lineHeight: getResponsiveFontSize(20),
+        marginBottom: getResponsiveSpacing(24),
     },
     actionButton: {
         backgroundColor: theme.colors.primary,

@@ -100,9 +100,13 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
             {/* Main Content */}
             <View style={styles.content}>
                 {/* Back Button (Left) */}
-                {showBack && (
+                {showBack && navigation.canGoBack() && (
                     <TouchableOpacity
-                        onPress={() => navigation.goBack()}
+                        onPress={() => {
+                            if (navigation.canGoBack()) {
+                                navigation.goBack();
+                            }
+                        }}
                         style={[styles.backButton, { borderColor: isDark ? 'rgba(132, 196, 64, 0.3)' : 'rgba(132, 196, 64, 0.2)' }]}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >

@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { getTranslatedExerciseName } from '@/utils/exerciseTranslations';
 import { useUIStore } from '@/store/uiStore';
 
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useFocusEffect } from '@react-navigation/native';
 
 type NavigationProp = StackNavigationProp<LibraryStackParamList, 'ExerciseSelection'>;
 type ScreenRouteProp = RouteProp<LibraryStackParamList, 'ExerciseSelection'>;
@@ -46,6 +46,7 @@ export const ExerciseSelectionScreen: React.FC<ExerciseSelectionScreenProps> = (
   const { textSize } = useTextSizeStore();
   const { t } = useTranslation();
   const { setTabBarVisible, tabBarVisible } = useUIStore();
+  const isLeavingRef = useRef(false); // Track if we're intentionally leaving
   const [selectedExercises, setSelectedExercises] = useState<string[]>(route.params?.initialSelection || []);
   const [exercises, setExercises] = useState<Array<{
     id: string;
@@ -64,10 +65,18 @@ export const ExerciseSelectionScreen: React.FC<ExerciseSelectionScreenProps> = (
   const [showMuscleGroups, setShowMuscleGroups] = useState(true);
 
   // Handle Tab Bar visibility - hide completely on this screen
-  useEffect(() => {
-    setTabBarVisible(false);
-    return () => setTabBarVisible(true);
-  }, [setTabBarVisible]);
+  useFocusEffect(
+    React.useCallback(() => {
+      isLeavingRef.current = false;
+      setTabBarVisible(false);
+      return () => {
+        // Only restore if not intentionally leaving (e.g., navigating to WorkoutBuilder)
+        if (!isLeavingRef.current) {
+          setTabBarVisible(true);
+        }
+      };
+    }, [setTabBarVisible])
+  );
 
   const BRAND_BLACK = getBackgroundColor(isDark);
   const BRAND_WHITE = getTextColor(isDark);
@@ -181,6 +190,9 @@ export const ExerciseSelectionScreen: React.FC<ExerciseSelectionScreenProps> = (
 
   const handleContinue = () => {
     const selectedExercisesData = exercises.filter(ex => selectedExercises.includes(ex.id));
+
+    // Mark that we're intentionally leaving
+    isLeavingRef.current = true;
 
     // If we have initialSelection, we are in "Add/Edit" mode
     if (route.params?.initialSelection) {
@@ -372,6 +384,8 @@ export const ExerciseSelectionScreen: React.FC<ExerciseSelectionScreenProps> = (
           style={dynamicStyles.backButton}
           onPress={() => {
             if (showMuscleGroups) {
+              isLeavingRef.current = true;
+              setTabBarVisible(true);
               navigation.goBack();
             } else {
               handleBackToMuscleGroups();
@@ -468,19 +482,17 @@ export const ExerciseSelectionScreen: React.FC<ExerciseSelectionScreenProps> = (
       )}
 
       {/* Continue Button */}
-      <TouchableOpacity
-        style={[
-          dynamicStyles.continueButton,
-          selectedExercises.length === 0 && dynamicStyles.continueButtonDisabled,
-        ]}
-        onPress={handleContinue}
-        disabled={selectedExercises.length === 0}
-        activeOpacity={0.8}
-      >
-        <Text style={dynamicStyles.continueButtonText}>
-          {t('library.continueButton')} ({selectedExercises.length})
-        </Text>
-      </TouchableOpacity>
+      {selectedExercises.length > 0 && (
+        <TouchableOpacity
+          style={dynamicStyles.continueButton}
+          onPress={handleContinue}
+          activeOpacity={0.8}
+        >
+          <Text style={dynamicStyles.continueButtonText}>
+            {t('library.continueButton')} ({selectedExercises.length})
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

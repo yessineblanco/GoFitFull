@@ -190,14 +190,15 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
         day // Pass the day parameter
       );
 
-      // Navigate back to Plan tab (named 'Workouts' in AppNavigator)
-      navigation.dispatch(StackActions.popToTop());
+      // Reset Library stack to LibraryMain before navigating back to Plan
       navigation.dispatch(
-        CommonActions.navigate({
-          name: "Workouts",
-          params: { screen: "WorkoutsMain" }
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'LibraryMain' }],
         })
       );
+      // Navigate back to Plan tab (named 'Workouts' in AppNavigator)
+      navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
 
       // Optional: Show success message/toast
       dialogManager.success(t('common.success'), t('plan.workoutScheduled'));
@@ -857,13 +858,15 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
             style={dynamicStyles.backButton}
             onPress={() => {
               if (route.params?.returnTo === 'Plan') {
-                navigation.dispatch(StackActions.popToTop());
+                // Reset Library stack to LibraryMain before navigating to Plan
                 navigation.dispatch(
-                  CommonActions.navigate({
-                    name: "Workouts",
-                    params: { screen: "WorkoutsMain" }
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'LibraryMain' }],
                   })
                 );
+                // Then navigate to Plan
+                navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
               } else {
                 navigation.goBack();
               }

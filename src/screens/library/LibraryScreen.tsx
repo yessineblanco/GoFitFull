@@ -308,7 +308,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
   const headerHeight = insets.top + getResponsiveSpacing(8) + getResponsiveSpacing(12) + getResponsiveSpacing(20); // Header + title
   const tabHeight = getResponsiveSpacing(60); // Tab selector
   const bottomBarHeight = insets.bottom + getResponsiveSpacing(100); // Bottom navigation bar (adjusted for floating bar)
-  const gapBetweenTabAndCards = getResponsiveSpacing(12); // Small gap between tab selector and cards
+  const gapBetweenTabAndCards = getResponsiveSpacing(24); // Gap between tab selector and cards (for card height calculation)
   const bottomPadding = getResponsiveSpacing(24); // Bottom padding to respect bottom bar
   const availableHeight = screenHeight - headerHeight - tabHeight - gapBetweenTabAndCards - bottomBarHeight - bottomPadding;
   const cardHeight = Math.min(availableHeight * 0.9, scaleHeight(650)); // Use 90% of available space, max 650px
@@ -372,7 +372,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
       padding: getResponsiveSpacing(4),
       marginHorizontal: getResponsiveSpacing(16),
       marginTop: getResponsiveSpacing(8),
-      marginBottom: getResponsiveSpacing(12), // Reduced gap to make cards taller
+      marginBottom: getResponsiveSpacing(0), // Spacing handled by ScrollView marginTop
       position: 'relative' as const,
       height: scaleHeight(56),
     },
@@ -413,11 +413,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
     },
     horizontalScroll: {
       flex: 1,
+      marginTop: getResponsiveSpacing(24), // Spacing between tabs and cards
     },
     scrollContent: {
       paddingLeft: (Dimensions.get('window').width - scaleWidth(299)) / 2, // Center first card
       paddingRight: (Dimensions.get('window').width - scaleWidth(299)) / 2, // Center last card
-      paddingTop: 0, // No top padding, gap is handled by tab marginBottom
+      paddingTop: 0, // No padding, spacing handled by ScrollView marginTop
     },
     workoutCard: {
       width: scaleWidth(299),

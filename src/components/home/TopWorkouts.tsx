@@ -18,6 +18,7 @@ import { format, parseISO } from 'date-fns';
 import { AppText } from '@/components/shared/AppText';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Shimmer } from '@/components/shared/Shimmer';
+import { Play } from 'lucide-react-native';
 
 const CARD_WIDTH = 263;
 const CARD_HEIGHT = 180;
@@ -295,8 +296,8 @@ export const TopWorkouts: React.FC = () => {
 
                                                     {/* Primary Action Button Logic */}
                                                     {index === 0 ? (
-                                                        <View style={styles.primaryActionButton}>
-                                                            <Text style={styles.primaryActionText}>START</Text>
+                                                        <View style={styles.primaryActionButtonIcon}>
+                                                            <Play size={18} color="#000" fill="#000" />
                                                         </View>
                                                     ) : (
                                                         <View style={styles.secondaryActionButton}>
@@ -421,13 +422,15 @@ const styles = StyleSheet.create({
     },
     emptyContainer: {
         marginHorizontal: getResponsiveSpacing(22),
-        padding: getResponsiveSpacing(20),
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 16,
+        marginTop: getResponsiveSpacing(8),
+        padding: getResponsiveSpacing(16),
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: getResponsiveSpacing(20),
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(255,255,255,0.08)',
+        minHeight: scaleHeight(160),
     },
     emptyText: {
         color: theme.colors.textSecondary,
@@ -460,6 +463,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: getResponsiveSpacing(16),
         paddingVertical: getResponsiveSpacing(8),
         borderRadius: 20,
+        shadowColor: theme.colors.primary,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.5,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    primaryActionButtonIcon: {
+        width: 40,
+        height: 40,
+        backgroundColor: theme.colors.primary,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: theme.colors.primary,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.5,

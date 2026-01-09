@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp as RNRouteProp, StackActions } from '@react-navigation/native';
+import { RouteProp as RNRouteProp, StackActions, CommonActions } from '@react-navigation/native';
 import { CheckCircle, Clock, Award, Target, TrendingUp, ArrowLeft, Trophy, Sparkles, Zap, Flame } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -535,10 +535,17 @@ export const WorkoutSummaryScreen: React.FC<WorkoutSummaryScreenProps> = ({ navi
           style={dynamicStyles.backButton}
           onPress={() => {
             if (route.params?.returnTo === 'Plan') {
-              // Navigation warning fix: popToTop handled automatically or unnecessary
-              navigation.navigate('Workouts' as any, { screen: 'WorkoutsMain' });
+              // Reset Library stack to LibraryMain before navigating to Plan
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'LibraryMain' }],
+                })
+              );
+              navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
             } else {
-              navigation.navigate('LibraryMain');
+              // Use popToTop to properly reset stack to index 0
+              navigation.popToTop();
             }
           }}
           activeOpacity={0.7}
@@ -793,10 +800,17 @@ export const WorkoutSummaryScreen: React.FC<WorkoutSummaryScreenProps> = ({ navi
           style={dynamicStyles.doneButton}
           onPress={() => {
             if (route.params?.returnTo === 'Plan') {
-              // Navigation warning fix: popToTop handled automatically or unnecessary
-              navigation.navigate('Workouts' as any, { screen: 'WorkoutsMain' });
+              // Reset Library stack to LibraryMain before navigating to Plan
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'LibraryMain' }],
+                })
+              );
+              navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
             } else {
-              navigation.navigate('LibraryMain');
+              // Use popToTop to properly reset stack to index 0
+              navigation.popToTop();
             }
           }}
           activeOpacity={0.8}

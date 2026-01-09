@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp as RNRouteProp } from '@react-navigation/native';
+import { RouteProp as RNRouteProp, useFocusEffect } from '@react-navigation/native';
 import { ArrowLeft, Trash2, Save, Plus, GripVertical, Clock, Hash, Repeat } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -65,6 +65,7 @@ export const WorkoutBuilderScreen: React.FC<WorkoutBuilderScreenProps> = ({ navi
   const { loadWorkouts } = useWorkoutsStore();
   const { t } = useTranslation();
   const { setTabBarVisible, tabBarVisible } = useUIStore(); // Access UI store for tab bar visibility
+  const isLeavingRef = useRef(false); // Track if we're intentionally leaving
 
   const isEditMode = !!route.params.workoutId;
   const [workoutName, setWorkoutName] = useState(route.params.workoutName || '');
@@ -98,10 +99,18 @@ export const WorkoutBuilderScreen: React.FC<WorkoutBuilderScreenProps> = ({ navi
   });
 
   // Handle Tab Bar visibility - hide completely on this screen
-  useEffect(() => {
-    setTabBarVisible(false);
-    return () => setTabBarVisible(true);
-  }, [setTabBarVisible]);
+  useFocusEffect(
+    React.useCallback(() => {
+      isLeavingRef.current = false;
+      setTabBarVisible(false);
+      return () => {
+        // Only restore if not intentionally leaving (e.g., saving workout)
+        if (!isLeavingRef.current) {
+          setTabBarVisible(true);
+        }
+      };
+    }, [setTabBarVisible])
+  );
 
   const BRAND_BLACK = getBackgroundColor(isDark);
   const BRAND_WHITE = getTextColor(isDark);
@@ -219,7 +228,11 @@ export const WorkoutBuilderScreen: React.FC<WorkoutBuilderScreenProps> = ({ navi
         // Force refresh workouts
         await loadWorkouts(user.id, true);
         toastManager.success(t('library.workoutUpdated') || 'Workout updated successfully');
-        navigation.navigate('LibraryMain');
+        // Mark that we're intentionally leaving and restore tab bar
+        isLeavingRef.current = true;
+        setTabBarVisible(true);
+        // Use popToTop to reset the stack to LibraryMain (index 0)
+        navigation.popToTop();
       } else {
         await workoutService.createCustomWorkout(user.id, {
           name: workoutName.trim(),
@@ -230,7 +243,11 @@ export const WorkoutBuilderScreen: React.FC<WorkoutBuilderScreenProps> = ({ navi
         // Force refresh workouts
         await loadWorkouts(user.id, true);
         toastManager.success(t('library.workoutSaved') || 'Workout saved successfully');
-        navigation.navigate('LibraryMain');
+        // Mark that we're intentionally leaving and restore tab bar
+        isLeavingRef.current = true;
+        setTabBarVisible(true);
+        // Use popToTop to reset the stack to LibraryMain (index 0)
+        navigation.popToTop();
       }
     } catch (error: any) {
       console.error('Error saving workout:', error);
@@ -587,7 +604,11 @@ export const WorkoutBuilderScreen: React.FC<WorkoutBuilderScreenProps> = ({ navi
       <View style={dynamicStyles.header}>
         <TouchableOpacity
           style={dynamicStyles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            isLeavingRef.current = true;
+            setTabBarVisible(true);
+            navigation.goBack();
+          }}
           activeOpacity={0.7}
         >
           <ArrowLeft size={24} color={BRAND_WHITE} />

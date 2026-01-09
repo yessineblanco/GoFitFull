@@ -26,7 +26,6 @@ import { PrivacyPolicyScreen } from '@/screens/profile/PrivacyPolicyScreen';
 import WorkoutStatisticsScreen from '@/screens/progress/WorkoutStatisticsScreen';
 import RecordDetailsScreen from '@/screens/progress/RecordDetailsScreen';
 import ConsistencyScreen from '@/screens/progress/ConsistencyScreen';
-import WorkoutDetailsScreen from '@/screens/plan/WorkoutDetailsScreen';
 import { WorkoutDetailScreen } from '@/screens/library/WorkoutDetailScreen';
 import { ExerciseSelectionScreen } from '@/screens/library/ExerciseSelectionScreen';
 import { WorkoutBuilderScreen } from '@/screens/library/WorkoutBuilderScreen';
@@ -71,7 +70,6 @@ const WorkoutsStackNavigator = () => {
       }}
     >
       <WorkoutsStack.Screen name="WorkoutsMain" component={WorkoutsScreen} />
-      <WorkoutsStack.Screen name="WorkoutDetails" component={WorkoutDetailsScreen} />
     </WorkoutsStack.Navigator>
   );
 };

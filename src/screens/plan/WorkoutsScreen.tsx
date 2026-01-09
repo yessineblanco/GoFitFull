@@ -119,7 +119,7 @@ export const WorkoutsScreen: React.FC = () => {
           ]}
         >
           <LinearGradient
-            colors={['rgba(38, 102, 55, 0.4)', 'transparent']}
+            colors={['rgba(132, 196, 65, 0.4)', 'transparent']}
             style={styles.full}
           />
         </Animated.View>
@@ -142,7 +142,7 @@ export const WorkoutsScreen: React.FC = () => {
           ]}
         >
           <LinearGradient
-            colors={['rgba(38, 102, 55, 0.6)', 'transparent']}
+            colors={['rgba(132, 196, 65, 0.6)', 'transparent']}
             style={styles.full}
           />
         </Animated.View>
@@ -153,7 +153,7 @@ export const WorkoutsScreen: React.FC = () => {
         rightElement={
           <View style={styles.progressBarBackground}>
             <Animated.View
-              style={[styles.progressBar, { backgroundColor: '#266637', width: indicatorWidth }]}
+              style={[styles.progressBar, { backgroundColor: '#84c441', width: indicatorWidth }]}
             />
           </View>
         }

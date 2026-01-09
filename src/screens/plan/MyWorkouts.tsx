@@ -3,7 +3,7 @@ import { View, ScrollView, Pressable, StyleSheet, Dimensions } from "react-nativ
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
-import { Play, Info, Plus, Lock, Trash2 } from "lucide-react-native";
+import { Play, Info, Plus, Lock, Trash2, ShoppingBag } from "lucide-react-native";
 import { useThemeColors } from "@/theme/useThemeColors";
 import { useCalendarStore } from "@/store/calendarStore";
 import { useSessionsStore } from "@/store/sessionsStore";
@@ -65,7 +65,7 @@ const MyWorkouts: React.FC = () => {
 
   const formattedDate = selectedDate ? parseISO(selectedDate) : new Date();
 
-  const TEMPLATE_COLOR = "#266637"; // Forest Green
+  const TEMPLATE_COLOR = "#84c441"; // App Primary Green
   // Hybrid Dimensions: Smaller width to show context
   const CARD_WIDTH = SCREEN_WIDTH * 0.75;
   const CARD_HEIGHT = 240; // Reduced from 380
@@ -176,15 +176,15 @@ const MyWorkouts: React.FC = () => {
     addBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(38, 102, 55, 0.2)',
+      backgroundColor: 'rgba(132, 196, 65, 0.2)',
       paddingHorizontal: 16,
       paddingVertical: 10,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: 'rgba(38, 102, 55, 0.3)',
+      borderColor: 'rgba(132, 196, 65, 0.3)',
     },
     addBtnText: {
-      color: '#266637',
+      color: '#84c441',
       marginLeft: 6,
       fontWeight: '800',
     },
@@ -200,7 +200,7 @@ const MyWorkouts: React.FC = () => {
       overflow: "hidden",
       backgroundColor: "rgba(255,255,255,0.03)",
       borderWidth: 1,
-      borderColor: "rgba(38, 102, 55, 0.2)",
+      borderColor: "rgba(132, 196, 65, 0.2)",
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.3,
@@ -307,7 +307,7 @@ const MyWorkouts: React.FC = () => {
       borderColor: 'rgba(255,255,255,0.1)',
     },
     secondaryActionButton: {
-      flex: 1,
+      flex: 1.2,
       backgroundColor: 'rgba(255,255,255,0.05)',
       borderRadius: 16,
       height: 48,
@@ -344,7 +344,7 @@ const MyWorkouts: React.FC = () => {
       width: 60,
       height: 60,
       borderRadius: 30,
-      backgroundColor: 'rgba(163, 230, 53, 0.05)',
+      backgroundColor: 'rgba(132, 196, 65, 0.1)',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 12,
@@ -387,7 +387,7 @@ const MyWorkouts: React.FC = () => {
             )
           }
         >
-          <Plus size={16} color="#266637" strokeWidth={3} />
+          <Plus size={16} color="#84c441" strokeWidth={3} />
           <AppText variant="small" style={styles.addBtnText}>ADD WORKOUT</AppText>
         </Pressable>
       </View>
@@ -413,7 +413,7 @@ const MyWorkouts: React.FC = () => {
             }
           >
             <View style={styles.emptyIconContainer}>
-              <Plus size={32} color="rgba(38, 102, 55, 0.4)" />
+              <Plus size={32} color="rgba(132, 196, 65, 0.6)" />
             </View>
             <AppText variant="bodyBold" style={[styles.emptyText, { color: 'rgba(255,255,255,0.6)' }]}>NO WORKOUTS PLANNED</AppText>
             <AppText variant="small" style={{ color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Time to build your routine</AppText>
@@ -457,10 +457,16 @@ const MyWorkouts: React.FC = () => {
                   } else {
                     navigation.dispatch(
                       CommonActions.navigate({
-                        name: "Workouts",
+                        name: "Library",
                         params: {
-                          screen: "WorkoutDetails",
-                          params: { session: item }
+                          screen: "WorkoutDetail",
+                          params: {
+                            workoutId: w.id,
+                            workoutName: w.name,
+                            workoutImage: w.image_url,
+                            workoutDifficulty: w.difficulty || 'Intermediate',
+                            returnTo: 'Plan'
+                          }
                         }
                       })
                     );
@@ -549,6 +555,19 @@ const MyWorkouts: React.FC = () => {
                     >
                       <Info size={16} color="#fff" />
                       <AppText variant="small" style={styles.secondaryActionText}>DETAILS</AppText>
+                    </Pressable>
+
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.secondaryActionButton,
+                        { opacity: pressed ? 0.7 : 1, flex: 0, width: 48, paddingHorizontal: 0 }
+                      ]}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setShowGymBag(true);
+                      }}
+                    >
+                      <ShoppingBag size={18} color="#fff" />
                     </Pressable>
 
                     {isPlan && item.status !== 'completed' && (

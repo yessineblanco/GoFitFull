@@ -286,6 +286,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
       fontSize: getScaledFontSize(theme.typography.h2.fontSize),
       color: "#FFFFFF",
       fontFamily: "Barlow_800ExtraBold",
+      marginBottom: getResponsiveSpacing(24),
     },
     infoCardsContainer: {
       flexDirection: 'row' as const,
@@ -297,7 +298,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
       borderRadius: getResponsiveSpacing(12),
       overflow: 'hidden' as const,
       borderWidth: 1,
-      borderColor: isDark ? getPrimaryWithOpacity(0.2) : getPrimaryWithOpacity(0.3),
+      borderColor: '#266637',
     },
     infoCardContent: {
       flexDirection: 'row' as const,
@@ -888,7 +889,12 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
 
           {/* Workout Info Cards */}
           <View style={dynamicStyles.infoCardsContainer}>
-            <BlurView intensity={20} tint={isDark ? "dark" : "light"} style={dynamicStyles.infoCard}>
+            <LinearGradient
+              colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+              style={dynamicStyles.infoCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <View style={dynamicStyles.infoCardContent}>
                 <Clock size={20} color={BRAND_PRIMARY} />
                 <View style={dynamicStyles.infoCardTextContainer}>
@@ -896,9 +902,14 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
                   <Text style={dynamicStyles.infoCardValue}>45 min</Text>
                 </View>
               </View>
-            </BlurView>
+            </LinearGradient>
 
-            <BlurView intensity={20} tint={isDark ? "dark" : "light"} style={dynamicStyles.infoCard}>
+            <LinearGradient
+              colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+              style={dynamicStyles.infoCard}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
               <View style={dynamicStyles.infoCardContent}>
                 <Dumbbell size={20} color={BRAND_PRIMARY} />
                 <View style={dynamicStyles.infoCardTextContainer}>
@@ -906,7 +917,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
                   <Text style={dynamicStyles.infoCardValue}>8 exercises</Text>
                 </View>
               </View>
-            </BlurView>
+            </LinearGradient>
           </View>
 
           {/* Description */}

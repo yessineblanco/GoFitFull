@@ -65,7 +65,7 @@ const MyWorkouts: React.FC = () => {
 
   const formattedDate = selectedDate ? parseISO(selectedDate) : new Date();
 
-  const TEMPLATE_COLOR = "#a3e635"; // Lime Green
+  const TEMPLATE_COLOR = "#266637"; // Forest Green
   // Hybrid Dimensions: Smaller width to show context
   const CARD_WIDTH = SCREEN_WIDTH * 0.75;
   const CARD_HEIGHT = 240; // Reduced from 380
@@ -176,13 +176,15 @@ const MyWorkouts: React.FC = () => {
     addBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: TEMPLATE_COLOR,
+      backgroundColor: 'rgba(38, 102, 55, 0.2)',
       paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 12,
+      paddingVertical: 10,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: 'rgba(38, 102, 55, 0.3)',
     },
     addBtnText: {
-      color: '#000',
+      color: '#266637',
       marginLeft: 6,
       fontWeight: '800',
     },
@@ -194,16 +196,16 @@ const MyWorkouts: React.FC = () => {
     cardContainer: {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
-      borderRadius: 24,
+      borderRadius: 28,
       overflow: "hidden",
-      backgroundColor: "#111",
-      borderWidth: 1.5,
-      borderColor: "rgba(255,255,255,0.08)",
+      backgroundColor: "rgba(255,255,255,0.03)",
+      borderWidth: 1,
+      borderColor: "rgba(38, 102, 55, 0.2)",
       shadowColor: "#000",
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.6,
-      shadowRadius: 16,
-      elevation: 15,
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.3,
+      shadowRadius: 15,
+      elevation: 10,
     },
     cardImage: {
       ...StyleSheet.absoluteFillObject,
@@ -225,22 +227,23 @@ const MyWorkouts: React.FC = () => {
     badgeWrapper: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      paddingHorizontal: 10,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 20,
+      borderRadius: 100,
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.1)',
+      borderColor: 'rgba(255,255,255,0.15)',
     },
     statusIndicator: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
       marginRight: 8,
     },
     badgeText: {
       fontWeight: '700',
-      letterSpacing: 0.5,
+      letterSpacing: 0.8,
+      fontSize: 10,
     },
     deleteButton: {
       width: 32,
@@ -285,27 +288,29 @@ const MyWorkouts: React.FC = () => {
       gap: 10,
     },
     actionButton: {
-      flex: 1.5,
+      flex: 1.8,
       backgroundColor: TEMPLATE_COLOR,
-      borderRadius: 14,
-      height: 44,
+      borderRadius: 16,
+      height: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: TEMPLATE_COLOR,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.4,
-      shadowRadius: 8,
+      shadowOpacity: 0.5,
+      shadowRadius: 10,
     },
     lockedButton: {
-      backgroundColor: 'rgba(255,255,255,0.1)',
+      backgroundColor: 'rgba(255,255,255,0.08)',
       shadowOpacity: 0,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.1)',
     },
     secondaryActionButton: {
       flex: 1,
-      backgroundColor: 'rgba(255,255,255,0.08)',
-      borderRadius: 14,
-      height: 44,
+      backgroundColor: 'rgba(255,255,255,0.05)',
+      borderRadius: 16,
+      height: 48,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -313,17 +318,17 @@ const MyWorkouts: React.FC = () => {
       borderColor: 'rgba(255,255,255,0.1)',
     },
     actionText: {
-      color: '#000',
+      color: '#fff',
       marginLeft: 8,
       fontWeight: '800',
-      fontSize: 14,
+      fontSize: 15,
       letterSpacing: 0.5,
     },
     secondaryActionText: {
-      color: '#fff',
+      color: 'rgba(255,255,255,0.7)',
       marginLeft: 6,
       fontWeight: '700',
-      fontSize: 12,
+      fontSize: 11,
     },
     emptyState: {
       height: 160,
@@ -382,8 +387,8 @@ const MyWorkouts: React.FC = () => {
             )
           }
         >
-          <Plus size={16} color="#000" strokeWidth={3} />
-          <AppText variant="small" style={styles.addBtnText}>ADD</AppText>
+          <Plus size={16} color="#266637" strokeWidth={3} />
+          <AppText variant="small" style={styles.addBtnText}>ADD WORKOUT</AppText>
         </Pressable>
       </View>
 
@@ -408,10 +413,10 @@ const MyWorkouts: React.FC = () => {
             }
           >
             <View style={styles.emptyIconContainer}>
-              <Plus size={32} color="rgba(163, 230, 53, 0.3)" />
+              <Plus size={32} color="rgba(38, 102, 55, 0.4)" />
             </View>
-            <AppText variant="bodyBold" style={[styles.emptyText, { color: 'rgba(255,255,255,0.5)' }]}>EMPTY SCHEDULE</AppText>
-            <AppText variant="small" style={{ color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Tap to add your first workout</AppText>
+            <AppText variant="bodyBold" style={[styles.emptyText, { color: 'rgba(255,255,255,0.6)' }]}>NO WORKOUTS PLANNED</AppText>
+            <AppText variant="small" style={{ color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Time to build your routine</AppText>
           </Pressable>
         </View>
       ) : (
@@ -419,9 +424,10 @@ const MyWorkouts: React.FC = () => {
           horizontal
           ref={scrollRef}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingRight: 40 }]}
           snapToInterval={CARD_WIDTH + 16}
           decelerationRate="fast"
+          snapToAlignment="start"
         >
           {itemsOfDay.map((item: any, index) => {
             const w = item.workout;
@@ -564,8 +570,8 @@ const MyWorkouts: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <Play size={16} color="#000" fill="#000" />
-                            <AppText variant="bodyBold" style={styles.actionText}>START</AppText>
+                            <Play size={18} color="#fff" fill="#fff" />
+                            <AppText variant="bodyBold" style={[styles.actionText, { color: '#fff' }]}>START</AppText>
                           </>
                         )}
                       </Pressable>

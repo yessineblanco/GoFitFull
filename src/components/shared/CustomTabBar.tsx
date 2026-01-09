@@ -428,6 +428,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: TAB_BAR_HEIGHT,
     borderRadius: TAB_BAR_BORDER_RADIUS,
+    zIndex: 1000, // Ensure navbar is always above screen content
     // Shadow for the entire tab bar
     shadowColor: '#84c441',
     shadowOffset: {

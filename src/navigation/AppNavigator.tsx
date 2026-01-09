@@ -149,15 +149,11 @@ export const AppNavigator: React.FC = () => {
         <Tab.Screen
           name="Library"
           component={LibraryStackNavigator}
-          options={({ route }) => {
-            const routeName = getFocusedRouteNameFromRoute(route) ?? 'LibraryMain';
-            // Hide tab bar for WorkoutSession screen
-            return {
-              tabBarAccessibilityLabel: 'Library',
-              headerShown: false,
-              title: 'MY LIBRARY',
-              tabBarStyle: routeName === 'WorkoutSession' ? { display: 'none' } : { display: 'flex' },
-            };
+          options={{
+            tabBarAccessibilityLabel: 'Library',
+            headerShown: false,
+            title: 'MY LIBRARY',
+            tabBarStyle: { display: 'none' },
           }}
         />
         <Tab.Screen

@@ -307,7 +307,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
   const screenHeight = Dimensions.get('window').height;
   const headerHeight = insets.top + getResponsiveSpacing(8) + getResponsiveSpacing(12) + getResponsiveSpacing(20); // Header + title
   const tabHeight = getResponsiveSpacing(60); // Tab selector
-  const bottomBarHeight = insets.bottom + getResponsiveSpacing(60); // Bottom navigation bar
+  const bottomBarHeight = insets.bottom + getResponsiveSpacing(100); // Bottom navigation bar (adjusted for floating bar)
   const gapBetweenTabAndCards = getResponsiveSpacing(12); // Small gap between tab selector and cards
   const bottomPadding = getResponsiveSpacing(24); // Bottom padding to respect bottom bar
   const availableHeight = screenHeight - headerHeight - tabHeight - gapBetweenTabAndCards - bottomBarHeight - bottomPadding;
@@ -768,7 +768,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[
           dynamicStyles.scrollContent,
-          { paddingBottom: getResponsiveSpacing(24) }, // Bottom padding to respect bottom bar
+          { paddingBottom: getResponsiveSpacing(100) }, // Bottom padding to clear floating tab bar
         ]}
         style={styles.horizontalScroll}
         snapToInterval={scaleWidth(299) + getResponsiveSpacing(24)} // Card width + new margin

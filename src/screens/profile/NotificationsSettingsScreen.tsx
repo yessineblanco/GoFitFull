@@ -15,7 +15,7 @@ import { GradientBackground } from '@/components/shared/GradientBackground';
 // Removed BlurView
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfileStore } from '@/store/profileStore';
-import { ArrowLeft, Bell, Save, Clock, TestTube } from 'lucide-react-native';
+import { ArrowLeft, Bell, Save, Clock, TestTube, Dumbbell, TrendingUp, Trophy, Info } from 'lucide-react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import type { ProfileStackParamList } from '@/types';
 import { userProfileService } from '@/services/userProfile';
@@ -164,17 +164,57 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
       fontFamily: 'Barlow_600SemiBold',
       textAlign: 'center' as const,
     },
-    testDescription: {
-      fontSize: getScaledFontSize(13),
-      color: 'rgba(255, 255, 255, 0.6)',
-      fontFamily: 'Barlow_400Regular',
-      marginBottom: 16,
-    },
     testButtonText: {
       fontSize: getScaledFontSize(14),
       fontWeight: '600' as const,
       color: '#ffffff',
       fontFamily: 'Barlow_600SemiBold',
+    },
+    testCard: {
+      flex: 1,
+      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: 20,
+      paddingVertical: 16,
+      paddingHorizontal: 8,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      minHeight: 110,
+    },
+    testCardIconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      marginBottom: 10,
+    },
+    testCardLabel: {
+      fontSize: getScaledFontSize(11),
+      fontWeight: '600' as const,
+      color: '#ffffff',
+      fontFamily: 'Barlow_600SemiBold',
+      textAlign: 'center' as const,
+      textTransform: 'uppercase' as const,
+      letterSpacing: 0.5,
+    },
+    infoText: {
+      fontSize: getScaledFontSize(12),
+      color: 'rgba(255, 255, 255, 0.5)',
+      fontFamily: 'Barlow_400Regular',
+      lineHeight: 18,
+      flex: 1,
+    },
+    footerCredits: {
+      fontSize: getScaledFontSize(11),
+      color: 'rgba(255, 255, 255, 0.2)',
+      fontFamily: 'Barlow_600SemiBold',
+      textAlign: 'center' as const,
+      marginTop: 24,
+      textTransform: 'uppercase' as const,
+      letterSpacing: 2,
     },
   }), [isDark]);
 
@@ -367,7 +407,13 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 + insets.bottom }]}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom: 20 + insets.bottom,
+            flexGrow: 1,
+          }
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Notification Time Section */}
@@ -468,42 +514,62 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
             <Text style={dynamicStyles.sectionTitle}>{t('notifications.testNotification')}</Text>
           </View>
 
-          <View style={dynamicStyles.glowWrapper}>
-            <View style={styles.card}>
-              <Text style={dynamicStyles.testDescription}>
-                {t('notifications.previewNotificationUI')}
-              </Text>
-              <View style={styles.testButtonRow}>
-                <TouchableOpacity
-                  style={[styles.testButton, testingNotification && styles.testButtonDisabled]}
-                  onPress={() => handleTestNotification('workout')}
-                  disabled={testingNotification}
-                  activeOpacity={0.7}
-                >
-                  <Text style={dynamicStyles.testButtonText}>💪 Workout</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.testButton, testingNotification && styles.testButtonDisabled]}
-                  onPress={() => handleTestNotification('progress')}
-                  disabled={testingNotification}
-                  activeOpacity={0.7}
-                >
-                  <Text style={dynamicStyles.testButtonText}>📊 Progress</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.testButton, testingNotification && styles.testButtonDisabled]}
-                  onPress={() => handleTestNotification('achievement')}
-                  disabled={testingNotification}
-                  activeOpacity={0.7}
-                >
-                  <Text style={dynamicStyles.testButtonText}>🏆 Achievement</Text>
-                </TouchableOpacity>
+
+          <View style={styles.testCardRow}>
+            {/* Workout Test Card */}
+            <TouchableOpacity
+              style={[dynamicStyles.testCard, testingNotification && styles.testButtonDisabled]}
+              onPress={() => handleTestNotification('workout')}
+              disabled={testingNotification}
+              activeOpacity={0.7}
+            >
+              <View style={dynamicStyles.testCardIconContainer}>
+                <Dumbbell size={22} color={BRAND_PRIMARY} />
               </View>
-              {testingNotification && (
-                <ActivityIndicator size="small" color={BRAND_PRIMARY} style={styles.testLoading} />
-              )}
-            </View>
+              <Text style={dynamicStyles.testCardLabel} numberOfLines={1} adjustsFontSizeToFit>Workout</Text>
+            </TouchableOpacity>
+
+            {/* Progress Test Card */}
+            <TouchableOpacity
+              style={[dynamicStyles.testCard, testingNotification && styles.testButtonDisabled]}
+              onPress={() => handleTestNotification('progress')}
+              disabled={testingNotification}
+              activeOpacity={0.7}
+            >
+              <View style={dynamicStyles.testCardIconContainer}>
+                <TrendingUp size={22} color={BRAND_PRIMARY} />
+              </View>
+              <Text style={dynamicStyles.testCardLabel} numberOfLines={1} adjustsFontSizeToFit>Progress</Text>
+            </TouchableOpacity>
+
+            {/* Achievement Test Card */}
+            <TouchableOpacity
+              style={[dynamicStyles.testCard, testingNotification && styles.testButtonDisabled]}
+              onPress={() => handleTestNotification('achievement')}
+              disabled={testingNotification}
+              activeOpacity={0.7}
+            >
+              <View style={dynamicStyles.testCardIconContainer}>
+                <Trophy size={22} color={BRAND_PRIMARY} />
+              </View>
+              <Text style={dynamicStyles.testCardLabel} numberOfLines={1} adjustsFontSizeToFit>Achievement</Text>
+            </TouchableOpacity>
           </View>
+
+          {testingNotification && (
+            <ActivityIndicator size="small" color={BRAND_PRIMARY} style={styles.testLoading} />
+          )}
+        </View>
+
+        {/* Footer info */}
+        <View style={styles.footerContainer}>
+          <View style={styles.infoBox}>
+            <Info size={16} color={BRAND_PRIMARY} style={{ opacity: 0.6 }} />
+            <Text style={dynamicStyles.infoText}>
+              Consistent notifications help you stay on track with your fitness habits and achieve your goals faster.
+            </Text>
+          </View>
+          <Text style={dynamicStyles.footerCredits}>GoFit Premium Experience</Text>
         </View>
       </ScrollView>
 
@@ -732,6 +798,25 @@ const styles = StyleSheet.create({
   },
   testLoading: {
     marginTop: 12,
+  },
+  testCardRow: {
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  footerContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    padding: 16,
+    borderRadius: 16,
+    gap: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
 });
 

@@ -1,133 +1,144 @@
-# GoFit - Mobile Fitness App
+# GoFit - Fitness Platform
+
+A comprehensive fitness platform consisting of a mobile app and admin panel, built with React Native (Expo) and Next.js, powered by Supabase.
+
+## Project Structure
+
+This is a monorepo containing two main applications:
+
+```
+GoFit/
+├── GoFitMobile/          # React Native mobile app
+│   ├── src/
+│   ├── assets/
+│   ├── App.tsx
+│   └── package.json
+├── Admin-panel/          # Next.js admin dashboard
+│   ├── src/
+│   └── package.json
+├── database/             # Shared database migrations and schemas
+├── docs/                 # Shared documentation
+└── templates/            # Email templates
+```
+
+## Applications
+
+### 📱 Mobile App (GoFitMobile)
 
 A React Native Expo mobile application for fitness tracking, workout planning, and progress monitoring.
 
-## Tech Stack
+**Tech Stack:**
+- Framework: Expo (React Native)
+- Language: TypeScript
+- UI: NativeWind (Tailwind CSS for React Native)
+- Navigation: React Navigation
+- State Management: Zustand
+- Backend: Supabase
 
-- **Framework**: Expo (React Native)
-- **Language**: TypeScript
-- **UI**: NativeWind (Tailwind CSS for React Native)
-- **Navigation**: React Navigation
-- **State Management**: Zustand
-- **Backend**: Supabase
-- **Forms**: react-hook-form + zod
-- **Media**: expo-image, expo-av
-- **Notifications**: expo-notifications
-- **Charts**: victory-native
+**Getting Started:**
+```bash
+cd GoFitMobile
+npm install
+npm start
+```
+
+See [GoFitMobile/PROJECT_GUIDE.md](GoFitMobile/PROJECT_GUIDE.md) for detailed documentation.
+
+### 💻 Admin Panel (Admin-panel)
+
+A Next.js web application for managing users, exercises, and native workouts.
+
+**Tech Stack:**
+- Framework: Next.js 15 (App Router)
+- Language: TypeScript
+- UI: shadcn/ui + Tailwind CSS
+- Backend: Supabase
+
+**Getting Started:**
+```bash
+cd Admin-panel
+npm install
+npm run dev
+```
+
+## Shared Resources
+
+### Database
+
+All database migrations, schemas, and documentation are stored in the `database/` folder at the root level and are shared between both applications.
+
+**Run migrations:**
+Execute SQL files in the Supabase SQL Editor in order:
+1. Schema files from `database/schema/`
+2. Migration files from `database/migrations/`
+
+See [database/README.md](database/README.md) for details.
+
+### Documentation
+
+Shared technical documentation is in the `docs/` folder, including:
+- Architecture decisions
+- API documentation
+- Security guidelines
+- Setup guides
 
 ## Prerequisites
 
 - Node.js (v18 or higher)
 - npm or yarn
-- Expo CLI
 - Supabase account
+- Expo CLI (for mobile app)
 
-## Setup Instructions
+## Environment Setup
 
-### 1. Clone the Repository
+Both applications require Supabase credentials. Create `.env` files in each app directory:
 
-```bash
-git clone <repository-url>
-cd GoFit
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Environment Variables
-
-Copy the `.env.example` file to `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Then, edit `.env` and add your Supabase credentials:
-
-```
+**GoFitMobile/.env:**
+```env
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 4. Run the App
-
-Start the Expo development server:
-
-```bash
-npm start
+**Admin-panel/.env.local:**
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-Or run on a specific platform:
+## Features
 
-```bash
-npm run ios     # iOS (requires macOS)
-npm run android # Android
-npm run web     # Web
-```
+### Mobile App
+✅ User authentication (Login, Signup, Password Reset)
+✅ Profile & settings management
+✅ Workout planning and tracking
+✅ Exercise library with images
+✅ Rest timer with audio/haptic feedback
+✅ Progress tracking
+✅ Multi-language support (EN/FR)
 
-## Project Structure
-
-```
-GoFit/
-├── src/
-│   ├── config/          # Configuration files (Supabase)
-│   ├── navigation/      # Navigation setup
-│   ├── screens/         # Screen components
-│   ├── components/      # Reusable UI components
-│   ├── store/           # Zustand stores
-│   ├── services/        # API services
-│   ├── lib/             # Utilities (validations)
-│   ├── types/           # TypeScript types
-│   └── utils/           # Helper functions
-├── App.tsx              # Root component
-└── package.json
-```
+### Admin Panel
+🚧 User management
+🚧 Exercise library CRUD
+🚧 Native workouts management
+🚧 Analytics dashboard (planned)
 
 ## Development Workflow
 
 1. Create a new branch for your feature
-2. Make your changes
+2. Make changes in the appropriate app folder
 3. Test thoroughly
-4. Submit a pull request
-
-## Features
-
-### Phase 01: Setup ✅
-- Project initialization
-- Environment setup
-- Navigation structure
-- Authentication flow
-
-### Phase 02: Core App (In Progress)
-- **Authentication**: Login, Signup, Password Reset ✅
-- **Profile & Settings**: User profile, preferences, units ✅
-- **Workout Planner**: Sessions, calendar, exercises, timer ✅
-- **Library**: Exercise database with images/animations ✅
-  - ✅ Unified workouts system (native + custom)
-  - ✅ Normalized database structure
-  - ✅ Exercise snapshots for data integrity
-  - ✅ Workout session tracking
-- **Progress Tracking**: Charts and analytics (In Progress)
-
-### Phase 03: Infrastructure (Planned)
-- Backend/API
-- Admin Panel
-- Notifications & Reminders
+4. Update shared resources (database, docs) if needed
+5. Submit a pull request
 
 ## Contributing
 
-1. Follow the existing code structure
+1. Follow the existing code structure in each app
 2. Use TypeScript for type safety
-3. Follow NativeWind styling patterns
-4. Write clear commit messages
-5. Test on both iOS and Android when possible
+3. Write clear commit messages
+4. Test on both iOS and Android for mobile changes
+5. Ensure admin panel works in all modern browsers
 
 ## License
 
 Private project - All rights reserved
-
-
-

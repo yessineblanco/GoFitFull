@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useThemeStore } from '@/store/themeStore';
 import { theme as themeConfig } from '@/theme';
+import { getTextColor } from '@/utils/colorUtils';
 
 const BRAND_PRIMARY = themeConfig.colors.primary;
 
@@ -131,7 +132,7 @@ export const ScreenHeader: React.FC<ScreenHeaderProps> = ({
                     </View>
 
                     <AppText
-                        style={[styles.title, { color: isDark ? '#FFFFFF' : '#030303' }]}
+                        style={[styles.title, { color: getTextColor(isDark) }]}
                         numberOfLines={1}
                     >
                         {title}

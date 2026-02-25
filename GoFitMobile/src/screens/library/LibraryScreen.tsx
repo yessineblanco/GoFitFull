@@ -38,7 +38,7 @@ import { Shimmer, StatCardSkeleton } from '@/components/shared/Shimmer';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { useUIStore } from '@/store/uiStore';
 import { AppText } from '@/components/shared/AppText';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
+import { getSurfaceColor, getTextLightColor } from '@/utils/colorUtils';
 import { ScreenHeader } from '@/components/shared/ScreenHeader';
 
 // Native workouts are now loaded from the database
@@ -367,7 +367,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
       textShadowRadius: 2,
     },
     tabContainer: {
-      backgroundColor: themeColors.background.secondary,
+      backgroundColor: getSurfaceColor(isDark),
       borderRadius: getResponsiveSpacing(12),
       padding: getResponsiveSpacing(4),
       marginHorizontal: getResponsiveSpacing(16),
@@ -409,7 +409,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
       color: '#030303', // Dark text on green background
     },
     tabTextInactive: {
-      color: themeColors.text.tertiary, // Light gray text for inactive tab
+      color: getTextLightColor(isDark),
     },
     horizontalScroll: {
       flex: 1,
@@ -858,7 +858,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
       {/* Quick Peek Overlay */}
       {peekingWorkout && (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={isDark ? 20 : 40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
         </View>
       )}
 
@@ -941,7 +941,7 @@ const QuickPeekOverlay: React.FC<{
           }
         ]}
       >
-        <BlurView intensity={100} tint="dark" style={styles.quickPeekBlur}>
+        <BlurView intensity={isDark ? 100 : 80} tint={isDark ? "dark" : "light"} style={styles.quickPeekBlur}>
           {/* Semi-opaque background layer */}
           <View style={styles.quickPeekBackground} />
 
@@ -1170,8 +1170,8 @@ const WorkoutCard: React.FC<WorkoutCardProps & { t: any; prefetchWorkout?: (id: 
 
           {/* Image edge blur at bottom for smoother text overlay transition */}
           <BlurView
-            intensity={20}
-            tint="dark"
+            intensity={isDark ? 20 : 40}
+            tint={isDark ? "dark" : "light"}
             style={dynamicStyles.imageEdgeBlur}
           />
 

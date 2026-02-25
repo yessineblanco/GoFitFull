@@ -71,7 +71,7 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
       borderBottomWidth: 1,
     },
     headerTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontSize: getResponsiveFontSize(18),
       fontWeight: '600' as const,
       fontFamily: 'Barlow_600SemiBold',
@@ -95,16 +95,16 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
       backgroundColor: 'transparent',
     },
     currentGoalTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     sectionTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     goalTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     optionLabel: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     goalDescription: {
       color: 'rgba(255, 255, 255, 0.7)',

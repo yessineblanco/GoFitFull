@@ -19,6 +19,7 @@ import { AppText } from '@/components/shared/AppText';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Shimmer } from '@/components/shared/Shimmer';
 import { Play } from 'lucide-react-native';
+import { getGlassBg, getGlassBorder, getSurfaceColor } from '@/utils/colorUtils';
 
 const CARD_WIDTH = 263;
 const CARD_HEIGHT = 180;
@@ -166,7 +167,10 @@ export const TopWorkouts: React.FC = () => {
             <SectionHeader title="Recent Activity" onSeeAllPress={handleSeeAll} animationDelay={0} />
 
             {enhancedSessions.length === 0 ? (
-                <View style={styles.emptyContainer}>
+                <View style={[styles.emptyContainer, {
+                    backgroundColor: getGlassBg(isDark),
+                    borderColor: getGlassBorder(isDark),
+                }]}>
                     <EmptyState
                         type="sessions"
                         title="No workout planned for today"
@@ -416,20 +420,16 @@ const styles = StyleSheet.create({
         letterSpacing: 0.3,
     },
     skeletonCard: {
-        backgroundColor: '#1A1A1A',
         borderWidth: 1,
-        borderColor: '#333',
     },
     emptyContainer: {
         marginHorizontal: getResponsiveSpacing(22),
         marginTop: getResponsiveSpacing(8),
         padding: getResponsiveSpacing(16),
-        backgroundColor: 'rgba(255,255,255,0.03)',
         borderRadius: getResponsiveSpacing(20),
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
         minHeight: scaleHeight(160),
     },
     emptyText: {

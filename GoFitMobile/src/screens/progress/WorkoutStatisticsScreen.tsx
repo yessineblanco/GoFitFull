@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -44,8 +44,8 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { ScreenHeader } from '@/components/shared/ScreenHeader';
 import { Shimmer, ChartSkeleton, StatCardSkeleton, PRCardSkeleton } from '@/components/shared/Shimmer';
 import { ErrorState } from '@/components/shared/ErrorState';
+import { useThemeStore } from '@/store/themeStore';
 
-// --- Types & Constants ---
 const THEME = {
   primary: '#84c440',
   primaryHover: '#95d650',
@@ -59,10 +59,31 @@ const THEME = {
   border: 'rgba(255, 255, 255, 0.1)',
 };
 
+const getThemeColors = (isDark: boolean) => ({
+  background: isDark ? '#030303' : '#FAFBFC',
+  surface: isDark ? '#121212' : '#F5F7F9',
+  surfaceLight: isDark ? '#1c1c1c' : '#EEF1F4',
+  card: isDark ? '#1a1f14' : '#F0F4EA',
+  text: isDark ? '#ffffff' : '#1A1D21',
+  textDim: isDark ? 'rgba(255, 255, 255, 0.6)' : '#5A6570',
+  textMuted: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.35)',
+  border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
+  glassPanel: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.6)',
+  overlayBg: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0, 0, 0, 0.06)',
+});
+
+const useTC = () => {
+  const { isDark } = useThemeStore();
+  return { isDark, ...getThemeColors(isDark) };
+};
+
 // --- Helper Components ---
 
-const GlassPanel = ({ children, style, intensity = 1 }: { children: React.ReactNode, style?: any, intensity?: number }) => (
-  <View style={[styles.glassPanel, { backgroundColor: `rgba(255, 255, 255, ${0.03 * intensity})` }, style]}>
+const GlassPanel = ({ children, style, intensity = 1, isDark = true }: { children: React.ReactNode, style?: any, intensity?: number, isDark?: boolean }) => (
+  <View style={[styles.glassPanel, {
+    backgroundColor: isDark ? `rgba(255, 255, 255, ${0.03 * intensity})` : `rgba(255, 255, 255, ${0.6 * intensity})`,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+  }, style]}>
     {children}
   </View>
 );
@@ -170,17 +191,21 @@ const MovingBackgroundBlob = ({ color, startDelay = 0 }: { color: string, startD
 };
 
 
-const SectionHeader = ({ title, action }: { title: string, action?: React.ReactNode }) => (
-  <View style={styles.sectionHeader}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {action}
-  </View>
-);
+const SectionHeader = ({ title, action }: { title: string, action?: React.ReactNode }) => {
+  const TC = useTC();
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={[styles.sectionTitle, { color: TC.text }]}>{title}</Text>
+      {action}
+    </View>
+  );
+};
 
 // --- Sections ---
 
 // --- 1. Personal Records Component ---
 const PersonalRecordsParams = ({ records, unit }: { records: PersonalRecord[], unit: 'lbs' | 'kg' }) => {
+  const TC = useTC();
   const navigation = useNavigation<any>();
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth * 0.85;
@@ -189,7 +214,7 @@ const PersonalRecordsParams = ({ records, unit }: { records: PersonalRecord[], u
 
   return (
     <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>PERSONAL RECORDS</Text>
+      <Text style={[styles.sectionTitle, { color: TC.text }]}>PERSONAL RECORDS</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -283,30 +308,29 @@ interface CurrentWorkoutCardProps {
 }
 
 const CurrentWorkoutCard = ({ workoutName, blockName, focus, currentDay, totalDays }: CurrentWorkoutCardProps) => {
-  const currentWeek = currentDay; // Aliasing for clarity if needed, or just use currentDay
-  const totalWeeks = totalDays; // Assuming layout uses "Wk" label but logic is days
+  const TC = useTC();
+  const currentWeek = currentDay;
+  const totalWeeks = totalDays;
   const progressPercent = Math.round(((currentWeek) / totalWeeks) * 100);
 
   return (
-    <View style={styles.currentWorkoutCard}>
-      {/* Top Row: Header + Stats */}
+    <View style={[styles.currentWorkoutCard, { backgroundColor: TC.isDark ? 'rgba(132, 196, 65, 0.08)' : 'rgba(132, 196, 65, 0.06)', borderColor: TC.border }]}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
         <View style={{ gap: 4 }}>
           <View style={styles.currentWorkoutHeader}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>CURRENT WORKOUT</Text>
+            <Text style={[styles.statusText, { color: TC.textDim }]}>CURRENT WORKOUT</Text>
           </View>
-          <Text style={styles.currentWorkoutTitle}>{blockName}</Text>
-          <Text style={styles.currentWorkoutSubtitle}>Difficulty: <Text style={{ color: '#fff', fontWeight: 'bold' }}>{focus}</Text></Text>
+          <Text style={[styles.currentWorkoutTitle, { color: TC.text }]}>{blockName}</Text>
+          <Text style={[styles.currentWorkoutSubtitle, { color: TC.textDim }]}>Difficulty: <Text style={{ color: TC.text, fontWeight: 'bold' }}>{focus}</Text></Text>
         </View>
 
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={styles.goalPercentageLarge}>{progressPercent}%</Text>
-          <Text style={styles.goalLabelSmall}>DONE</Text>
+          <Text style={[styles.goalPercentageLarge, { color: THEME.primary }]}>{progressPercent}%</Text>
+          <Text style={[styles.goalLabelSmall, { color: TC.textDim }]}>DONE</Text>
         </View>
       </View>
 
-      {/* Progress Bars */}
       <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
         {Array.from({ length: totalWeeks }).map((_, i) => {
           const weekNum = i + 1;
@@ -318,7 +342,7 @@ const CurrentWorkoutCard = ({ workoutName, blockName, focus, currentDay, totalDa
               <View style={{
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: isActive ? THEME.primary : 'rgba(255,255,255,0.1)',
+                backgroundColor: isActive ? THEME.primary : TC.overlayBg,
                 shadowColor: isActive ? THEME.primary : undefined,
                 shadowOpacity: isActive ? 0.5 : 0,
                 shadowRadius: 8
@@ -327,7 +351,7 @@ const CurrentWorkoutCard = ({ workoutName, blockName, focus, currentDay, totalDa
                 textAlign: 'center',
                 fontSize: 10,
                 fontWeight: '700',
-                color: isCurrent ? '#fff' : 'rgba(255,255,255,0.3)',
+                color: isCurrent ? TC.text : TC.textMuted,
                 textTransform: 'uppercase'
               }}>
                 Wk {weekNum}
@@ -341,8 +365,8 @@ const CurrentWorkoutCard = ({ workoutName, blockName, focus, currentDay, totalDa
 };
 
 const ConsistencyCalendar = ({ volumeData, streak }: { volumeData: VolumeProgressItem[], streak: number }) => {
+  const TC = useTC();
   const navigation = useNavigation<any>();
-  // Get last 7 days
   const days = [];
   const today = new Date();
   for (let i = 6; i >= 0; i--) {
@@ -351,11 +375,10 @@ const ConsistencyCalendar = ({ volumeData, streak }: { volumeData: VolumeProgres
     days.push(d);
   }
 
-  // Map to data
   const chartData = days.map(date => {
     const dateStr = date.toISOString().split('T')[0];
     const hasWorkout = volumeData.some(v => v.date.startsWith(dateStr) && v.volume > 0);
-    const dayLetter = date.toLocaleDateString('en-US', { weekday: 'narrow' }); // T, W, T...
+    const dayLetter = date.toLocaleDateString('en-US', { weekday: 'narrow' });
     return { date: dateStr, hasWorkout, dayLetter };
   });
 
@@ -364,18 +387,18 @@ const ConsistencyCalendar = ({ volumeData, streak }: { volumeData: VolumeProgres
       activeOpacity={0.9}
       onPress={() => navigation.navigate('ConsistencyDetails', { streak, volumeData })}
     >
-      <View style={styles.consistencyCard}>
+      <View style={[styles.consistencyCard, { backgroundColor: TC.isDark ? '#0f110d' : '#F0F4EA', borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)' }]}>
         <View style={styles.consistencyHeaderNew}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Flame size={20} color={THEME.primary} fill={THEME.primary} />
-            <Text style={styles.cardTitle}>Consistency</Text>
+            <Text style={[styles.cardTitle, { color: TC.text }]}>Consistency</Text>
           </View>
-          <Text style={styles.cardSubtitle}>Last 7 Days</Text>
+          <Text style={[styles.cardSubtitle, { color: TC.textMuted }]}>Last 7 Days</Text>
         </View>
 
         <View style={styles.daysRow}>
           {chartData.map((item, index) => {
-            const isToday = index === 6; // Last item is today
+            const isToday = index === 6;
             return (
               <View key={index} style={styles.dayCol}>
                 <View style={[
@@ -384,9 +407,9 @@ const ConsistencyCalendar = ({ volumeData, streak }: { volumeData: VolumeProgres
                     ? { backgroundColor: THEME.primary }
                     : isToday
                       ? { borderColor: THEME.primary, borderWidth: 1.5, backgroundColor: 'rgba(132, 196, 64, 0.1)' }
-                      : { borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1.5 }
+                      : { borderColor: TC.border, borderWidth: 1.5 }
                 ]} />
-                <Text style={[styles.dayLetter, isToday && { color: THEME.primary }]}>{item.dayLetter}</Text>
+                <Text style={[styles.dayLetter, { color: TC.textMuted }, isToday && { color: THEME.primary }]}>{item.dayLetter}</Text>
               </View>
             );
           })}
@@ -398,41 +421,40 @@ const ConsistencyCalendar = ({ volumeData, streak }: { volumeData: VolumeProgres
 
 // Recovery Ring Component
 const RecoveryRing = ({ name, percentage, color }: { name: string, percentage: number, color: string }) => {
+  const TC = useTC();
   const size = 64;
-  const strokeWidth = 6; // Thicker ring as per photo
+  const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  // Icon mapping
   let Icon = Activity;
   const iconSize = 20;
 
-  // Specific matches
   if (name === 'Legs') Icon = Footprints;
-  else if (name === 'Chest') Icon = Shield; // Protection/Torso
-  else if (name === 'Back') Icon = AlignJustify; // Spine/Vertebrae look
+  else if (name === 'Chest') Icon = Shield;
+  else if (name === 'Back') Icon = AlignJustify;
   else if (name === 'Arms') Icon = Dumbbell;
-  else if (name === 'Shoulders') Icon = ChevronUp; // Upward lifting
+  else if (name === 'Shoulders') Icon = ChevronUp;
   else if (name === 'Abs') Icon = Scale;
 
   return (
     <View style={styles.recoveryItem}>
       <View style={[styles.ringContainer, {
         width: size, height: size, borderRadius: size / 2,
-        shadowColor: color, shadowOpacity: 0.4, shadowRadius: 10 // Glow effect
+        backgroundColor: TC.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+        borderColor: TC.border,
+        shadowColor: color, shadowOpacity: 0.4, shadowRadius: 10
       }]}>
         <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-          {/* Background Track - Darker */}
           <Circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke="rgba(255,255,255,0.1)"
+            stroke={TC.border}
             strokeWidth={strokeWidth}
             fill="none"
           />
-          {/* Progress Ring */}
           <Circle
             cx={size / 2}
             cy={size / 2}
@@ -447,32 +469,33 @@ const RecoveryRing = ({ name, percentage, color }: { name: string, percentage: n
         </Svg>
         <View style={styles.ringIcon}>
           <BreathingIcon duration={4000}>
-            <Icon size={iconSize} color="#fff" />
+            <Icon size={iconSize} color={TC.text} />
           </BreathingIcon>
         </View>
       </View>
-      <Text style={styles.recoveryName}>{name}</Text>
+      <Text style={[styles.recoveryName, { color: TC.textDim }]}>{name}</Text>
     </View>
   );
 };
 
 const RecoverySection = ({ recoveryData }: { recoveryData: Record<string, number> }) => {
+  const TC = useTC();
   const mGroups = Object.keys(recoveryData);
 
   const getColor = (p: number) => {
     if (p >= 90) return THEME.primary;
-    if (p >= 50) return '#eab308'; // Yellow
-    return '#ef4444'; // Red
+    if (p >= 50) return '#eab308';
+    return '#ef4444';
   };
 
   return (
     <View style={styles.sectionContainer}>
-      <Text style={styles.sectionLabel}>RECOVERY STATUS</Text>
+      <Text style={[styles.sectionLabel, { color: TC.textMuted }]}>RECOVERY STATUS</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingHorizontal: 24 }}>
         {mGroups.map((mg) => (
           <RecoveryRing key={mg} name={mg} percentage={recoveryData[mg]} color={getColor(recoveryData[mg])} />
         ))}
-        {mGroups.length === 0 && <Text style={{ color: 'rgba(255,255,255,0.4)', paddingHorizontal: 20 }}>No sufficient data for recovery yet.</Text>}
+        {mGroups.length === 0 && <Text style={{ color: TC.textMuted, paddingHorizontal: 20 }}>No sufficient data for recovery yet.</Text>}
       </ScrollView>
     </View>
   );
@@ -535,19 +558,21 @@ const TotalVolumeChart = ({ volumeHistory, unit }: { volumeHistory: VolumeProgre
     return vol.toString();
   };
 
+  const TC = useTC();
+
   return (
     <LinearGradient
-      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
-      style={styles.volumePanel}
+      colors={TC.isDark ? ['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)'] : ['rgba(132, 196, 65, 0.08)', 'rgba(132, 196, 65, 0.02)']}
+      style={[styles.volumePanel, { borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)' }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
       <View style={{ marginBottom: 20 }}>
-        <Text style={styles.labelSmall}>TOTAL VOLUME LOAD</Text>
+        <Text style={[styles.labelSmall, { color: TC.textMuted }]}>TOTAL VOLUME LOAD</Text>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-          <Text style={styles.heroNumber} numberOfLines={1} adjustsFontSizeToFit>{formatVolume(unit === 'kg' ? selectedData.volume * 0.453592 : selectedData.volume)}</Text>
-          <Text style={styles.unitTextLarge}>{unit}</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginLeft: 'auto' }} numberOfLines={1}>
+          <Text style={[styles.heroNumber, { color: TC.text }]} numberOfLines={1} adjustsFontSizeToFit>{formatVolume(unit === 'kg' ? selectedData.volume * 0.453592 : selectedData.volume)}</Text>
+          <Text style={[styles.unitTextLarge, { color: TC.textDim }]}>{unit}</Text>
+          <Text style={{ color: TC.textMuted, fontSize: 12, marginLeft: 'auto' }} numberOfLines={1}>
             {selectedData.label} {selectedData.year}
           </Text>
         </View>
@@ -567,7 +592,7 @@ const TotalVolumeChart = ({ volumeHistory, unit }: { volumeHistory: VolumeProgre
             >
               <View style={[
                 styles.volumeBar,
-                { height: `${Math.max(heightPercent * 100, 4)}%` },
+                { height: `${Math.max(heightPercent * 100, 4)}%`, backgroundColor: TC.overlayBg },
                 isActive ? { backgroundColor: 'transparent' } : {}
               ]}>
                 {isActive && (
@@ -577,7 +602,7 @@ const TotalVolumeChart = ({ volumeHistory, unit }: { volumeHistory: VolumeProgre
                   />
                 )}
               </View>
-              <Text style={[styles.monthLabel, isActive && { color: THEME.primary }]}>
+              <Text style={[styles.monthLabel, { color: TC.textMuted }, isActive && { color: THEME.primary }]}>
                 {data.label}
               </Text>
             </TouchableOpacity>
@@ -589,18 +614,12 @@ const TotalVolumeChart = ({ volumeHistory, unit }: { volumeHistory: VolumeProgre
 };
 
 const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }) => {
-  // Logic to find Most Trained (Max Volume) and Needs Work (Min Volume or Untrained)
+  const TC = useTC();
   const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Abs', 'Glutes'];
-
-  // We need to mimic "sets this week". 
-  // Since 'muscleGroups' passed here is likely 'month' based on screen load, 
-  // users usually accept "overall" or "recent" stats as "this week" in these concepts unless strict filtering is applied.
-  // For visual "exactly like photo", we'll style it dark.
 
   const sorted = [...muscleGroups].sort((a, b) => b.value - a.value);
   const mostTrained = sorted.length > 0 ? sorted[0] : null;
 
-  // Needs work: First check muscles with 0 sets (not in the list at all)
   const trainedNames = muscleGroups.map(m => m.name);
   const untrained = ALL_MUSCLES.filter(m => !trainedNames.includes(m));
 
@@ -611,13 +630,11 @@ const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }
     needsWorkName = untrained[0];
     needsWorkSets = 0;
   } else if (sorted.length > 0) {
-    // All trained, pick the last one
     const least = sorted[sorted.length - 1];
     needsWorkName = least.name;
     needsWorkSets = least.value;
   }
 
-  // Visual helper for "glow" effect behind text
   const GlowText = ({ text, color, style }: any) => (
     <View style={{ position: 'relative' }}>
       <Text style={[style, { color, opacity: 0.3, position: 'absolute', transform: [{ translateX: 0 }, { translateY: 0 }], textShadowColor: color, textShadowRadius: 15 }]}>{text}</Text>
@@ -625,18 +642,22 @@ const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }
     </View>
   );
 
+  const cardBg = TC.isDark ? '#0f110d' : '#F0F4EA';
+  const needsWorkBg = TC.isDark ? '#110d0d' : '#FDF2F2';
+  const cardBorder = TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)';
+  const needsWorkBorder = TC.isDark ? '#266637' : 'rgba(239, 68, 68, 0.15)';
+
   return (
     <View style={styles.highlightsRow}>
-      {/* Most Trained */}
-      <View style={[styles.highlightCard, { backgroundColor: '#0f110d' }]}>
+      <View style={[styles.highlightCard, { backgroundColor: cardBg, borderColor: cardBorder }]}>
         <View style={styles.highlightIconBg}>
           <BreathingIcon duration={5000}>
-            <Dumbbell size={60} color="#1f2e10" style={{ transform: [{ rotate: '-15deg' }] }} />
+            <Dumbbell size={60} color={TC.isDark ? '#1f2e10' : 'rgba(132,196,65,0.15)'} style={{ transform: [{ rotate: '-15deg' }] }} />
           </BreathingIcon>
         </View>
 
         <View>
-          <Text style={styles.highlightLabel}>MOST TRAINED</Text>
+          <Text style={[styles.highlightLabel, { color: TC.textDim }]}>MOST TRAINED</Text>
           <View style={{ marginTop: 4 }}>
             <GlowText text={mostTrained ? mostTrained.name : 'None'} color={THEME.primary} style={styles.highlightTitle} />
           </View>
@@ -644,30 +665,29 @@ const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }
 
         <View style={styles.highlightFooter}>
           <View style={[styles.dot, { backgroundColor: THEME.primary, shadowColor: THEME.primary, shadowOpacity: 0.8, shadowRadius: 6 }]} />
-          <Text style={styles.highlightStat}>
+          <Text style={[styles.highlightStat, { color: TC.text }]}>
             {mostTrained ? mostTrained.value : 0} sets this week
           </Text>
         </View>
       </View>
 
-      {/* Needs Work */}
-      <View style={[styles.highlightCard, { backgroundColor: '#110d0d' }]}>
+      <View style={[styles.highlightCard, { backgroundColor: needsWorkBg, borderColor: needsWorkBorder }]}>
         <View style={styles.highlightIconBg}>
           <BreathingIcon duration={6000}>
-            <CircleMinus size={60} color="#2e1010" style={{ transform: [{ rotate: '15deg' }] }} />
+            <CircleMinus size={60} color={TC.isDark ? '#2e1010' : 'rgba(239,68,68,0.12)'} style={{ transform: [{ rotate: '15deg' }] }} />
           </BreathingIcon>
         </View>
 
         <View>
-          <Text style={styles.highlightLabel}>NEEDS WORK</Text>
+          <Text style={[styles.highlightLabel, { color: TC.textDim }]}>NEEDS WORK</Text>
           <View style={{ marginTop: 4 }}>
-            <Text style={[styles.highlightTitle, { color: '#fff' }]}>{needsWorkName}</Text>
+            <Text style={[styles.highlightTitle, { color: TC.text }]}>{needsWorkName}</Text>
           </View>
         </View>
 
         <View style={styles.highlightFooter}>
           <View style={[styles.dot, { backgroundColor: '#ef4444', shadowColor: '#ef4444', shadowOpacity: 0.8, shadowRadius: 6 }]} />
-          <Text style={styles.highlightStat}>
+          <Text style={[styles.highlightStat, { color: TC.text }]}>
             {needsWorkSets} sets this week
           </Text>
         </View>
@@ -676,49 +696,52 @@ const HighlightsSection = ({ muscleGroups }: { muscleGroups: MuscleGroupData[] }
   );
 };
 
-const StatGrid = ({ duration, workouts }: { duration: number, workouts: number }) => (
-  <View style={styles.gridContainer}>
-    <LinearGradient
-      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
-      style={styles.statCard}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.iconBox}>
-        <BreathingIcon>
-          <Timer size={20} color="#fff" />
-        </BreathingIcon>
-      </View>
-      <View>
-        <Text style={styles.statLabel}>AVG DURATION</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-          <Text style={styles.statValue}>{duration}</Text>
-          <Text style={styles.statUnit}>min</Text>
+const StatGrid = ({ duration, workouts }: { duration: number, workouts: number }) => {
+  const TC = useTC();
+  return (
+    <View style={styles.gridContainer}>
+      <LinearGradient
+        colors={TC.isDark ? ['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)'] : ['rgba(132, 196, 65, 0.08)', 'rgba(132, 196, 65, 0.02)']}
+        style={[styles.statCard, { borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)' }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={[styles.iconBox, { backgroundColor: TC.overlayBg, borderColor: TC.border }]}>
+          <BreathingIcon>
+            <Timer size={20} color={TC.text} />
+          </BreathingIcon>
         </View>
-      </View>
-    </LinearGradient>
+        <View>
+          <Text style={[styles.statLabel, { color: TC.textMuted }]}>AVG DURATION</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+            <Text style={[styles.statValue, { color: TC.text }]}>{duration}</Text>
+            <Text style={[styles.statUnit, { color: TC.textDim }]}>min</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
-    <LinearGradient
-      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
-      style={styles.statCard}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.iconBox}>
-        <BreathingIcon duration={3500}>
-          <Flame size={20} color={THEME.primary} fill={THEME.primary} />
-        </BreathingIcon>
-      </View>
-      <View>
-        <Text style={styles.statLabel}>WORKOUTS</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-          <Text style={styles.statValue}>{workouts}</Text>
-          <Text style={styles.statUnit}>this mo.</Text>
+      <LinearGradient
+        colors={TC.isDark ? ['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)'] : ['rgba(132, 196, 65, 0.08)', 'rgba(132, 196, 65, 0.02)']}
+        style={[styles.statCard, { borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)' }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={[styles.iconBox, { backgroundColor: TC.overlayBg, borderColor: TC.border }]}>
+          <BreathingIcon duration={3500}>
+            <Flame size={20} color={THEME.primary} fill={THEME.primary} />
+          </BreathingIcon>
         </View>
-      </View>
-    </LinearGradient>
-  </View>
-);
+        <View>
+          <Text style={[styles.statLabel, { color: TC.textMuted }]}>WORKOUTS</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+            <Text style={[styles.statValue, { color: TC.text }]}>{workouts}</Text>
+            <Text style={[styles.statUnit, { color: TC.textDim }]}>this mo.</Text>
+          </View>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+};
 
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -741,8 +764,9 @@ const AnimatedCounter = ({ value }: { value: number }) => {
     };
   }, [value]);
 
+  const TC = useTC();
   return (
-    <AppText variant="h2" style={{ color: '#fff', fontSize: 32, letterSpacing: -1, fontWeight: '800' }}>
+    <AppText variant="h2" style={{ color: TC.text, fontSize: 32, letterSpacing: -1, fontWeight: '800' }}>
       {displayValue.toLocaleString()}
     </AppText>
   );
@@ -776,10 +800,12 @@ const MilestoneCard = ({
   const displayVolume = unit === 'kg' ? Math.round(totalVolume * 0.453592) : totalVolume;
   const displayMilestone = unit === 'kg' ? Math.round(nextMilestone * 0.453592) : nextMilestone;
 
+  const TC = useTC();
+
   return (
     <LinearGradient
-      colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
-      style={styles.milestoneCard}
+      colors={TC.isDark ? ['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)'] : ['rgba(132, 196, 65, 0.08)', 'rgba(132, 196, 65, 0.02)']}
+      style={[styles.milestoneCard, { borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)' }]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
@@ -788,17 +814,17 @@ const MilestoneCard = ({
           <AppText variant="small" style={{ color: '#84C441', fontWeight: '700', letterSpacing: 1 }}>LIFETIME VOLUME</AppText>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
             <AnimatedCounter value={displayVolume} />
-            <AppText variant="body" style={{ color: 'rgba(255,255,255,0.5)' }}>{unit}</AppText>
+            <AppText variant="body" style={{ color: TC.textDim }}>{unit}</AppText>
           </View>
         </View>
       </View>
 
       <View style={{ marginTop: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
-          <AppText variant="small" style={{ color: 'rgba(255,255,255,0.6)' }}>Next Milestone</AppText>
-          <AppText variant="small" style={{ color: '#FFFFFF', fontWeight: '600' }}>{displayMilestone.toLocaleString()} {unit}</AppText>
+          <AppText variant="small" style={{ color: TC.textDim }}>Next Milestone</AppText>
+          <AppText variant="small" style={{ color: TC.text, fontWeight: '600' }}>{displayMilestone.toLocaleString()} {unit}</AppText>
         </View>
-        <View style={styles.progressBarTrack}>
+        <View style={[styles.progressBarTrack, { backgroundColor: TC.overlayBg }]}>
           <LinearGradient
             colors={['#84C441', '#4ade80']}
             start={{ x: 0, y: 0 }}
@@ -825,6 +851,8 @@ export default function WorkoutStatisticsScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
+  const { isDark } = useThemeStore();
+  const TC = getThemeColors(isDark);
   const scrollY = useRef(new Animated.Value(0)).current;
   const { onScroll: handleTabScroll } = useTabScroll();
 
@@ -971,10 +999,10 @@ export default function WorkoutStatisticsScreen() {
 
   if (loading && !data) {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { backgroundColor: TC.background }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
         <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
-          <Text style={styles.screenTitle}>Progress</Text>
+          <Text style={[styles.screenTitle, { color: TC.text }]}>Progress</Text>
         </View>
         <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 24 }}>
           <ChartSkeleton height={200} />
@@ -988,10 +1016,10 @@ export default function WorkoutStatisticsScreen() {
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
+      <View style={[styles.container, { backgroundColor: TC.background }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
         <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
-          <Text style={styles.screenTitle}>Progress</Text>
+          <Text style={[styles.screenTitle, { color: TC.text }]}>Progress</Text>
         </View>
         <ErrorState
           title="Failed to Load Statistics"
@@ -1008,8 +1036,8 @@ export default function WorkoutStatisticsScreen() {
   const { stats, prs, volumeHistory, muscleGroups } = data;
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <View style={[styles.container, { backgroundColor: TC.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <ScreenHeader
         title="MY PROGRESS"
         style={{ zIndex: 100 }}
@@ -1019,7 +1047,7 @@ export default function WorkoutStatisticsScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: 'rgba(255,255,255,0.1)',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
               paddingHorizontal: 12,
               paddingVertical: 6,
               borderRadius: 20,
@@ -1027,7 +1055,7 @@ export default function WorkoutStatisticsScreen() {
             }}
           >
             <Scale size={14} color="#84C441" />
-            <AppText style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{unit.toUpperCase()}</AppText>
+            <AppText style={{ color: TC.text, fontSize: 12, fontWeight: '700' }}>{unit.toUpperCase()}</AppText>
           </TouchableOpacity>
         }
       />

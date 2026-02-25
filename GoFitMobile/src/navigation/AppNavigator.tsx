@@ -2,6 +2,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor, getTextColor } from '@/utils/colorUtils';
 import type { AppTabParamList, ProfileStackParamList, LibraryStackParamList } from '@/types';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 import { WorkoutsScreen } from '@/screens/plan/WorkoutsScreen';
@@ -105,6 +107,8 @@ const ProgressStackNavigator = () => {
   )
 }
 export const AppNavigator: React.FC = () => {
+  const { isDark } = useThemeStore();
+
   return (
     <RouteErrorBoundary>
       <Tab.Navigator
@@ -112,19 +116,19 @@ export const AppNavigator: React.FC = () => {
         screenOptions={{
           headerShown: true,
           headerStyle: {
-            backgroundColor: '#030303', // Match dark theme
+            backgroundColor: getBackgroundColor(isDark),
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: getTextColor(isDark),
           headerTitleStyle: {
             fontWeight: '600',
-            color: '#FFFFFF',
+            color: getTextColor(isDark),
             fontFamily: 'Barlow_600SemiBold',
             fontSize: 22,
             letterSpacing: 0.2,
           },
-          tabBarShowLabel: false, // Hide default labels - using custom tab bar
+          tabBarShowLabel: false,
           tabBarStyle: {
-            display: 'none', // Hide default tab bar
+            display: 'none',
           },
         }}
       >

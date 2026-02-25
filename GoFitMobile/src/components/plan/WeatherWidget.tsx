@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Animated } from "react-native";
 import * as Location from "expo-location";
 import { useCalendarStore } from "@/store/calendarStore";
+import { useThemeStore } from "@/store/themeStore";
+import { getTextColor, getTextColorWithOpacity, getOverlayColor } from "@/utils/colorUtils";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { Cloud, CloudRain, Sun, CloudLightning, MapPin, Bell, Snowflake } from "lucide-react-native";
@@ -13,6 +15,7 @@ interface WeatherData {
 }
 
 const WeatherWidget: React.FC<{ showDate?: boolean }> = ({ showDate = true }) => {
+    const { isDark } = useThemeStore();
     const todayIso = new Date().toISOString().split("T")[0];
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
     const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -122,7 +125,7 @@ const WeatherWidget: React.FC<{ showDate?: boolean }> = ({ showDate = true }) =>
                     <Animated.View style={[styles.contentRow, { opacity: fadeAnim }]}>
                         <View style={styles.weatherInfo}>
                             <View style={styles.tempRow}>
-                                <Text style={styles.tempText}>{Math.round(weather.temperature)}°C</Text>
+                                <Text style={[styles.tempText, { color: getTextColor(isDark) }]}>{Math.round(weather.temperature)}°C</Text>
                                 <View style={styles.weatherIndicator}>
                                     {getWeatherIcon(weather.weatherCode)}
                                 </View>
@@ -134,26 +137,26 @@ const WeatherWidget: React.FC<{ showDate?: boolean }> = ({ showDate = true }) =>
                                         <Text style={styles.dateText}>
                                             {format(new Date(), "EEEE, MMM d")}
                                         </Text>
-                                        <View style={styles.dot} />
+                                        <View style={[styles.dot, { backgroundColor: getOverlayColor(isDark, 0.2) }]} />
                                     </>
                                 )}
-                                <Text style={styles.conditionText}>{getWeatherDescription(weather.weatherCode)}</Text>
-                                <View style={styles.dot} />
+                                <Text style={[styles.conditionText, { color: getTextColorWithOpacity(isDark, 0.5) }]}>{getWeatherDescription(weather.weatherCode)}</Text>
+                                <View style={[styles.dot, { backgroundColor: getOverlayColor(isDark, 0.2) }]} />
                                 <View style={styles.locationContainer}>
-                                    <MapPin size={10} color="rgba(255,255,255,0.4)" />
-                                    <Text style={styles.locationText}>{address}</Text>
+                                    <MapPin size={10} color={getTextColorWithOpacity(isDark, 0.4)} />
+                                    <Text style={[styles.locationText, { color: getTextColorWithOpacity(isDark, 0.4) }]}>{address}</Text>
                                 </View>
                             </View>
                         </View>
 
-                        <TouchableOpacity style={styles.notificationButton} activeOpacity={0.7}>
+                        <TouchableOpacity style={[styles.notificationButton, { backgroundColor: getOverlayColor(isDark, 0.06), borderColor: getOverlayColor(isDark, 0.1) }]} activeOpacity={0.7}>
                             <Bell size={18} color="#a3e635" />
                             <View style={[styles.notificationBadge, { backgroundColor: '#a3e635' }]} />
                         </TouchableOpacity>
                     </Animated.View>
                 ) : (
                     <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>{errorMsg || "Weather data pending..."}</Text>
+                        <Text style={[styles.errorText, { color: getTextColorWithOpacity(isDark, 0.3) }]}>{errorMsg || "Weather data pending..."}</Text>
                     </View>
                 )}
             </View>

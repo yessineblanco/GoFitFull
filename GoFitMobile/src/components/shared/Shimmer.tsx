@@ -1,7 +1,7 @@
-// Shimmer Loading Skeleton Component
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useThemeStore } from '@/store/themeStore';
 
 interface ShimmerProps {
     width?: number | string;
@@ -16,6 +16,7 @@ export const Shimmer: React.FC<ShimmerProps> = ({
     borderRadius = 8,
     style
 }) => {
+    const { isDark } = useThemeStore();
     const animatedValue = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -40,11 +41,16 @@ export const Shimmer: React.FC<ShimmerProps> = ({
         outputRange: [-300, 300],
     });
 
+    const baseBg = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+    const shimmerColors: [string, string, string] = isDark
+        ? ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']
+        : ['rgba(0,0,0,0.03)', 'rgba(0,0,0,0.08)', 'rgba(0,0,0,0.03)'];
+
     return (
-        <View style={[{ width, height, borderRadius, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.05)' }, style]}>
+        <View style={[{ width, height, borderRadius, overflow: 'hidden', backgroundColor: baseBg }, style]}>
             <Animated.View style={{ transform: [{ translateX }], flex: 1 }}>
                 <LinearGradient
-                    colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)']}
+                    colors={shimmerColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{ flex: 1 }}
@@ -54,39 +60,51 @@ export const Shimmer: React.FC<ShimmerProps> = ({
     );
 };
 
-export const StatCardSkeleton = () => (
-    <View style={{ padding: 12, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: 'rgba(132, 196, 65, 0.3)' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Shimmer width={32} height={32} borderRadius={8} />
-            <View style={{ flex: 1 }}>
-                <Shimmer width="60%" height={12} style={{ marginBottom: 6 }} />
-                <Shimmer width="40%" height={16} />
-            </View>
-        </View>
-    </View>
-);
-
-export const ChartSkeleton = ({ height = 240 }: { height?: number }) => (
-    <View style={{ padding: 20, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20, marginBottom: 24 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-            <Shimmer width={20} height={20} borderRadius={4} />
-            <Shimmer width={120} height={18} />
-        </View>
-        <Shimmer width="100%" height={height} borderRadius={12} />
-    </View>
-);
-
-export const PRCardSkeleton = () => (
-    <View style={{ padding: 16, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 12, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: 'rgba(132, 196, 65, 0.3)' }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                <Shimmer width={40} height={40} borderRadius={10} />
+export const StatCardSkeleton = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ padding: 12, backgroundColor: cardBg, borderRadius: 12, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: 'rgba(132, 196, 65, 0.3)' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Shimmer width={32} height={32} borderRadius={8} />
                 <View style={{ flex: 1 }}>
-                    <Shimmer width="70%" height={16} style={{ marginBottom: 6 }} />
-                    <Shimmer width="40%" height={12} />
+                    <Shimmer width="60%" height={12} style={{ marginBottom: 6 }} />
+                    <Shimmer width="40%" height={16} />
                 </View>
             </View>
-            <Shimmer width={60} height={20} />
         </View>
-    </View>
-);
+    );
+};
+
+export const ChartSkeleton = ({ height = 240 }: { height?: number }) => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ padding: 20, backgroundColor: cardBg, borderRadius: 20, marginBottom: 24 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <Shimmer width={20} height={20} borderRadius={4} />
+                <Shimmer width={120} height={18} />
+            </View>
+            <Shimmer width="100%" height={height} borderRadius={12} />
+        </View>
+    );
+};
+
+export const PRCardSkeleton = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ padding: 16, backgroundColor: cardBg, borderRadius: 12, marginBottom: 12, borderLeftWidth: 3, borderLeftColor: 'rgba(132, 196, 65, 0.3)' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
+                    <Shimmer width={40} height={40} borderRadius={10} />
+                    <View style={{ flex: 1 }}>
+                        <Shimmer width="70%" height={16} style={{ marginBottom: 6 }} />
+                        <Shimmer width="40%" height={12} />
+                    </View>
+                </View>
+                <Shimmer width={60} height={20} />
+            </View>
+        </View>
+    );
+};

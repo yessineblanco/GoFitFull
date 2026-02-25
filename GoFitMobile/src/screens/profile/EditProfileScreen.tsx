@@ -60,7 +60,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
   const [gender, setGender] = useState<GenderOption | null>(null);
   const [activityLevel, setActivityLevel] = useState<ActivityLevelOption | null>(null);
   const [saving, setSaving] = useState(false);
-  const BRAND_WHITE = '#ffffff';
+  const BRAND_WHITE = getTextColor(isDark);
 
   const dynamicStyles = React.useMemo(() => ({
     container: {
@@ -70,26 +70,26 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
     headerTitle: {
       fontSize: getScaledFontSize(20),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     label: {
       fontSize: getScaledFontSize(14),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       marginBottom: 12,
     },
     input: {
       padding: 16,
       fontSize: getScaledFontSize(16),
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_400Regular',
     },
     optionText: {
       fontSize: getScaledFontSize(15),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     optionTextSelected: {
@@ -112,7 +112,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
     saveButtonText: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     optionButton: {

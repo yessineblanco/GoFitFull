@@ -5,6 +5,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { Play, Info, Plus, Lock, Trash2, ShoppingBag } from "lucide-react-native";
 import { useThemeColors } from "@/theme/useThemeColors";
+import { useThemeStore } from "@/store/themeStore";
+import { getTextColor, getTextColorWithOpacity, getOverlayColor } from "@/utils/colorUtils";
 import { useCalendarStore } from "@/store/calendarStore";
 import { useSessionsStore } from "@/store/sessionsStore";
 import { useWorkoutPlansStore } from "@/store/workoutPlansStore";
@@ -21,6 +23,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const MyWorkouts: React.FC = () => {
   const colors = useThemeColors();
+  const { isDark } = useThemeStore();
   const selectedDate = useCalendarStore((s) => s.selectedDate);
   const { plans, fetch: fetchPlans, removePlan, updatePlanTime } = useWorkoutPlansStore();
   const { sessions, fetch } = useSessionsStore();
@@ -170,7 +173,7 @@ const MyWorkouts: React.FC = () => {
       marginBottom: 16,
     },
     headerTitle: {
-      color: '#fff',
+      color: getTextColor(isDark),
       letterSpacing: 1,
     },
     addBtn: {
@@ -335,7 +338,7 @@ const MyWorkouts: React.FC = () => {
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 2,
-      borderColor: 'rgba(255,255,255,0.08)',
+      borderColor: getOverlayColor(isDark, 0.08),
       borderStyle: 'dashed',
       borderRadius: 24,
       marginTop: 8,
@@ -366,7 +369,7 @@ const MyWorkouts: React.FC = () => {
       <View style={styles.headerRow}>
         <View>
           <AppText variant="h4" style={styles.headerTitle}>YOUR TASKS</AppText>
-          <AppText variant="small" style={{ color: 'rgba(255,255,255,0.4)', marginTop: -2 }}>
+          <AppText variant="small" style={{ color: getTextColorWithOpacity(isDark, 0.4), marginTop: -2 }}>
             {itemsOfDay.length} active items for today
           </AppText>
         </View>
@@ -415,8 +418,8 @@ const MyWorkouts: React.FC = () => {
             <View style={styles.emptyIconContainer}>
               <Plus size={32} color="rgba(132, 196, 65, 0.6)" />
             </View>
-            <AppText variant="bodyBold" style={[styles.emptyText, { color: 'rgba(255,255,255,0.6)' }]}>NO WORKOUTS PLANNED</AppText>
-            <AppText variant="small" style={{ color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Time to build your routine</AppText>
+            <AppText variant="bodyBold" style={[styles.emptyText, { color: getTextColorWithOpacity(isDark, 0.6) }]}>NO WORKOUTS PLANNED</AppText>
+            <AppText variant="small" style={{ color: getTextColorWithOpacity(isDark, 0.3), marginTop: 4 }}>Time to build your routine</AppText>
           </Pressable>
         </View>
       ) : (

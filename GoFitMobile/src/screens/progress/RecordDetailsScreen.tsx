@@ -7,41 +7,57 @@ import { BlurView } from 'expo-blur';
 import { PersonalRecord, fetchExerciseHistory } from '@/services/workoutStats';
 import { useAuthStore } from '@/store/authStore';
 import { useTabScroll } from '@/hooks/useTabScroll';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor, getTextColor, getTextColorWithOpacity, getTextSecondaryColor, getSurfaceColor } from '@/utils/colorUtils';
 
-const THEME = {
-    primary: '#84c440', // Green
-    background: '#030303',
-    cardBg: '#1c1c1e',
-    text: '#ffffff',
-    textDim: 'rgba(255, 255, 255, 0.6)',
+const THEME_STATIC = {
+    primary: '#84c440',
 };
 
+const getTheme = (isDark: boolean) => ({
+    ...THEME_STATIC,
+    background: getBackgroundColor(isDark),
+    cardBg: getSurfaceColor(isDark),
+    text: getTextColor(isDark),
+    textDim: getTextColorWithOpacity(isDark, 0.6),
+    textMuted: getTextColorWithOpacity(isDark, 0.4),
+    textSubtle: getTextColorWithOpacity(isDark, 0.3),
+    overlayBg: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+    overlayBgSubtle: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+});
+
 // Helper for detail cards
-const DetailCard = ({ label, value, unit, icon: Icon }: { label: string, value: string, unit?: string, icon: any }) => (
-    <LinearGradient
-        colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
-        style={styles.detailCard}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-    >
-        <View style={styles.detailCardBgIcon}>
-            <Icon size={80} color="rgba(255,255,255,0.03)" />
-        </View>
-        <View style={styles.detailCardHeader}>
-            <Text style={styles.detailLabel}>{label}</Text>
-        </View>
-        <View style={styles.detailValueContainer}>
-            <Text style={styles.detailValue}>{value}</Text>
-            {unit && <Text style={styles.detailUnit}>{unit}</Text>}
-        </View>
-        <Icon size={24} color={THEME.primary} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.8 }} />
-    </LinearGradient>
-);
+const DetailCard = ({ label, value, unit, icon: Icon, isDark }: { label: string, value: string, unit?: string, icon: any, isDark?: boolean }) => {
+    const dark = isDark ?? true;
+    const T = getTheme(dark);
+    return (
+        <LinearGradient
+            colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
+            style={styles.detailCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+        >
+            <View style={styles.detailCardBgIcon}>
+                <Icon size={80} color={dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'} />
+            </View>
+            <View style={styles.detailCardHeader}>
+                <Text style={[styles.detailLabel, { color: T.textMuted }]}>{label}</Text>
+            </View>
+            <View style={styles.detailValueContainer}>
+                <Text style={[styles.detailValue, { color: T.text }]}>{value}</Text>
+                {unit && <Text style={[styles.detailUnit, { color: T.textDim }]}>{unit}</Text>}
+            </View>
+            <Icon size={24} color={THEME_STATIC.primary} style={{ position: 'absolute', top: 16, right: 16, opacity: 0.8 }} />
+        </LinearGradient>
+    );
+};
 
 const RecordDetailsScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { user } = useAuthStore();
+    const { isDark } = useThemeStore();
+    const T = getTheme(isDark);
     const { record, bgImage } = route.params as { record: PersonalRecord, bgImage?: string };
     const { onScroll } = useTabScroll();
 
@@ -106,15 +122,15 @@ const RecordDetailsScreen = () => {
     ];
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
-                    <ChevronLeft color="#fff" size={24} />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.iconButton, { backgroundColor: T.cardBg }]}>
+                    <ChevronLeft color={T.text} size={24} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Record Details</Text>
-                <TouchableOpacity style={styles.iconButton}>
-                    <MoreHorizontal color="#fff" size={24} />
+                <Text style={[styles.headerTitle, { color: T.text }]}>Record Details</Text>
+                <TouchableOpacity style={[styles.iconButton, { backgroundColor: T.cardBg }]}>
+                    <MoreHorizontal color={T.text} size={24} />
                 </TouchableOpacity>
             </View>
 
@@ -155,10 +171,10 @@ const RecordDetailsScreen = () => {
 
                 {/* Stats Grid */}
                 <View style={styles.statsGrid}>
-                    <DetailCard label="DURATION" value={duration.toString()} unit="m" icon={Clock} />
-                    <DetailCard label="REPS" value={reps.toString()} unit="rep" icon={Dumbbell} />
-                    <DetailCard label="VOLUME" value={volume?.toLocaleString() || '-'} unit="lbs" icon={Activity} />
-                    <DetailCard label="INTENSITY" value={`${intensity}%`} icon={Activity} />
+                    <DetailCard label="DURATION" value={duration.toString()} unit="m" icon={Clock} isDark={isDark} />
+                    <DetailCard label="REPS" value={reps.toString()} unit="rep" icon={Dumbbell} isDark={isDark} />
+                    <DetailCard label="VOLUME" value={volume?.toLocaleString() || '-'} unit="lbs" icon={Activity} isDark={isDark} />
+                    <DetailCard label="INTENSITY" value={`${intensity}%`} icon={Activity} isDark={isDark} />
                 </View>
 
                 {/* Progress Path */}
@@ -169,7 +185,7 @@ const RecordDetailsScreen = () => {
                     end={{ x: 1, y: 1 }}
                 >
                     <View style={styles.progressHeader}>
-                        <Text style={styles.sectionTitle}>PROGRESS PATH</Text>
+                        <Text style={[styles.sectionTitle, { color: T.text }]}>PROGRESS PATH</Text>
                         <View style={styles.yearlyBadge}>
                             {/* Logic: Difference between current PR and oldest in history? */}
                             <Text style={styles.yearlyBadgeText}>Recent Activity</Text>
@@ -189,8 +205,8 @@ const RecordDetailsScreen = () => {
 
                                     {/* Content */}
                                     <View style={styles.timelineContent}>
-                                        <Text style={styles.timelineWeight}>{Math.round(item.weight)} lbs</Text>
-                                        <Text style={[styles.timelineDate, isCurrent && { color: THEME.primary }]}>
+                                        <Text style={[styles.timelineWeight, { color: T.text }]}>{Math.round(item.weight)} lbs</Text>
+                                        <Text style={[styles.timelineDate, { color: T.textMuted }, isCurrent && { color: THEME_STATIC.primary }]}>
                                             {isCurrent ? `Current PR • ${new Date(item.date).toLocaleDateString()}` : new Date(item.date).toLocaleDateString()}
                                         </Text>
                                     </View>
@@ -213,7 +229,7 @@ const RecordDetailsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: THEME.background,
+        backgroundColor: '#030303',
     },
     header: {
         flexDirection: 'row',
@@ -251,7 +267,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(132, 196, 64, 0.4)', // Stronger green
         borderRadius: 40,
         zIndex: -1,
-        shadowColor: THEME.primary,
+        shadowColor: THEME_STATIC.primary,
         shadowRadius: 40,
         shadowOpacity: 0.8,
         shadowOffset: { width: 0, height: 10 }
@@ -280,7 +296,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden'
     },
     badgeText: {
-        color: THEME.primary,
+        color: THEME_STATIC.primary,
         fontSize: 12,
         fontWeight: '800',
         letterSpacing: 2
@@ -305,7 +321,7 @@ const styles = StyleSheet.create({
     heroUnit: {
         fontSize: 24,
         fontWeight: '800',
-        color: THEME.primary,
+        color: THEME_STATIC.primary,
         marginBottom: 12
     },
     heroDate: {
@@ -393,7 +409,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     yearlyBadgeText: {
-        color: THEME.primary,
+        color: THEME_STATIC.primary,
         fontSize: 10,
         fontWeight: '600',
     },
@@ -422,7 +438,7 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     timelineDotActive: {
-        backgroundColor: THEME.primary,
+        backgroundColor: THEME_STATIC.primary,
         borderWidth: 2,
         borderColor: 'rgba(132, 196, 64, 0.3)',
     },
@@ -443,7 +459,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     shareButton: {
-        backgroundColor: THEME.primary,
+        backgroundColor: THEME_STATIC.primary,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

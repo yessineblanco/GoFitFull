@@ -14,10 +14,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTextSizeStore, getScaledFontSize } from '@/store/textSizeStore';
+import { useThemeStore } from '@/store/themeStore';
+import { getTextColor, getGlassBg, getGlassBorder, getOverlayColor, getBlurTint, getSurfaceColor } from '@/utils/colorUtils';
 
 const BRAND_PRIMARY = '#84c441';
-const BRAND_BLACK = '#030303';
-const BRAND_WHITE = '#FFFFFF';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -42,6 +42,8 @@ interface CustomDialogProps {
 
 export const CustomDialog: React.FC<CustomDialogProps> = ({ dialog, onDismiss }) => {
   const { textSize } = useTextSizeStore();
+  const { isDark } = useThemeStore();
+  const textColor = getTextColor(isDark);
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const iconScaleAnim = useRef(new Animated.Value(0)).current;
@@ -56,36 +58,36 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({ dialog, onDismiss })
 
     return {
       title: {
-        fontSize: getScaledFontSize(isLongText ? 18 : 20), // Slightly smaller for long text
+        fontSize: getScaledFontSize(isLongText ? 18 : 20),
         fontWeight: '600' as const,
-        color: BRAND_WHITE,
+        color: textColor,
         fontFamily: 'Barlow_600SemiBold',
         marginBottom: 8,
         textAlign: 'center' as const,
-        paddingHorizontal: 4, // Add small padding to prevent edge clipping
+        paddingHorizontal: 4,
       },
       message: {
-        fontSize: getScaledFontSize(isLongText ? 14 : 15), // Slightly smaller for long text
-        color: 'rgba(255, 255, 255, 0.8)',
+        fontSize: getScaledFontSize(isLongText ? 14 : 15),
+        color: getOverlayColor(!isDark, 0.8),
         fontFamily: 'Barlow_400Regular',
         lineHeight: getScaledFontSize(isLongText ? 20 : 22),
         textAlign: 'center' as const,
-        paddingHorizontal: 4, // Add small padding to prevent edge clipping
+        paddingHorizontal: 4,
       },
       confirmButtonText: {
         fontSize: getScaledFontSize(16),
         fontWeight: '600' as const,
-        color: BRAND_WHITE,
+        color: '#FFFFFF',
         fontFamily: 'Barlow_600SemiBold',
       },
       cancelButtonText: {
         fontSize: getScaledFontSize(16),
         fontWeight: '600' as const,
-        color: BRAND_WHITE,
+        color: textColor,
         fontFamily: 'Barlow_600SemiBold',
       },
     };
-  }, [textSize, dialog.title, dialog.message]);
+  }, [textSize, dialog.title, dialog.message, isDark, textColor]);
 
   useEffect(() => {
     if (dialog.visible) {
@@ -249,7 +251,7 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({ dialog, onDismiss })
         <View style={styles.overlay}>
           {/* Dark overlay background */}
           <View style={styles.darkOverlay} />
-          <BlurView intensity={40} tint="dark" style={styles.blurOverlay} />
+          <BlurView intensity={isDark ? 40 : 50} tint={getBlurTint(isDark)} style={styles.blurOverlay} />
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <Animated.View
               style={[
@@ -260,7 +262,10 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({ dialog, onDismiss })
                 },
               ]}
             >
-              <BlurView intensity={100} tint="dark" style={styles.dialog}>
+              <BlurView intensity={isDark ? 100 : 80} tint={getBlurTint(isDark)} style={[styles.dialog, {
+                borderColor: getGlassBorder(isDark),
+                backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              }]}>
                 {/* Animated glowing border */}
                 <Animated.View
                   style={[
@@ -272,10 +277,13 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({ dialog, onDismiss })
                   ]}
                 />
                 <LinearGradient
-                  colors={[`${config.accentColor}40`, `${config.accentColor}25`, '#1a1a1a']}
+                  colors={isDark
+                    ? [`${config.accentColor}40`, `${config.accentColor}25`, '#1a1a1a']
+                    : [`${config.accentColor}15`, `${config.accentColor}08`, 'rgba(255,255,255,0.95)']
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={styles.gradient}
+                  style={[styles.gradient, { backgroundColor: isDark ? 'rgba(26, 26, 26, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}
                 >
                   {/* Accent bar at top */}
                   <View style={[styles.accentBar, { backgroundColor: config.accentColor }]} />
@@ -440,12 +448,12 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(128, 128, 128, 0.15)',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(128, 128, 128, 0.2)',
   },
   confirmButton: {
     flex: 1,

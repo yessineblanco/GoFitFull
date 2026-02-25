@@ -1,0 +1,9 @@
+Tâche,Début,Fin,Durée (semaines),Responsable,Statut
+Phase 1 - Cahier des charges et UI/UX,Semaine 1,Semaine 3,3 semaines,Équipe,Planifié
+Phase 2 - Setup et authentification,Semaine 3,Semaine 5,2 semaines,Développeur,Planifié
+Phase 3 - Fonctionnalités de base mobile,Semaine 5,Semaine 10,5 semaines,Développeur Mobile,En cours
+Phase 4 - IA et fonctionnalités avancées,Semaine 10,Semaine 13,3 semaines,Développeur IA,Planifié
+Phase 5 - Marketplace de coaches,Semaine 13,Semaine 17,4 semaines,Développeur Full-stack,Planifié
+Phase 6 - Panel d'administration,Semaine 17,Semaine 19,2 semaines,Développeur Web,Implémenté
+Phase 7 - Tests et optimisation,Semaine 19,Semaine 22,3 semaines,QA,En cours
+Phase 8 - Déploiement,Semaine 22,Semaine 26,4 semaines,DevOps,Planifié

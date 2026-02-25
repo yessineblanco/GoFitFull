@@ -33,7 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { Alert } from 'react-native';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getGlassBg, getGlassBorder, getOverlayColor, getTextSecondaryColor, getTextLightColor } from '@/utils/colorUtils';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
@@ -111,20 +111,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     // Minimalist Card Style - No Borders, Dark Surface
     card: {
       borderRadius: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.03)', // Very subtle glass/surface
+      backgroundColor: getGlassBg(isDark),
       padding: 16,
       borderWidth: 0, // No borders
     },
     statBox: {
       borderRadius: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
-      borderWidth: 0, // Minimalist
+      backgroundColor: getGlassBg(isDark),
+      borderWidth: 0,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
       padding: 16,
     },
     currentGoalCard: {
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      backgroundColor: getGlassBg(isDark),
       borderRadius: 16,
       borderWidth: 0,
       padding: 20,
@@ -138,7 +138,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     },
     settingsCard: {
       borderRadius: 16,
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      backgroundColor: getGlassBg(isDark),
       borderWidth: 0,
       overflow: 'hidden' as const,
     },
@@ -155,16 +155,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       justifyContent: 'center' as const,
     },
     settingsItemValue: {
-      color: 'rgba(255, 255, 255, 0.5)',
+      color: getTextLightColor(isDark),
       fontSize: 14,
       fontFamily: 'Barlow_400Regular',
     },
     divider: {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: getOverlayColor(isDark, 0.05),
       height: 1,
     },
     chevronIcon: {
-      color: 'rgba(255, 255, 255, 0.3)',
+      color: getOverlayColor(isDark, 0.3),
     },
     editBadge: {
       backgroundColor: theme.colors.primary,
@@ -195,18 +195,18 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     statLabel: {
       fontSize: getScaledFontSize(11),
       fontWeight: '500' as const,
-      color: 'rgba(255, 255, 255, 0.6)', // Muted white label
+      color: getTextSecondaryColor(isDark),
       fontFamily: 'Barlow_400Regular',
       letterSpacing: 1,
       textTransform: 'uppercase' as const,
     },
     statLabelStatic: {
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
     },
     sectionTitle: {
       fontSize: getScaledFontSize(14),
       fontWeight: '700' as const,
-      color: 'rgba(255, 255, 255, 0.4)', // Subtle section headers
+      color: getTextLightColor(isDark),
       fontFamily: 'Barlow_700Bold',
       marginBottom: getResponsiveSpacing(12),
       textTransform: 'uppercase' as const,
@@ -222,7 +222,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     goalText: {
       fontSize: getScaledFontSize(12),
       fontWeight: '400' as const,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
       fontFamily: 'Barlow_400Regular',
     },
     signOutText: {
@@ -547,7 +547,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   </Text>
                 </View>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -567,7 +567,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText}>{t('profile.accountInformation')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
 
             <View style={[styles.divider, dynamicStyles.divider]} />
@@ -582,7 +582,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>{t('profile.notifications')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
 
             <View style={[styles.divider, dynamicStyles.divider]} />
@@ -601,7 +601,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 <Text style={dynamicStyles.settingsItemValue}>
                   {weightUnit.toUpperCase()}/{getHeightUnitDisplay()}
                 </Text>
-                <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+                <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
               </View>
             </TouchableOpacity>
 
@@ -621,7 +621,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 <Text style={dynamicStyles.settingsItemValue}>
                   {textSize.charAt(0).toUpperCase() + textSize.slice(1)}
                 </Text>
-                <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+                <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
               </View>
             </TouchableOpacity>
 
@@ -641,7 +641,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 <Text style={dynamicStyles.settingsItemValue}>
                   {language === 'en' ? 'English' : 'Français'}
                 </Text>
-                <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+                <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
               </View>
             </TouchableOpacity>
 
@@ -657,7 +657,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText}>{t('profile.theme')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -676,7 +676,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText}>{t('profile.editProfile')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -697,7 +697,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText}>{t('profile.termsOfService')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
 
             <View style={[styles.divider, dynamicStyles.divider]} />
@@ -712,7 +712,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 </View>
                 <Text style={dynamicStyles.settingsItemText}>{t('profile.privacyPolicy')}</Text>
               </View>
-              <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>
           </View>
         </View>

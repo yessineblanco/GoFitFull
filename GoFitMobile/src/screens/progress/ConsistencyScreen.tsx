@@ -5,26 +5,38 @@ import { ChevronLeft, Calendar, ChevronRight, ChevronLeft as ChevronLeftIcon } f
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTabScroll } from '@/hooks/useTabScroll';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor, getTextColor, getTextColorWithOpacity, getTextSecondaryColor, getSurfaceColor } from '@/utils/colorUtils';
 
-const THEME = {
+const THEME_STATIC = {
     primary: '#84c440',
-    background: '#030303',
-    cardBg: '#1c1c1e',
-    text: '#ffffff',
-    textDim: 'rgba(255, 255, 255, 0.6)',
     intensity: {
         rest: '#2c2c2e',
-        light: '#4a6b2f', // Dim green
-        medium: '#6da835', // Mid green
-        heavy: '#84c440', // Bright green
+        light: '#4a6b2f',
+        medium: '#6da835',
+        heavy: '#84c440',
     }
 };
+
+const getTheme = (isDark: boolean) => ({
+    ...THEME_STATIC,
+    background: getBackgroundColor(isDark),
+    cardBg: getSurfaceColor(isDark),
+    text: getTextColor(isDark),
+    textDim: getTextColorWithOpacity(isDark, 0.6),
+    textMuted: getTextColorWithOpacity(isDark, 0.4),
+    textSubtle: getTextColorWithOpacity(isDark, 0.3),
+    overlayBg: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+    overlayBgLight: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.08)',
+});
 
 type Intensity = 'rest' | 'light' | 'medium' | 'heavy';
 
 const ConsistencyScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
+    const { isDark } = useThemeStore();
+    const T = getTheme(isDark);
     const params = route.params as { streak?: number, volumeData?: any[] } || {};
 
     const volumeData = params.volumeData || [];
@@ -152,15 +164,15 @@ const ConsistencyScreen = () => {
     const monthName = today.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
-                    <ChevronLeft color="#fff" size={24} />
+                <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.iconButton, { backgroundColor: T.cardBg }]}>
+                    <ChevronLeft color={T.text} size={24} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Consistency</Text>
-                <TouchableOpacity style={styles.iconButton}>
-                    <Calendar color="#fff" size={20} />
+                <Text style={[styles.headerTitle, { color: T.text }]}>Consistency</Text>
+                <TouchableOpacity style={[styles.iconButton, { backgroundColor: T.cardBg }]}>
+                    <Calendar color={T.text} size={20} />
                 </TouchableOpacity>
             </View>
 
@@ -191,27 +203,27 @@ const ConsistencyScreen = () => {
                     </View>
 
                     <View style={styles.streakMain}>
-                        <Text style={styles.streakNumber} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{currentStreakCount}</Text>
+                        <Text style={[styles.streakNumber, { color: T.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>{currentStreakCount}</Text>
                         <Text style={styles.streakIcon}>🔥</Text>
                     </View>
-                    <Text style={styles.streakLabel}>Days Active</Text>
+                    <Text style={[styles.streakLabel, { color: T.textMuted }]}>Days Active</Text>
 
                     <View style={styles.divider} />
 
                     <View style={styles.streakStatsRow}>
                         <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>{monthName.split(' ')[0].toUpperCase()} TOTAL</Text>
-                            <Text style={styles.statValue}>{monthTotalWorkouts}</Text>
+                            <Text style={[styles.statLabel, { color: T.textMuted }]}>{monthName.split(' ')[0].toUpperCase()} TOTAL</Text>
+                            <Text style={[styles.statValue, { color: T.text }]}>{monthTotalWorkouts}</Text>
                         </View>
                         <View style={styles.verticalDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>ACTIVE %</Text>
-                            <Text style={styles.statValue}>{activePercent}%</Text>
+                            <Text style={[styles.statLabel, { color: T.textMuted }]}>ACTIVE %</Text>
+                            <Text style={[styles.statValue, { color: T.text }]}>{activePercent}%</Text>
                         </View>
                         <View style={styles.verticalDivider} />
                         <View style={styles.statItem}>
-                            <Text style={styles.statLabel}>BEST STREAK</Text>
-                            <Text style={styles.statValue}>{bestStreak}</Text>
+                            <Text style={[styles.statLabel, { color: T.textMuted }]}>BEST STREAK</Text>
+                            <Text style={[styles.statValue, { color: T.text }]}>{bestStreak}</Text>
                         </View>
                     </View>
                 </LinearGradient>
@@ -219,8 +231,8 @@ const ConsistencyScreen = () => {
                 {/* Recent Activity (Weekly Cards) */}
                 <View style={styles.calendarSection}>
                     <View style={styles.calendarHeader}>
-                        <Text style={styles.sectionTitle}>Recent Activity</Text>
-                        <Text style={styles.sectionTitleSmall}>{monthName}</Text>
+                        <Text style={[styles.sectionTitle, { color: T.text }]}>Recent Activity</Text>
+                        <Text style={[styles.sectionTitleSmall, { color: T.textSubtle }]}>{monthName}</Text>
                     </View>
 
                     <ScrollView
@@ -232,7 +244,7 @@ const ConsistencyScreen = () => {
                     >
                         {weeklyData.map((week, index) => (
                             <View key={index} style={styles.weekGroup}>
-                                <Text style={styles.weekDateRange}>{week.rangeLabel}</Text>
+                                <Text style={[styles.weekDateRange, { color: T.textDim }]}>{week.rangeLabel}</Text>
                                 <LinearGradient
                                     colors={['rgba(132, 196, 65, 0.1)', 'rgba(132, 196, 65, 0.02)']}
                                     style={styles.weekCard}
@@ -243,9 +255,9 @@ const ConsistencyScreen = () => {
                                         {week.days.map((day, dIndex) => {
                                             // Determine color based on intensity/activity
                                             // Design: Green for active, Dark Grey for inactive
-                                            let barColor = 'rgba(255,255,255,0.1)';
+                                            let barColor = T.overlayBg;
                                             if (day.hasActivity) {
-                                                barColor = THEME.primary;
+                                                barColor = THEME_STATIC.primary;
                                             }
 
                                             return (
@@ -259,7 +271,7 @@ const ConsistencyScreen = () => {
                                                                 opacity: day.hasActivity ? 1 : 0.3
                                                             },
                                                             day.hasActivity && {
-                                                                shadowColor: THEME.primary,
+                                                                shadowColor: THEME_STATIC.primary,
                                                                 shadowOpacity: 0.5,
                                                                 shadowRadius: 6
                                                             }
@@ -267,7 +279,7 @@ const ConsistencyScreen = () => {
                                                     </View>
                                                     <Text style={[
                                                         styles.weekDayLabel,
-                                                        day.hasActivity && { color: '#fff', fontWeight: 'bold' }
+                                                        day.hasActivity && { color: T.text, fontWeight: 'bold' }
                                                     ]}>
                                                         {day.label}
                                                     </Text>
@@ -290,7 +302,7 @@ const ConsistencyScreen = () => {
                 >
                     <View style={styles.yearHeader}>
                         <Text style={styles.sectionTitleSmall}>YEARLY ACTIVITY</Text>
-                        <Text style={[styles.sectionTitleSmall, { color: THEME.primary }]}>{today.getFullYear()}</Text>
+                        <Text style={[styles.sectionTitleSmall, { color: THEME_STATIC.primary }]}>{today.getFullYear()}</Text>
                     </View>
 
                     <View style={styles.chartContainer}>
@@ -299,7 +311,7 @@ const ConsistencyScreen = () => {
                                 <View style={[
                                     styles.chartBar,
                                     { height: `${h * 100}%` },
-                                    i === 11 ? { backgroundColor: THEME.primary } : { backgroundColor: 'rgba(255,255,255,0.2)' }
+                                    i === 11 ? { backgroundColor: THEME_STATIC.primary } : { backgroundColor: T.overlayBgLight }
                                 ]} />
                             </View>
                         ))}
@@ -319,7 +331,7 @@ const ConsistencyScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: THEME.background,
+        backgroundColor: '#030303',
     },
     header: {
         flexDirection: 'row',
@@ -364,10 +376,10 @@ const styles = StyleSheet.create({
         gap: 6
     },
     activeDot: {
-        width: 6, height: 6, borderRadius: 3, backgroundColor: THEME.primary
+        width: 6, height: 6, borderRadius: 3, backgroundColor: THEME_STATIC.primary
     },
     streakTagText: {
-        color: THEME.primary, fontSize: 10, fontWeight: '800', letterSpacing: 1
+        color: THEME_STATIC.primary, fontSize: 10, fontWeight: '800', letterSpacing: 1
     },
     streakMain: {
         flexDirection: 'row',

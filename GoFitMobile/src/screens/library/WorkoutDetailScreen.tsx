@@ -285,7 +285,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
     },
     workoutTitle: {
       fontSize: getScaledFontSize(theme.typography.h2.fontSize),
-      color: "#FFFFFF",
+      color: BRAND_WHITE,
       fontFamily: "Barlow_800ExtraBold",
       marginBottom: getResponsiveSpacing(24),
     },
@@ -508,7 +508,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
       marginBottom: getResponsiveSpacing(8),
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.3)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
     },
     dayTabIconContainerInactive: {
       backgroundColor: isDark ? getPrimaryWithOpacity(0.1) : getPrimaryWithOpacity(0.15),

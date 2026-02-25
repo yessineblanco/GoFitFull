@@ -47,7 +47,19 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e494513f-8312-435f-a07e-807b3655ee6a"
+      }
+    }
   }
 }

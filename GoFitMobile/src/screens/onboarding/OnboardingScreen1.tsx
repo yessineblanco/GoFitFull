@@ -18,15 +18,12 @@ import { useOnboardingStore } from '@/store/onboardingStore';
 import { useAuthStore } from '@/store/authStore';
 import type { OnboardingStackParamList } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
-
 const { width, height } = Dimensions.get('window');
 
 type NavigationProp = StackNavigationProp<OnboardingStackParamList>;
 
-// Colors
 const PRIMARY_GREEN = '#B4F04E';
-const BACKGROUND_DARK = getThemedBackground('primary');
+const BACKGROUND_DARK = '#030303';
 
 export const OnboardingScreen1: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();

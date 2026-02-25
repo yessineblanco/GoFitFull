@@ -3,38 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { AlertCircle } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
+import { getBackgroundColor, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
+import { useThemeStore } from '@/store/themeStore';
 
 interface ErrorStateProps {
-    /**
-     * Error title - brief description of what went wrong
-     */
     title?: string;
-
-    /**
-     * Error message - more detailed explanation
-     */
     message?: string;
-
-    /**
-     * Retry callback - function to call when user taps retry
-     */
     onRetry?: () => void;
-
-    /**
-     * Retry button text
-     */
     retryText?: string;
-
-    /**
-     * Show icon
-     */
     showIcon?: boolean;
 }
 
-/**
- * Reusable error state component for displaying errors with retry option
- */
 export const ErrorState: React.FC<ErrorStateProps> = ({
     title = 'Something went wrong',
     message = 'An unexpected error occurred. Please try again.',
@@ -42,8 +21,10 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
     retryText = 'Try Again',
     showIcon = true,
 }) => {
+    const { isDark } = useThemeStore();
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
             {showIcon && (
                 <View style={styles.iconContainer}>
                     <AlertCircle
@@ -54,8 +35,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
                 </View>
             )}
 
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.message}>{message}</Text>
+            <Text style={[styles.title, { color: getTextColor(isDark) }]}>{title}</Text>
+            <Text style={[styles.message, { color: getTextSecondaryColor(isDark) }]}>{message}</Text>
 
             {onRetry && (
                 <TouchableOpacity
@@ -79,7 +60,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: getResponsiveSpacing(32),
-        backgroundColor: getThemedBackground('primary'),
     },
     iconContainer: {
         marginBottom: getResponsiveSpacing(24),
@@ -88,14 +68,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: getResponsiveFontSize(20),
         fontWeight: '600',
-        color: themeColors.text.primary,
         fontFamily: 'Barlow_600SemiBold',
         textAlign: 'center',
         marginBottom: getResponsiveSpacing(12),
     },
     message: {
         fontSize: getResponsiveFontSize(15),
-        color: themeColors.text.secondary,
         fontFamily: 'Barlow_400Regular',
         textAlign: 'center',
         lineHeight: getResponsiveFontSize(22),

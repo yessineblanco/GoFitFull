@@ -10,10 +10,13 @@ import { useWorkoutsStore } from '@/store/workoutsStore';
 import { workoutService } from '@/services/workouts';
 import { supabase } from '@/config/supabase';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
+import { useThemeStore } from '@/store/themeStore';
+import { getTextColor, getTextSecondaryColor, getGlassBg, getGlassBorder, getBlurTint } from '@/utils/colorUtils';
 
 export const ActionCard: React.FC = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<any>();
+    const { isDark } = useThemeStore();
     const [incompleteSession, setIncompleteSession] = useState<any>(null);
 
     // Animation
@@ -108,14 +111,16 @@ export const ActionCard: React.FC = () => {
     return (
         <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }, { scale: pulseAnim }] }]}>
             <TouchableOpacity onPress={handlePress} activeOpacity={0.9} style={styles.touchable}>
-                <BlurView intensity={15} tint="dark" style={styles.startCard}>
+                <BlurView intensity={isDark ? 15 : 40} tint={getBlurTint(isDark)} style={[styles.startCard, {
+                    borderColor: isDark ? 'rgba(132, 196, 65, 0.4)' : 'rgba(132, 196, 65, 0.3)',
+                }]}>
                     <View style={styles.startContent}>
                         <View style={styles.startIconContainer}>
                             <Zap size={28} color={theme.colors.primary} fill={theme.colors.primary} />
                         </View>
                         <View style={styles.startTextContainer}>
-                            <Text style={styles.startTitle}>{t('home.startWorkout')}</Text>
-                            <Text style={styles.startSubtitle}>{t('library.createFirstWorkout')}</Text>
+                            <Text style={[styles.startTitle, { color: getTextColor(isDark) }]}>{t('home.startWorkout')}</Text>
+                            <Text style={[styles.startSubtitle, { color: getTextSecondaryColor(isDark) }]}>{t('library.createFirstWorkout')}</Text>
                         </View>
                         <ArrowRight color={theme.colors.primary} size={20} />
                     </View>
@@ -210,12 +215,10 @@ const styles = StyleSheet.create({
     startTitle: {
         fontFamily: 'Barlow_600SemiBold',
         fontSize: getResponsiveFontSize(16),
-        color: '#FFFFFF',
         marginBottom: 2,
     },
     startSubtitle: {
         fontFamily: 'Barlow_400Regular',
         fontSize: getResponsiveFontSize(12),
-        color: 'rgba(255, 255, 255, 0.55)',
     },
 });

@@ -16,7 +16,8 @@ import {
   type DimensionValue,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useEvent, useEventListener } from 'expo';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp as RNRouteProp } from '@react-navigation/native';
@@ -24,7 +25,7 @@ import { ArrowLeft, Play, Pause, Info, Dumbbell, Target, Award, X, RefreshCw, Ma
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeStore } from '@/store/themeStore';
 import { useTextSizeStore, getScaledFontSize } from '@/store/textSizeStore';
-import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
+import { scaleHeight, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
 import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
 import type { LibraryStackParamList } from '@/types';
@@ -53,22 +54,54 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
   const [videoError, setVideoError] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoLoading, setVideoLoading] = useState(false);
-  const [videoKey, setVideoKey] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [positionMillis, setPositionMillis] = useState(0);
-  const [durationMillis, setDurationMillis] = useState(0);
+  const [positionSec, setPositionSec] = useState(0);
+  const [durationSec, setDurationSec] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [isSeeking, setIsSeeking] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [relatedExercises, setRelatedExercises] = useState<Exercise[]>([]);
-  const videoRef = React.useRef<Video>(null);
+  const videoViewRef = useRef<VideoView>(null);
   const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const controlsOpacity = useRef(new Animated.Value(1)).current;
   const seekTrackWidth = useRef(0);
   const lastTapTime = useRef(0);
-  const durationRef = useRef(durationMillis);
-  durationRef.current = durationMillis;
+  const durationRef = useRef(durationSec);
+  durationRef.current = durationSec;
+
+  // ── expo-video player ──
+  const videoSource = showVideo && exercise?.video_url && !videoError
+    ? exercise.video_url
+    : null;
+
+  const player = useVideoPlayer(videoSource, (p) => {
+    p.loop = true;
+    p.timeUpdateEventInterval = 0.25;
+    p.play();
+  });
+
+  const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
+  const { status: playerStatus } = useEvent(player, 'statusChange', { status: player.status });
+
+  // Track time updates
+  useEventListener(player, 'timeUpdate', (payload) => {
+    if (!isSeeking) {
+      setPositionSec(payload.currentTime);
+      if (player.duration > 0) {
+        setDurationSec(player.duration);
+      }
+    }
+  });
+
+  // Detect loading / error from status
+  useEffect(() => {
+    if (playerStatus === 'readyToPlay' && videoLoading) {
+      setVideoLoading(false);
+    }
+    if (playerStatus === 'error') {
+      setVideoError(true);
+      setVideoLoading(false);
+    }
+  }, [playerStatus, videoLoading]);
 
   const MEDIA_COLLAPSED = scaleHeight(340);
   const MEDIA_EXPANDED = SCREEN_HEIGHT * 0.65;
@@ -149,41 +182,29 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
     controlsTimer.current = setTimeout(() => fadeControlsOut(), 3500);
   }, [fadeControlsIn, fadeControlsOut]);
 
-  const onPlaybackStatusUpdate = useCallback((status: AVPlaybackStatus) => {
-    if (status.isLoaded) {
-      if (videoLoading) setVideoLoading(false);
-      if (!isSeeking) {
-        setPositionMillis(status.positionMillis || 0);
-        setDurationMillis(status.durationMillis || 0);
-      }
-      setIsPlaying(status.isPlaying);
-    }
-  }, [videoLoading, isSeeking]);
-
-  const togglePlayPause = async () => {
-    if (!videoRef.current) return;
+  const togglePlayPause = () => {
     if (isPlaying) {
-      await videoRef.current.pauseAsync();
+      player.pause();
     } else {
-      await videoRef.current.playAsync();
+      player.play();
     }
     resetControlsTimer();
   };
 
-  const seekTo = async (fraction: number) => {
-    if (!videoRef.current || durationMillis === 0) return;
-    const pos = Math.round(fraction * durationMillis);
-    setPositionMillis(pos);
-    await videoRef.current.setPositionAsync(pos);
+  const seekTo = (fraction: number) => {
+    if (durationSec === 0) return;
+    const pos = fraction * durationSec;
+    setPositionSec(pos);
+    player.currentTime = pos;
     setIsSeeking(false);
     resetControlsTimer();
   };
 
-  const formatTime = (ms: number) => {
-    const totalSec = Math.floor(ms / 1000);
+  const formatTime = (sec: number) => {
+    const totalSec = Math.floor(sec);
     const min = Math.floor(totalSec / 60);
-    const sec = totalSec % 60;
-    return `${min}:${sec.toString().padStart(2, '0')}`;
+    const s = totalSec % 60;
+    return `${min}:${s.toString().padStart(2, '0')}`;
   };
 
   // ── Double-tap detection ──
@@ -220,7 +241,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
         const dur = durationRef.current;
         if (seekTrackWidth.current === 0 || dur === 0) return;
         const fraction = Math.max(0, Math.min(1, gestureState.moveX / seekTrackWidth.current));
-        setPositionMillis(Math.round(fraction * dur));
+        setPositionSec(fraction * dur);
       },
       onPanResponderRelease: (_e, gestureState) => {
         const dur = durationRef.current;
@@ -252,6 +273,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
   };
 
   const closeVideo = () => {
+    player.pause();
     Animated.spring(mediaHeight, {
       toValue: MEDIA_COLLAPSED,
       useNativeDriver: false,
@@ -266,29 +288,38 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
   const retryVideo = () => {
     setVideoError(false);
     setVideoLoading(true);
-    setVideoKey((k) => k + 1);
-    setShowVideo(true);
-    Animated.spring(mediaHeight, {
-      toValue: MEDIA_EXPANDED,
-      useNativeDriver: false,
-      tension: 50,
-      friction: 9,
-    }).start();
+    setShowVideo(false);
+    setTimeout(() => {
+      setShowVideo(true);
+      setShowControls(true);
+      controlsOpacity.setValue(1);
+      resetControlsTimer();
+      Animated.spring(mediaHeight, {
+        toValue: MEDIA_EXPANDED,
+        useNativeDriver: false,
+        tension: 50,
+        friction: 9,
+      }).start();
+    }, 100);
   };
 
-  const toggleFullscreen = async () => {
-    if (videoRef.current) {
+  const toggleFullscreen = () => {
+    if (videoViewRef.current) {
       try {
-        if (isFullscreen) {
-          await videoRef.current.dismissFullscreenPlayer();
-        } else {
-          await videoRef.current.presentFullscreenPlayer();
-        }
-        setIsFullscreen(!isFullscreen);
+        videoViewRef.current.enterFullscreen();
       } catch {
         // Fullscreen not supported on this platform
       }
     }
+  };
+
+  // PiP-aware back navigation: if video is playing, keep playback alive so
+  // the OS transitions into Picture-in-Picture automatically.
+  const handleBackWithPiP = () => {
+    if (showVideo && isPlaying) {
+      player.play();
+    }
+    navigation.goBack();
   };
 
   // ── Share exercise ──
@@ -657,7 +688,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
   const hasGif = exercise.video_url && isGifUrl(exercise.video_url);
   const showVideoPlayer = hasVideo && showVideo && exercise.video_url && isVideoUrl(exercise.video_url);
 
-  const seekProgress = durationMillis > 0 ? (positionMillis / durationMillis) * 100 : 0;
+  const seekProgress = durationSec > 0 ? (positionSec / durationSec) * 100 : 0;
 
   // ── Render ──
   return (
@@ -676,7 +707,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
         <Animated.View style={[s.mediaContainer, { height: mediaHeight }]}>
           {videoError && exercise.video_url ? (
             <View style={s.errorWrap}>
-              <TouchableOpacity style={[s.backBtn, { zIndex: 20 }]} onPress={() => navigation.goBack()} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
+              <TouchableOpacity style={[s.backBtn, { zIndex: 20 }]} onPress={handleBackWithPiP} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
                 <ArrowLeft size={20} color={isDark ? '#fff' : '#333'} />
               </TouchableOpacity>
               <Text style={s.errorText}>{t('library.exerciseDetail.videoError')}</Text>
@@ -687,19 +718,14 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
             </View>
           ) : showVideoPlayer ? (
             <View style={s.videoWrap}>
-              <Video
-                key={videoKey}
-                ref={videoRef}
-                source={{ uri: exercise.video_url! }}
+              <VideoView
+                ref={videoViewRef}
+                player={player}
                 style={s.video}
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay
-                isLooping
-                onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-                onError={handleVideoError}
-                onFullscreenUpdate={({ fullscreenUpdate }) => {
-                  setIsFullscreen(fullscreenUpdate === 1);
-                }}
+                contentFit="contain"
+                nativeControls={false}
+                allowsFullscreen
+                allowsPictureInPicture
               />
               {videoLoading && (
                 <View style={s.videoOverlay}>
@@ -723,7 +749,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                   {/* Top bar */}
                   <View style={s.controlsTopBar}>
                     <View style={{ flexDirection: 'row', gap: 10 }}>
-                      <TouchableOpacity style={s.iconBtn} onPress={() => navigation.goBack()} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
+                      <TouchableOpacity style={s.iconBtn} onPress={handleBackWithPiP} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
                         <ArrowLeft size={20} color="#fff" />
                       </TouchableOpacity>
                       <TouchableOpacity style={s.iconBtn} onPress={closeVideo} activeOpacity={0.7} accessibilityLabel={t('library.exerciseDetail.closeVideo', { defaultValue: 'Close video' })} accessibilityRole="button">
@@ -750,10 +776,10 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                     </TouchableOpacity>
                   </View>
                   {/* Bottom seek bar */}
-                  {durationMillis > 0 && (
+                  {durationSec > 0 && (
                     <View style={s.controlsBottom}>
                       <View style={s.seekBarRow}>
-                        <Text style={s.timeText}>{formatTime(positionMillis)}</Text>
+                        <Text style={s.timeText}>{formatTime(positionSec)}</Text>
                         <View
                           style={s.seekTrack}
                           onLayout={onSeekTrackLayout}
@@ -764,7 +790,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                           <View style={[s.seekFill, { width: `${seekProgress}%` as DimensionValue }]} />
                           <View style={[s.seekThumb, { left: `${seekProgress}%` as DimensionValue }]} />
                         </View>
-                        <Text style={s.timeText}>{formatTime(durationMillis)}</Text>
+                        <Text style={s.timeText}>{formatTime(durationSec)}</Text>
                       </View>
                     </View>
                   )}
@@ -777,7 +803,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                     ...StyleSheet.absoluteFillObject,
                     zIndex: showControls ? 14 : 10,
                     top: showControls ? insets.top + 60 : 0,
-                    bottom: showControls && durationMillis > 0 ? 110 : 0,
+                    bottom: showControls && durationSec > 0 ? 110 : 0,
                   }}
                   activeOpacity={1}
                   onPress={handleVideoAreaTap}
@@ -810,7 +836,7 @@ export const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navi
                 colors={['transparent', isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.45)']}
                 style={s.mediaGradient}
               />
-              <TouchableOpacity style={s.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
+              <TouchableOpacity style={s.backBtn} onPress={handleBackWithPiP} activeOpacity={0.7} accessibilityLabel={t('common.back', { defaultValue: 'Go back' })} accessibilityRole="button">
                 <ArrowLeft size={20} color="#fff" />
               </TouchableOpacity>
             </>

@@ -192,7 +192,7 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
   const dynamicStyles = React.useMemo(() => ({
     container: {
       flex: 1,
-      backgroundColor: '#030303',
+      backgroundColor: BRAND_BLACK,
     },
     backgroundGradient: {
       position: 'absolute' as const,
@@ -208,28 +208,27 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
       right: 0,
       height: 600,
     },
-
     headerTitle: {
       fontSize: getScaledFontSize(18),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     infoText: {
       fontSize: getScaledFontSize(14),
-      color: 'rgba(255, 255, 255, 0.8)',
+      color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.6)',
       fontFamily: 'Barlow_400Regular',
       lineHeight: getScaledFontSize(20),
     },
     optionLabel: {
       fontSize: getScaledFontSize(18),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     optionDescription: {
       fontSize: getScaledFontSize(14),
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
       fontFamily: 'Barlow_400Regular',
       marginBottom: 16,
     },
@@ -237,15 +236,15 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
       color: theme.colors.primary,
     },
     optionDescriptionActive: {
-      color: 'rgba(255, 255, 255, 0.8)',
+      color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
     },
     previewText: {
-      color: 'rgba(255, 255, 255, 0.9)',
+      color: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
     },
     previewContainer: {
       backgroundColor: 'transparent',
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
     },
     glowWrapper: {
       padding: 0,
@@ -253,7 +252,7 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
       backgroundColor: 'transparent',
     },
     innerCard: {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderRadius: 15,
       borderWidth: 0,
     },
@@ -263,7 +262,7 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
     <View style={[styles.container, dynamicStyles.container]}>
       {/* Background Gradient Mesh */}
       <LinearGradient
-        colors={['#0B120B', '#050505', '#000000']}
+        colors={isDark ? ['#0B120B', '#050505', '#000000'] : ['#F5F7F2', '#FAFBFC', '#FFFFFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={dynamicStyles.backgroundGradient}
@@ -287,7 +286,7 @@ export const TextSizeSettingsScreen: React.FC<TextSizeSettingsScreenProps> = ({ 
           style={[styles.saveButton, (!hasChanges || selectedSize === textSize) && styles.saveButtonDisabled]}
           disabled={!hasChanges || selectedSize === textSize}
         >
-          <Save size={24} color={hasChanges && selectedSize !== textSize ? BRAND_PRIMARY : 'rgba(255, 255, 255, 0.3)'} />
+          <Save size={24} color={hasChanges && selectedSize !== textSize ? BRAND_PRIMARY : (isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)')} />
         </TouchableOpacity>
       </View>
 

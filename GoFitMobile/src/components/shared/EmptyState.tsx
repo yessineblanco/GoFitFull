@@ -3,45 +3,18 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Inbox, Package, Search, Calendar, Dumbbell } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
+import { getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 import { useThemeStore } from '@/store/themeStore';
 
 export type EmptyStateType = 'workouts' | 'exercises' | 'sessions' | 'plans' | 'search' | 'generic';
 
 interface EmptyStateProps {
-    /**
-     * Type of empty state - determines icon and default messages
-     */
     type?: EmptyStateType;
-    
-    /**
-     * Custom title - overrides default for type
-     */
     title?: string;
-    
-    /**
-     * Custom message - overrides default for type
-     */
     message?: string;
-    
-    /**
-     * Action button callback
-     */
     onAction?: () => void;
-    
-    /**
-     * Action button text
-     */
     actionText?: string;
-    
-    /**
-     * Show icon
-     */
     showIcon?: boolean;
-    
-    /**
-     * Custom icon component
-     */
     icon?: React.ReactNode;
 }
 
@@ -88,9 +61,6 @@ const getDefaultContent = (type: EmptyStateType, isDark: boolean): { title: stri
     }
 };
 
-/**
- * Reusable empty state component for displaying when there's no data
- */
 export const EmptyState: React.FC<EmptyStateProps> = ({
     type = 'generic',
     title,
@@ -114,8 +84,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 </View>
             )}
 
-            <Text style={styles.title}>{displayTitle}</Text>
-            <Text style={styles.message}>{displayMessage}</Text>
+            <Text style={[styles.title, { color: getTextColor(isDark) }]}>{displayTitle}</Text>
+            <Text style={[styles.message, { color: getTextSecondaryColor(isDark) }]}>{displayMessage}</Text>
 
             {onAction && (
                 <TouchableOpacity
@@ -147,14 +117,12 @@ const styles = StyleSheet.create({
     title: {
         fontSize: getResponsiveFontSize(18),
         fontWeight: '600',
-        color: themeColors.text.primary,
         fontFamily: 'Barlow_600SemiBold',
         textAlign: 'center',
         marginBottom: getResponsiveSpacing(8),
     },
     message: {
         fontSize: getResponsiveFontSize(14),
-        color: themeColors.text.secondary,
         fontFamily: 'Barlow_400Regular',
         textAlign: 'center',
         lineHeight: getResponsiveFontSize(20),
@@ -178,4 +146,3 @@ const styles = StyleSheet.create({
         fontFamily: 'Barlow_600SemiBold',
     },
 });
-

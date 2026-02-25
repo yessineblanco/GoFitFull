@@ -25,7 +25,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { useTextSizeStore, getScaledFontSize } from '@/store/textSizeStore';
 import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getSurfaceColor, getGlassBg, getGlassBorder, getBlurTint } from '@/utils/colorUtils';
 import type { LibraryStackParamList } from '@/types';
 import { workoutService, type ExerciseConfig } from '@/services/workouts';
 import { useAuthStore } from '@/store/authStore';
@@ -996,7 +996,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
     },
     progressBar: {
       height: scaleHeight(8),
-      backgroundColor: isDark ? '#1a1a1a' : getTextColorWithOpacity(false, 0.1),
+      backgroundColor: getSurfaceColor(isDark),
       borderRadius: scaleWidth(4),
       overflow: 'hidden' as const,
       borderWidth: 1,
@@ -1424,7 +1424,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
           }}>
             {/* Time Stat */}
             <View style={{ alignItems: 'center' as const, flex: 1, gap: getResponsiveSpacing(12) }}>
-              <BlurView intensity={30} tint="dark" style={{
+              <BlurView intensity={30} tint={isDark ? "dark" : "light"} style={{
                 width: 64,
                 height: 64,
                 borderRadius: 32,
@@ -1458,7 +1458,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
 
             {/* Sets Stat */}
             <View style={{ alignItems: 'center' as const, flex: 1, gap: getResponsiveSpacing(12) }}>
-              <BlurView intensity={30} tint="dark" style={{
+              <BlurView intensity={30} tint={isDark ? "dark" : "light"} style={{
                 width: 64,
                 height: 64,
                 borderRadius: 32,
@@ -1492,7 +1492,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
 
             {/* Exercises Stat */}
             <View style={{ alignItems: 'center' as const, flex: 1, gap: getResponsiveSpacing(12) }}>
-              <BlurView intensity={30} tint="dark" style={{
+              <BlurView intensity={30} tint={isDark ? "dark" : "light"} style={{
                 width: 64,
                 height: 64,
                 borderRadius: 32,
@@ -1757,7 +1757,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
           <TouchableOpacity
             style={{
               padding: 10,
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)',
               borderRadius: 12,
               marginLeft: 8,
             }}
@@ -1783,7 +1783,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
           zIndex: 1000,
         }}>
           <View style={{
-            backgroundColor: isDark ? '#1a1a1a' : '#ffffff',
+            backgroundColor: getSurfaceColor(isDark),
             borderRadius: getResponsiveSpacing(20),
             padding: getResponsiveSpacing(32),
             alignItems: 'center' as const,
@@ -2065,7 +2065,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
           right: getResponsiveSpacing(20),
           zIndex: 100,
         }}>
-          <BlurView intensity={40} tint="dark" style={{
+          <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={{
             flexDirection: 'row',
             alignItems: 'center',
             padding: getResponsiveSpacing(14),

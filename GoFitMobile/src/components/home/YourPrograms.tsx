@@ -15,6 +15,7 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import type { LibraryStackParamList } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { SectionHeader } from './SectionHeader';
+import { getTextColor, getTextSecondaryColor, getGlassBg, getGlassBorder, getOverlayColor, getBlurTint } from '@/utils/colorUtils';
 
 type NavigationProp = StackNavigationProp<LibraryStackParamList>;
 
@@ -137,12 +138,14 @@ export const YourPrograms: React.FC = () => {
                     onPress={handleCreateProgram}
                     activeOpacity={0.8}
                 >
-                    <BlurView intensity={20} tint="dark" style={styles.emptyBlur}>
+                    <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={[styles.emptyBlur, {
+                        backgroundColor: getGlassBg(isDark),
+                    }]}>
                         <View style={styles.plusIcon}>
                             <Play size={24} color={theme.colors.primary} style={{ transform: [{ rotate: '-90deg' }] }} />
                         </View>
-                        <Text style={styles.emptyTitle}>Create Program</Text>
-                        <Text style={styles.emptySubtitle}>Tap to build your first routine</Text>
+                        <Text style={[styles.emptyTitle, { color: getTextColor(isDark) }]}>Create Program</Text>
+                        <Text style={[styles.emptySubtitle, { color: getTextSecondaryColor(isDark) }]}>Tap to build your first routine</Text>
                     </BlurView>
                 </TouchableOpacity>
             </View>
@@ -176,7 +179,10 @@ export const YourPrograms: React.FC = () => {
                                 index === 0 && styles.firstProgramRow
                             ]}
                         >
-                            <BlurView intensity={15} tint="dark" style={styles.rowBlur}>
+                            <BlurView intensity={isDark ? 15 : 40} tint={getBlurTint(isDark)} style={[styles.rowBlur, {
+                                backgroundColor: getGlassBg(isDark),
+                                borderColor: getGlassBorder(isDark),
+                            }]}>
                                 {/* Gradient Background */}
                                 <LinearGradient
                                     colors={isActive
@@ -219,6 +225,7 @@ export const YourPrograms: React.FC = () => {
                                     <View style={styles.programInfo}>
                                         <Text style={[
                                             styles.programName,
+                                            { color: getTextColor(isDark) },
                                             isActive && styles.programNameActive
                                         ]} numberOfLines={1}>
                                             {program.name}
@@ -272,7 +279,7 @@ const styles = StyleSheet.create({
     loadingText: {
         fontSize: getScaledFontSize(14),
         fontFamily: 'Barlow_400Regular',
-        color: 'rgba(255,255,255,0.5)',
+        color: 'rgba(128,128,128,0.7)',
     },
     emptyCard: {
         marginHorizontal: getResponsiveSpacing(20),

@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { X, Check } from 'lucide-react-native';
+import { useThemeStore } from '@/store/themeStore';
+import { getBlurTint, getSurfaceColor, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
@@ -45,6 +47,7 @@ const BAG_ITEMS = [
 
 export const GymBagModal: React.FC<GymBagModalProps> = ({ visible, onClose }) => {
     const { items, toggle } = useGymBagStore();
+    const { isDark } = useThemeStore();
 
     const allChecked = BAG_ITEMS.every(i => items[i.id]);
 
@@ -57,16 +60,16 @@ export const GymBagModal: React.FC<GymBagModalProps> = ({ visible, onClose }) =>
         >
             <Pressable style={styles.overlay} onPress={onClose}>
                 <View style={styles.modalContent}>
-                    <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
+                    <BlurView intensity={isDark ? 80 : 60} tint={getBlurTint(isDark)} style={StyleSheet.absoluteFill} />
 
                     {/* Header */}
                     <View style={styles.header}>
                         <View>
-                            <Text style={styles.title}>Gym Bag Checklist</Text>
-                            <Text style={styles.subtitle}>Don't forget the essentials!</Text>
+                            <Text style={[styles.title, { color: getTextColor(isDark) }]}>Gym Bag Checklist</Text>
+                            <Text style={[styles.subtitle, { color: getTextSecondaryColor(isDark) }]}>Don't forget the essentials!</Text>
                         </View>
                         <Pressable onPress={onClose} style={styles.closeBtn}>
-                            <X size={20} color="#fff" />
+                            <X size={20} color={getTextColor(isDark)} />
                         </Pressable>
                     </View>
 
@@ -77,17 +80,17 @@ export const GymBagModal: React.FC<GymBagModalProps> = ({ visible, onClose }) =>
                             return (
                                 <Pressable
                                     key={item.id}
-                                    style={[styles.itemRow, checked && styles.itemRowChecked]}
+                                    style={[styles.itemRow, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }, checked && styles.itemRowChecked]}
                                     onPress={() => toggle(item.id)}
                                 >
                                     <View style={styles.itemLeft}>
                                         <Text style={styles.itemIcon}>{item.icon}</Text>
-                                        <Text style={[styles.itemLabel, checked && styles.itemLabelChecked]}>
+                                        <Text style={[styles.itemLabel, { color: getTextColor(isDark) }, checked && [styles.itemLabelChecked, { color: getTextColor(isDark) }]]}>
                                             {item.label}
                                         </Text>
                                     </View>
 
-                                    <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                                    <View style={[styles.checkbox, { borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)' }, checked && styles.checkboxChecked]}>
                                         {checked && <Check size={14} color="#000" strokeWidth={3} />}
                                     </View>
                                 </Pressable>
@@ -96,8 +99,8 @@ export const GymBagModal: React.FC<GymBagModalProps> = ({ visible, onClose }) =>
                     </View>
 
                     {/* Footer Status */}
-                    <View style={styles.footer}>
-                        <Text style={[styles.footerText, allChecked && { color: '#84c441' }]}>
+                    <View style={[styles.footer, { backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.04)' }]}>
+                        <Text style={[styles.footerText, { color: getTextSecondaryColor(isDark) }, allChecked && { color: '#84c441' }]}>
                             {allChecked ? "You're all set! 🎒🔥" : "Pack your bag!"}
                         </Text>
                     </View>
@@ -122,7 +125,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
-        backgroundColor: '#1a1a1a'
     },
     header: {
         flexDirection: 'row',

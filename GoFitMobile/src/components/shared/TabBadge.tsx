@@ -7,6 +7,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { theme } from '@/theme';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor } from '@/utils/colorUtils';
 
 interface TabBadgeProps {
   /**
@@ -55,6 +57,7 @@ export const TabBadge: React.FC<TabBadgeProps> = ({
   top = -4,
   right = -4,
 }) => {
+  const { isDark } = useThemeStore();
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -111,6 +114,7 @@ export const TabBadge: React.FC<TabBadgeProps> = ({
       style={[
         styles.badge,
         {
+          borderColor: getBackgroundColor(isDark),
           width: showDot ? badgeSize.width : 'auto',
           height: badgeSize.height,
           minWidth: showDot ? badgeSize.width : badgeSize.height,

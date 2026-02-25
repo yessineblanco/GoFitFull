@@ -17,6 +17,8 @@ import { Timeline } from "./Timeline";
 
 import MyWorkouts from "./MyWorkouts";
 import { useThemeColors } from "@/theme/useThemeColors";
+import { useThemeStore } from "@/store/themeStore";
+import { getBackgroundColor, getOverlayColor } from "@/utils/colorUtils";
 import { useUIStore } from "@/store/uiStore";
 import { useWorkoutPlansStore } from "@/store/workoutPlansStore";
 import { useSessionsStore } from "@/store/sessionsStore";
@@ -34,6 +36,7 @@ const Divider: React.FC = () => (
 export const WorkoutsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const colors = useThemeColors();
+  const { isDark } = useThemeStore();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -95,11 +98,11 @@ export const WorkoutsScreen: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#030303' }}>
-      <StatusBar barStyle="light-content" />
+    <View style={{ flex: 1, backgroundColor: getBackgroundColor(isDark) }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       {/* Global Mesh Gradient Background */}
-      <View style={styles.glowContainer}>
+      <View style={[styles.glowContainer, { backgroundColor: getBackgroundColor(isDark) }]}>
         <Animated.View
           style={[
             styles.glowPoint,
@@ -151,7 +154,7 @@ export const WorkoutsScreen: React.FC = () => {
       <ScreenHeader
         title="MY PLAN"
         rightElement={
-          <View style={styles.progressBarBackground}>
+          <View style={[styles.progressBarBackground, { backgroundColor: getOverlayColor(isDark, 0.1) }]}>
             <Animated.View
               style={[styles.progressBar, { backgroundColor: '#84c441', width: indicatorWidth }]}
             />
@@ -195,7 +198,6 @@ const styles = StyleSheet.create({
 
   progressBarBackground: {
     height: 2,
-    backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 1,
     marginBottom: 8,
     marginHorizontal: 16,
@@ -233,7 +235,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: -1,
     overflow: 'hidden',
-    backgroundColor: '#030303',
   },
   glowPoint: {
     position: 'absolute',

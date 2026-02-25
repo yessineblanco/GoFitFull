@@ -3,13 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { AlertTriangle } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor, getTextColor, getTextSecondaryColor, getTextLightColor, getSurfaceColor } from '@/utils/colorUtils';
 
 interface Props {
     children: ReactNode;
-    /**
-     * Fallback component to render on error
-     */
     fallback?: (error: Error, resetError: () => void) => ReactNode;
 }
 
@@ -18,104 +16,84 @@ interface State {
     error: Error | null;
 }
 
-/**
- * Error boundary component to catch errors at route level
- * Prevents the entire app from crashing when a component throws an error
- */
+const ErrorUI: React.FC<{ error: Error; onReset: () => void }> = ({ error, onReset }) => {
+    const { isDark } = useThemeStore();
+
+    return (
+        <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.iconContainer}>
+                    <AlertTriangle size={72} color={theme.colors.error} strokeWidth={1.5} />
+                </View>
+
+                <Text style={[styles.title, { color: getTextColor(isDark) }]}>Oops! Something broke</Text>
+                <Text style={[styles.message, { color: getTextSecondaryColor(isDark) }]}>
+                    Don't worry, it's not your fault. The app encountered an unexpected error.
+                </Text>
+
+                {__DEV__ && (
+                    <View style={[styles.errorDetailsContainer, { backgroundColor: getSurfaceColor(isDark) }]}>
+                        <Text style={styles.errorDetailsTitle}>Error Details (Dev Mode):</Text>
+                        <Text style={[styles.errorDetailsText, { color: getTextColor(isDark) }]}>
+                            {error.message}
+                        </Text>
+                        {error.stack && (
+                            <Text style={[styles.errorStack, { color: getTextLightColor(isDark) }]} numberOfLines={10}>
+                                {error.stack}
+                            </Text>
+                        )}
+                    </View>
+                )}
+
+                <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={onReset}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Try again"
+                    accessibilityHint="Attempts to recover from the error"
+                >
+                    <Text style={styles.retryButtonText}>Try Again</Text>
+                </TouchableOpacity>
+
+                <Text style={[styles.helpText, { color: getTextLightColor(isDark) }]}>
+                    If this keeps happening, try restarting the app.
+                </Text>
+            </ScrollView>
+        </View>
+    );
+};
+
 export class RouteErrorBoundary extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = {
-            hasError: false,
-            error: null,
-        };
+        this.state = { hasError: false, error: null };
     }
 
     static getDerivedStateFromError(error: Error): State {
-        // Update state so the next render will show the fallback UI
-        return {
-            hasError: true,
-            error,
-        };
+        return { hasError: true, error };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        // Log error to console in development
         if (__DEV__) {
             console.error('RouteErrorBoundary caught an error:', error, errorInfo);
         }
-
-        // In production, you could log to an error reporting service here
-        // Example: Sentry.captureException(error, { extra: errorInfo });
     }
 
     resetError = () => {
-        this.setState({
-            hasError: false,
-            error: null,
-        });
+        this.setState({ hasError: false, error: null });
     };
 
     render() {
         if (this.state.hasError && this.state.error) {
-            // If custom fallback provided, use it
             if (this.props.fallback) {
                 return this.props.fallback(this.state.error, this.resetError);
             }
-
-            // Default error UI
-            return (
-                <View style={styles.container}>
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        showsVerticalScrollIndicator={false}
-                    >
-                        <View style={styles.iconContainer}>
-                            <AlertTriangle
-                                size={72}
-                                color={theme.colors.error}
-                                strokeWidth={1.5}
-                            />
-                        </View>
-
-                        <Text style={styles.title}>Oops! Something broke</Text>
-                        <Text style={styles.message}>
-                            Don't worry, it's not your fault. The app encountered an unexpected error.
-                        </Text>
-
-                        {__DEV__ && (
-                            <View style={styles.errorDetailsContainer}>
-                                <Text style={styles.errorDetailsTitle}>Error Details (Dev Mode):</Text>
-                                <Text style={styles.errorDetailsText}>
-                                    {this.state.error.message}
-                                </Text>
-                                {this.state.error.stack && (
-                                    <Text style={styles.errorStack} numberOfLines={10}>
-                                        {this.state.error.stack}
-                                    </Text>
-                                )}
-                            </View>
-                        )}
-
-                        <TouchableOpacity
-                            style={styles.retryButton}
-                            onPress={this.resetError}
-                            activeOpacity={0.8}
-                            accessibilityRole="button"
-                            accessibilityLabel="Try again"
-                            accessibilityHint="Attempts to recover from the error"
-                        >
-                            <Text style={styles.retryButtonText}>Try Again</Text>
-                        </TouchableOpacity>
-
-                        <Text style={styles.helpText}>
-                            If this keeps happening, try restarting the app.
-                        </Text>
-                    </ScrollView>
-                </View>
-            );
+            return <ErrorUI error={this.state.error} onReset={this.resetError} />;
         }
-
         return this.props.children;
     }
 }
@@ -123,7 +101,6 @@ export class RouteErrorBoundary extends Component<Props, State> {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: getThemedBackground('primary'),
     },
     scrollContent: {
         flexGrow: 1,
@@ -139,21 +116,18 @@ const styles = StyleSheet.create({
     title: {
         fontSize: getResponsiveFontSize(24),
         fontWeight: '600',
-        color: themeColors.text.primary,
         fontFamily: 'Barlow_600SemiBold',
         textAlign: 'center',
         marginBottom: getResponsiveSpacing(12),
     },
     message: {
         fontSize: getResponsiveFontSize(16),
-        color: themeColors.text.secondary,
         fontFamily: 'Barlow_400Regular',
         textAlign: 'center',
         lineHeight: getResponsiveFontSize(24),
         marginBottom: getResponsiveSpacing(32),
     },
     errorDetailsContainer: {
-        backgroundColor: themeColors.background.surface,
         padding: getResponsiveSpacing(16),
         borderRadius: getResponsiveSpacing(12),
         marginBottom: getResponsiveSpacing(24),
@@ -170,13 +144,11 @@ const styles = StyleSheet.create({
     },
     errorDetailsText: {
         fontSize: getResponsiveFontSize(13),
-        color: themeColors.text.primary,
         fontFamily: 'Barlow_400Regular',
         marginBottom: getResponsiveSpacing(8),
     },
     errorStack: {
         fontSize: getResponsiveFontSize(11),
-        color: themeColors.text.tertiary,
         fontFamily: 'Barlow_400Regular',
         lineHeight: getResponsiveFontSize(16),
     },
@@ -200,7 +172,6 @@ const styles = StyleSheet.create({
     },
     helpText: {
         fontSize: getResponsiveFontSize(13),
-        color: themeColors.text.tertiary,
         fontFamily: 'Barlow_400Regular',
         textAlign: 'center',
     },

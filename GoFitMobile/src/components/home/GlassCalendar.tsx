@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
+import { useThemeStore } from '@/store/themeStore';
+import { getTextColor, getGlassBg, getGlassBorder, getBlurTint, getOverlayColor } from '@/utils/colorUtils';
 import {
     format,
     addDays,
@@ -22,6 +24,7 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
     onDateSelect,
     workoutDays = [],
 }) => {
+    const { isDark } = useThemeStore();
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); // Monday start
 
@@ -45,25 +48,30 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
     };
 
     return (
-        <View style={styles.container}>
-            <BlurView intensity={80} tint="dark" style={styles.glassContainer}>
+        <View style={[styles.container, { borderColor: getGlassBorder(isDark) }]}>
+            <BlurView intensity={isDark ? 80 : 60} tint={getBlurTint(isDark)} style={[styles.glassContainer, {
+                backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)',
+            }]}>
                 <LinearGradient
-                    colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
+                    colors={isDark
+                        ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']
+                        : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)']
+                    }
                     style={StyleSheet.absoluteFill}
                 />
 
                 {/* Header: Month/Year + Navigation */}
                 <View style={styles.header}>
-                    <Text style={styles.monthText}>{monthYear}</Text>
+                    <Text style={[styles.monthText, { color: getTextColor(isDark) }]}>{monthYear}</Text>
                     <View style={styles.navContainer}>
-                        <TouchableOpacity onPress={handlePrevWeek} style={styles.navButton}>
-                            <BlurView intensity={40} tint="light" style={styles.navBlur}>
-                                <ChevronLeft size={20} color="#FFF" />
+                        <TouchableOpacity onPress={handlePrevWeek} style={[styles.navButton, { borderColor: getGlassBorder(isDark) }]}>
+                            <BlurView intensity={40} tint={getBlurTint(isDark)} style={[styles.navBlur, { backgroundColor: getGlassBg(isDark) }]}>
+                                <ChevronLeft size={20} color={getTextColor(isDark)} />
                             </BlurView>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={handleNextWeek} style={styles.navButton}>
-                            <BlurView intensity={40} tint="light" style={styles.navBlur}>
-                                <ChevronRight size={20} color="#FFF" />
+                        <TouchableOpacity onPress={handleNextWeek} style={[styles.navButton, { borderColor: getGlassBorder(isDark) }]}>
+                            <BlurView intensity={40} tint={getBlurTint(isDark)} style={[styles.navBlur, { backgroundColor: getGlassBg(isDark) }]}>
+                                <ChevronRight size={20} color={getTextColor(isDark)} />
                             </BlurView>
                         </TouchableOpacity>
                     </View>
@@ -86,9 +94,10 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
                             >
                                 <BlurView
                                     intensity={isSelected ? 90 : 20}
-                                    tint={isSelected ? 'light' : 'dark'}
+                                    tint={isSelected ? 'light' : getBlurTint(isDark)}
                                     style={[
                                         styles.dayBlur,
+                                        { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) },
                                         isSelected && styles.dayBlurSelected,
                                         !isSelected && isToday && styles.dayBlurToday,
                                     ]}
@@ -104,6 +113,7 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
 
                                     <Text style={[
                                         styles.dayName,
+                                        { color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)' },
                                         isSelected && styles.dayNameSelected,
                                         !isSelected && isToday && { color: theme.colors.primary }
                                     ]}>
@@ -113,6 +123,7 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
                                     <View style={styles.dateNumberContainer}>
                                         <Text style={[
                                             styles.dayNumber,
+                                            { color: getTextColor(isDark) },
                                             isSelected && styles.dayNumberSelected,
                                             !isSelected && isToday && styles.dayNumberToday
                                         ]}>
@@ -143,8 +154,6 @@ const styles = StyleSheet.create({
         borderRadius: getResponsiveSpacing(24),
         overflow: 'hidden',
         borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.12)',
-        // Enhanced Shadow
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 12 },
         shadowOpacity: 0.35,
@@ -153,7 +162,6 @@ const styles = StyleSheet.create({
     },
     glassContainer: {
         padding: getResponsiveSpacing(20),
-        backgroundColor: 'rgba(10, 10, 10, 0.4)', // Slightly transparent base for blur
     },
     header: {
         flexDirection: 'row',

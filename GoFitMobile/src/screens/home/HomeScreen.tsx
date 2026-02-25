@@ -12,7 +12,8 @@ import { YourPrograms } from '@/components/home/YourPrograms';
 import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { getResponsiveSpacing } from '@/utils/responsive';
 import { theme } from '@/theme';
-import { getThemedBackground, colors } from '@/utils/themeUtils';
+import { getBackgroundColor, getSurfaceColor, getGlassBg, getGlassBorder, getShadow } from '@/utils/colorUtils';
+import { useThemeStore } from '@/store/themeStore';
 import { useTabScroll } from '@/hooks/useTabScroll';
 
 export const HomeScreen: React.FC = () => {
@@ -20,11 +21,11 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { onScroll: handleTabScroll } = useTabScroll();
   const { fetch } = useSessionsStore();
+  const { isDark } = useThemeStore();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch sessions on mount
   React.useEffect(() => {
     fetch();
   }, [fetch]);
@@ -41,7 +42,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
 
       <Animated.ScrollView
         style={styles.scrollView}
@@ -66,34 +67,34 @@ export const HomeScreen: React.FC = () => {
             onRefresh={handleRefresh}
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary]}
-            progressBackgroundColor={colors.background.secondary}
+            progressBackgroundColor={getSurfaceColor(isDark)}
           />
         }
       >
-        {/* Header with Greeting */}
         <HomeHeader />
 
-
-        {/* Top Workouts Section */}
         <TopWorkouts key={`workouts-${refreshKey}`} />
 
-        {/* Top Trainers Section */}
         <TopTrainers key={`trainers-${refreshKey}`} />
 
-        {/* Your Programs Section */}
         <YourPrograms key={`programs-${refreshKey}`} />
 
-        {/* Articles Feed Section */}
         <ArticlesFeed key={`articles-${refreshKey}`} />
       </Animated.ScrollView>
 
-      {/* Quick Start FAB */}
       <TouchableOpacity
         style={[styles.fab, { bottom: insets.bottom + getResponsiveSpacing(130) }]}
         onPress={handleQuickStart}
         activeOpacity={0.8}
       >
-        <View style={styles.fabGlass}>
+        <View style={[
+          styles.fabGlass,
+          {
+            backgroundColor: getGlassBg(isDark),
+            borderColor: getGlassBorder(isDark),
+            ...getShadow(isDark, 'large'),
+          }
+        ]}>
           <Plus color={theme.colors.primary} size={28} strokeWidth={2.5} />
         </View>
       </TouchableOpacity>
@@ -104,7 +105,6 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: getThemedBackground('primary'),
   },
   scrollView: {
     flex: 1,
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: getResponsiveSpacing(20),
-    width: 64, // Slightly larger touch target
+    width: 64,
     height: 64,
     borderRadius: 32,
     zIndex: 100,
@@ -124,18 +124,6 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-
-    // Deep Glass Effect
-    backgroundColor: 'rgba(20, 20, 20, 0.6)', // Slightly darker for FAB visibility
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderBottomColor: 'rgba(255,255,255,0.2)',
-
-    // Shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 12,
   },
 });

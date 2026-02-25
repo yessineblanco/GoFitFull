@@ -60,7 +60,12 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
                     onPress={onSeeAllPress}
                     activeOpacity={0.7}
                 >
-                    <BlurView intensity={20} tint="dark" style={styles.glassPill}>
+                    <BlurView intensity={isDark ? 20 : 40} tint={isDark ? 'dark' : 'light'} style={[styles.glassPill, {
+                        backgroundColor: isDark ? 'rgba(0, 0, 0, 0.01)' : 'rgba(255, 255, 255, 0.6)',
+                        borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                        borderBottomColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                        shadowColor: isDark ? 'rgb(41, 41, 41)' : 'rgba(0,0,0,0.15)',
+                    }]}>
                         <Text style={styles.seeAllText}>See All</Text>
                         <ChevronRight size={14} color={theme.colors.primary} />
                     </BlurView>

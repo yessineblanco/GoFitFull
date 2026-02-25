@@ -58,16 +58,16 @@ export const UnitPreferencesScreen: React.FC<UnitPreferencesScreenProps> = ({ na
       borderBottomWidth: 1,
     },
     headerTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     sectionLabel: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     sectionDescription: {
       color: 'rgba(255, 255, 255, 0.6)',
     },
     checkmarkText: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     card: {
       borderRadius: 16,

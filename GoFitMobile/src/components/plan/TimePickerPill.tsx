@@ -4,6 +4,8 @@ import { Clock } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, parse } from 'date-fns';
+import { useThemeStore } from '@/store/themeStore';
+import { getBlurTint, getSurfaceColor, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 
 interface TimePickerPillProps {
     time?: string | null; // HH:MM
@@ -11,6 +13,7 @@ interface TimePickerPillProps {
 }
 
 export const TimePickerPill: React.FC<TimePickerPillProps> = ({ time, onTimeChange }) => {
+    const { isDark } = useThemeStore();
     const [showPicker, setShowPicker] = useState(false);
 
     // Convert "HH:MM:SS" or "HH:MM" string to Date object
@@ -55,7 +58,8 @@ export const TimePickerPill: React.FC<TimePickerPillProps> = ({ time, onTimeChan
                     <Clock size={12} color="#84c441" />
                     <Text style={[
                         styles.text,
-                        time && styles.activeText
+                        { color: getTextSecondaryColor(isDark) },
+                        time && { color: getTextColor(isDark) }
                     ]}>
                         {displayTime}
                     </Text>
@@ -72,9 +76,9 @@ export const TimePickerPill: React.FC<TimePickerPillProps> = ({ time, onTimeChan
                 >
                     <Pressable style={styles.modalOverlay} onPress={() => setShowPicker(false)}>
                         <View style={styles.pickerContainer}>
-                            <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
-                            <View style={styles.pickerHeader}>
-                                <Text style={styles.pickerTitle}>Set Workout Time</Text>
+                            <BlurView intensity={isDark ? 100 : 80} tint={getBlurTint(isDark)} style={StyleSheet.absoluteFill} />
+                            <View style={[styles.pickerHeader, { borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}>
+                                <Text style={[styles.pickerTitle, { color: getTextColor(isDark) }]}>Set Workout Time</Text>
                                 <Pressable onPress={() => setShowPicker(false)}>
                                     <Text style={styles.doneText}>Done</Text>
                                 </Pressable>
@@ -84,8 +88,8 @@ export const TimePickerPill: React.FC<TimePickerPillProps> = ({ time, onTimeChan
                                 mode="time"
                                 display="spinner"
                                 onChange={handleTimeChange}
-                                textColor="#fff"
-                                themeVariant="dark"
+                                textColor={getTextColor(isDark)}
+                                themeVariant={isDark ? "dark" : "light"}
                             />
                         </View>
                     </Pressable>
@@ -140,7 +144,6 @@ const styles = StyleSheet.create({
         width: '85%',
         borderRadius: 20,
         overflow: 'hidden',
-        backgroundColor: '#1a1a1a',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },

@@ -1,0 +1,32 @@
+# EAS Build archive exclusions - keep archive under 2 GB limit
+# Place at repo root per https://docs.expo.dev/build-reference/easignore/
+
+# Sibling projects and large folders (monorepo)
+admin-panel/
+database/
+docs/
+Storage/
+
+# Native build artifacts (Expo cloud build generates these)
+android/
+ios/
+.expo/
+dist/
+web-build/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Version control
+.git/
+
+# Documentation (not needed for build)
+*.md
+
+# Environment and secrets
+.env
+.env*.local

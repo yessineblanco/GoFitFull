@@ -12,7 +12,8 @@ import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive'
 import { theme } from '@/theme';
 import { useTranslation } from 'react-i18next';
 import * as Location from 'expo-location';
-import { getThemedBackground, colors as themeColors } from '@/utils/themeUtils';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor, getTextColor, getTextSecondaryColor, getTextLightColor, getSurfaceColor, getGlassBg, getGlassBorder, getBlurTint, getOverlayColor } from '@/utils/colorUtils';
 
 export const HomeHeader: React.FC = () => {
     const insets = useSafeAreaInsets();
@@ -21,16 +22,14 @@ export const HomeHeader: React.FC = () => {
     const { profilePictureUri, profile } = useProfileStore();
     const { getWeeklySessionCount, getStreak } = useSessionsStore();
     const { t } = useTranslation();
+    const { isDark } = useThemeStore();
 
-    // Force re-render on sessions change to update weekly count
     const sessions = useSessionsStore(state => state.sessions);
     const weeklyWorkouts = getWeeklySessionCount();
     const streak = getStreak();
 
-    // Weather state
     const [weather, setWeather] = React.useState<{ temp: number; code: number; location: string } | null>(null);
 
-    // Fetch weather
     React.useEffect(() => {
         (async () => {
             try {
@@ -40,13 +39,11 @@ export const HomeHeader: React.FC = () => {
                 const location = await Location.getCurrentPositionAsync({});
                 const { latitude, longitude } = location.coords;
 
-                // Fetch weather
                 const weatherResponse = await fetch(
                     `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
                 );
                 const weatherData = await weatherResponse.json();
 
-                // Fetch location name
                 const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
                 const city = geocode[0]?.city || geocode[0]?.region || 'Unknown';
 
@@ -63,7 +60,6 @@ export const HomeHeader: React.FC = () => {
         })();
     }, []);
 
-    // Get weight
     const weight = profile?.weight ? `${profile.weight} ${profile.weight_unit || 'kg'}` : '--';
 
     const userName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
@@ -88,9 +84,7 @@ export const HomeHeader: React.FC = () => {
 
     return (
         <View style={[styles.container, { paddingTop: insets.top + getResponsiveSpacing(10) }]}>
-            {/* Top Row: Avatar | Greeting | Action Buttons */}
             <View style={styles.topRow}>
-                {/* 1. Avatar (Left) */}
                 <TouchableOpacity
                     onPress={handleProfilePress}
                     activeOpacity={0.8}
@@ -110,29 +104,30 @@ export const HomeHeader: React.FC = () => {
                                 contentFit="cover"
                             />
                         ) : (
-                            <View style={styles.placeholderAvatar}>
+                            <View style={[styles.placeholderAvatar, {
+                                backgroundColor: getGlassBg(isDark),
+                                borderColor: getGlassBorder(isDark),
+                            }]}>
                                 <User size={24} color={theme.colors.primary} strokeWidth={2.5} />
                             </View>
                         )}
-                        <View style={styles.onlineStatus} />
+                        <View style={[styles.onlineStatus, { borderColor: getBackgroundColor(isDark) }]} />
                     </View>
                 </TouchableOpacity>
 
-                {/* 2. Greeting Text (Middle) */}
                 <View style={styles.greetingContainer}>
                     <View style={styles.helloRow}>
                         <Text
-                            style={styles.helloText}
+                            style={[styles.helloText, { color: getTextColor(isDark) }]}
                             numberOfLines={1}
                             adjustsFontSizeToFit
                         >
                             Hello {userName.split(' ')[0]}
                         </Text>
                     </View>
-                    <Text style={styles.subGreetingText}>Get ready for today</Text>
+                    <Text style={[styles.subGreetingText, { color: getTextLightColor(isDark) }]}>Get ready for today</Text>
                 </View>
 
-                {/* 3. Action Buttons (Right) */}
                 <View style={styles.actionButtons}>
                     <TouchableOpacity
                         style={styles.iconButton}
@@ -141,8 +136,8 @@ export const HomeHeader: React.FC = () => {
                         accessibilityLabel="Notifications"
                         accessibilityHint="View your notifications and alerts"
                     >
-                        <BlurView intensity={20} tint="dark" style={styles.iconBlur}>
-                            <Bell size={20} color="#FFF" strokeWidth={2} />
+                        <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={[styles.iconBlur, { backgroundColor: getSurfaceColor(isDark) }]}>
+                            <Bell size={20} color={getTextColor(isDark)} strokeWidth={2} />
                             <View style={styles.notificationBadge} />
                         </BlurView>
                     </TouchableOpacity>
@@ -154,8 +149,8 @@ export const HomeHeader: React.FC = () => {
                         accessibilityLabel={`Workout streak: ${streak} days`}
                         accessibilityHint="View your workout streak and achievements"
                     >
-                        <BlurView intensity={20} tint="dark" style={styles.iconBlur}>
-                            <Flame size={20} color="#FFF" strokeWidth={2} />
+                        <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={[styles.iconBlur, { backgroundColor: getSurfaceColor(isDark) }]}>
+                            <Flame size={20} color={getTextColor(isDark)} strokeWidth={2} />
                             {streak > 0 && (
                                 <View style={styles.streakBadge}>
                                     <Text style={styles.streakText}>{streak}</Text>
@@ -166,26 +161,32 @@ export const HomeHeader: React.FC = () => {
                 </View>
             </View>
 
-            {/* Bottom Row: Date & Stats Chips */}
             <View style={styles.infoRow}>
                 <View style={styles.infoContent}>
-                    {/* Small Date */}
                     <Text style={styles.dateText}>{currentDate}</Text>
 
-                    {/* Stats Chips */}
                     <View style={styles.statsRow}>
-                        <View style={styles.statChip}>
+                        <View style={[styles.statChip, {
+                            backgroundColor: getSurfaceColor(isDark),
+                            borderColor: getGlassBorder(isDark),
+                        }]}>
                             <Dumbbell size={12} color={theme.colors.primary} />
-                            <Text style={styles.statText}>{weeklyWorkouts} Workouts</Text>
+                            <Text style={[styles.statText, { color: getTextSecondaryColor(isDark) }]}>{weeklyWorkouts} Workouts</Text>
                         </View>
-                        <View style={styles.statChip}>
+                        <View style={[styles.statChip, {
+                            backgroundColor: getSurfaceColor(isDark),
+                            borderColor: getGlassBorder(isDark),
+                        }]}>
                             <Scale size={12} color={theme.colors.primary} />
-                            <Text style={styles.statText}>{weight}</Text>
+                            <Text style={[styles.statText, { color: getTextSecondaryColor(isDark) }]}>{weight}</Text>
                         </View>
                         {weather && (
-                            <View style={styles.statChip}>
+                            <View style={[styles.statChip, {
+                                backgroundColor: getSurfaceColor(isDark),
+                                borderColor: getGlassBorder(isDark),
+                            }]}>
                                 {getWeatherIcon(weather.code)}
-                                <Text style={styles.statText} numberOfLines={1}>
+                                <Text style={[styles.statText, { color: getTextSecondaryColor(isDark) }]} numberOfLines={1}>
                                     {weather.temp}° • {weather.location}
                                 </Text>
                             </View>
@@ -221,11 +222,9 @@ const styles = StyleSheet.create({
         width: 58,
         height: 58,
         borderRadius: 29,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     onlineStatus: {
         position: 'absolute',
@@ -234,9 +233,8 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         borderRadius: 7,
-        backgroundColor: '#4ade80', // Emerald-400
+        backgroundColor: '#4ade80',
         borderWidth: 2,
-        borderColor: getThemedBackground('primary'),
     },
     profileButton: {
         marginRight: getResponsiveSpacing(14),
@@ -253,13 +251,11 @@ const styles = StyleSheet.create({
     helloText: {
         fontFamily: 'Barlow_800ExtraBold',
         fontSize: getResponsiveFontSize(32),
-        color: '#FFFFFF',
         letterSpacing: 1,
     },
     subGreetingText: {
         fontFamily: 'Barlow_400Regular',
         fontSize: getResponsiveFontSize(theme.typography.body.fontSize),
-        color: themeColors.text.tertiary,
         marginTop: 2,
     },
     actionButtons: {
@@ -276,7 +272,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: themeColors.background.surface,
     },
     notificationBadge: {
         position: 'absolute',
@@ -330,16 +325,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 6,
-        backgroundColor: themeColors.background.surface,
         paddingHorizontal: getResponsiveSpacing(8),
-        paddingVertical: getResponsiveSpacing(10), // Increased height slightly
+        paddingVertical: getResponsiveSpacing(10),
         borderRadius: getResponsiveSpacing(20),
         borderWidth: 1,
-        borderColor: themeColors.border.subtle,
     },
     statText: {
         fontFamily: 'Barlow_500Medium',
         fontSize: getResponsiveFontSize(theme.typography.small.fontSize),
-        color: themeColors.text.secondary,
     },
 });

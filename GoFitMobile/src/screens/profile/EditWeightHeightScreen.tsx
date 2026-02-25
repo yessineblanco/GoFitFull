@@ -71,17 +71,16 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
   const dynamicStyles = React.useMemo(() => ({
     container: {
       flex: 1,
-      backgroundColor: '#030303',
+      backgroundColor: BRAND_BLACK,
     },
     header: {
-      borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-      // borderBottomWidth: 1, // Removed to blend with tabs
+      borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.06)',
     },
     headerTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     sectionTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
   }), [isDark]);
 
@@ -229,10 +228,10 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: BRAND_BLACK }]}>
       {/* Background Gradient */}
       <LinearGradient
-        colors={['#030303', '#0a1a05', '#030303']}
+        colors={isDark ? ['#030303', '#0a1a05', '#030303'] : ['#FAFBFC', '#F0F4EA', '#FAFBFC']}
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
@@ -244,7 +243,7 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <ArrowLeft size={24} color={BRAND_WHITE} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('weightHeight.title')}</Text>
+        <Text style={[styles.headerTitle, { color: BRAND_WHITE }]}>{t('weightHeight.title')}</Text>
         <TouchableOpacity
           onPress={handleSave}
           style={styles.saveButton}
@@ -259,18 +258,18 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.06)' }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'weight' && styles.activeTab]}
           onPress={() => { setActiveTab('weight'); Haptics.selectionAsync(); }}
         >
-          <Text style={[styles.tabText, activeTab === 'weight' && styles.activeTabText]}>{t('weightHeight.weight')}</Text>
+          <Text style={[styles.tabText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, activeTab === 'weight' && [styles.activeTabText, { color: BRAND_WHITE }]]}>{t('weightHeight.weight')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'height' && styles.activeTab]}
           onPress={() => { setActiveTab('height'); Haptics.selectionAsync(); }}
         >
-          <Text style={[styles.tabText, activeTab === 'height' && styles.activeTabText]}>{t('weightHeight.height')}</Text>
+          <Text style={[styles.tabText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, activeTab === 'height' && [styles.activeTabText, { color: BRAND_WHITE }]]}>{t('weightHeight.height')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -294,7 +293,7 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
 
             {/* Weight Unit Selector */}
             <View style={styles.unitSelectorContainer}>
-              <View style={styles.unitSelector}>
+              <View style={[styles.unitSelector, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}>
                 <Animated.View
                   style={[
                     styles.slidingBackground,
@@ -302,10 +301,10 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
                   ]}
                 />
                 <Pressable style={styles.unitButton} onPress={() => handleWeightUnitChange('lb')}>
-                  <Text style={[styles.unitText, weightUnit === 'lb' && styles.unitTextActive]}>lb</Text>
+                  <Text style={[styles.unitText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, weightUnit === 'lb' && styles.unitTextActive]}>lb</Text>
                 </Pressable>
                 <Pressable style={styles.unitButton} onPress={() => handleWeightUnitChange('kg')}>
-                  <Text style={[styles.unitText, weightUnit === 'kg' && styles.unitTextActive]}>kg</Text>
+                  <Text style={[styles.unitText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, weightUnit === 'kg' && styles.unitTextActive]}>kg</Text>
                 </Pressable>
               </View>
             </View>
@@ -322,14 +321,14 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
 
             {/* Weight Adjust Buttons */}
             <View style={styles.adjustButtons}>
-              <Pressable style={styles.adjustButton} onPress={() => handleWeightAdjust(-1)}>
-                <View style={styles.adjustButtonInner}>
-                  <Ionicons name="remove" size={24} color="#FFFFFF" />
+              <Pressable style={[styles.adjustButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]} onPress={() => handleWeightAdjust(-1)}>
+                <View style={[styles.adjustButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }]}>
+                  <Ionicons name="remove" size={24} color={BRAND_WHITE} />
                 </View>
               </Pressable>
-              <Pressable style={styles.adjustButton} onPress={() => handleWeightAdjust(1)}>
-                <View style={styles.adjustButtonInner}>
-                  <Ionicons name="add" size={24} color="#FFFFFF" />
+              <Pressable style={[styles.adjustButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]} onPress={() => handleWeightAdjust(1)}>
+                <View style={[styles.adjustButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }]}>
+                  <Ionicons name="add" size={24} color={BRAND_WHITE} />
                 </View>
               </Pressable>
             </View>
@@ -348,7 +347,7 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
 
             {/* Height Unit Selector */}
             <View style={styles.unitSelectorContainer}>
-              <View style={styles.unitSelector}>
+              <View style={[styles.unitSelector, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}>
                 <Animated.View
                   style={[
                     styles.slidingBackground,
@@ -356,10 +355,10 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
                   ]}
                 />
                 <Pressable style={styles.unitButton} onPress={() => handleHeightUnitChange('inches')}>
-                  <Text style={[styles.unitText, heightUnit === 'inches' && styles.unitTextActive]}>in</Text>
+                  <Text style={[styles.unitText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, heightUnit === 'inches' && styles.unitTextActive]}>in</Text>
                 </Pressable>
                 <Pressable style={styles.unitButton} onPress={() => handleHeightUnitChange('cm')}>
-                  <Text style={[styles.unitText, heightUnit === 'cm' && styles.unitTextActive]}>cm</Text>
+                  <Text style={[styles.unitText, { color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }, heightUnit === 'cm' && styles.unitTextActive]}>cm</Text>
                 </Pressable>
               </View>
             </View>
@@ -376,14 +375,14 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
 
             {/* Height Adjust Buttons */}
             <View style={styles.adjustButtons}>
-              <Pressable style={styles.adjustButton} onPress={() => handleHeightAdjust(-1)}>
-                <View style={styles.adjustButtonInner}>
-                  <Ionicons name="remove" size={24} color="#FFFFFF" />
+              <Pressable style={[styles.adjustButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]} onPress={() => handleHeightAdjust(-1)}>
+                <View style={[styles.adjustButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }]}>
+                  <Ionicons name="remove" size={24} color={BRAND_WHITE} />
                 </View>
               </Pressable>
-              <Pressable style={styles.adjustButton} onPress={() => handleHeightAdjust(1)}>
-                <View style={styles.adjustButtonInner}>
-                  <Ionicons name="add" size={24} color="#FFFFFF" />
+              <Pressable style={[styles.adjustButton, { borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]} onPress={() => handleHeightAdjust(1)}>
+                <View style={[styles.adjustButtonInner, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }]}>
+                  <Ionicons name="add" size={24} color={BRAND_WHITE} />
                 </View>
               </Pressable>
             </View>

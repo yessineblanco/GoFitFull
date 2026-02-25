@@ -58,58 +58,62 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
   const BRAND_WHITE = getTextColor(isDark);
   const BRAND_PRIMARY = theme.colors.primary;
 
+  const overlayBg = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)';
+  const overlayBorder = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
+  const textDim = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.55)';
+  const textMuted = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)';
+  const textSubtle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.25)';
+
   const dynamicStyles = React.useMemo(() => ({
     container: {
       flex: 1,
-      backgroundColor: '#030303',
+      backgroundColor: BRAND_BLACK,
     },
-
-
     header: {
-      borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+      borderBottomColor: overlayBorder,
       borderBottomWidth: 1,
     },
     headerTitle: {
       fontSize: getScaledFontSize(18),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     sectionTitle: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     timeLabel: {
       fontSize: getScaledFontSize(14),
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: textDim,
       fontFamily: 'Barlow_400Regular',
       marginBottom: 4,
     },
     timeValue: {
       fontSize: getScaledFontSize(18),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     settingTitle: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       marginBottom: 4,
     },
     settingDescription: {
       fontSize: getScaledFontSize(13),
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)',
       fontFamily: 'Barlow_400Regular',
     },
     card: {
       borderRadius: 16,
       overflow: 'hidden' as const,
       borderWidth: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: overlayBg,
     },
     glowWrapper: {
       padding: 0,
@@ -117,76 +121,76 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
       backgroundColor: 'transparent',
     },
     divider: {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: overlayBorder,
     },
     modalContent: {
-      backgroundColor: '#030303',
+      backgroundColor: BRAND_BLACK,
       borderTopColor: theme.colors.primary,
     },
     modalTitle: {
       fontSize: getScaledFontSize(20),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       marginBottom: 20,
       textAlign: 'center' as const,
     },
     presetTimeText: {
       fontSize: getScaledFontSize(16),
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       textAlign: 'center' as const,
     },
     presetTimeTextActive: {
-      color: '#030303',
+      color: BRAND_BLACK,
     },
     customTimeLabel: {
       fontSize: getScaledFontSize(14),
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: textDim,
       fontFamily: 'Barlow_400Regular',
       marginBottom: 12,
     },
     customTimeInput: {
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-      color: '#ffffff',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)',
+      color: BRAND_WHITE,
+      borderColor: overlayBorder,
     },
     customTimeButtonText: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#030303',
+      color: BRAND_BLACK,
       fontFamily: 'Barlow_600SemiBold',
     },
     modalCloseButtonText: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       textAlign: 'center' as const,
     },
     testButtonText: {
       fontSize: getScaledFontSize(14),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     testCard: {
       flex: 1,
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: overlayBg,
       borderRadius: 20,
       paddingVertical: 16,
       paddingHorizontal: 8,
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      borderColor: overlayBorder,
       minHeight: 110,
     },
     testCardIconContainer: {
       width: 48,
       height: 48,
       borderRadius: 24,
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
       alignItems: 'center' as const,
       justifyContent: 'center' as const,
       marginBottom: 10,
@@ -194,7 +198,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
     testCardLabel: {
       fontSize: getScaledFontSize(11),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       textAlign: 'center' as const,
       textTransform: 'uppercase' as const,
@@ -202,14 +206,14 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
     },
     infoText: {
       fontSize: getScaledFontSize(12),
-      color: 'rgba(255, 255, 255, 0.5)',
+      color: textMuted,
       fontFamily: 'Barlow_400Regular',
       lineHeight: 18,
       flex: 1,
     },
     footerCredits: {
       fontSize: getScaledFontSize(11),
-      color: 'rgba(255, 255, 255, 0.2)',
+      color: textSubtle,
       fontFamily: 'Barlow_600SemiBold',
       textAlign: 'center' as const,
       marginTop: 24,
@@ -400,7 +404,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
           {saving ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
-            <Save size={24} color={hasChanges ? BRAND_PRIMARY : 'rgba(255, 255, 255, 0.3)'} />
+            <Save size={24} color={hasChanges ? BRAND_PRIMARY : textSubtle} />
           )}
         </TouchableOpacity>
       </View>

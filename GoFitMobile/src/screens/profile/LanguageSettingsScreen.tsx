@@ -74,20 +74,20 @@ export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({ 
     headerTitle: {
       fontSize: getScaledFontSize(24),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     sectionTitle: {
       fontSize: getScaledFontSize(11),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
       marginBottom: 12,
     },
     optionLabel: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     optionNativeName: {
@@ -100,7 +100,7 @@ export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({ 
     saveButtonText: {
       fontSize: getScaledFontSize(16),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     divider: {

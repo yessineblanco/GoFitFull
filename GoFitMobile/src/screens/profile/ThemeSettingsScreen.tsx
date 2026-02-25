@@ -51,14 +51,14 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ naviga
       fontSize: 24,
       fontWeight: '600' as const,
       fontFamily: 'Barlow_600SemiBold',
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     description: {
       color: 'rgba(255, 255, 255, 0.7)',
       marginBottom: 24,
     },
     optionTitle: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
       marginBottom: 4,
     },
     optionTitleSelected: {

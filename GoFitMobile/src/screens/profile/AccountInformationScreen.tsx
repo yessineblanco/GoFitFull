@@ -23,7 +23,7 @@ import { dialogManager } from '@/components/shared/CustomDialog';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getTextSecondaryColor, getOverlayColor } from '@/utils/colorUtils';
 import { GradientBackground } from '@/components/shared/GradientBackground';
 import { AppText } from '@/components/shared/AppText';
 
@@ -259,39 +259,39 @@ export const AccountInformationScreen: React.FC<AccountInformationScreenProps> =
       fontSize: 24,
       fontWeight: '600' as const,
       fontFamily: 'Barlow_600SemiBold',
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     input: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: theme.typography.body.fontFamily,
     },
     label: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     sectionLabel: {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
     },
     verifySubmitButtonText: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     changePasswordButtonText: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     passwordInput: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: theme.typography.body.fontFamily,
     },
     passwordToggleText: {
-      color: '#ffffff',
+      color: BRAND_WHITE,
     },
     header: {
-      borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+      borderBottomColor: getOverlayColor(isDark, 0.05),
       borderBottomWidth: 1,
     },
     hint: {
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
     },
-  }), [isDark]);
+  }), [isDark, BRAND_WHITE]);
 
   return (
     <GradientBackground style={dynamicStyles.container}>

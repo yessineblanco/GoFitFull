@@ -181,12 +181,49 @@ export const getShadow = (isDark: boolean, size: 'small' | 'medium' | 'large' = 
   if (isDark) {
     return base;
   }
-  // Enhanced shadows for light mode - more visible and defined
   return {
     ...base,
-    shadowOpacity: base.shadowOpacity * 1.8, // Stronger shadow in light mode
-    shadowRadius: base.shadowRadius * 1.2, // Slightly larger blur
-    elevation: base.elevation + 1, // Higher elevation for Android
+    shadowOpacity: base.shadowOpacity * 1.8,
+    shadowRadius: base.shadowRadius * 1.2,
+    elevation: base.elevation + 1,
   };
+};
+
+/**
+ * Glass surface background -- frosted glass card effect
+ * Dark: subtle white tint on dark | Light: frosted white with stronger opacity
+ */
+export const getGlassBg = (isDark: boolean): string => {
+  return isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.7)';
+};
+
+/**
+ * Glass border color for frosted surfaces
+ */
+export const getGlassBorder = (isDark: boolean): string => {
+  return isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)';
+};
+
+/**
+ * Theme-aware overlay: white-on-dark / black-on-light with custom opacity
+ */
+export const getOverlayColor = (isDark: boolean, opacity: number): string => {
+  return isDark
+    ? `rgba(255, 255, 255, ${opacity})`
+    : `rgba(0, 0, 0, ${opacity})`;
+};
+
+/**
+ * BlurView tint value based on theme
+ */
+export const getBlurTint = (isDark: boolean): 'dark' | 'light' => {
+  return isDark ? 'dark' : 'light';
+};
+
+/**
+ * Get theme-aware text light/tertiary color
+ */
+export const getTextLightColor = (isDark: boolean): string => {
+  return isDark ? darkColors.textLight : lightColors.textLight;
 };
 

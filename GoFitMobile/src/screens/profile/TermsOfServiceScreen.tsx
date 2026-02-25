@@ -43,13 +43,13 @@ export const TermsOfServiceScreen: React.FC<TermsOfServiceScreenProps> = ({ navi
     headerTitle: {
       fontSize: getScaledFontSize(18),
       fontWeight: '600' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_600SemiBold',
     },
     title: {
       fontSize: getScaledFontSize(28),
       fontWeight: '700' as const,
-      color: '#ffffff',
+      color: BRAND_WHITE,
       fontFamily: 'Barlow_700Bold',
       marginBottom: 8,
     },

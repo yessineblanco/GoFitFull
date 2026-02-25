@@ -448,7 +448,7 @@ export const EnhancedRestTimer: React.FC<EnhancedRestTimerProps> = ({
       <LinearGradient colors={isDark ? ['#030303', '#1a1a1a', '#030303'] : ['#FFFFFF', '#F5F7F9', '#FFFFFF']} style={StyleSheet.absoluteFill} />
 
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: adrenalinePulseAnim, borderWidth: 15, borderColor: '#FF3B30', transform: [{ scale: edgeGlowScale }] }]} pointerEvents="none">
-        <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        <BlurView intensity={60} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
       </Animated.View>
 
       <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ scale: shatterScaleAnim }], opacity: shatterOpacityAnim }]}>

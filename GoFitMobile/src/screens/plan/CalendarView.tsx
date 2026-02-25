@@ -7,6 +7,8 @@ import {
   Dimensions,
 } from "react-native";
 import { useThemeColors } from "@/theme/useThemeColors";
+import { useThemeStore } from "@/store/themeStore";
+import { getBlurTint, getTextColor, getTextColorWithOpacity, getGlassBg, getGlassBorder, getOverlayColor } from "@/utils/colorUtils";
 import { useCalendarStore } from "@/store/calendarStore";
 import { WorkoutPlan } from "@/types/workoutPlan";
 import { BlurView } from "expo-blur";
@@ -21,6 +23,7 @@ interface Props {
 
 const CalendarView: React.FC<Props> = ({ plans }) => {
   const colors = useThemeColors();
+  const { isDark } = useThemeStore();
   const { selectedDate, setSelectedDate } = useCalendarStore();
   const [isYearPickerVisible, setIsYearPickerVisible] = useState(false);
 
@@ -123,12 +126,26 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
 
   const years = Array.from({ length: 20 }, (_, i) => year - 6 + i);
 
+  const tc = useMemo(() => ({
+    text: getTextColor(isDark),
+    textDim: getTextColorWithOpacity(isDark, 0.25),
+    textMuted: getTextColorWithOpacity(isDark, 0.7),
+    glassBg: getGlassBg(isDark),
+    glassBorder: getGlassBorder(isDark),
+    overlayBg: getOverlayColor(isDark, 0.05),
+    overlayBgSubtle: getOverlayColor(isDark, 0.03),
+    overlayBorder: getOverlayColor(isDark, 0.1),
+    overlayBorderSubtle: getOverlayColor(isDark, 0.05),
+  }), [isDark]);
+
   return (
     <View style={styles.container}>
       <Animated.View
         style={[
           styles.mainCard,
           {
+            backgroundColor: tc.overlayBgSubtle,
+            borderColor: isDark ? 'rgba(132, 196, 65, 0.3)' : 'rgba(132, 196, 65, 0.2)',
             opacity: entryAnim,
             transform: [
               {
@@ -147,7 +164,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
           }
         ]}
       >
-        <BlurView intensity={20} tint="dark" style={styles.glassContent}>
+        <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={styles.glassContent}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerTitleContainer}>
@@ -158,7 +175,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                   setIsYearPickerVisible(!isYearPickerVisible);
                 }}
               >
-                <AppText variant="h3" style={styles.monthTitle}>
+                <AppText variant="h3" style={[styles.monthTitle, { color: tc.text }]}>
                   {isYearPickerVisible ? `${year}` : format(selected, "MMMM")}
                 </AppText>
                 {!isYearPickerVisible && (
@@ -171,11 +188,11 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
 
             {!isYearPickerVisible && (
               <View style={styles.navButtons}>
-                <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.navButton}>
-                  <ChevronLeft size={18} color="rgba(255,255,255,0.7)" />
+                <TouchableOpacity onPress={() => changeMonth(-1)} style={[styles.navButton, { backgroundColor: tc.overlayBg, borderColor: tc.overlayBorder }]}>
+                  <ChevronLeft size={18} color={tc.textMuted} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => changeMonth(1)} style={styles.navButton}>
-                  <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
+                <TouchableOpacity onPress={() => changeMonth(1)} style={[styles.navButton, { backgroundColor: tc.overlayBg, borderColor: tc.overlayBorder }]}>
+                  <ChevronRight size={18} color={tc.textMuted} />
                 </TouchableOpacity>
               </View>
             )}
@@ -188,6 +205,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                   key={y}
                   style={[
                     styles.yearCell,
+                    { backgroundColor: tc.overlayBgSubtle, borderColor: tc.overlayBorderSubtle },
                     y === year && { backgroundColor: TEMPLATE_COLOR, borderColor: TEMPLATE_COLOR }
                   ]}
                   onPress={() => selectYear(y)}
@@ -195,7 +213,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                   <AppText
                     variant="bodyBold"
                     style={[
-                      styles.yearText,
+                      { color: tc.text },
                       y === year && { color: '#000', fontWeight: '800' }
                     ]}
                   >
@@ -209,7 +227,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
               {/* Days Header */}
               <View style={styles.headerRow}>
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d, i) => (
-                  <AppText key={i} variant="small" style={styles.headerText}>{d}</AppText>
+                  <AppText key={i} variant="small" style={[styles.headerText, { color: tc.textDim }]}>{d}</AppText>
                 ))}
               </View>
 
@@ -228,7 +246,6 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                   const isSelected = iso === selectedDate;
                   const isToday = iso === todayIso;
 
-                  // Determine status priority
                   const isCompleted = dayPlans.length > 0 && dayPlans.every(p => p.status === 'completed');
                   const hasPlanned = dayPlans.length > 0 && !isCompleted;
 
@@ -240,7 +257,6 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                         triggerHaptic();
                         setSelectedDate(iso);
 
-                        // Scale animation on select
                         Animated.sequence([
                           Animated.timing(scaleAnim, { toValue: 0.9, duration: 100, useNativeDriver: true }),
                           Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
@@ -261,7 +277,7 @@ const CalendarView: React.FC<Props> = ({ plans }) => {
                         <AppText
                           variant={isToday || isSelected ? "bodyBold" : "body"}
                           style={[
-                            styles.dayText,
+                            { color: tc.text },
                             isToday && styles.todayDayText,
                             isSelected && styles.selectedDayText,
                           ]}
@@ -291,8 +307,6 @@ const styles = StyleSheet.create({
   mainCard: {
     borderRadius: 32,
     borderWidth: 1,
-    borderColor: 'rgba(132, 196, 65, 0.3)',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
@@ -318,7 +332,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   monthTitle: {
-    color: "#fff",
     fontSize: 26,
     fontWeight: '800',
     textTransform: 'capitalize',
@@ -344,11 +357,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
   yearGrid: {
     flexDirection: 'row',
@@ -364,11 +375,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-  },
-  yearText: {
-    color: '#fff',
   },
   headerRow: {
     flexDirection: 'row',
@@ -377,7 +383,6 @@ const styles = StyleSheet.create({
   headerText: {
     width: "14.28%",
     textAlign: 'center',
-    color: 'rgba(255,255,255,0.25)',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -398,9 +403,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: 'relative',
   },
-  dayText: {
-    color: "#ffffff",
-  },
+  dayCircleBase: {},
   todayCircle: {
     width: 38,
     height: 38,

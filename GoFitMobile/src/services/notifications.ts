@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
 
 export interface NotificationPreferences {
@@ -238,6 +239,32 @@ export const notificationService = {
       // Gracefully handle errors - don't throw so preferences can still be saved
       logger.warn('Error updating scheduled notifications (may not be fully supported in Expo Go):', error);
       // Don't throw - preferences are still saved to database even if scheduling fails
+    }
+  },
+
+  /**
+   * Register push token with backend (for remote push notifications)
+   * Note: getExpoPushTokenAsync may not work in Expo Go - requires development build
+   */
+  async registerPushToken(userId: string): Promise<void> {
+    try {
+      const hasPermission = await this.requestPermissions();
+      if (!hasPermission) return;
+
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId: require('../../app.json').expo.extra?.eas?.projectId ?? undefined,
+      });
+      const token = tokenData?.data;
+      if (!token) return;
+
+      const platform = Platform.OS as 'ios' | 'android';
+      await supabase.from('push_tokens').upsert(
+        { user_id: userId, expo_push_token: token, platform },
+        { onConflict: 'user_id,expo_push_token' }
+      );
+      logger.info('Push token registered');
+    } catch (error) {
+      logger.warn('Could not register push token (expected in Expo Go):', error);
     }
   },
 

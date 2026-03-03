@@ -135,6 +135,7 @@ export const HomeHeader: React.FC = () => {
                         accessibilityRole="button"
                         accessibilityLabel="Notifications"
                         accessibilityHint="View your notifications and alerts"
+                        onPress={() => navigation.navigate('NotificationInbox')}
                     >
                         <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={[styles.iconBlur, { backgroundColor: getSurfaceColor(isDark) }]}>
                             <Bell size={20} color={getTextColor(isDark)} strokeWidth={2} />

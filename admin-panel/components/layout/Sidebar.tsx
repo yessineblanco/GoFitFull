@@ -6,15 +6,19 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
+  UserCheck,
   Dumbbell,
   ListChecks,
   Settings,
   FileText,
+  CreditCard,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/users", icon: Users },
+  { name: "Coaches", href: "/coaches", icon: UserCheck },
+  { name: "Transactions", href: "/transactions", icon: CreditCard },
   { name: "Exercises", href: "/exercises", icon: Dumbbell },
   { name: "Workouts", href: "/workouts", icon: ListChecks },
   { name: "Activity Logs", href: "/activity-logs", icon: FileText },

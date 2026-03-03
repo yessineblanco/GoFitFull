@@ -748,11 +748,9 @@ export const workoutService = {
         exercises_completed: session.exercises_completed || [],
       };
 
-      // Add workout_id if provided (required for both native and custom workouts in unified structure)
+      // Add workout_id if provided (optional for program-day workouts that don't have a workouts table entry)
       if (session.workout_id) {
         insertData.workout_id = session.workout_id;
-      } else {
-        throw new Error('workout_id is required to create a workout session');
       }
 
       if (session.notes) {

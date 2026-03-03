@@ -58,10 +58,13 @@ export const authService = {
    * }
    * ```
    */
-  async signUp(email: string, password: string) {
+  async signUp(email: string, password: string, userType: 'client' | 'coach' = 'client') {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { user_type: userType },
+      },
     });
     
     if (error) throw error;

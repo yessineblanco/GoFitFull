@@ -14,10 +14,15 @@ export type AuthState = {
   loading: boolean;
 };
 
+export type UserType = 'client' | 'coach';
+
 export type RootStackParamList = {
   Auth: undefined;
   Onboarding: undefined;
   App: undefined;
+  CoachAuth: undefined;
+  CoachOnboarding: undefined;
+  CoachApp: undefined;
 };
 
 export type OnboardingStackParamList = {
@@ -36,6 +41,41 @@ export type AuthStackParamList = {
   VerifyOtp: { email: string };
   ResetPassword: { email: string };
   PasswordChangedSuccess: undefined;
+};
+
+export type CoachAuthStackParamList = {
+  CoachWelcome: undefined;
+  CoachLogin: undefined;
+  CoachSignup: undefined;
+  ForgotPassword: undefined;
+  VerifyOtp: { email: string };
+  ResetPassword: { email: string };
+  PasswordChangedSuccess: undefined;
+};
+
+export type CoachOnboardingStackParamList = {
+  CoachOnboarding: undefined;
+  CoachCVUpload: undefined;
+  CoachCertifications: undefined;
+  CoachProfilePreview: undefined;
+  CoachPending: undefined;
+};
+
+export type CoachAppTabParamList = {
+  Dashboard: undefined;
+  Clients: undefined;
+  Calendar: undefined;
+  Chat: undefined;
+  CoachProfile: undefined;
+};
+
+export type HomeStackParamList = {
+  HomeMain: undefined;
+  Marketplace: undefined;
+  CoachDetail: { coachId: string };
+  BookSession: { coachId: string; coachName?: string };
+  ClientChat: { conversationId: string };
+  NotificationInbox: undefined;
 };
 
 export type AppTabParamList = {
@@ -59,7 +99,47 @@ export type ProfileStackParamList = {
   ThemeSettings: undefined;
   TermsOfService: undefined;
   PrivacyPolicy: undefined;
-
+  MyPacks: undefined;
+  MyPrograms: undefined;
+  MyBookings: undefined;
+  ClientConversations: undefined;
+  ClientChatScreen: { conversationId: string };
+  NotificationInbox: undefined;
+  ProgramDetail: { programId: string };
+  ExerciseDetail: {
+    exerciseId: string;
+    exerciseName?: string;
+  };
+  WorkoutSession: {
+    workoutId?: string;
+    workoutName: string;
+    workoutType: 'native' | 'custom';
+    exercises: Array<{
+      id: string;
+      name: string;
+      sets: string;
+      reps: string;
+      restTime: string;
+    }>;
+    sessionId?: string;
+    selectedDay?: number;
+    returnTo?: string;
+  };
+  WorkoutSummary: {
+    workoutName: string;
+    durationMinutes: number;
+    exercises: Array<{
+      id: string;
+      name: string;
+      sets: string;
+      reps: string;
+      weights?: (number | null)[];
+      completedSets?: boolean[];
+      completed?: boolean;
+    }>;
+    completedAt?: string;
+    returnTo?: string;
+  };
 };
 
 export type LibraryStackParamList = {

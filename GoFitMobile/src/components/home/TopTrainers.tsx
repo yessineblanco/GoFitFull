@@ -5,88 +5,47 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Star, ArrowUpRight } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { useThemeStore } from '@/store/themeStore';
+import { useMarketplaceStore } from '@/store/marketplaceStore';
 import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
 import * as Haptics from 'expo-haptics';
+import { useNavigation } from '@react-navigation/native';
 import { SectionHeader } from './SectionHeader';
+import { useTranslation } from 'react-i18next';
 
-const CARD_WIDTH = 135; // Compact for dense layout
-const CARD_HEIGHT = 190; // Fits better with other elements
-
-interface Trainer {
-    id: string;
-    name: string;
-    specialty: string;
-    image: string;
-    rating: number;
-    experience: string;
-    isPro?: boolean;
-}
-
-const MOCK_TRAINERS: Trainer[] = [
-    {
-        id: '1',
-        name: 'Alex Strong',
-        specialty: 'Elite Strength',
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1470&auto=format&fit=crop',
-        rating: 5.0,
-        experience: '5y',
-        isPro: true,
-    },
-    {
-        id: '2',
-        name: 'Maya Flow',
-        specialty: 'Yoga Master',
-        image: 'https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=1469&auto=format&fit=crop',
-        rating: 4.9,
-        experience: '8y',
-        isPro: true,
-    },
-    {
-        id: '3',
-        name: 'Sarah Sprint',
-        specialty: 'HIIT & Cardio',
-        image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=1384&auto=format&fit=crop',
-        rating: 4.8,
-        experience: '4y',
-    },
-    {
-        id: '4',
-        name: 'Marcus Lift',
-        specialty: 'Pro Lifting',
-        image: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?q=80&w=1374&auto=format&fit=crop',
-        rating: 5.0,
-        experience: '10y',
-        isPro: true,
-    },
-];
+const CARD_WIDTH = 135;
+const CARD_HEIGHT = 190;
 
 export const TopTrainers: React.FC = () => {
     const { isDark } = useThemeStore();
+    const { topCoaches, loadTopCoaches } = useMarketplaceStore();
+    const navigation = useNavigation<any>();
+    const { t } = useTranslation();
     const [loading, setLoading] = React.useState(true);
     const scrollX = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 800);
-        return () => clearTimeout(timer);
+        loadTopCoaches().finally(() => setLoading(false));
     }, []);
 
-    const handleTrainerPress = (trainer: Trainer) => {
+    const handleTrainerPress = (coachId: string) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        navigation.navigate('CoachDetail', { coachId });
     };
 
     const handleSeeAll = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        navigation.navigate('Marketplace');
     };
 
-    if (loading) {
-        return <View style={styles.container} />; // Minimal loading state
+    if (loading || topCoaches.length === 0) {
+        return <View style={styles.container} />;
     }
 
     return (
         <View style={styles.container}>
             <SectionHeader
-                title="Elite Trainers"
+                title={t('marketplace.eliteTrainers')}
                 onSeeAllPress={handleSeeAll}
                 animationDelay={300}
             />
@@ -103,7 +62,7 @@ export const TopTrainers: React.FC = () => {
                 )}
                 scrollEventThrottle={16}
             >
-                {MOCK_TRAINERS.map((trainer, index) => {
+                {topCoaches.map((coach, index) => {
                     const range = scaleWidth(CARD_WIDTH);
                     const inputRange = [
                         (index - 1) * range,
@@ -117,25 +76,33 @@ export const TopTrainers: React.FC = () => {
                         extrapolate: 'clamp',
                     });
 
+                    const imageUri = coach.profile_picture_url || coach.user_profile_picture;
+
                     return (
                         <TouchableOpacity
-                            key={trainer.id}
+                            key={coach.id}
                             activeOpacity={0.9}
-                            onPress={() => handleTrainerPress(trainer)}
+                            onPress={() => handleTrainerPress(coach.id)}
                         >
                             <Animated.View style={[styles.cardWrapper, { transform: [{ scale }] }]}>
-                                {/* Full Background Image */}
-                                <Image
-                                    source={{ uri: trainer.image }}
-                                    style={StyleSheet.absoluteFill as ImageStyle}
-                                    contentFit="cover"
-                                    transition={300}
-                                    placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
-                                    placeholderContentFit="cover"
-                                    recyclingKey={trainer.id}
-                                />
+                                {imageUri ? (
+                                    <Image
+                                        source={{ uri: imageUri }}
+                                        style={StyleSheet.absoluteFill as ImageStyle}
+                                        contentFit="cover"
+                                        transition={300}
+                                        placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+                                        placeholderContentFit="cover"
+                                        recyclingKey={coach.id}
+                                    />
+                                ) : (
+                                    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1a2a1a', alignItems: 'center', justifyContent: 'center' }]}>
+                                        <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 32, color: theme.colors.primary }}>
+                                            {(coach.display_name || '?')[0].toUpperCase()}
+                                        </Text>
+                                    </View>
+                                )}
 
-                                {/* Dark Gradient Overlay for Readability */}
                                 <LinearGradient
                                     colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.95)']}
                                     style={StyleSheet.absoluteFill}
@@ -143,35 +110,33 @@ export const TopTrainers: React.FC = () => {
                                     end={{ x: 0, y: 1 }}
                                 />
 
-                                {/* Content Overlay */}
                                 <View style={styles.cardContent}>
                                     <View style={styles.topRow}>
-                                        {trainer.isPro ? (
+                                        {coach.is_verified ? (
                                             <BlurView intensity={30} tint="light" style={styles.proBadge}>
                                                 <Text style={styles.proText}>PRO</Text>
                                             </BlurView>
                                         ) : <View />}
                                         <BlurView intensity={20} tint="dark" style={styles.ratingPill}>
                                             <Star size={10} color={theme.colors.primary} fill={theme.colors.primary} />
-                                            <Text style={styles.ratingText}>{trainer.rating.toFixed(1)}</Text>
+                                            <Text style={styles.ratingText}>{coach.average_rating.toFixed(1)}</Text>
                                         </BlurView>
                                     </View>
 
                                     <View style={styles.bottomInfo}>
                                         <View style={styles.nameRow}>
-                                            <Text style={styles.trainerName} numberOfLines={1}>{trainer.name}</Text>
+                                            <Text style={styles.trainerName} numberOfLines={1}>{coach.display_name || '—'}</Text>
                                         </View>
                                         <View style={styles.specialtyRow}>
-                                            <Text style={styles.specialtyText} numberOfLines={1}>{trainer.specialty}</Text>
+                                            <Text style={styles.specialtyText} numberOfLines={1}>
+                                                {coach.specialties[0] ? t(`coachOnboarding.specialties.${coach.specialties[0]}`) : ''}
+                                            </Text>
                                             <View style={styles.dot} />
-                                            <Text style={styles.expText}>{trainer.experience}</Text>
+                                            <Text style={styles.expText}>{coach.total_sessions}s</Text>
                                         </View>
-
-
                                     </View>
                                 </View>
 
-                                {/* Border Inner (for glass feel) */}
                                 <View style={styles.borderOverlay} />
                             </Animated.View>
                         </TouchableOpacity>

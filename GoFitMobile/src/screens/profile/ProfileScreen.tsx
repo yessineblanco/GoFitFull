@@ -28,7 +28,7 @@ import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } 
 import { StackNavigationProp } from '@react-navigation/stack';
 import type { ProfileStackParamList } from '@/types';
 import { Image as ExpoImage } from 'expo-image';
-import { Settings, User, LogOut, Bell, Type, ChevronRight, FileText, Shield, Pencil, Target, Ruler, Globe } from 'lucide-react-native';
+import { Settings, User, LogOut, Bell, Type, ChevronRight, FileText, Shield, Pencil, Target, Ruler, Globe, Package, BookOpen, Calendar, MessageCircle } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { Alert } from 'react-native';
@@ -546,6 +546,70 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     {getGoalLabel(currentGoal)}
                   </Text>
                 </View>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Coaching Section */}
+        <View style={styles.settingsContainer}>
+          <Text style={dynamicStyles.sectionTitle}>{t('profile.coaching')}</Text>
+          <View style={[styles.settingsCard, dynamicStyles.settingsCard]}>
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('MyPacks' as any)}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <Package size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={dynamicStyles.settingsItemText}>{t('sessionPacks.myPacks')}</Text>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('MyPrograms' as any)}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <BookOpen size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={dynamicStyles.settingsItemText}>{t('programs.myPrograms')}</Text>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('MyBookings' as any)}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <Calendar size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={dynamicStyles.settingsItemText}>{t('booking.myBookings')}</Text>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('ClientConversations' as any)}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <MessageCircle size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={dynamicStyles.settingsItemText}>{t('chat.conversations')}</Text>
               </View>
               <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
             </TouchableOpacity>

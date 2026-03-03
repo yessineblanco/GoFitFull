@@ -108,3 +108,83 @@ export const PRCardSkeleton = () => {
         </View>
     );
 };
+
+export const SkeletonCoachCard = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: cardBg, borderRadius: 16, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
+            <Shimmer width={64} height={64} borderRadius={12} style={{ marginRight: 14 }} />
+            <View style={{ flex: 1 }}>
+                <Shimmer width="60%" height={16} style={{ marginBottom: 8 }} />
+                <View style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
+                    <Shimmer width={50} height={20} borderRadius={10} />
+                    <Shimmer width={45} height={20} borderRadius={10} />
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Shimmer width={40} height={14} />
+                    <Shimmer width={50} height={14} />
+                </View>
+            </View>
+            <Shimmer width={48} height={24} borderRadius={8} />
+        </View>
+    );
+};
+
+export const SkeletonConversationRow = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: cardBg, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+            <Shimmer width={48} height={48} borderRadius={24} style={{ marginRight: 14 }} />
+            <View style={{ flex: 1 }}>
+                <Shimmer width="50%" height={16} style={{ marginBottom: 6 }} />
+                <Shimmer width="80%" height={12} />
+            </View>
+            <Shimmer width={36} height={12} borderRadius={4} />
+        </View>
+    );
+};
+
+export const SkeletonCoachDetail = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ padding: 24 }}>
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                <Shimmer width={100} height={100} borderRadius={50} style={{ marginBottom: 12 }} />
+                <Shimmer width={140} height={22} style={{ marginBottom: 16 }} />
+                <View style={{ flexDirection: 'row', gap: 20 }}>
+                    <Shimmer width={60} height={40} borderRadius={8} />
+                    <Shimmer width={60} height={40} borderRadius={8} />
+                    <Shimmer width={60} height={40} borderRadius={8} />
+                </View>
+            </View>
+            <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 20, marginBottom: 16 }}>
+                <Shimmer width="70%" height={18} style={{ marginBottom: 12 }} />
+                <Shimmer width="100%" height={60} borderRadius={12} />
+            </View>
+            <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 20 }}>
+                <Shimmer width="50%" height={18} style={{ marginBottom: 12 }} />
+                <Shimmer width="100%" height={80} borderRadius={12} />
+            </View>
+        </View>
+    );
+};
+
+export const SkeletonClientRow = () => {
+    const { isDark } = useThemeStore();
+    const cardBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: cardBg, borderRadius: 14, padding: 14, marginBottom: 10 }}>
+            <Shimmer width={48} height={48} borderRadius={24} style={{ marginRight: 14 }} />
+            <View style={{ flex: 1 }}>
+                <Shimmer width="55%" height={16} style={{ marginBottom: 8 }} />
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <Shimmer width={70} height={20} borderRadius={10} />
+                    <Shimmer width={90} height={14} />
+                </View>
+            </View>
+        </View>
+    );
+};

@@ -6,12 +6,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Logo } from '@/components/shared';
 import { theme } from '@/theme';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { AuthStackParamList } from '@/types';
+import type { StackNavigationProp, StackScreenProps } from '@react-navigation/stack';
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { AuthStackParamList, RootStackParamList } from '@/types';
 import { scaleWidth, scaleHeight, getResponsiveFontSize, getResponsiveSpacing } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 
-type NavigationProp = StackNavigationProp<AuthStackParamList>;
+type NavigationProp = CompositeNavigationProp<
+  StackNavigationProp<AuthStackParamList>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 // Consistent Colors with Onboarding
 const PRIMARY_GREEN = '#B4F04E';
@@ -70,6 +74,11 @@ export const WelcomeScreen: React.FC = () => {
   const handleRegisterPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('Signup');
+  };
+
+  const handleCoachPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    (navigation as any).replace('CoachAuth');
   };
 
   return (
@@ -136,6 +145,15 @@ export const WelcomeScreen: React.FC = () => {
               style={styles.registerButton}
             >
               <Text style={styles.registerButtonText}>{t('welcome.register')}</Text>
+            </TouchableOpacity>
+
+            {/* Coach CTA */}
+            <TouchableOpacity
+              onPress={handleCoachPress}
+              activeOpacity={0.7}
+              style={styles.coachButton}
+            >
+              <Text style={styles.coachButtonText}>{t('welcome.imACoach')}</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -210,5 +228,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     opacity: 0.9,
+  },
+  coachButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  coachButtonText: {
+    color: 'rgba(180, 240, 78, 0.8)',
+    fontFamily: 'Barlow_500Medium',
+    fontSize: getResponsiveFontSize(14),
+    letterSpacing: 0.5,
   },
 });

@@ -7,10 +7,12 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
+  UserCheck,
   Dumbbell,
   ListChecks,
   Settings,
   FileText,
+  CreditCard,
   X,
   Menu,
 } from "lucide-react";
@@ -19,6 +21,8 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Users", href: "/users", icon: Users },
+  { name: "Coaches", href: "/coaches", icon: UserCheck },
+  { name: "Transactions", href: "/transactions", icon: CreditCard },
   { name: "Exercises", href: "/exercises", icon: Dumbbell },
   { name: "Workouts", href: "/workouts", icon: ListChecks },
   { name: "Activity Logs", href: "/activity-logs", icon: FileText },

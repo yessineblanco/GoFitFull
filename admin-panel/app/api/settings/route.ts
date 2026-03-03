@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       supportEmail: "support@gofit.com",
       maintenanceMode: false,
       maxUsersPerPlan: 1000,
+      platformFeePercent: 10,
     };
 
     return NextResponse.json(
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { platformName, supportEmail, maintenanceMode, maxUsersPerPlan } = body;
+    const { platformName, supportEmail, maintenanceMode, maxUsersPerPlan, platformFeePercent } = body;
 
     // Validate
     if (!platformName || !supportEmail) {
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
       supportEmail: supportEmail.trim(),
       maintenanceMode: maintenanceMode || false,
       maxUsersPerPlan: maxUsersPerPlan || 1000,
+      platformFeePercent: Math.min(100, Math.max(0, Number(platformFeePercent) || 10)),
       updatedAt: new Date().toISOString(),
       updatedBy: adminUserId,
     };

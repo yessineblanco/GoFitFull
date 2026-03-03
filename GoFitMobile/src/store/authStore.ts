@@ -41,6 +41,7 @@ interface AuthStore {
   rememberedEmail: string | null;
   authSubscription: { subscription: { unsubscribe: () => void } } | null;
   lastActivity: number | null;
+  userType: 'client' | 'coach';
 
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
@@ -52,8 +53,10 @@ interface AuthStore {
   checkAndRefreshSession: () => Promise<void>;
   initialize: () => Promise<void>;
   signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, userType?: 'client' | 'coach') => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'facebook' | 'apple') => Promise<void>;
+  getUserType: () => 'client' | 'coach';
+  fetchUserType: (userId: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -104,6 +107,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   rememberedEmail: null,
   authSubscription: null,
   lastActivity: null,
+  userType: 'client',
 
   setUser: (user) => {
     set({ user });
@@ -216,6 +220,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         setupInactivityTimer(get().signOut);
         setupAppStateListener(get().updateActivity);
         
+        // Fetch user_type from DB (source of truth)
+        if (session.user?.id) {
+          await get().fetchUserType(session.user.id);
+        }
+        
         // Check and refresh session if needed
         await get().checkAndRefreshSession();
         
@@ -240,7 +249,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           if (session) {
             setupInactivityTimer(get().signOut);
             setupAppStateListener(get().updateActivity);
+            if (session.user?.id) {
+              get().fetchUserType(session.user.id);
+            }
           } else {
+            set({ userType: 'client' });
             // Clear timers if no session
             if (inactivityTimer) {
               clearTimeout(inactivityTimer);
@@ -300,6 +313,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         setupAppStateListener(get().updateActivity);
       }
       
+      // Fetch user_type from DB (source of truth)
+      if (data.user?.id) {
+        await get().fetchUserType(data.user.id);
+      }
+      
       // Handle remember me
       if (rememberMe) {
         await get().setRememberMe(true, email);
@@ -316,7 +334,31 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string) => {
+  getUserType: () => {
+    return get().userType;
+  },
+
+  fetchUserType: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .single();
+
+      if (!error && data?.user_type) {
+        set({ userType: data.user_type as 'client' | 'coach' });
+      } else {
+        const metaType = get().user?.user_metadata?.user_type;
+        set({ userType: (metaType as 'client' | 'coach') || 'client' });
+      }
+    } catch {
+      const metaType = get().user?.user_metadata?.user_type;
+      set({ userType: (metaType as 'client' | 'coach') || 'client' });
+    }
+  },
+
+  signUp: async (email: string, password: string, userType: 'client' | 'coach' = 'client') => {
     set({ loading: true });
     try {
       // Check rate limit
@@ -331,7 +373,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       // Record attempt before making the request
       await recordAttempt('signup');
 
-      const data = await authService.signUp(email, password);
+      const data = await authService.signUp(email, password, userType);
       
       // Clear rate limit on successful signup
       await clearRateLimit('signup');
@@ -400,6 +442,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         user: null,
         loading: false,
         lastActivity: null,
+        userType: 'client',
       });
     } catch (error) {
       set({ loading: false });

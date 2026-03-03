@@ -1,10 +1,10 @@
 import 'react-native-gesture-handler'; // Must be imported first for gestures to work
 import './src/i18n'; // Initialize i18n
 import React, { useEffect, useState, useRef } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { StatusBar, Platform } from 'react-native';
+import { StatusBar, Platform, Linking } from 'react-native';
 import { View, ActivityIndicator, StyleSheet, Easing, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,19 +21,42 @@ import {
 } from '@expo-google-fonts/barlow';
 import { useAuthStore } from './src/store/authStore';
 import { useOnboardingStore } from './src/store/onboardingStore';
+import { useCoachStore } from './src/store/coachStore';
 import { useThemeStore } from './src/store/themeStore';
 import { useWorkoutsStore } from './src/store/workoutsStore';
 import { useProfileStore } from './src/store/profileStore';
 import { AuthNavigator } from './src/navigation/AuthNavigator';
+import { CoachAuthNavigator } from './src/navigation/CoachAuthNavigator';
+import { CoachOnboardingNavigator } from './src/navigation/CoachOnboardingNavigator';
 import { OnboardingNavigator } from './src/navigation/OnboardingNavigator';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { CoachAppNavigator } from './src/navigation/CoachAppNavigator';
 import { SplashScreen, ErrorBoundary, NotificationBanner, CustomDialog } from './src/components/shared';
 import { dialogManager } from './src/components/shared/CustomDialog';
 import { logger } from './src/utils/logger';
+import { notificationService } from './src/services/notifications';
+import { useDeepLinkStore, parseGoFitUrl } from './src/store/deepLinkStore';
 import type { RootStackParamList } from './src/navigation/types';
 import { theme } from './src/theme';
 
 const Stack = createStackNavigator<RootStackParamList>();
+
+const linking = {
+  prefixes: ['gofit://'],
+  config: {
+    screens: {
+      App: {
+        screens: {
+          Home: {
+            screens: {
+              CoachDetail: 'coach/:coachId',
+            },
+          },
+        },
+      },
+    },
+  },
+};
 
 // Suppress expo-notifications warnings/errors about Expo Go limitations
 // These messages are informational - local notifications work fine in Expo Go
@@ -49,8 +72,9 @@ LogBox.ignoreLogs([
 ]);
 
 export default function App() {
-  const { initialize, initialized, session, isResettingPassword, user, loadRememberedEmail } = useAuthStore();
+  const { initialize, initialized, session, isResettingPassword, user, userType, loadRememberedEmail } = useAuthStore();
   const { hasCompletedOnboarding } = useOnboardingStore();
+  const { hasCompletedCoachOnboarding } = useCoachStore();
   const { isDark } = useThemeStore();
   const [fontsLoaded, fontError] = useFonts({
     'Designer': require('./assets/fonts/Designer.otf'),
@@ -78,6 +102,38 @@ export default function App() {
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
   const [dialog, setDialog] = useState<any>(null);
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
+  const { setPending, consumePending } = useDeepLinkStore();
+
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const parsed = parseGoFitUrl(url);
+      if (parsed && !session) {
+        setPending(parsed);
+      }
+    };
+    Linking.getInitialURL().then(handleUrl);
+    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => sub.remove();
+  }, [session, setPending]);
+
+  useEffect(() => {
+    if (!session || userType !== 'client' || !hasCompletedOnboarding(user?.id || null)) return;
+    const pending = consumePending();
+    if (pending?.type !== 'coach' || !pending.coachId) return;
+    const navigate = () => {
+      if (navigationRef.isReady()) {
+(navigationRef as any).navigate('App', {
+        screen: 'Home',
+        params: { screen: 'CoachDetail', params: { coachId: pending.coachId } },
+      });
+      } else {
+        setTimeout(navigate, 100);
+      }
+    };
+    navigate();
+  }, [session, userType, user?.id, hasCompletedOnboarding, consumePending]);
 
   useEffect(() => {
     if (fontError) {
@@ -188,6 +244,11 @@ export default function App() {
               logger.error('Error preloading profile:', error);
             }
           }),
+          notificationService.registerPushToken(user.id).catch((error) => {
+            if (isMounted) {
+              logger.warn('Push token registration failed (expected in Expo Go):', error);
+            }
+          }),
         ];
 
         // Wait for all promises to settle (but don't block)
@@ -274,7 +335,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ErrorBoundary>
-        <NavigationContainer theme={navigationTheme}>
+        <NavigationContainer ref={navigationRef} linking={linking} theme={navigationTheme}>
           {Platform.OS === 'android' && (
             <StatusBar
               barStyle={isDark ? "light-content" : "dark-content"}
@@ -346,13 +407,24 @@ export default function App() {
             }}
           >
             {session && !isResettingPassword ? (
-              hasCompletedOnboarding(user?.id || null) ? (
-                <Stack.Screen name="App" component={AppNavigator} />
-              ) : (
-                <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
-              )
+              (() => {
+                if (userType === 'coach') {
+                  if (!hasCompletedCoachOnboarding(user?.id || null)) {
+                    return <Stack.Screen name="CoachOnboarding" component={CoachOnboardingNavigator} />;
+                  }
+                  return <Stack.Screen name="CoachApp" component={CoachAppNavigator} />;
+                }
+                return hasCompletedOnboarding(user?.id || null) ? (
+                  <Stack.Screen name="App" component={AppNavigator} />
+                ) : (
+                  <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
+                );
+              })()
             ) : (
-              <Stack.Screen name="Auth" component={AuthNavigator} />
+              <>
+                <Stack.Screen name="Auth" component={AuthNavigator} />
+                <Stack.Screen name="CoachAuth" component={CoachAuthNavigator} />
+              </>
             )}
           </Stack.Navigator>
         </NavigationContainer>

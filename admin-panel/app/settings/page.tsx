@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [supportEmail, setSupportEmail] = useState("support@gofit.com");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maxUsersPerPlan, setMaxUsersPerPlan] = useState(1000);
+  const [platformFeePercent, setPlatformFeePercent] = useState(10);
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -44,6 +45,7 @@ export default function SettingsPage() {
             setSupportEmail(data.settings.supportEmail || "support@gofit.com");
             setMaintenanceMode(data.settings.maintenanceMode || false);
             setMaxUsersPerPlan(data.settings.maxUsersPerPlan || 1000);
+            setPlatformFeePercent(data.settings.platformFeePercent ?? 10);
           }
         }
       } catch (error) {
@@ -69,6 +71,7 @@ export default function SettingsPage() {
           supportEmail: supportEmail,
           maintenanceMode: maintenanceMode,
           maxUsersPerPlan: maxUsersPerPlan,
+          platformFeePercent: platformFeePercent,
         }),
       });
 
@@ -377,6 +380,22 @@ export default function SettingsPage() {
                 placeholder="1000"
                 disabled={loadingSettings || loading}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="platform-fee">Platform Fee (%)</Label>
+              <Input
+                id="platform-fee"
+                type="number"
+                min={0}
+                max={100}
+                value={platformFeePercent}
+                onChange={(e) => setPlatformFeePercent(parseInt(e.target.value) || 0)}
+                placeholder="10"
+                disabled={loadingSettings || loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Percentage taken from each transaction (0-100)
+              </p>
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">

@@ -41,7 +41,8 @@ export const ConversationsListScreen: React.FC = () => {
   const openChat = (convo: Conversation) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setActiveConversation(convo);
-    navigation.navigate('ChatScreen', { conversationId: convo.id, recipientName: getOtherName(convo) });
+    const screenName = userType === 'coach' ? 'ChatScreen' : 'ClientChatScreen';
+    navigation.navigate(screenName, { conversationId: convo.id, recipientName: getOtherName(convo) });
   };
 
   const getOtherName = (convo: Conversation) => {

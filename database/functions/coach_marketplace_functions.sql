@@ -315,12 +315,12 @@ DECLARE
   v_total_workouts INTEGER;
   v_current_streak INTEGER;
   v_recent_sessions JSONB;
+  v_weekly_consistency NUMERIC;
 BEGIN
-  SELECT EXISTS (
-    SELECT 1 FROM public.purchased_packs
-    WHERE client_id = p_client_id 
-      AND coach_id = p_coach_id
-      AND status = 'active'
+  -- Match get_coach_clients: allow if client has ANY booking OR purchased_pack with this coach
+  SELECT (
+    EXISTS (SELECT 1 FROM public.bookings b WHERE b.client_id = p_client_id AND b.coach_id = p_coach_id)
+    OR EXISTS (SELECT 1 FROM public.purchased_packs pp WHERE pp.client_id = p_client_id AND pp.coach_id = p_coach_id)
   ) INTO v_has_relationship;
 
   IF NOT v_has_relationship THEN
@@ -347,20 +347,37 @@ BEGIN
   FROM streaks
   WHERE grp = (SELECT grp FROM streaks LIMIT 1);
 
+  -- workout_name was removed from workout_sessions; get name from workouts via workout_id
   SELECT COALESCE(jsonb_agg(row_to_json(s)), '[]'::jsonb)
   INTO v_recent_sessions
   FROM (
-    SELECT id, workout_name, started_at, completed_at, duration_minutes, exercises_completed
-    FROM public.workout_sessions
-    WHERE user_id = p_client_id AND completed_at IS NOT NULL
-    ORDER BY started_at DESC
+    SELECT ws.id, COALESCE(w.name, 'Workout') AS workout_name, ws.started_at, ws.completed_at, ws.duration_minutes, ws.exercises_completed
+    FROM public.workout_sessions ws
+    LEFT JOIN public.workouts w ON ws.workout_id = w.id
+    WHERE ws.user_id = p_client_id AND ws.completed_at IS NOT NULL
+    ORDER BY ws.started_at DESC
     LIMIT 20
   ) s;
 
+  -- Weekly consistency: avg workout days per week over last 4 weeks
+  SELECT COALESCE(
+    ROUND(
+      (SELECT COUNT(DISTINCT DATE(completed_at AT TIME ZONE 'UTC'))::NUMERIC / 4
+       FROM public.workout_sessions
+       WHERE user_id = p_client_id
+         AND completed_at IS NOT NULL
+         AND completed_at >= NOW() - INTERVAL '28 days'),
+      1
+    ),
+    0
+  ) INTO v_weekly_consistency;
+
+  -- Use keys expected by client: sessions, streak, weekly_consistency
   result := jsonb_build_object(
     'total_workouts', v_total_workouts,
-    'current_streak', v_current_streak,
-    'recent_sessions', v_recent_sessions
+    'streak', v_current_streak,
+    'sessions', v_recent_sessions,
+    'weekly_consistency', v_weekly_consistency
   );
 
   RETURN result;

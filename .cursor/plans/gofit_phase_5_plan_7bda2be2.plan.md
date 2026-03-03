@@ -136,8 +136,8 @@ All new tables go in `database/schema/` and migrations in `database/migrations/`
 - `**wallets`** -- `id`, `coach_id`, `balance`, `currency`
 - `**transactions`** -- `id`, `wallet_id`, `type` (earning/payout/refund), `amount`, `description`, `stripe_transfer_id`, `created_at`
 - `**coach_client_notes`** -- `id`, `coach_id`, `client_id`, `note`, `created_at`, `updated_at`
-- `**push_tokens**` -- `id`, `user_id`, `expo_push_token`, `platform` (ios/android), `created_at`
-- `**notifications**` -- `id`, `user_id`, `type`, `title`, `body`, `data` (JSONB), `read_at`, `created_at`
+- `**push_tokens`** -- `id`, `user_id`, `expo_push_token`, `platform` (ios/android), `created_at`
+- `**notifications`** -- `id`, `user_id`, `type`, `title`, `body`, `data` (JSONB), `read_at`, `created_at`
 
 **Supabase Storage buckets:** `coach-documents` (CVs, certs), `chat-media` (images, files, voice messages).
 

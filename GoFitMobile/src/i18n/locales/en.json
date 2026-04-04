@@ -19,7 +19,8 @@
     "failedToUpdate": "Failed to update",
     "failedToSave": "Failed to save",
     "unnamed": "Unnamed",
-    "all": "All"
+    "all": "All",
+    "goBack": "Go Back"
   },
   "profile": {
     "title": "Profile",
@@ -837,5 +838,15 @@
     "totalReviews": "Reviews",
     "totalSessions": "Sessions Overview",
     "sessionsTotal": "total sessions"
+  },
+  "videoCall": {
+    "connecting": "Connecting to call...",
+    "connectionFailed": "Could not connect to the call",
+    "retry": "Retry",
+    "unavailable": "Video Calls Unavailable",
+    "requiresDevBuild": "Video calls require a development build. They are not available in Expo Go.",
+    "inCall": "In call",
+    "joinCall": "Join Call",
+    "callAvailable": "Your session is starting soon"
   }
 }

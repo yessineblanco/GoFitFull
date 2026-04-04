@@ -44,6 +44,7 @@ import { MyBookingsScreen } from '@/screens/profile/MyBookingsScreen';
 import { ConversationsListScreen } from '@/screens/coach-app/ConversationsListScreen';
 import { ChatScreen } from '@/screens/coach-app/ChatScreen';
 import { NotificationInboxScreen } from '@/screens/profile/NotificationInboxScreen';
+import { VideoCallScreen } from '@/screens/coach-app/VideoCallScreen';
 
 const Tab = createBottomTabNavigator<AppTabParamList>();
 const HomeStack = createStackNavigator<HomeStackParamList>();
@@ -59,6 +60,7 @@ const HomeStackNavigator = () => {
       <HomeStack.Screen name="BookSession" component={BookSessionScreen} />
       <HomeStack.Screen name="ClientChat" component={ChatScreen} />
       <HomeStack.Screen name="NotificationInbox" component={NotificationInboxScreen} />
+      <HomeStack.Screen name="VideoCall" component={VideoCallScreen} />
     </HomeStack.Navigator>
   );
 };
@@ -86,6 +88,7 @@ const ProfileStackNavigator = () => {
       <ProfileStack.Screen name="MyPrograms" component={MyProgramsScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="ProgramDetail" component={ProgramDetailScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="MyBookings" component={MyBookingsScreen} options={{ headerShown: false }} />
+      <ProfileStack.Screen name="VideoCall" component={VideoCallScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="ClientConversations" component={ConversationsListScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="ClientChatScreen" component={ChatScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="NotificationInbox" component={NotificationInboxScreen} options={{ headerShown: false }} />

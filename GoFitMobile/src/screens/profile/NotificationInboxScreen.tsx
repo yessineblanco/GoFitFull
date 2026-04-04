@@ -1,10 +1,12 @@
 import React, { useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, SectionList, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Bell } from 'lucide-react-native';
+import {
+  ArrowLeft, Bell, MessageCircle, Calendar, Star, Dumbbell, CheckCircle, XCircle,
+} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '@/store/authStore';
 import { notificationInboxService, type AppNotification } from '@/services/notificationInbox';
@@ -12,6 +14,16 @@ import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 
 const PRIMARY_GREEN = '#B4F04E';
+
+const NOTIF_ICONS: Record<string, { Icon: any; color: string }> = {
+  new_message: { Icon: MessageCircle, color: '#64B5F6' },
+  booking_confirmed: { Icon: Calendar, color: PRIMARY_GREEN },
+  booking_cancelled: { Icon: XCircle, color: '#EF5350' },
+  booking_reminder: { Icon: Calendar, color: '#FFC107' },
+  new_review: { Icon: Star, color: '#FFD700' },
+  program_received: { Icon: Dumbbell, color: '#CE93D8' },
+  coach_verified: { Icon: CheckCircle, color: PRIMARY_GREEN },
+};
 
 export const NotificationInboxScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -54,25 +66,33 @@ export const NotificationInboxScreen: React.FC = () => {
     }
   };
 
-  const groupByDate = (items: AppNotification[]) => {
+  const sections = React.useMemo(() => {
     const groups: Record<string, AppNotification[]> = {};
     const today = new Date().toDateString();
     const yesterday = new Date(Date.now() - 86400000).toDateString();
-    items.forEach((item) => {
+
+    notifications.forEach((item) => {
       const d = new Date(item.created_at).toDateString();
       const key = d === today ? 'today' : d === yesterday ? 'yesterday' : d;
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     });
-    return groups;
-  };
 
-  const groups = groupByDate(notifications);
-  const sections = Object.entries(groups).map(([key, items]) => ({
-    key,
-    label: key === 'today' ? t('chat.today') : key === 'yesterday' ? t('chat.yesterday') : new Date(key).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }),
-    items,
-  }));
+    return Object.entries(groups).map(([key, items]) => ({
+      title: key === 'today'
+        ? t('chat.today')
+        : key === 'yesterday'
+          ? t('chat.yesterday')
+          : new Date(key).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }),
+      data: items,
+    }));
+  }, [notifications, t]);
+
+  const getNotifIcon = (type: string, isRead: boolean) => {
+    const entry = NOTIF_ICONS[type] || { Icon: Bell, color: PRIMARY_GREEN };
+    const { Icon, color } = entry;
+    return <Icon size={18} color={isRead ? 'rgba(255,255,255,0.3)' : color} />;
+  };
 
   const renderItem = ({ item }: { item: AppNotification }) => (
     <TouchableOpacity
@@ -81,7 +101,7 @@ export const NotificationInboxScreen: React.FC = () => {
       activeOpacity={0.7}
     >
       <View style={styles.notifIcon}>
-        <Bell size={18} color={item.read_at ? 'rgba(255,255,255,0.3)' : PRIMARY_GREEN} />
+        {getNotifIcon(item.type, !!item.read_at)}
       </View>
       <View style={styles.notifContent}>
         <Text style={[styles.notifTitle, !item.read_at && styles.notifTitleUnread]} numberOfLines={1}>{item.title}</Text>
@@ -93,16 +113,9 @@ export const NotificationInboxScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  const renderSection = ({ section }: { section: { key: string; label: string; items: AppNotification[] } }) => (
-    <View style={styles.section}>
-      <Text style={styles.sectionLabel}>{section.label}</Text>
-      {section.items.map((item) => (
-        <View key={item.id}>{renderItem({ item })}</View>
-      ))}
-    </View>
+  const renderSectionHeader = ({ section }: { section: { title: string } }) => (
+    <Text style={styles.sectionLabel}>{section.title}</Text>
   );
-
-  const allItems = sections.flatMap((s) => s.items);
 
   return (
     <View style={styles.container}>
@@ -116,12 +129,14 @@ export const NotificationInboxScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={allItems}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={loadNotifications} tintColor={PRIMARY_GREEN} />}
         ListEmptyComponent={
           loading ? (
@@ -162,12 +177,12 @@ const styles = StyleSheet.create({
   notifTitleUnread: { color: '#FFFFFF' },
   notifBody: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), color: 'rgba(255,255,255,0.5)', marginTop: 4 },
   notifTime: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), color: 'rgba(255,255,255,0.35)', marginTop: 6 },
-  section: { marginBottom: 20 },
   sectionLabel: {
     fontFamily: 'Barlow_600SemiBold',
     fontSize: getResponsiveFontSize(12),
     color: 'rgba(255,255,255,0.4)',
     marginBottom: 10,
+    marginTop: 12,
     textTransform: 'uppercase',
   },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 },

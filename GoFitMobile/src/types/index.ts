@@ -76,6 +76,7 @@ export type HomeStackParamList = {
   BookSession: { coachId: string; coachName?: string };
   ClientChat: { conversationId: string };
   NotificationInbox: undefined;
+  VideoCall: { bookingId: string; videoRoomId: string };
 };
 
 export type AppTabParamList = {

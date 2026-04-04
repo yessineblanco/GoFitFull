@@ -21,6 +21,7 @@ import { ProgramBuilderScreen } from '@/screens/coach-app/ProgramBuilderScreen';
 import { CoachAvailabilityScreen } from '@/screens/coach-app/CoachAvailabilityScreen';
 import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import { NotificationInboxScreen } from '@/screens/profile/NotificationInboxScreen';
+import { VideoCallScreen } from '@/screens/coach-app/VideoCallScreen';
 
 const Tab = createBottomTabNavigator<CoachAppTabParamList>();
 const DashboardStack = createStackNavigator();
@@ -43,6 +44,7 @@ const CalendarStackNavigator = () => (
   <CalendarStack.Navigator screenOptions={{ headerShown: false }}>
     <CalendarStack.Screen name="CalendarMain" component={CoachCalendarScreen} />
     <CalendarStack.Screen name="Availability" component={CoachAvailabilityScreen} />
+    <CalendarStack.Screen name="VideoCall" component={VideoCallScreen} />
   </CalendarStack.Navigator>
 );
 

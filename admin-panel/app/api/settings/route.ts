@@ -7,9 +7,9 @@ import { getAdminUserIdFromRequest } from "@/lib/audit";
 export async function GET(request: NextRequest) {
   try {
     const adminClient = createAdminClient();
+    const { searchParams } = new URL(request.url);
+    const wantStats = searchParams.get("stats") === "true";
 
-    // Try to fetch settings from a settings table
-    // If the table doesn't exist, return defaults
     const { data, error } = await adminClient
       .from("admin_settings")
       .select("*")
@@ -17,7 +17,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== "PGRST116") {
-      // PGRST116 = no rows returned, which is fine for first run
       console.error("Error fetching settings:", error);
       return NextResponse.json(
         { error: "Failed to fetch settings" },
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Return default settings if none exist
     const defaultSettings = {
       platformName: "GoFit",
       supportEmail: "support@gofit.com",
@@ -34,13 +32,28 @@ export async function GET(request: NextRequest) {
       platformFeePercent: 10,
     };
 
-    return NextResponse.json(
-      { settings: data?.value || defaultSettings },
-      { status: 200 }
-    );
+    const result: Record<string, any> = {
+      settings: data?.value || defaultSettings,
+    };
+
+    if (wantStats) {
+      const [users, coaches, packs, bookings] = await Promise.all([
+        adminClient.from("user_profiles").select("id", { count: "exact", head: true }),
+        adminClient.from("coach_profiles").select("id", { count: "exact", head: true }),
+        adminClient.from("purchased_packs").select("id", { count: "exact", head: true }).gt("sessions_remaining", 0),
+        adminClient.from("bookings").select("id", { count: "exact", head: true }),
+      ]);
+      result.stats = {
+        totalUsers: users.count || 0,
+        totalCoaches: coaches.count || 0,
+        activePacks: packs.count || 0,
+        totalBookings: bookings.count || 0,
+      };
+    }
+
+    return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     console.error("Unexpected error:", error);
-    // Return defaults if table doesn't exist
     return NextResponse.json(
       {
         settings: {
@@ -58,7 +71,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { platformName, supportEmail, maintenanceMode, maxUsersPerPlan, platformFeePercent } = body;
+    const { platformName, supportEmail, maintenanceMode, maxUsersPerPlan, platformFeePercent, notifications } = body;
 
     // Validate
     if (!platformName || !supportEmail) {
@@ -79,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert settings
-    const settingsValue = {
+    const settingsValue: Record<string, any> = {
       platformName: platformName.trim(),
       supportEmail: supportEmail.trim(),
       maintenanceMode: maintenanceMode || false,
@@ -88,6 +101,9 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
       updatedBy: adminUserId,
     };
+    if (notifications) {
+      settingsValue.notifications = notifications;
+    }
 
     const { data, error } = await adminClient
       .from("admin_settings")

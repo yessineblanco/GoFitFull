@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sun, Moon, Monitor, Mail, Download, Trash2, RefreshCw } from "lucide-react";
+import { Sun, Moon, Monitor, Mail, Download, Trash2, RefreshCw, Database } from "lucide-react";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -26,6 +26,13 @@ export default function SettingsPage() {
     push: false,
     weekly: true,
   });
+  const [dbStats, setDbStats] = useState<{
+    totalUsers: number;
+    totalCoaches: number;
+    activePacks: number;
+    totalBookings: number;
+  } | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
   const [exportPrefs, setExportPrefs] = useState({
     format: "csv",
     includeHeaders: true,
@@ -46,6 +53,9 @@ export default function SettingsPage() {
             setMaintenanceMode(data.settings.maintenanceMode || false);
             setMaxUsersPerPlan(data.settings.maxUsersPerPlan || 1000);
             setPlatformFeePercent(data.settings.platformFeePercent ?? 10);
+            if (data.settings.notifications) {
+              setNotifications(data.settings.notifications);
+            }
           }
         }
       } catch (error) {
@@ -56,7 +66,23 @@ export default function SettingsPage() {
     };
 
     loadSettings();
+    loadDbStats();
   }, []);
+
+  const loadDbStats = async () => {
+    setLoadingStats(true);
+    try {
+      const response = await fetch("/api/settings?stats=true");
+      if (response.ok) {
+        const data = await response.json();
+        if (data.stats) setDbStats(data.stats);
+      }
+    } catch (error) {
+      console.error("Error loading DB stats:", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const handleSavePlatform = async () => {
     setLoading(true);
@@ -72,6 +98,7 @@ export default function SettingsPage() {
           maintenanceMode: maintenanceMode,
           maxUsersPerPlan: maxUsersPerPlan,
           platformFeePercent: platformFeePercent,
+          notifications: notifications,
         }),
       });
 
@@ -421,9 +448,12 @@ export default function SettingsPage() {
         {/* Database */}
         <Card>
           <CardHeader>
-            <CardTitle>Database</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Database
+            </CardTitle>
             <CardDescription>
-              Database connection and maintenance
+              Database connection and statistics
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -434,7 +464,31 @@ export default function SettingsPage() {
                 <span className="text-sm text-muted-foreground">Connected</span>
               </div>
             </div>
-            <Button variant="outline">View Database Stats</Button>
+            {dbStats ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-md bg-muted p-3">
+                  <p className="text-2xl font-bold">{dbStats.totalUsers}</p>
+                  <p className="text-xs text-muted-foreground">Total Users</p>
+                </div>
+                <div className="rounded-md bg-muted p-3">
+                  <p className="text-2xl font-bold">{dbStats.totalCoaches}</p>
+                  <p className="text-xs text-muted-foreground">Coaches</p>
+                </div>
+                <div className="rounded-md bg-muted p-3">
+                  <p className="text-2xl font-bold">{dbStats.activePacks}</p>
+                  <p className="text-xs text-muted-foreground">Active Packs</p>
+                </div>
+                <div className="rounded-md bg-muted p-3">
+                  <p className="text-2xl font-bold">{dbStats.totalBookings}</p>
+                  <p className="text-xs text-muted-foreground">Bookings</p>
+                </div>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={loadDbStats} disabled={loadingStats}>
+                {loadingStats && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                {loadingStats ? "Loading..." : "Load Database Stats"}
+              </Button>
+            )}
           </CardContent>
         </Card>
 

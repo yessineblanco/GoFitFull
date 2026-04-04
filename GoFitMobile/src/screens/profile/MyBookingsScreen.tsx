@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Calendar, XCircle } from 'lucide-react-native';
+import { ArrowLeft, Calendar, XCircle, Video } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useBookingsStore } from '@/store/bookingsStore';
@@ -13,6 +13,7 @@ import type { Booking } from '@/services/bookings';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { videoCallService } from '@/services/videoCall';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -55,9 +56,21 @@ export const MyBookingsScreen: React.FC = () => {
     );
   };
 
+  const handleJoinCall = async (booking: Booking) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    let roomId = booking.video_room_id;
+    if (!roomId) {
+      roomId = await videoCallService.createVideoRoom(booking.id);
+    }
+    if (roomId) {
+      (navigation as any).navigate('VideoCall', { bookingId: booking.id, videoRoomId: roomId });
+    }
+  };
+
   const renderBooking = ({ item }: { item: Booking }) => {
     const date = new Date(item.scheduled_at);
     const isUpcoming = date > new Date() && item.status !== 'cancelled';
+    const canJoinCall = item.status === 'confirmed' && videoCallService.isWithinCallWindow(item.scheduled_at);
 
     return (
       <View style={styles.card}>
@@ -73,6 +86,12 @@ export const MyBookingsScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
+        {canJoinCall && (
+          <TouchableOpacity style={styles.joinCallBtn} onPress={() => handleJoinCall(item)} activeOpacity={0.7}>
+            <Video size={16} color="#000000" />
+            <Text style={styles.joinCallText}>{t('videoCall.joinCall')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -130,4 +149,9 @@ const styles = StyleSheet.create({
   emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 80, gap: 12 },
   emptyTitle: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(18), color: '#FFFFFF' },
   emptySubtitle: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(14), color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 260 },
+  joinCallBtn: {
+    flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6,
+    backgroundColor: PRIMARY_GREEN, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, marginTop: 10,
+  },
+  joinCallText: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13), color: '#000000' },
 });

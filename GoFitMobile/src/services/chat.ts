@@ -1,6 +1,7 @@
 import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
 import { notificationInboxService } from '@/services/notificationInbox';
+import { pushNotificationService } from '@/services/pushNotification';
 
 export interface Conversation {
   id: string;
@@ -30,10 +31,7 @@ export const chatService = {
   async getConversationsForClient(clientUserId: string): Promise<Conversation[]> {
     try {
       const { data, error } = await supabase
-        .from('conversations_enriched')
-        .select('id, coach_id, client_id, last_message_at, created_at, last_message, coach_display_name, coach_profile_picture_url')
-        .eq('client_id', clientUserId)
-        .order('last_message_at', { ascending: false, nullsFirst: false });
+        .rpc('get_conversations_enriched', { p_role: 'client' });
 
       if (error) throw error;
       return (data || []).map((row: any) => ({
@@ -55,10 +53,7 @@ export const chatService = {
   async getConversationsForCoach(coachProfileId: string): Promise<Conversation[]> {
     try {
       const { data, error } = await supabase
-        .from('conversations_enriched')
-        .select('id, coach_id, client_id, last_message_at, created_at, last_message, client_display_name, client_profile_picture_url')
-        .eq('coach_id', coachProfileId)
-        .order('last_message_at', { ascending: false, nullsFirst: false });
+        .rpc('get_conversations_enriched', { p_role: 'coach' });
 
       if (error) throw error;
       return (data || []).map((row: any) => ({
@@ -151,11 +146,18 @@ export const chatService = {
           ? (await supabase.from('coach_profiles').select('user_id').eq('id', conv.coach_id).single()).data?.user_id
           : conv.client_id;
         if (recipientUserId && recipientUserId !== senderId) {
+          const notifBody = content.length > 50 ? `${content.slice(0, 50)}...` : content;
           await notificationInboxService.createNotification({
             user_id: recipientUserId,
             type: 'new_message',
             title: 'New message',
-            body: content.length > 50 ? `${content.slice(0, 50)}...` : content,
+            body: notifBody,
+            data: { screen: 'Chat', id: conversationId },
+          });
+          pushNotificationService.send({
+            user_id: recipientUserId,
+            title: 'New message',
+            body: notifBody,
             data: { screen: 'Chat', id: conversationId },
           });
         }

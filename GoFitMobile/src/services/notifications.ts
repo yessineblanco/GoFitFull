@@ -322,5 +322,37 @@ export const notificationService = {
       throw error;
     }
   },
+
+  async scheduleBookingReminder(bookingId: string, scheduledAt: string): Promise<void> {
+    try {
+      const reminderTime = new Date(scheduledAt).getTime() - 30 * 60 * 1000;
+      const now = Date.now();
+
+      if (reminderTime <= now) return;
+
+      await Notifications.scheduleNotificationAsync({
+        identifier: `booking-reminder-${bookingId}`,
+        content: {
+          title: 'Session starting soon',
+          body: 'Your coaching session starts in 30 minutes.',
+          sound: true,
+          data: { type: 'booking_reminder', bookingId },
+        },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(reminderTime) },
+      });
+
+      logger.info(`Booking reminder scheduled for ${new Date(reminderTime).toISOString()}`);
+    } catch (error) {
+      logger.error('Failed to schedule booking reminder:', error);
+    }
+  },
+
+  async cancelBookingReminder(bookingId: string): Promise<void> {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(`booking-reminder-${bookingId}`);
+    } catch (error) {
+      logger.error('Failed to cancel booking reminder:', error);
+    }
+  },
 };
 

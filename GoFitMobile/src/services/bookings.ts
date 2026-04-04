@@ -1,6 +1,8 @@
 import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
 import { notificationInboxService } from '@/services/notificationInbox';
+import { pushNotificationService } from '@/services/pushNotification';
+import { notificationService } from '@/services/notifications';
 
 export interface AvailabilitySlot {
   id: string;
@@ -119,7 +121,15 @@ export const bookingsService = {
           body: 'A client has booked a session with you.',
           data: { screen: 'CoachDetail', id: input.coach_id },
         });
+        pushNotificationService.send({
+          user_id: coachRow.user_id,
+          title: 'New booking',
+          body: 'A client has booked a session with you.',
+          data: { screen: 'CoachDetail', id: input.coach_id },
+        });
       }
+
+      notificationService.scheduleBookingReminder(data.id, input.scheduled_at);
 
       return data;
     } catch (error) {
@@ -187,8 +197,15 @@ export const bookingsService = {
             body: 'A session booking has been cancelled.',
             data: {},
           });
+          pushNotificationService.send({
+            user_id: recipientUserId,
+            title: 'Booking cancelled',
+            body: 'A session booking has been cancelled.',
+          });
         }
       }
+
+      notificationService.cancelBookingReminder(bookingId);
     } catch (error) {
       logger.error('Failed to cancel booking:', error);
       throw error;

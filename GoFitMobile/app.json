@@ -54,6 +54,15 @@
           "supportsBackgroundPlayback": false,
           "supportsPictureInPicture": true
         }
+      ],
+      [
+        "@livekit/react-native-expo-plugin",
+        {
+          "ios": {
+            "cameraPermission": "GoFit needs camera access for video calls with your coach",
+            "microphonePermission": "GoFit needs microphone access for video calls with your coach"
+          }
+        }
       ]
     ],
     "extra": {

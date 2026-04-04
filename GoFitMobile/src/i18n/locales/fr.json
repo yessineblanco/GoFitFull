@@ -19,7 +19,8 @@
     "failedToUpdate": "Échec de la mise à jour",
     "failedToSave": "Échec de l'enregistrement",
     "unnamed": "Sans nom",
-    "all": "Tout"
+    "all": "Tout",
+    "goBack": "Retour"
   },
   "profile": {
     "title": "Profil",
@@ -830,5 +831,15 @@
     "totalReviews": "Avis",
     "totalSessions": "Aperçu des séances",
     "sessionsTotal": "séances au total"
+  },
+  "videoCall": {
+    "connecting": "Connexion à l'appel...",
+    "connectionFailed": "Impossible de se connecter à l'appel",
+    "retry": "Réessayer",
+    "unavailable": "Appels vidéo indisponibles",
+    "requiresDevBuild": "Les appels vidéo nécessitent une build de développement. Ils ne sont pas disponibles dans Expo Go.",
+    "inCall": "En appel",
+    "joinCall": "Rejoindre l'appel",
+    "callAvailable": "Votre séance commence bientôt"
   }
 }

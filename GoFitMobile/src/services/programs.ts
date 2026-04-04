@@ -1,6 +1,7 @@
 import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
 import { notificationInboxService } from '@/services/notificationInbox';
+import { pushNotificationService } from '@/services/pushNotification';
 
 export interface ProgramExercise {
   id?: string;
@@ -117,6 +118,12 @@ export const programsService = {
       await notificationInboxService.createNotification({
         user_id: input.client_id,
         type: 'program_received',
+        title: 'New program',
+        body: `Your coach created a program: ${input.title}`,
+        data: { screen: 'ProgramDetail', id: data.id },
+      });
+      pushNotificationService.send({
+        user_id: input.client_id,
         title: 'New program',
         body: `Your coach created a program: ${input.title}`,
         data: { screen: 'ProgramDetail', id: data.id },

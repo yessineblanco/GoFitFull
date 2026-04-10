@@ -108,7 +108,7 @@ export const ClientProgressScreen: React.FC = () => {
         {!data ? (
           <View style={styles.emptyContainer}>
             <TrendingUp size={48} color="rgba(180,240,78,0.3)" />
-            <Text style={styles.emptyText}>{t('clientManagement.noNotesDesc')}</Text>
+            <Text style={styles.emptyText}>{t('clientManagement.noProgressData')}</Text>
           </View>
         ) : (
           <>
@@ -117,17 +117,17 @@ export const ClientProgressScreen: React.FC = () => {
               <View style={styles.statCard}>
                 <Flame size={24} color={PRIMARY_GREEN} />
                 <Text style={styles.statValue}>{data.streak}</Text>
-                <Text style={styles.statLabel}>Streak</Text>
+                <Text style={styles.statLabel}>{t('clientManagement.streak')}</Text>
               </View>
               <View style={styles.statCard}>
                 <Target size={24} color={PRIMARY_GREEN} />
                 <Text style={styles.statValue}>{data.total_workouts}</Text>
-                <Text style={styles.statLabel}>Total</Text>
+                <Text style={styles.statLabel}>{t('clientManagement.totalWorkouts')}</Text>
               </View>
               <View style={styles.statCard}>
                 <Calendar size={24} color={PRIMARY_GREEN} />
-                <Text style={styles.statValue}>{data.weekly_consistency}/wk</Text>
-                <Text style={styles.statLabel}>Consistency</Text>
+                <Text style={styles.statValue}>{data.weekly_consistency}/{t('clientManagement.weekAbbr')}</Text>
+                <Text style={styles.statLabel}>{t('clientManagement.consistency')}</Text>
               </View>
             </View>
 
@@ -162,7 +162,7 @@ export const ClientProgressScreen: React.FC = () => {
                       <Text style={styles.sessionDate}>{formatDate(s.started_at)}</Text>
                     </View>
                     {s.duration_minutes != null && (
-                      <Text style={styles.sessionDuration}>{s.duration_minutes} min</Text>
+                      <Text style={styles.sessionDuration}>{s.duration_minutes} {t('clientManagement.minutesAbbr')}</Text>
                     )}
                   </View>
                 ))

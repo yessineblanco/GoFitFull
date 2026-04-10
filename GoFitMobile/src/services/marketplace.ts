@@ -231,4 +231,31 @@ export const marketplaceService = {
       return [];
     }
   },
+
+  async submitReview(coachId: string, clientId: string, rating: number, comment: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('coach_reviews')
+        .insert({ coach_id: coachId, client_id: clientId, rating, comment });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      logger.error('Failed to submit review:', error);
+      return false;
+    }
+  },
+
+  async hasReviewedBooking(coachId: string, clientId: string): Promise<boolean> {
+    try {
+      const { count } = await supabase
+        .from('coach_reviews')
+        .select('id', { count: 'exact', head: true })
+        .eq('coach_id', coachId)
+        .eq('client_id', clientId);
+      return (count || 0) > 0;
+    } catch {
+      return false;
+    }
+  },
 };

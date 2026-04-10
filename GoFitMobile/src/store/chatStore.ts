@@ -12,7 +12,7 @@ interface ChatStore {
   loadConversationsForClient: (clientUserId: string) => Promise<void>;
   loadConversationsForCoach: (coachProfileId: string) => Promise<void>;
   loadMessages: (conversationId: string) => Promise<void>;
-  sendMessage: (conversationId: string, senderId: string, content: string) => Promise<void>;
+  sendMessage: (conversationId: string, senderId: string, content: string, type?: 'text' | 'image' | 'file' | 'voice', mediaUrl?: string) => Promise<void>;
   addRealtimeMessage: (message: Message) => void;
   setActiveConversation: (conversation: Conversation | null) => void;
   getOrCreateConversation: (coachId: string, clientId: string) => Promise<Conversation | null>;
@@ -58,9 +58,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  sendMessage: async (conversationId, senderId, content) => {
+  sendMessage: async (conversationId, senderId, content, type = 'text', mediaUrl) => {
     try {
-      const msg = await chatService.sendMessage(conversationId, senderId, content);
+      const msg = await chatService.sendMessage(conversationId, senderId, content, type, mediaUrl);
       if (msg) {
         const exists = get().messages.some((m) => m.id === msg.id);
         if (!exists) {

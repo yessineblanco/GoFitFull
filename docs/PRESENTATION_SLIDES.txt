@@ -1,0 +1,109 @@
+GoFit — Presentation Slides (Final Corrected Version)
+=====================================================
+
+
+SLIDE 0 — COVER
+----------------
+Title: GoFit
+Subtitle: Complete Digital Fitness Platform
+Line: Internship Project — Antigone Creative Agency
+Footer: Yessine BLANCO | 2026
+
+
+SLIDE 1 — ETABLISSEMENT HOTE
+-----------------------------
+Title: Host Organization: Antigone Creative Agency
+
+- GoFit is developed within Antigone Creative Agency, a strategy and digital marketing agency based in Rades, Tunisia.
+- Founded in 2021, Antigone operates as a SARL combining consulting, communication strategy, and web/mobile production.
+- Company supervisor: Nouar Malek, ensuring real-world quality standards and delivery expectations.
+- The agency's hands-on digital production expertise directly supports the technical execution of the GoFit project.
+
+
+SLIDE 2 — CONTEXTE GENERAL
+---------------------------
+Title: Internship Context and Project Origin
+
+- This project is carried out as a final-year internship (PFE) within Antigone Creative Agency, from February to June 2026.
+- The internship focuses on designing and developing a complete fitness platform from specification to deployment.
+- The project was initiated based on a real market observation: most local gyms and independent coaches lack any digital tool to manage their activity, track clients, or deliver programs online.
+- GoFit was born from the need to bridge this gap by providing a modern, unified digital solution for both fitness users and coaching professionals.
+- The internship combines hands-on software engineering with structured academic methodology under professional supervision.
+
+
+SLIDE 3 — PROBLEMATIQUE
+------------------------
+Title: The Problem GoFit Addresses
+
+- Most gyms and fitness spaces operate without any dedicated application or digital management system.
+- Coaches rely on scattered tools (WhatsApp, spreadsheets, paper) to manage clients, schedules, and payments — creating inefficiency and poor follow-up.
+- Users who want to train seriously have no single platform to plan workouts, track body progress with precision, and connect with a professional coach.
+- There is no integrated AI-powered body measurement tool available to everyday fitness users, forcing manual and inaccurate tracking.
+- The fitness industry — especially at the local and independent level — needs an innovative, all-in-one solution that serves users, coaches, and administrators in one connected experience.
+
+
+SLIDE 4 — ETUDE DE L'EXISTANT
+------------------------------
+Title: What Already Exists and Where It Falls Short
+
+- Consumer fitness apps (MyFitnessPal, Hevy, Strong) focus on workout logging and basic tracking, but offer no coaching workflow or marketplace.
+- Coach-oriented tools exist as separate products for scheduling, payment, and communication — none unify the full coaching lifecycle.
+- No widely available platform combines AI body-measurement analysis, workout planning, coach booking, messaging, and payment in one product.
+- Admin/back-office tools in the fitness space are generic and not designed for gym or coaching business logic.
+- Conclusion: existing solutions are either user-only or coach-only, and none deliver a seamless end-to-end experience connecting all three roles (client, coach, admin).
+
+
+SLIDE 5 — SOLUTION PROPOSEE AVEC VALEUR AJOUTEE
+-------------------------------------------------
+Title: GoFit — The Proposed Solution
+
+- GoFit is a unified fitness platform with a cross-platform mobile app (clients and coaches) and a web admin panel (administrators).
+- For users: personalized workout planner, exercise library, progress tracking with AI body measurements, coach discovery and booking.
+- For coaches: client management dashboard, program delivery, session scheduling, messaging, and revenue/pack tracking.
+- For administrators: centralized user/coach management, content moderation, analytics, and operational oversight.
+- Added value: GoFit eliminates tool fragmentation by combining training, coaching, communication, payment, and administration into one product — with role-based access and real-time capabilities.
+
+
+SLIDE 6 — METHODOLOGIE DE TRAVAIL
+-----------------------------------
+Title: Methodology: Scrum Framework
+
+- The project follows the Scrum framework with fixed 2-week sprints and incremental delivery of working features.
+- Scrum roles applied: Product Owner (backlog priority), Scrum Master (process facilitation), Developer (design, build, test).
+- Scrum ceremonies followed each sprint: Sprint Planning, Daily Scrum, Sprint Review, and Sprint Retrospective.
+- Each sprint targets a potentially shippable increment validated against a clear Definition of Done.
+- Backlog refinement is continuous — priorities adapt based on stakeholder feedback and technical discovery throughout the project lifecycle.
+
+
+SLIDE 7 — TECHNOLOGIES A UTILISER
+-----------------------------------
+Title: Technology Stack
+
+- Mobile Development: React Native + Expo for cross-platform iOS/Android delivery, with TypeScript and StyleSheet for type safety and styling.
+- Admin Web Panel: Next.js (App Router) with Tailwind CSS and shadcn/ui for a modern, responsive admin interface.
+- Backend and Database: Supabase providing PostgreSQL database, authentication (GoTrue), file storage, and real-time subscriptions.
+- Real-Time Communication: Socket.io for live messaging and WebRTC for video call capabilities between coaches and clients.
+- AI and Computer Vision: MediaPipe for automated body-measurement analysis from user photos, replacing manual input with intelligent tracking.
+
+
+SLIDE 8 — PLANNING DE TRAVAIL
+-------------------------------
+Title: Work Plan and Sprint Roadmap
+
+- Execution is structured into 13 two-week sprints covering the full project lifecycle.
+- Phase 1 (Sprint 1-2): Requirements specification, UI/UX design, project setup, and authentication.
+- Phase 2 (Sprint 3-5): Workout core, user profile, planner/calendar, exercise library, and progress tracking.
+- Phase 3 (Sprint 6-9): AI body measurements (MediaPipe), coach onboarding, marketplace/packs, messaging, and video sessions.
+- Phase 4 (Sprint 10-13): Admin panel development, end-to-end testing, performance optimization, bug fixing, and store/release preparation.
+
+
+SLIDE 9 — THANK YOU
+---------------------
+Title: Thank You
+Subtitle: Questions?
+
+- GoFit transforms a fragmented fitness process into one coherent, innovative product.
+- Built under real professional constraints at Antigone Creative Agency with Scrum-driven delivery.
+- Thank you for your attention.
+
+Footer: GoFit Project — Yessine BLANCO | 2026

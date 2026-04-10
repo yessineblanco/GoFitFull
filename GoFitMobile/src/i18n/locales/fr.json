@@ -798,7 +798,13 @@
     "yesterday": "Hier",
     "sendFirstMessage": "Envoyez le premier message",
     "fallbackClient": "Client",
-    "fallbackCoach": "Coach"
+    "fallbackCoach": "Coach",
+    "camera": "Caméra",
+    "gallery": "Galerie",
+    "document": "Document",
+    "photoMessage": "Photo",
+    "cameraPermission": "L'accès à la caméra est nécessaire pour prendre des photos",
+    "micPermission": "L'accès au microphone est nécessaire pour enregistrer des messages vocaux"
   },
   "clientManagement": {
     "noClients": "Aucun client pour le moment",
@@ -818,7 +824,13 @@
     "notesPlaceholder": "Ajouter une note sur ce client...",
     "recentActivity": "Activité récente",
     "workoutHistory": "Historique des entraînements",
-    "noWorkoutsYet": "Aucun entraînement pour le moment"
+    "noWorkoutsYet": "Aucun entraînement pour le moment",
+    "noProgressData": "Aucune donnée de progression disponible pour ce client",
+    "streak": "Série",
+    "totalWorkouts": "Total",
+    "consistency": "Régularité",
+    "weekAbbr": "sem",
+    "minutesAbbr": "min"
   },
   "coachDashboard": {
     "welcome": "Bienvenue",
@@ -841,5 +853,12 @@
     "inCall": "En appel",
     "joinCall": "Rejoindre l'appel",
     "callAvailable": "Votre séance commence bientôt"
+  },
+  "review": {
+    "leaveReview": "Laisser un avis",
+    "reviewed": "Avis envoyé",
+    "rateSession": "Notez votre séance",
+    "commentPlaceholder": "Comment s'est passée votre séance ? (optionnel)",
+    "submit": "Envoyer l'avis"
   }
 }

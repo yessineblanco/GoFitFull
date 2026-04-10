@@ -1,15 +1,17 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator,
+  Modal, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Calendar, XCircle, Video } from 'lucide-react-native';
+import { ArrowLeft, Calendar, XCircle, Video, Star, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useBookingsStore } from '@/store/bookingsStore';
 import { useAuthStore } from '@/store/authStore';
 import type { Booking } from '@/services/bookings';
+import { marketplaceService } from '@/services/marketplace';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
@@ -30,10 +32,31 @@ export const MyBookingsScreen: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { clientBookings, loading, loadClientBookings, cancelBooking } = useBookingsStore();
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedCoachIds, setReviewedCoachIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user?.id) loadClientBookings(user.id);
   }, [user?.id]);
+
+  useEffect(() => {
+    const checkReviewed = async () => {
+      if (!user?.id || clientBookings.length === 0) return;
+      const completedCoachIds = [...new Set(
+        clientBookings.filter(b => b.status === 'completed').map(b => b.coach_id)
+      )];
+      const reviewed = new Set<string>();
+      for (const coachId of completedCoachIds) {
+        const hasReview = await marketplaceService.hasReviewedBooking(coachId, user.id);
+        if (hasReview) reviewed.add(coachId);
+      }
+      setReviewedCoachIds(reviewed);
+    };
+    checkReviewed();
+  }, [clientBookings, user?.id]);
 
   const handleRefresh = useCallback(() => {
     if (user?.id) loadClientBookings(user.id);
@@ -54,6 +77,22 @@ export const MyBookingsScreen: React.FC = () => {
         },
       }
     );
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewBooking || !user?.id || submittingReview) return;
+    setSubmittingReview(true);
+    const success = await marketplaceService.submitReview(
+      reviewBooking.coach_id, user.id, reviewRating, reviewComment.trim()
+    );
+    setSubmittingReview(false);
+    if (success) {
+      setReviewedCoachIds(prev => new Set(prev).add(reviewBooking.coach_id));
+      setReviewBooking(null);
+      setReviewRating(5);
+      setReviewComment('');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
   };
 
   const handleJoinCall = async (booking: Booking) => {
@@ -92,6 +131,22 @@ export const MyBookingsScreen: React.FC = () => {
             <Text style={styles.joinCallText}>{t('videoCall.joinCall')}</Text>
           </TouchableOpacity>
         )}
+        {item.status === 'completed' && !reviewedCoachIds.has(item.coach_id) && (
+          <TouchableOpacity
+            style={styles.reviewBtn}
+            onPress={() => { setReviewBooking(item); setReviewRating(5); setReviewComment(''); }}
+            activeOpacity={0.7}
+          >
+            <Star size={14} color="#000" />
+            <Text style={styles.reviewBtnText}>{t('review.leaveReview')}</Text>
+          </TouchableOpacity>
+        )}
+        {item.status === 'completed' && reviewedCoachIds.has(item.coach_id) && (
+          <View style={styles.reviewedBadge}>
+            <Star size={12} color={PRIMARY_GREEN} />
+            <Text style={styles.reviewedText}>{t('review.reviewed')}</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -129,6 +184,57 @@ export const MyBookingsScreen: React.FC = () => {
           )
         }
       />
+
+      <Modal visible={!!reviewBooking} transparent animationType="fade" onRequestClose={() => setReviewBooking(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('review.rateSession')}</Text>
+              <TouchableOpacity onPress={() => setReviewBooking(null)}>
+                <X size={22} color="rgba(255,255,255,0.5)" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.starsRow}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => { setReviewRating(star); Haptics.selectionAsync(); }}
+                >
+                  <Star
+                    size={36}
+                    color={star <= reviewRating ? '#FFD700' : 'rgba(255,255,255,0.15)'}
+                    fill={star <= reviewRating ? '#FFD700' : 'transparent'}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TextInput
+              style={styles.reviewInput}
+              value={reviewComment}
+              onChangeText={setReviewComment}
+              placeholder={t('review.commentPlaceholder')}
+              placeholderTextColor="rgba(255,255,255,0.25)"
+              multiline
+              maxLength={500}
+            />
+
+            <TouchableOpacity
+              style={[styles.submitReviewBtn, submittingReview && { opacity: 0.5 }]}
+              onPress={handleSubmitReview}
+              disabled={submittingReview}
+              activeOpacity={0.7}
+            >
+              {submittingReview ? (
+                <ActivityIndicator size="small" color="#000" />
+              ) : (
+                <Text style={styles.submitReviewText}>{t('review.submit')}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -154,4 +260,33 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_GREEN, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, marginTop: 10,
   },
   joinCallText: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13), color: '#000000' },
+  reviewBtn: {
+    flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6,
+    backgroundColor: '#FFD700', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, marginTop: 10,
+  },
+  reviewBtnText: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13), color: '#000' },
+  reviewedBadge: {
+    flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 4, marginTop: 10,
+  },
+  reviewedText: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(12), color: 'rgba(180,240,78,0.6)' },
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  modalContent: {
+    width: '100%', backgroundColor: '#111', borderRadius: 20, padding: 24,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(18), color: '#FFFFFF' },
+  starsRow: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 20 },
+  reviewInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)', padding: 14, minHeight: 80, maxHeight: 150,
+    fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(14), color: '#FFFFFF',
+    textAlignVertical: 'top', marginBottom: 16,
+  },
+  submitReviewBtn: {
+    backgroundColor: PRIMARY_GREEN, borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+  },
+  submitReviewText: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15), color: '#000' },
 });

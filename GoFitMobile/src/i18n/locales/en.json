@@ -805,7 +805,13 @@
     "yesterday": "Yesterday",
     "sendFirstMessage": "Send the first message",
     "fallbackClient": "Client",
-    "fallbackCoach": "Coach"
+    "fallbackCoach": "Coach",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "document": "Document",
+    "photoMessage": "Photo",
+    "cameraPermission": "Camera permission is required to take photos",
+    "micPermission": "Microphone permission is required to record voice messages"
   },
   "clientManagement": {
     "noClients": "No clients yet",
@@ -825,7 +831,13 @@
     "notesPlaceholder": "Add a note about this client...",
     "recentActivity": "Recent Activity",
     "workoutHistory": "Workout History",
-    "noWorkoutsYet": "No workouts yet"
+    "noWorkoutsYet": "No workouts yet",
+    "noProgressData": "No progress data available for this client",
+    "streak": "Streak",
+    "totalWorkouts": "Total",
+    "consistency": "Consistency",
+    "weekAbbr": "wk",
+    "minutesAbbr": "min"
   },
   "coachDashboard": {
     "welcome": "Welcome",
@@ -848,5 +860,12 @@
     "inCall": "In call",
     "joinCall": "Join Call",
     "callAvailable": "Your session is starting soon"
+  },
+  "review": {
+    "leaveReview": "Leave a Review",
+    "reviewed": "Reviewed",
+    "rateSession": "Rate your session",
+    "commentPlaceholder": "How was your experience? (optional)",
+    "submit": "Submit Review"
   }
 }

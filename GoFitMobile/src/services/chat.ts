@@ -183,7 +183,11 @@ export const chatService = {
     }
   },
 
-  subscribeToMessages(conversationId: string, callback: (message: Message) => void) {
+  subscribeToMessages(
+    conversationId: string,
+    callback: (message: Message) => void,
+    onStatus?: (status: string) => void
+  ) {
     return supabase
       .channel(`messages:${conversationId}`)
       .on(
@@ -198,6 +202,12 @@ export const chatService = {
           callback(payload.new as Message);
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (err) logger.warn('Realtime messages channel error', err);
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          logger.warn('Realtime messages subscription:', status);
+        }
+        onStatus?.(status);
+      });
   },
 };

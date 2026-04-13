@@ -73,16 +73,16 @@ export const CoachProfileScreen: React.FC = () => {
       label: t('coachApp.wallet'),
       onPress: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        navigation.navigate('CoachWallet');
       },
-      comingSoon: true,
     },
     {
       icon: Settings,
       label: t('coachApp.settings'),
       onPress: () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        navigation.navigate('CoachSettings');
       },
-      comingSoon: true,
     },
   ];
 

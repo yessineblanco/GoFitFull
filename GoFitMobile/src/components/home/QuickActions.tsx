@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { theme } from '@/theme';
 import { Scale, Plus, Timer, Award } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
+import { TimerModal } from '@/components/shared/TimerModal';
 
 interface QuickAction {
     id: string;
@@ -20,6 +21,7 @@ interface QuickAction {
 export const QuickActions: React.FC = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<any>();
+    const [timerVisible, setTimerVisible] = useState(false);
 
     // Stagger animation for each card
     const cardAnims = useRef([
@@ -61,7 +63,7 @@ export const QuickActions: React.FC = () => {
             gradientColors: ['#9b59b6', '#8e44ad'] as const,
             onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                navigation.navigate('Library', { screen: 'CreateWorkout' });
+                navigation.navigate('Library', { screen: 'WorkoutBuilder' });
             },
         },
         {
@@ -71,7 +73,7 @@ export const QuickActions: React.FC = () => {
             gradientColors: ['#3498db', '#2980b9'] as const,
             onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // TODO: Open standalone timer modal
+                setTimerVisible(true);
             },
         },
         {
@@ -87,48 +89,51 @@ export const QuickActions: React.FC = () => {
     ];
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
-            <View style={styles.grid}>
-                {actions.map((action, index) => {
-                    const translateY = cardAnims[index].interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [20, 0],
-                    });
+        <>
+            <View style={styles.container}>
+                <Text style={styles.sectionTitle}>{t('home.quickActions')}</Text>
+                <View style={styles.grid}>
+                    {actions.map((action, index) => {
+                        const translateY = cardAnims[index].interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [20, 0],
+                        });
 
-                    return (
-                        <Animated.View
-                            key={action.id}
-                            style={[
-                                styles.cardWrapper,
-                                {
-                                    opacity: cardAnims[index],
-                                    transform: [{ translateY }],
-                                },
-                            ]}
-                        >
-                            <TouchableOpacity
-                                onPress={action.onPress}
-                                activeOpacity={0.8}
-                                style={styles.touchable}
+                        return (
+                            <Animated.View
+                                key={action.id}
+                                style={[
+                                    styles.cardWrapper,
+                                    {
+                                        opacity: cardAnims[index],
+                                        transform: [{ translateY }],
+                                    },
+                                ]}
                             >
-                                <BlurView intensity={15} tint="dark" style={styles.card}>
-                                    <LinearGradient
-                                        colors={action.gradientColors}
-                                        start={{ x: 0, y: 0 }}
-                                        end={{ x: 1, y: 1 }}
-                                        style={styles.iconContainer}
-                                    >
-                                        <action.icon size={22} color="#FFFFFF" strokeWidth={2.5} />
-                                    </LinearGradient>
-                                    <Text style={styles.label}>{action.label}</Text>
-                                </BlurView>
-                            </TouchableOpacity>
-                        </Animated.View>
-                    );
-                })}
+                                <TouchableOpacity
+                                    onPress={action.onPress}
+                                    activeOpacity={0.8}
+                                    style={styles.touchable}
+                                >
+                                    <BlurView intensity={15} tint="dark" style={styles.card}>
+                                        <LinearGradient
+                                            colors={action.gradientColors}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                            style={styles.iconContainer}
+                                        >
+                                            <action.icon size={22} color="#FFFFFF" strokeWidth={2.5} />
+                                        </LinearGradient>
+                                        <Text style={styles.label}>{action.label}</Text>
+                                    </BlurView>
+                                </TouchableOpacity>
+                            </Animated.View>
+                        );
+                    })}
+                </View>
             </View>
-        </View>
+            <TimerModal visible={timerVisible} onClose={() => setTimerVisible(false)} />
+        </>
     );
 };
 

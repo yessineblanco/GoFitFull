@@ -804,7 +804,8 @@
     "document": "Document",
     "photoMessage": "Photo",
     "cameraPermission": "L'accès à la caméra est nécessaire pour prendre des photos",
-    "micPermission": "L'accès au microphone est nécessaire pour enregistrer des messages vocaux"
+    "micPermission": "L'accès au microphone est nécessaire pour enregistrer des messages vocaux",
+    "uploadFailed": "Impossible d'envoyer ce fichier. Vérifiez la connexion et réessayez."
   },
   "clientManagement": {
     "noClients": "Aucun client pour le moment",
@@ -852,7 +853,8 @@
     "requiresDevBuild": "Les appels vidéo nécessitent une build de développement. Ils ne sont pas disponibles dans Expo Go.",
     "inCall": "En appel",
     "joinCall": "Rejoindre l'appel",
-    "callAvailable": "Votre séance commence bientôt"
+    "callAvailable": "Votre séance commence bientôt",
+    "joinCallWindowHint": "Le bouton d'appel apparaît 15 minutes avant votre séance (et reste disponible un peu après)."
   },
   "review": {
     "leaveReview": "Laisser un avis",

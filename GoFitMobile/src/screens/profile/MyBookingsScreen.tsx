@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, SectionList, TouchableOpacity, RefreshControl, ActivityIndicator,
   Modal, TextInput,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -61,6 +61,26 @@ export const MyBookingsScreen: React.FC = () => {
   const handleRefresh = useCallback(() => {
     if (user?.id) loadClientBookings(user.id);
   }, [user?.id]);
+
+  const sections = useMemo(() => {
+    const now = new Date();
+    const upcoming = clientBookings.filter(
+      (b) => new Date(b.scheduled_at) > now && b.status !== 'cancelled',
+    );
+    const past = clientBookings.filter(
+      (b) => !(new Date(b.scheduled_at) > now && b.status !== 'cancelled'),
+    );
+    upcoming.sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+    past.sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+    const out: { title: string; data: Booking[] }[] = [];
+    if (upcoming.length > 0) {
+      out.push({ title: `${t('booking.upcoming')} (${upcoming.length})`, data: upcoming });
+    }
+    if (past.length > 0) {
+      out.push({ title: `${t('booking.past')} (${past.length})`, data: past });
+    }
+    return out;
+  }, [clientBookings, t]);
 
   const handleCancel = (booking: Booking) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -131,6 +151,9 @@ export const MyBookingsScreen: React.FC = () => {
             <Text style={styles.joinCallText}>{t('videoCall.joinCall')}</Text>
           </TouchableOpacity>
         )}
+        {isUpcoming && item.status === 'confirmed' && !canJoinCall && (
+          <Text style={styles.joinCallHint}>{t('videoCall.joinCallWindowHint')}</Text>
+        )}
         {item.status === 'completed' && !reviewedCoachIds.has(item.coach_id) && (
           <TouchableOpacity
             style={styles.reviewBtn}
@@ -163,10 +186,14 @@ export const MyBookingsScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={clientBookings}
+      <SectionList
+        sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={renderBooking}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionLabel}>{title}</Text>
+        )}
+        stickySectionHeadersEnabled={false}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={handleRefresh} tintColor={PRIMARY_GREEN} />}
@@ -244,7 +271,16 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12 },
   backBtn: { padding: 8, width: 40 },
   headerTitle: { flex: 1, fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(20), color: '#FFFFFF', textAlign: 'center' },
-  listContent: { paddingHorizontal: 20, paddingTop: 12 },
+  listContent: { paddingHorizontal: 20, paddingTop: 12, flexGrow: 1 },
+  sectionLabel: {
+    fontFamily: 'Barlow_700Bold',
+    fontSize: getResponsiveFontSize(13),
+    color: 'rgba(255,255,255,0.5)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
+    marginTop: 4,
+  },
   card: { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', padding: 14, marginBottom: 8 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
@@ -260,6 +296,13 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY_GREEN, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, marginTop: 10,
   },
   joinCallText: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13), color: '#000000' },
+  joinCallHint: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(12),
+    color: 'rgba(255,255,255,0.45)',
+    marginTop: 10,
+    lineHeight: getResponsiveFontSize(17),
+  },
   reviewBtn: {
     flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6,
     backgroundColor: '#FFD700', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, marginTop: 10,

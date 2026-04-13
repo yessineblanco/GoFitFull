@@ -60,6 +60,7 @@
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "^0.21.2",
     "react-native-webrtc": "^124.0.7",
+    "react-native-worklets-core": "^1.6.3",
     "webrtc-adapter": "^9.0.4",
     "zod": "^4.1.13",
     "zustand": "^5.0.9"

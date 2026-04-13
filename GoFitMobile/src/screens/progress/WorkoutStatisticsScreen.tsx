@@ -1098,7 +1098,44 @@ export default function WorkoutStatisticsScreen() {
           <ConsistencyCalendar volumeData={volumeHistory} streak={stats.consistency?.currentStreak || 0} />
         </View>
 
-        {/* 2.5. Current Workout Card */}
+        {/* 2.5. Body Measurements Quick Link */}
+        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate('BodyMeasurements');
+            }}
+          >
+            <View style={{
+              backgroundColor: TC.isDark ? '#0f110d' : '#F0F4EA',
+              borderRadius: 20,
+              padding: 18,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              borderWidth: 1,
+              borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <View style={{
+                  width: 42, height: 42, borderRadius: 14,
+                  backgroundColor: 'rgba(132, 196, 65, 0.12)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Scan size={22} color={THEME.primary} />
+                </View>
+                <View>
+                  <Text style={{ fontFamily: 'Barlow_600SemiBold', fontSize: 15, color: TC.text }}>Body Measurements</Text>
+                  <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: TC.textMuted, marginTop: 2 }}>AI-powered body tracking</Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color={TC.textMuted} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* 2.6. Current Workout Card */}
         <View style={{ paddingHorizontal: 24 }}>
           <CurrentWorkoutCard
             workoutName={currentWorkoutStatus.name}

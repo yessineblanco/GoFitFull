@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
-  KeyboardAvoidingView, Platform, ActivityIndicator, Dimensions, Alert,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Dimensions, Alert, AppState,
+  Modal, Pressable,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,7 +11,7 @@ import {
   ArrowLeft, Send, MessageCircle, Paperclip, Camera, ImageIcon,
   FileText, Mic, MicOff, X, Play, Pause, File,
 } from 'lucide-react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { useChatStore } from '@/store/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import { chatService, type Message } from '@/services/chat';
@@ -18,13 +19,13 @@ import { supabase } from '@/config/supabase';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import * as FileSystem from 'expo-file-system';
 
 const PRIMARY_GREEN = '#B4F04E';
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 type ListItem = { type: 'date'; dateKey: string; label: string } | { type: 'message'; message: Message };
 
@@ -42,9 +43,11 @@ export const ChatScreen: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [lightboxUri, setLightboxUri] = useState<string | null>(null);
   const soundRef = useRef<Audio.Sound | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastConversationIdRef = useRef<string | null>(null);
 
   const conversationId = route.params?.conversationId;
   const recipientName = route.params?.recipientName
@@ -72,20 +75,46 @@ export const ChatScreen: React.FC = () => {
     return items;
   }, [messages, t]);
 
-  useEffect(() => {
-    if (conversationId) {
-      loadMessages(conversationId);
+  useFocusEffect(
+    useCallback(() => {
+      if (!conversationId) return;
+      const firstOpenOfThisConversation = lastConversationIdRef.current !== conversationId;
+      lastConversationIdRef.current = conversationId;
+      loadMessages(conversationId, { silent: !firstOpenOfThisConversation });
       if (user?.id) chatService.markAsRead(conversationId, user.id);
+    }, [conversationId, user?.id, loadMessages])
+  );
 
-      const channel = chatService.subscribeToMessages(conversationId, (msg) => {
-        addRealtimeMessage(msg);
-        if (user?.id && msg.sender_id !== user.id) {
-          chatService.markAsRead(conversationId, user.id);
-        }
-      });
-      return () => { channel.unsubscribe(); };
-    }
-  }, [conversationId]);
+  useEffect(() => {
+    if (!conversationId) return;
+    const channel = chatService.subscribeToMessages(conversationId, (msg) => {
+      addRealtimeMessage(msg);
+      if (user?.id && msg.sender_id !== user.id) {
+        chatService.markAsRead(conversationId, user.id);
+      }
+    });
+    return () => { channel.unsubscribe(); };
+  }, [conversationId, user?.id, addRealtimeMessage]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        loadMessages(conversationId, { silent: true });
+      }
+    });
+    return () => sub.remove();
+  }, [conversationId, loadMessages]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+    const id = setInterval(() => {
+      if (AppState.currentState === 'active') {
+        loadMessages(conversationId, { silent: true });
+      }
+    }, 8000);
+    return () => clearInterval(id);
+  }, [conversationId, loadMessages]);
 
   useEffect(() => {
     if (listItems.length > 0) {
@@ -100,25 +129,46 @@ export const ChatScreen: React.FC = () => {
     };
   }, []);
 
-  const uploadMedia = async (uri: string, folder: string, filename: string): Promise<string | null> => {
+  const uriToBytes = async (uri: string): Promise<Uint8Array> => {
     try {
-      const fileContent = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-      const ext = filename.split('.').pop() || 'bin';
-      const path = `${conversationId}/${Date.now()}_${filename}`;
+      const b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    } catch {
+      const res = await fetch(uri);
+      if (!res.ok) throw new Error('fetch failed');
+      const ab = await res.arrayBuffer();
+      return new Uint8Array(ab);
+    }
+  };
+
+  /** Storage RLS requires first path segment = auth user id (see setup_coach_storage.sql). */
+  const uploadMedia = async (uri: string, filename: string): Promise<string | null> => {
+    if (!user?.id || !conversationId) return null;
+    try {
+      const safeName = filename.replace(/[/\\]/g, '_').replace(/[^a-zA-Z0-9._-]/g, '_') || `file_${Date.now()}`;
+      const path = `${user.id}/${conversationId}/${Date.now()}_${safeName}`;
+      const ext = safeName.split('.').pop() || 'bin';
       const contentTypeMap: Record<string, string> = {
         jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif', webp: 'image/webp',
-        m4a: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav',
+        m4a: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac',
         pdf: 'application/pdf', doc: 'application/msword',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       };
       const contentType = contentTypeMap[ext.toLowerCase()] || 'application/octet-stream';
 
-      const bytes = Uint8Array.from(atob(fileContent), c => c.charCodeAt(0));
+      const bytes = await uriToBytes(uri);
 
       const { error } = await supabase.storage
         .from('chat-media')
         .upload(path, bytes, { contentType, upsert: false });
 
       if (error) throw error;
+
+      const { data: signed, error: signErr } = await supabase.storage
+        .from('chat-media')
+        .createSignedUrl(path, 60 * 60 * 24 * 30);
+
+      if (!signErr && signed?.signedUrl) return signed.signedUrl;
 
       const { data: urlData } = supabase.storage.from('chat-media').getPublicUrl(path);
       return urlData?.publicUrl || null;
@@ -150,9 +200,11 @@ export const ChatScreen: React.FC = () => {
     const asset = result.assets[0];
     const filename = asset.fileName || `image_${Date.now()}.jpg`;
     setSending(true);
-    const url = await uploadMedia(asset.uri, 'images', filename);
+    const url = await uploadMedia(asset.uri, filename);
     if (url && conversationId && user?.id) {
       await sendMessage(conversationId, user.id, t('chat.photoMessage'), 'image', url);
+    } else {
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
     }
     setSending(false);
   };
@@ -169,25 +221,36 @@ export const ChatScreen: React.FC = () => {
     const asset = result.assets[0];
     const filename = `photo_${Date.now()}.jpg`;
     setSending(true);
-    const url = await uploadMedia(asset.uri, 'images', filename);
+    const url = await uploadMedia(asset.uri, filename);
     if (url && conversationId && user?.id) {
       await sendMessage(conversationId, user.id, t('chat.photoMessage'), 'image', url);
+    } else {
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
     }
     setSending(false);
   };
 
   const handlePickDocument = async () => {
     setShowAttachMenu(false);
-    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
-    if (result.canceled || !result.assets?.[0]) return;
-    const asset = result.assets[0];
-    const filename = asset.name || `file_${Date.now()}`;
-    setSending(true);
-    const url = await uploadMedia(asset.uri, 'files', filename);
-    if (url && conversationId && user?.id) {
-      await sendMessage(conversationId, user.id, filename, 'file', url);
+    try {
+      const DocumentPicker = await import('expo-document-picker');
+      const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      const filename = asset.name || `file_${Date.now()}`;
+      setSending(true);
+      const url = await uploadMedia(asset.uri, filename);
+      if (url && conversationId && user?.id) {
+        await sendMessage(conversationId, user.id, filename, 'file', url);
+      } else {
+        Alert.alert(t('common.error'), t('chat.uploadFailed'));
+      }
+    } catch (e) {
+      console.error('Document pick/upload failed:', e);
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
+    } finally {
+      setSending(false);
     }
-    setSending(false);
   };
 
   const startRecording = async () => {
@@ -200,6 +263,9 @@ export const ChatScreen: React.FC = () => {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
       });
       const { recording: rec } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
@@ -236,14 +302,19 @@ export const ChatScreen: React.FC = () => {
       const uri = recording.getURI();
       if (uri) {
         const filename = `voice_${Date.now()}.m4a`;
-        const url = await uploadMedia(uri, 'voice', filename);
+        const url = await uploadMedia(uri, filename);
         if (url) {
           const durationLabel = formatDuration(recordingDuration);
           await sendMessage(conversationId, user.id, `🎤 ${durationLabel}`, 'voice', url);
+        } else {
+          Alert.alert(t('common.error'), t('chat.uploadFailed'));
         }
+      } else {
+        Alert.alert(t('common.error'), t('chat.uploadFailed'));
       }
     } catch (err) {
       console.error('Send recording failed:', err);
+      Alert.alert(t('common.error'), t('chat.uploadFailed'));
     }
     setRecording(null);
     setRecordingDuration(0);
@@ -285,7 +356,13 @@ export const ChatScreen: React.FC = () => {
   const renderMediaContent = (msg: Message, own: boolean) => {
     if (msg.type === 'image' && msg.media_url) {
       return (
-        <TouchableOpacity activeOpacity={0.9}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setLightboxUri(msg.media_url!);
+          }}
+        >
           <Image
             source={{ uri: msg.media_url }}
             style={styles.imageMessage}
@@ -491,6 +568,39 @@ export const ChatScreen: React.FC = () => {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={!!lightboxUri}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setLightboxUri(null)}
+      >
+        <Pressable style={styles.lightboxRoot} onPress={() => setLightboxUri(null)}>
+          <View style={styles.lightboxImageWrap} pointerEvents="box-none">
+            {lightboxUri ? (
+              <Image
+                source={{ uri: lightboxUri }}
+                style={styles.lightboxImage}
+                contentFit="contain"
+                transition={200}
+                pointerEvents="none"
+              />
+            ) : null}
+          </View>
+          <TouchableOpacity
+            style={[styles.lightboxClose, { top: insets.top + 12 }]}
+            onPress={() => setLightboxUri(null)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
+            <View style={styles.lightboxCloseCircle}>
+              <X size={22} color="#FFFFFF" />
+            </View>
+          </TouchableOpacity>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -561,6 +671,32 @@ const styles = StyleSheet.create({
   recordSendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: PRIMARY_GREEN, alignItems: 'center', justifyContent: 'center' },
 
   imageMessage: { width: SCREEN_WIDTH * 0.55, height: SCREEN_WIDTH * 0.55, borderRadius: 12 },
+
+  lightboxRoot: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)' },
+  lightboxImageWrap: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    zIndex: 1,
+  },
+  lightboxImage: {
+    width: SCREEN_WIDTH - 24,
+    height: SCREEN_HEIGHT * 0.78,
+  },
+  lightboxClose: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 2,
+  },
+  lightboxCloseCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   voiceBubbleContent: { flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 160 },
   voiceWaveform: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, height: 24 },

@@ -19,6 +19,8 @@ import { CreatePackScreen } from '@/screens/coach-app/CreatePackScreen';
 import { ProgramsListScreen } from '@/screens/coach-app/ProgramsListScreen';
 import { ProgramBuilderScreen } from '@/screens/coach-app/ProgramBuilderScreen';
 import { CoachAvailabilityScreen } from '@/screens/coach-app/CoachAvailabilityScreen';
+import { CoachWalletScreen } from '@/screens/coach-app/CoachWalletScreen';
+import { CoachSettingsScreen } from '@/screens/coach-app/CoachSettingsScreen';
 import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import { NotificationInboxScreen } from '@/screens/profile/NotificationInboxScreen';
 import { VideoCallScreen } from '@/screens/coach-app/VideoCallScreen';
@@ -37,6 +39,8 @@ const CoachProfileStackNavigator = () => (
     <CoachProfileStack.Screen name="CreatePack" component={CreatePackScreen} />
     <CoachProfileStack.Screen name="ProgramsList" component={ProgramsListScreen} />
     <CoachProfileStack.Screen name="ProgramBuilder" component={ProgramBuilderScreen} />
+    <CoachProfileStack.Screen name="CoachWallet" component={CoachWalletScreen} />
+    <CoachProfileStack.Screen name="CoachSettings" component={CoachSettingsScreen} />
   </CoachProfileStack.Navigator>
 );
 

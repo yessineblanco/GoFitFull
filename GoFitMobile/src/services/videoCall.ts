@@ -1,6 +1,9 @@
 import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
 
+/** Set to `false` before release: restores join only within `windowMinutes` of the session. */
+const SKIP_CALL_TIME_WINDOW_FOR_TESTING = true;
+
 export const videoCallService = {
   async generateToken(roomName: string, participantName: string, participantId: string): Promise<{ token: string; url: string } | null> {
     try {
@@ -34,6 +37,8 @@ export const videoCallService = {
   },
 
   isWithinCallWindow(scheduledAt: string, windowMinutes = 15): boolean {
+    if (SKIP_CALL_TIME_WINDOW_FOR_TESTING) return true;
+
     const scheduled = new Date(scheduledAt).getTime();
     const now = Date.now();
     const windowMs = windowMinutes * 60 * 1000;

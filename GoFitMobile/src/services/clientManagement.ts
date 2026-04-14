@@ -4,6 +4,7 @@ import { logger } from '@/utils/logger';
 export interface CoachClient {
   client_id: string;
   display_name: string;
+  profile_picture_url?: string | null;
   last_session_at: string | null;
   has_active_pack: boolean;
 }
@@ -44,6 +45,7 @@ export const clientManagementService = {
       return (data || []).map((row: any) => ({
         client_id: row.client_id,
         display_name: row.display_name,
+        profile_picture_url: row.profile_picture_url ?? null,
         last_session_at: row.last_session_at,
         has_active_pack: row.has_active_pack ?? false,
       }));
@@ -80,6 +82,7 @@ export const clientManagementService = {
         client: {
           client_id: clientRow.client_id,
           display_name: clientRow.display_name,
+          profile_picture_url: clientRow.profile_picture_url ?? null,
           last_session_at: clientRow.last_session_at,
           has_active_pack: clientRow.has_active_pack ?? false,
         },

@@ -21,7 +21,11 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
-import * as FileSystem from 'expo-file-system';
+import { readAsStringAsync, EncodingType } from 'expo-file-system/legacy';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
+import { resolvePublicAvatarUrl } from '@/utils/avatarUrl';
 
 const PRIMARY_GREEN = '#B4F04E';
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -34,8 +38,12 @@ export const ChatScreen: React.FC = () => {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { user, userType } = useAuthStore();
   const { messages, loadingMessages, loadMessages, sendMessage, addRealtimeMessage, activeConversation } = useChatStore();
+  const [conversationMeta, setConversationMeta] = useState<{ client_id: string; coach_id: string } | null>(null);
+  const [fetchedPeerAvatarRaw, setFetchedPeerAvatarRaw] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -50,9 +58,78 @@ export const ChatScreen: React.FC = () => {
   const lastConversationIdRef = useRef<string | null>(null);
 
   const conversationId = route.params?.conversationId;
+  const recipientIdParam = route.params?.recipientId as string | undefined;
+  const recipientPictureParam = route.params?.recipientPictureUrl as string | null | undefined;
   const recipientName = route.params?.recipientName
     || activeConversation?.other_user_name
     || (userType === 'coach' ? t('chat.fallbackClient') : t('chat.fallbackCoach'));
+
+  const peerClientUserId =
+    userType === 'coach'
+      ? (recipientIdParam ?? activeConversation?.client_id ?? conversationMeta?.client_id ?? null)
+      : null;
+  const peerCoachProfileId =
+    userType === 'client'
+      ? (activeConversation?.coach_id ?? conversationMeta?.coach_id ?? null)
+      : null;
+
+  useEffect(() => {
+    if (!conversationId) {
+      setConversationMeta(null);
+      return;
+    }
+    if (activeConversation?.client_id && activeConversation?.coach_id) {
+      setConversationMeta(null);
+      return;
+    }
+    setConversationMeta(null);
+    let cancelled = false;
+    supabase
+      .from('conversations')
+      .select('client_id, coach_id')
+      .eq('id', conversationId)
+      .single()
+      .then(({ data }) => {
+        if (!cancelled && data?.client_id && data?.coach_id) {
+          setConversationMeta({ client_id: data.client_id, coach_id: data.coach_id });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [conversationId, activeConversation?.client_id, activeConversation?.coach_id]);
+
+  useEffect(() => {
+    setFetchedPeerAvatarRaw(null);
+  }, [conversationId]);
+
+  const rawPeerPicture =
+    recipientPictureParam ?? activeConversation?.other_user_picture ?? null;
+  const hasResolvedPeerPicture = Boolean(resolvePublicAvatarUrl(rawPeerPicture));
+
+  useEffect(() => {
+    if (hasResolvedPeerPicture) {
+      setFetchedPeerAvatarRaw(null);
+      return;
+    }
+    let cancelled = false;
+    if (userType === 'coach' && peerClientUserId) {
+      chatService.getUserProfilePictureUrl(peerClientUserId).then((url) => {
+        if (!cancelled) setFetchedPeerAvatarRaw(url);
+      });
+    } else if (userType === 'client' && peerCoachProfileId) {
+      chatService.getCoachProfilePictureUrl(peerCoachProfileId).then((url) => {
+        if (!cancelled) setFetchedPeerAvatarRaw(url);
+      });
+    } else {
+      setFetchedPeerAvatarRaw(null);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [hasResolvedPeerPicture, userType, peerClientUserId, peerCoachProfileId]);
+
+  const headerAvatarUri = resolvePublicAvatarUrl(rawPeerPicture ?? fetchedPeerAvatarRaw ?? null);
 
   const listItems = useMemo((): ListItem[] => {
     const items: ListItem[] = [];
@@ -131,7 +208,7 @@ export const ChatScreen: React.FC = () => {
 
   const uriToBytes = async (uri: string): Promise<Uint8Array> => {
     try {
-      const b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      const b64 = await readAsStringAsync(uri, { encoding: EncodingType.Base64 });
       return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
     } catch {
       const res = await fetch(uri);
@@ -370,7 +447,7 @@ export const ChatScreen: React.FC = () => {
             transition={200}
           />
           {msg.content && msg.content !== t('chat.photoMessage') && (
-            <Text style={[styles.messageText, own && styles.ownMessageText, { marginTop: 6 }]}>
+            <Text style={[styles.messageText, own && styles.ownMessageText, { marginTop: 6 }, !own && { color: colors.text }]}>
               {msg.content}
             </Text>
           )}
@@ -403,7 +480,7 @@ export const ChatScreen: React.FC = () => {
               />
             ))}
           </View>
-          <Text style={[styles.voiceDuration, own && styles.ownVoiceDuration]}>
+          <Text style={[styles.voiceDuration, own && styles.ownVoiceDuration, !own && { color: colors.textLight }]}>
             {msg.content?.replace('🎤 ', '') || '0:00'}
           </Text>
         </TouchableOpacity>
@@ -414,7 +491,7 @@ export const ChatScreen: React.FC = () => {
       return (
         <TouchableOpacity style={styles.fileBubbleContent} activeOpacity={0.7}>
           <File size={20} color={own ? '#000' : PRIMARY_GREEN} />
-          <Text style={[styles.fileName, own && styles.ownFileName]} numberOfLines={2}>
+          <Text style={[styles.fileName, own && styles.ownFileName, !own && { color: colors.text }]} numberOfLines={2}>
             {msg.content || 'File'}
           </Text>
         </TouchableOpacity>
@@ -422,7 +499,7 @@ export const ChatScreen: React.FC = () => {
     }
 
     return (
-      <Text style={[styles.messageText, own && styles.ownMessageText]}>{msg.content}</Text>
+      <Text style={[styles.messageText, own && styles.ownMessageText, !own && { color: colors.text }]}>{msg.content}</Text>
     );
   };
 
@@ -430,7 +507,7 @@ export const ChatScreen: React.FC = () => {
     if (item.type === 'date') {
       return (
         <View style={styles.dateSeparator}>
-          <Text style={styles.dateSeparatorText}>{item.label}</Text>
+          <Text style={[styles.dateSeparatorText, { color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)', backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }]}>{item.label}</Text>
         </View>
       );
     }
@@ -439,32 +516,49 @@ export const ChatScreen: React.FC = () => {
     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return (
       <View style={[styles.messageBubbleWrapper, own && styles.messageBubbleWrapperOwn]}>
-        <View style={[styles.messageBubble, own ? styles.ownBubble : styles.otherBubble]}>
+        <View style={[styles.messageBubble, own ? styles.ownBubble : [styles.otherBubble, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }]]}>
           {renderMediaContent(msg, own)}
-          <Text style={[styles.messageTime, own && styles.ownMessageTime]}>{time}</Text>
+          <Text style={[styles.messageTime, own && styles.ownMessageTime, !own && { color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }]}>{time}</Text>
         </View>
       </View>
     );
-  }, [messages, playingId, t]);
+  }, [messages, playingId, t, isDark, colors]);
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <MessageCircle size={48} color="rgba(180,240,78,0.3)" />
-      <Text style={styles.emptyText}>{t('chat.sendFirstMessage')}</Text>
+      <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('chat.sendFirstMessage')}</Text>
+    </View>
+  );
+
+  const peerInitial = (recipientName?.trim()?.[0] || '?').toUpperCase();
+
+  const renderChatHeader = () => (
+    <View style={[styles.header, { paddingTop: insets.top + 12, borderBottomColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }]}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <ArrowLeft size={24} color={colors.text} />
+      </TouchableOpacity>
+      <View style={styles.headerTitleWrap}>
+        {headerAvatarUri ? (
+          <Image source={{ uri: headerAvatarUri }} style={styles.headerAvatar} contentFit="cover" transition={200} />
+        ) : (
+          <View style={[styles.headerAvatarPlaceholder, { backgroundColor: isDark ? 'rgba(180,240,78,0.18)' : 'rgba(180,240,78,0.22)' }]}>
+            <Text style={[styles.headerAvatarInitial, { color: PRIMARY_GREEN }]}>{peerInitial}</Text>
+          </View>
+        )}
+        <Text style={[styles.peerTitle, { color: colors.text }]} numberOfLines={1}>
+          {recipientName}
+        </Text>
+      </View>
+      <View style={{ width: 40 }} />
     </View>
   );
 
   if (loadingMessages && messages.length === 0) {
     return (
-      <View style={styles.container}>
-        <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
-        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <ArrowLeft size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{recipientName}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+      <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+        <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+        {renderChatHeader()}
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={PRIMARY_GREEN} />
         </View>
@@ -473,16 +567,10 @@ export const ChatScreen: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{recipientName}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      {renderChatHeader()}
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={0}>
         <FlatList
@@ -497,55 +585,55 @@ export const ChatScreen: React.FC = () => {
         />
 
         {showAttachMenu && (
-          <View style={styles.attachMenu}>
+          <View style={[styles.attachMenu, { borderTopColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', backgroundColor: isDark ? 'rgba(10,10,10,0.95)' : 'rgba(255,255,255,0.95)' }]}>
             <TouchableOpacity style={styles.attachOption} onPress={handleTakePhoto}>
               <View style={[styles.attachIconCircle, { backgroundColor: 'rgba(180,240,78,0.15)' }]}>
                 <Camera size={20} color={PRIMARY_GREEN} />
               </View>
-              <Text style={styles.attachLabel}>{t('chat.camera')}</Text>
+              <Text style={[styles.attachLabel, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>{t('chat.camera')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.attachOption} onPress={handlePickImage}>
               <View style={[styles.attachIconCircle, { backgroundColor: 'rgba(100,149,237,0.15)' }]}>
                 <ImageIcon size={20} color="#6495ED" />
               </View>
-              <Text style={styles.attachLabel}>{t('chat.gallery')}</Text>
+              <Text style={[styles.attachLabel, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>{t('chat.gallery')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.attachOption} onPress={handlePickDocument}>
               <View style={[styles.attachIconCircle, { backgroundColor: 'rgba(255,165,0,0.15)' }]}>
                 <FileText size={20} color="#FFA500" />
               </View>
-              <Text style={styles.attachLabel}>{t('chat.document')}</Text>
+              <Text style={[styles.attachLabel, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>{t('chat.document')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
         {isRecording ? (
-          <View style={[styles.recordingBar, { paddingBottom: insets.bottom + 8 }]}>
+          <View style={[styles.recordingBar, { paddingBottom: insets.bottom + 8, borderTopColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }]}>
             <TouchableOpacity onPress={cancelRecording} style={styles.recordCancelBtn}>
               <X size={20} color="#FF4444" />
             </TouchableOpacity>
             <View style={styles.recordingIndicator}>
               <View style={styles.recordingDot} />
-              <Text style={styles.recordingTime}>{formatDuration(recordingDuration)}</Text>
+              <Text style={[styles.recordingTime, { color: colors.text }]}>{formatDuration(recordingDuration)}</Text>
             </View>
             <TouchableOpacity onPress={stopAndSendRecording} style={styles.recordSendBtn}>
               <Send size={18} color="#000" />
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
+          <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8, borderTopColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }]}>
             <TouchableOpacity
               style={styles.attachButton}
               onPress={() => setShowAttachMenu(!showAttachMenu)}
             >
-              <Paperclip size={20} color={showAttachMenu ? PRIMARY_GREEN : 'rgba(255,255,255,0.4)'} />
+              <Paperclip size={20} color={showAttachMenu ? PRIMARY_GREEN : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)')} />
             </TouchableOpacity>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', color: colors.text }]}
               value={input}
               onChangeText={(text) => { setInput(text); if (showAttachMenu) setShowAttachMenu(false); }}
               placeholder={t('chat.typeMessage')}
-              placeholderTextColor="rgba(255,255,255,0.25)"
+              placeholderTextColor={isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)'}
               multiline
               maxLength={2000}
             />
@@ -559,10 +647,10 @@ export const ChatScreen: React.FC = () => {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                style={styles.micButton}
+                style={[styles.micButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }]}
                 onPress={startRecording}
               >
-                <Mic size={20} color="rgba(255,255,255,0.5)" />
+                <Mic size={20} color={isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)'} />
               </TouchableOpacity>
             )}
           </View>
@@ -609,7 +697,29 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#030303' },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)' },
   backButton: { padding: 8, width: 40 },
-  headerTitle: { flex: 1, fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(18), color: '#FFFFFF', textAlign: 'center' },
+  headerTitleWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 0,
+    gap: 10,
+  },
+  headerAvatar: { width: 36, height: 36, borderRadius: 18, overflow: 'hidden' },
+  headerAvatarPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerAvatarInitial: { fontFamily: 'Barlow_700Bold', fontSize: 16 },
+  peerTitle: {
+    flexShrink: 1,
+    fontFamily: 'Barlow_700Bold',
+    fontSize: getResponsiveFontSize(18),
+    color: '#FFFFFF',
+  },
   messagesList: { paddingHorizontal: 16, paddingTop: 12 },
   messageBubbleWrapper: { marginBottom: 6, alignItems: 'flex-start' },
   messageBubbleWrapperOwn: { alignItems: 'flex-end' },

@@ -12,6 +12,9 @@ import { useCoachStore } from '@/store/coachStore';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -19,6 +22,8 @@ export const CreatePackScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { profile } = useCoachStore();
   const { createPack } = usePacksStore();
 
@@ -52,14 +57,14 @@ export const CreatePackScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('sessionPacks.createPack')}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('sessionPacks.createPack')}</Text>
         <TouchableOpacity onPress={handleSave} disabled={!isValid || saving} style={[styles.saveButton, (!isValid || saving) && styles.saveButtonDisabled]}>
           <Check size={22} color={isValid && !saving ? '#000000' : 'rgba(0,0,0,0.3)'} />
         </TouchableOpacity>
@@ -68,29 +73,29 @@ export const CreatePackScreen: React.FC = () => {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView style={styles.form} contentContainerStyle={[styles.formContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
           <View style={styles.field}>
-            <Text style={styles.label}>{t('sessionPacks.packName')}</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="e.g. Starter Pack" placeholderTextColor="rgba(255,255,255,0.2)" />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('sessionPacks.packName')}</Text>
+            <TextInput style={[styles.input, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={name} onChangeText={setName} placeholder="e.g. Starter Pack" placeholderTextColor={colors.textLight} />
           </View>
 
           <View style={styles.row}>
             <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t('sessionPacks.sessionCount')}</Text>
-              <TextInput style={styles.input} value={sessionCount} onChangeText={setSessionCount} keyboardType="number-pad" placeholder="5" placeholderTextColor="rgba(255,255,255,0.2)" />
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('sessionPacks.sessionCount')}</Text>
+              <TextInput style={[styles.input, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={sessionCount} onChangeText={setSessionCount} keyboardType="number-pad" placeholder="5" placeholderTextColor={colors.textLight} />
             </View>
             <View style={[styles.field, { flex: 1 }]}>
-              <Text style={styles.label}>{t('sessionPacks.price')} (EUR)</Text>
-              <TextInput style={styles.input} value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder="49.99" placeholderTextColor="rgba(255,255,255,0.2)" />
+              <Text style={[styles.label, { color: colors.textSecondary }]}>{t('sessionPacks.price')} (EUR)</Text>
+              <TextInput style={[styles.input, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={price} onChangeText={setPrice} keyboardType="decimal-pad" placeholder="49.99" placeholderTextColor={colors.textLight} />
             </View>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t('sessionPacks.description')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('sessionPacks.description')}</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]}
               value={description}
               onChangeText={setDescription}
               placeholder={t('sessionPacks.packDescPlaceholder')}
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor={colors.textLight}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
@@ -99,10 +104,10 @@ export const CreatePackScreen: React.FC = () => {
 
           {isValid && (
             <View style={styles.preview}>
-              <Text style={styles.previewTitle}>{t('sessionPacks.preview')}</Text>
+              <Text style={[styles.previewTitle, { color: colors.textLight }]}>{t('sessionPacks.preview')}</Text>
               <View style={styles.previewCard}>
-                <Text style={styles.previewName}>{name}</Text>
-                <Text style={styles.previewSessions}>{sessionCount} {t('sessionPacks.sessions')}</Text>
+                <Text style={[styles.previewName, { color: colors.text }]}>{name}</Text>
+                <Text style={[styles.previewSessions, { color: colors.textSecondary }]}>{sessionCount} {t('sessionPacks.sessions')}</Text>
                 <Text style={styles.previewPrice}>€{parseFloat(price || '0').toFixed(2)}</Text>
               </View>
             </View>

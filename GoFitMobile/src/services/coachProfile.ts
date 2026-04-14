@@ -9,7 +9,7 @@ export interface CoachProfile {
   specialties: string[];
   hourly_rate?: number;
   cv_url?: string;
-  profile_picture_url?: string;
+  profile_picture_url?: string | null;
   is_verified: boolean;
   average_rating: number;
   total_reviews: number;

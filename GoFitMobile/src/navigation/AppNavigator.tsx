@@ -33,7 +33,7 @@ import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import WorkoutStatisticsScreen from '@/screens/progress/WorkoutStatisticsScreen';
 import RecordDetailsScreen from '@/screens/progress/RecordDetailsScreen';
 import ConsistencyScreen from '@/screens/progress/ConsistencyScreen';
-import { BodyMeasurementsScreen } from '@/screens/progress/BodyMeasurementsScreen';
+import BodyMeasurementsScreen from '@/screens/progress/BodyMeasurementsScreen';
 import { WorkoutDetailScreen } from '@/screens/library/WorkoutDetailScreen';
 import { ExerciseSelectionScreen } from '@/screens/library/ExerciseSelectionScreen';
 import { WorkoutBuilderScreen } from '@/screens/library/WorkoutBuilderScreen';

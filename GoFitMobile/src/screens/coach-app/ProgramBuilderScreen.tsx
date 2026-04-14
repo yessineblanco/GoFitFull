@@ -18,6 +18,9 @@ import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { logger } from '@/utils/logger';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -28,6 +31,8 @@ export const ProgramBuilderScreen: React.FC = () => {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { profile } = useCoachStore();
   const { createProgram, updateProgram } = useProgramsStore();
 
@@ -233,33 +238,33 @@ export const ProgramBuilderScreen: React.FC = () => {
   ];
 
   const renderExercisePickerItem = useCallback(({ item }: { item: Exercise }) => (
-    <TouchableOpacity style={styles.pickerItem} onPress={() => selectExercise(item)} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.pickerItem, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]} onPress={() => selectExercise(item)} activeOpacity={0.7}>
       {item.image_url ? (
         <ExpoImage source={{ uri: item.image_url }} style={styles.pickerItemImage} contentFit="cover" />
       ) : (
-        <View style={styles.pickerItemImagePlaceholder}>
+        <View style={[styles.pickerItemImagePlaceholder, { backgroundColor: isDark ? 'rgba(180,240,78,0.06)' : 'rgba(132,196,65,0.08)' }]}>
           <Dumbbell size={16} color="rgba(180,240,78,0.4)" />
         </View>
       )}
       <View style={styles.pickerItemInfo}>
-        <Text style={styles.pickerItemName}>{item.name}</Text>
-        <Text style={styles.pickerItemMeta}>
+        <Text style={[styles.pickerItemName, { color: colors.text }]}>{item.name}</Text>
+        <Text style={[styles.pickerItemMeta, { color: colors.textLight }]}>
           {item.muscle_groups?.join(', ') || item.category}
           {item.default_sets ? ` · ${item.default_sets}x${item.default_reps || 10}` : ''}
         </Text>
       </View>
       <Plus size={18} color={PRIMARY_GREEN} />
     </TouchableOpacity>
-  ), [selectExercise]);
+  ), [selectExercise, isDark, colors]);
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isEditMode ? t('programs.editProgram') : t('programs.createProgram')}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{isEditMode ? t('programs.editProgram') : t('programs.createProgram')}</Text>
         <TouchableOpacity onPress={handleSave} disabled={!isValid || saving} style={[styles.saveButton, (!isValid || saving) && styles.saveButtonDisabled]}>
           <Check size={22} color={isValid && !saving ? '#000000' : 'rgba(0,0,0,0.3)'} />
         </TouchableOpacity>
@@ -273,48 +278,48 @@ export const ProgramBuilderScreen: React.FC = () => {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView style={styles.form} contentContainerStyle={[styles.formContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
           <View style={styles.field}>
-            <Text style={styles.label}>{t('programs.programTitle')}</Text>
-            <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={t('programs.programTitlePlaceholder')} placeholderTextColor="rgba(255,255,255,0.2)" />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('programs.programTitle')}</Text>
+            <TextInput style={[styles.input, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={title} onChangeText={setTitle} placeholder={t('programs.programTitlePlaceholder')} placeholderTextColor={colors.textLight} />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t('programs.selectClient')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('programs.selectClient')}</Text>
             {clients.length > 0 ? (
-              <TouchableOpacity style={styles.input} onPress={() => setClientPickerVisible(true)}>
-                <Text style={{ color: clientId ? '#FFFFFF' : 'rgba(255,255,255,0.2)', fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(14) }}>
+              <TouchableOpacity style={[styles.input, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]} onPress={() => setClientPickerVisible(true)}>
+                <Text style={{ color: clientId ? colors.text : colors.textLight, fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(14) }}>
                   {clientId ? clients.find((c) => c.client_id === clientId)?.display_name || clientId : t('programs.selectClient')}
                 </Text>
               </TouchableOpacity>
             ) : (
-              <Text style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), paddingVertical: 12 }}>
+              <Text style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)', fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), paddingVertical: 12 }}>
                 {t('programs.noClients')}
               </Text>
             )}
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t('programs.programType')}</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('programs.programType')}</Text>
             <View style={styles.typeRow}>
               {typeOptions.map((opt) => (
                 <TouchableOpacity
                   key={opt.value}
-                  style={[styles.typeChip, type === opt.value && styles.typeChipSelected]}
+                  style={[styles.typeChip, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }, type === opt.value && styles.typeChipSelected]}
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setType(opt.value); }}
                 >
-                  <Text style={[styles.typeChipText, type === opt.value && styles.typeChipTextSelected]}>{opt.label}</Text>
+                  <Text style={[styles.typeChipText, { color: colors.textSecondary }, type === opt.value && styles.typeChipTextSelected]}>{opt.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>{t('programs.programDescription')}</Text>
-            <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder={t('programs.programDescPlaceholder')} placeholderTextColor="rgba(255,255,255,0.2)" multiline numberOfLines={3} textAlignVertical="top" />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('programs.programDescription')}</Text>
+            <TextInput style={[styles.input, styles.textArea, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={description} onChangeText={setDescription} placeholder={t('programs.programDescPlaceholder')} placeholderTextColor={colors.textLight} multiline numberOfLines={3} textAlignVertical="top" />
           </View>
 
           {/* Days */}
           {days.map((day, dayIndex) => (
-            <View key={dayIndex} style={styles.dayCard}>
+            <View key={dayIndex} style={[styles.dayCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
               <View style={styles.dayHeader}>
                 <Text style={styles.dayTitle}>{t('programs.day')} {day.day_number}</Text>
                 {days.length > 1 && (
@@ -328,27 +333,27 @@ export const ProgramBuilderScreen: React.FC = () => {
               {(type === 'workout' || type === 'both') && (
                 <View style={styles.daySection}>
                   {(day.exercises || []).map((ex, exIdx) => (
-                    <View key={exIdx} style={styles.exerciseRow}>
+                    <View key={exIdx} style={[styles.exerciseRow, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
                       <View style={styles.exHeader}>
                         <Dumbbell size={14} color={PRIMARY_GREEN} />
-                        <Text style={styles.exName} numberOfLines={1}>{ex.name || t('common.unnamed')}</Text>
+                        <Text style={[styles.exName, { color: colors.text }]} numberOfLines={1}>{ex.name || t('common.unnamed')}</Text>
                         <TouchableOpacity onPress={() => removeExercise(dayIndex, exIdx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                           <Trash2 size={14} color="#EF5350" />
                         </TouchableOpacity>
                       </View>
                       <View style={styles.exNumbers}>
                         <View style={styles.exNumField}>
-                          <Text style={styles.exNumLabel}>{t('programs.sets')}</Text>
-                          <TextInput style={styles.smallInput} value={String(ex.sets)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'sets', parseInt(v) || 0)} keyboardType="number-pad" />
+                          <Text style={[styles.exNumLabel, { color: colors.textLight }]}>{t('programs.sets')}</Text>
+                          <TextInput style={[styles.smallInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(ex.sets)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'sets', parseInt(v) || 0)} keyboardType="number-pad" />
                         </View>
-                        <Text style={styles.exSeparator}>x</Text>
+                        <Text style={[styles.exSeparator, { color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }]}>x</Text>
                         <View style={styles.exNumField}>
-                          <Text style={styles.exNumLabel}>{t('programs.reps')}</Text>
-                          <TextInput style={styles.smallInput} value={String(ex.reps)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'reps', parseInt(v) || 0)} keyboardType="number-pad" />
+                          <Text style={[styles.exNumLabel, { color: colors.textLight }]}>{t('programs.reps')}</Text>
+                          <TextInput style={[styles.smallInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(ex.reps)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'reps', parseInt(v) || 0)} keyboardType="number-pad" />
                         </View>
                         <View style={styles.exNumField}>
-                          <Text style={styles.exNumLabel}>{t('programs.rest')}</Text>
-                          <TextInput style={styles.smallInput} value={String(ex.rest_seconds)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'rest_seconds', parseInt(v) || 0)} keyboardType="number-pad" />
+                          <Text style={[styles.exNumLabel, { color: colors.textLight }]}>{t('programs.rest')}</Text>
+                          <TextInput style={[styles.smallInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(ex.rest_seconds)} onChangeText={(v) => updateExercise(dayIndex, exIdx, 'rest_seconds', parseInt(v) || 0)} keyboardType="number-pad" />
                         </View>
                       </View>
                     </View>
@@ -365,12 +370,12 @@ export const ProgramBuilderScreen: React.FC = () => {
                 <View style={styles.daySection}>
                   {(day.meals || []).map((meal, mealIdx) => (
                     <View key={mealIdx} style={styles.mealRow}>
-                      <TextInput style={[styles.input, styles.mealNameInput]} value={meal.name} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'name', v)} placeholder={t('programs.mealName')} placeholderTextColor="rgba(255,255,255,0.2)" />
+                      <TextInput style={[styles.input, styles.mealNameInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={meal.name} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'name', v)} placeholder={t('programs.mealName')} placeholderTextColor={colors.textLight} />
                       <View style={styles.macroRow}>
-                        <TextInput style={styles.macroInput} value={String(meal.calories || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'calories', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.calShort')} placeholderTextColor="rgba(255,255,255,0.2)" />
-                        <TextInput style={styles.macroInput} value={String(meal.protein || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'protein', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.proteinShort')} placeholderTextColor="rgba(255,255,255,0.2)" />
-                        <TextInput style={styles.macroInput} value={String(meal.carbs || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'carbs', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.carbsShort')} placeholderTextColor="rgba(255,255,255,0.2)" />
-                        <TextInput style={styles.macroInput} value={String(meal.fat || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'fat', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.fatShort')} placeholderTextColor="rgba(255,255,255,0.2)" />
+                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.calories || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'calories', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.calShort')} placeholderTextColor={colors.textLight} />
+                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.protein || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'protein', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.proteinShort')} placeholderTextColor={colors.textLight} />
+                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.carbs || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'carbs', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.carbsShort')} placeholderTextColor={colors.textLight} />
+                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.fat || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'fat', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.fatShort')} placeholderTextColor={colors.textLight} />
                       </View>
                       <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIdx)} style={styles.removeBtn}>
                         <Trash2 size={14} color="#EF5350" />
@@ -397,21 +402,21 @@ export const ProgramBuilderScreen: React.FC = () => {
       {/* Client Picker Modal */}
       <Modal visible={clientPickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.clientModalContainer, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
-            <LinearGradient colors={['#0a0a0a', '#0d1a0d', '#0a0a0a']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+          <View style={[styles.clientModalContainer, { backgroundColor: isDark ? '#0a0a0a' : colors.background, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
+            <LinearGradient colors={isDark ? ['#0a0a0a', '#0d1a0d', '#0a0a0a'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('programs.selectClient')}</Text>
-              <TouchableOpacity onPress={() => setClientPickerVisible(false)}><X size={22} color="#FFFFFF" /></TouchableOpacity>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('programs.selectClient')}</Text>
+              <TouchableOpacity onPress={() => setClientPickerVisible(false)}><X size={22} color={colors.text} /></TouchableOpacity>
             </View>
             <FlatList
               data={clients}
               keyExtractor={(item) => item.client_id}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.clientOption, clientId === item.client_id && styles.clientOptionActive]}
+                  style={[styles.clientOption, { backgroundColor: getGlassBg(isDark) }, clientId === item.client_id && styles.clientOptionActive]}
                   onPress={() => { setClientId(item.client_id); setClientPickerVisible(false); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
                 >
-                  <Text style={[styles.clientOptionText, clientId === item.client_id && styles.clientOptionTextActive]}>{item.display_name}</Text>
+                  <Text style={[styles.clientOptionText, { color: colors.text }, clientId === item.client_id && styles.clientOptionTextActive]}>{item.display_name}</Text>
                 </TouchableOpacity>
               )}
               contentContainerStyle={{ padding: 16 }}
@@ -423,31 +428,31 @@ export const ProgramBuilderScreen: React.FC = () => {
       {/* Exercise Picker Modal */}
       <Modal visible={pickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
-            <LinearGradient colors={['#0a0a0a', '#0d1a0d', '#0a0a0a']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+          <View style={[styles.modalContainer, { backgroundColor: isDark ? '#0a0a0a' : colors.background, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
+            <LinearGradient colors={isDark ? ['#0a0a0a', '#0d1a0d', '#0a0a0a'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
             {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('programs.addExercise')}</Text>
-              <TouchableOpacity onPress={() => setPickerVisible(false)} style={styles.modalClose}>
-                <X size={22} color="#FFFFFF" />
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('programs.addExercise')}</Text>
+              <TouchableOpacity onPress={() => setPickerVisible(false)} style={[styles.modalClose, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
+                <X size={22} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <Search size={18} color="rgba(255,255,255,0.3)" />
+            <View style={[styles.searchContainer, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+              <Search size={18} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text }]}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={t('programs.searchExercises')}
-                placeholderTextColor="rgba(255,255,255,0.25)"
+                placeholderTextColor={colors.textLight}
                 autoCorrect={false}
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={() => setSearchQuery('')}>
-                  <X size={16} color="rgba(255,255,255,0.4)" />
+                  <X size={16} color={colors.textLight} />
                 </TouchableOpacity>
               )}
             </View>
@@ -455,18 +460,18 @@ export const ProgramBuilderScreen: React.FC = () => {
             {/* Muscle Group Filters */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.muscleGroupScroll} contentContainerStyle={styles.muscleGroupContent}>
               <TouchableOpacity
-                style={[styles.muscleChip, !selectedMuscleGroup && styles.muscleChipSelected]}
+                style={[styles.muscleChip, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }, !selectedMuscleGroup && styles.muscleChipSelected]}
                 onPress={() => setSelectedMuscleGroup(null)}
               >
-                <Text style={[styles.muscleChipText, !selectedMuscleGroup && styles.muscleChipTextSelected]}>{t('common.all')}</Text>
+                <Text style={[styles.muscleChipText, { color: colors.textSecondary }, !selectedMuscleGroup && styles.muscleChipTextSelected]}>{t('common.all')}</Text>
               </TouchableOpacity>
               {muscleGroups.map((mg) => (
                 <TouchableOpacity
                   key={mg}
-                  style={[styles.muscleChip, selectedMuscleGroup === mg && styles.muscleChipSelected]}
+                  style={[styles.muscleChip, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }, selectedMuscleGroup === mg && styles.muscleChipSelected]}
                   onPress={() => setSelectedMuscleGroup(selectedMuscleGroup === mg ? null : mg)}
                 >
-                  <Text style={[styles.muscleChipText, selectedMuscleGroup === mg && styles.muscleChipTextSelected]}>{mg}</Text>
+                  <Text style={[styles.muscleChipText, { color: colors.textSecondary }, selectedMuscleGroup === mg && styles.muscleChipTextSelected]}>{mg}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -487,7 +492,7 @@ export const ProgramBuilderScreen: React.FC = () => {
                 ListEmptyComponent={
                   <View style={styles.pickerEmpty}>
                     <Dumbbell size={32} color="rgba(180,240,78,0.2)" />
-                    <Text style={styles.pickerEmptyText}>{t('programs.noExercisesFound')}</Text>
+                    <Text style={[styles.pickerEmptyText, { color: colors.textLight }]}>{t('programs.noExercisesFound')}</Text>
                   </View>
                 }
               />

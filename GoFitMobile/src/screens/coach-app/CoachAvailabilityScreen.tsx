@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch,
 } from 'react-native';
+import { Shimmer } from '@/components/shared/Shimmer';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Check, Plus, Trash2, Clock } from 'lucide-react-native';
@@ -14,6 +15,9 @@ import type { AvailabilitySlot } from '@/services/bookings';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -34,6 +38,8 @@ export const CoachAvailabilityScreen: React.FC = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { profile, loadProfile } = useCoachStore();
   const { availability, loadingAvailability, loadAvailability, saveAvailability } = useBookingsStore();
 
@@ -118,22 +124,51 @@ export const CoachAvailabilityScreen: React.FC = () => {
 
   if (loadingAvailability) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
-        <ActivityIndicator size="large" color={PRIMARY_GREEN} />
+      <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+        <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <ArrowLeft size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{t('booking.availability')}</Text>
+          <View style={{ width: 36 }} />
+        </View>
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, gap: 10 }}>
+          {[...Array(7)].map((_, i) => (
+            <View key={i} style={{ backgroundColor: getGlassBg(isDark), borderRadius: 16, borderWidth: 1, borderColor: getGlassBorder(isDark), padding: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View>
+                  <Shimmer width={80} height={16} style={{ marginBottom: 4 }} />
+                  <Shimmer width={50} height={12} />
+                </View>
+                <Shimmer width={44} height={26} borderRadius={13} />
+              </View>
+              {i % 2 === 0 && (
+                <View style={{ marginTop: 12, gap: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Shimmer width={14} height={14} borderRadius={4} />
+                    <Shimmer width={60} height={20} borderRadius={6} />
+                    <Shimmer width={30} height={12} />
+                    <Shimmer width={60} height={20} borderRadius={6} />
+                  </View>
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('booking.availability')}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('booking.availability')}</Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={[styles.saveButton, saving && styles.saveButtonDisabled]}>
           <Check size={22} color={saving ? 'rgba(0,0,0,0.3)' : '#000000'} />
         </TouchableOpacity>
@@ -145,17 +180,17 @@ export const CoachAvailabilityScreen: React.FC = () => {
           const daySlots = slots.filter((s) => s.day_of_week === day);
 
           return (
-            <View key={day} style={styles.dayCard}>
+            <View key={day} style={[styles.dayCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
               <View style={styles.dayHeader}>
                 <View style={styles.dayLabelRow}>
-                  <Text style={[styles.dayName, isEnabled && styles.dayNameEnabled]}>{t(`booking.${DAY_KEYS[day]}`)}</Text>
-                  <Text style={styles.slotCount}>{daySlots.length} {daySlots.length !== 1 ? t('booking.slots') : t('booking.slot')}</Text>
+                  <Text style={[styles.dayName, { color: colors.textSecondary }, isEnabled && { color: colors.text }]}>{t(`booking.${DAY_KEYS[day]}`)}</Text>
+                  <Text style={[styles.slotCount, { color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }]}>{daySlots.length} {daySlots.length !== 1 ? t('booking.slots') : t('booking.slot')}</Text>
                 </View>
                 <Switch
                   value={isEnabled}
                   onValueChange={() => toggleDay(day)}
-                  trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(180,240,78,0.3)' }}
-                  thumbColor={isEnabled ? PRIMARY_GREEN : 'rgba(255,255,255,0.4)'}
+                  trackColor={{ false: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', true: 'rgba(180,240,78,0.3)' }}
+                  thumbColor={isEnabled ? PRIMARY_GREEN : (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)')}
                 />
               </View>
 
@@ -164,22 +199,22 @@ export const CoachAvailabilityScreen: React.FC = () => {
                   {daySlots.map((slot, idx) => (
                     <View key={idx} style={styles.slotRow}>
                       <Clock size={14} color="rgba(180,240,78,0.5)" />
-                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'start_time', -1)} style={styles.timeBtn}>
-                        <Text style={styles.timeBtnText}>-</Text>
+                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'start_time', -1)} style={[styles.timeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
+                        <Text style={[styles.timeBtnText, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>-</Text>
                       </TouchableOpacity>
-                      <Text style={styles.timeText}>{slot.start_time}</Text>
-                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'start_time', 1)} style={styles.timeBtn}>
-                        <Text style={styles.timeBtnText}>+</Text>
+                      <Text style={[styles.timeText, { color: colors.primary }]}>{slot.start_time}</Text>
+                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'start_time', 1)} style={[styles.timeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
+                        <Text style={[styles.timeBtnText, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>+</Text>
                       </TouchableOpacity>
 
-                      <Text style={styles.timeSeparator}>{t('booking.timeTo')}</Text>
+                      <Text style={[styles.timeSeparator, { color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }]}>{t('booking.timeTo')}</Text>
 
-                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'end_time', -1)} style={styles.timeBtn}>
-                        <Text style={styles.timeBtnText}>-</Text>
+                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'end_time', -1)} style={[styles.timeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
+                        <Text style={[styles.timeBtnText, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>-</Text>
                       </TouchableOpacity>
-                      <Text style={styles.timeText}>{slot.end_time}</Text>
-                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'end_time', 1)} style={styles.timeBtn}>
-                        <Text style={styles.timeBtnText}>+</Text>
+                      <Text style={[styles.timeText, { color: colors.primary }]}>{slot.end_time}</Text>
+                      <TouchableOpacity onPress={() => updateSlotTime(day, idx, 'end_time', 1)} style={[styles.timeBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}>
+                        <Text style={[styles.timeBtnText, { color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)' }]}>+</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity onPress={() => removeSlot(day, idx)} style={styles.removeSlotBtn}>
@@ -188,8 +223,8 @@ export const CoachAvailabilityScreen: React.FC = () => {
                     </View>
                   ))}
                   <TouchableOpacity style={styles.addSlotBtn} onPress={() => addSlotForDay(day)}>
-                    <Plus size={14} color={PRIMARY_GREEN} />
-                    <Text style={styles.addSlotText}>{t('booking.addSlot')}</Text>
+                    <Plus size={14} color={colors.primary} />
+                    <Text style={[styles.addSlotText, { color: colors.primary }]}>{t('booking.addSlot')}</Text>
                   </TouchableOpacity>
                 </View>
               )}

@@ -1,19 +1,6 @@
--- Fix Supabase linter errors:
---   - auth_users_exposed: view "conversations_enriched" exposes auth.users to authenticated
---   - security_definer_view: view uses SECURITY DEFINER bypassing caller's RLS
---
--- Solution: replace the view with a SECURITY DEFINER RPC function.
--- Functions don't appear in PostgREST as queryable endpoints like views do,
--- so auth.users is no longer exposed. The function uses auth.uid() internally
--- to ensure callers can only see their own conversations.
+-- Enrich get_conversations_enriched with user_profiles.display_name and profile_picture_url
+-- so coaches see client avatars stored in user_profiles (not only auth metadata).
 
--- 1. Drop the insecure view
-DROP VIEW IF EXISTS public.conversations_enriched;
-
--- 2. Create a secure RPC function
---    p_role: 'client' to get conversations where caller is the client,
---            'coach' to get conversations where caller is the coach
---    Client photo: user_profiles.profile_picture_url (in-app uploads), then auth avatar_url.
 CREATE OR REPLACE FUNCTION public.get_conversations_enriched(p_role TEXT DEFAULT 'client')
 RETURNS TABLE(
   id UUID,
@@ -52,6 +39,7 @@ BEGIN
      LIMIT 1
     ) AS last_message,
     COALESCE(
+      NULLIF(trim(up_client.display_name), ''),
       u_client.raw_user_meta_data->>'display_name',
       u_client.raw_user_meta_data->>'full_name',
       split_part(u_client.email, '@', 1),
@@ -68,9 +56,9 @@ BEGIN
       cp.user_id::text
     ) AS coach_display_name,
     COALESCE(
-      NULLIF(trim(cp.profile_picture_url::text), ''),
-      (u_coach.raw_user_meta_data->>'avatar_url')::TEXT
-    ) AS coach_profile_picture_url
+      cp.profile_picture_url,
+      u_coach.raw_user_meta_data->>'avatar_url'
+    )::TEXT AS coach_profile_picture_url
   FROM public.conversations c
   LEFT JOIN public.coach_profiles cp ON cp.id = c.coach_id
   LEFT JOIN public.user_profiles up_client ON up_client.id = c.client_id
@@ -86,7 +74,6 @@ BEGIN
 END;
 $$;
 
--- 3. Restrict access: only authenticated users can call this function
 REVOKE ALL ON FUNCTION public.get_conversations_enriched(TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.get_conversations_enriched(TEXT) FROM anon;
 GRANT EXECUTE ON FUNCTION public.get_conversations_enriched(TEXT) TO authenticated;

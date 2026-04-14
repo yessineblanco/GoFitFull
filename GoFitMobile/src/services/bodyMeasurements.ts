@@ -14,6 +14,8 @@ export type BodyMeasurement = {
   right_arm: number | null;
   left_thigh: number | null;
   right_thigh: number | null;
+  /** Reference height (cm) used for this entry — profile height at scan time or manual */
+  height_cm: number | null;
   landmarks: any;
   manual_overrides: any;
   source: 'ai' | 'manual';
@@ -29,6 +31,7 @@ export type MeasurementInput = {
   right_arm?: number;
   left_thigh?: number;
   right_thigh?: number;
+  height_cm?: number;
 };
 
 class BodyMeasurementsService {
@@ -47,7 +50,17 @@ class BodyMeasurementsService {
       },
     });
 
-    if (error) throw error;
+    if (error) {
+      let msg = error.message || 'Edge function error';
+      try {
+        const ctx = (error as any).context;
+        if (ctx && typeof ctx.json === 'function') {
+          const body = await ctx.json();
+          if (body?.error) msg = body.error;
+        }
+      } catch {}
+      throw new Error(msg);
+    }
     if (data?.error) throw new Error(data.error);
 
     return {

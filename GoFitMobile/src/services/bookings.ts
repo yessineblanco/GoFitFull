@@ -28,6 +28,43 @@ export interface Booking {
   created_at: string;
   coach_name?: string;
   client_name?: string;
+  client_profile_picture_url?: string | null;
+}
+
+async function mergeClientProfilesOntoCoachBookings(bookings: Booking[]): Promise<Booking[]> {
+  const ids = [...new Set(bookings.map((b) => b.client_id).filter(Boolean))];
+  if (!ids.length) return bookings;
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, profile_picture_url, display_name')
+      .in('id', ids);
+    if (error || !data?.length) return bookings;
+    const map = new Map<
+      string,
+      { profile_picture_url: string | null; display_name: string | null }
+    >(
+      data.map((r: { id: string; profile_picture_url: string | null; display_name: string | null }) => [
+        r.id,
+        { profile_picture_url: r.profile_picture_url, display_name: r.display_name },
+      ]),
+    );
+    return bookings.map((b) => {
+      const r = map.get(b.client_id);
+      if (!r) return b;
+      const pic = r.profile_picture_url?.trim() || null;
+      const nameFromProfile = r.display_name?.trim() || '';
+      const client_name =
+        (b.client_name && b.client_name.trim()) || nameFromProfile || b.client_name;
+      return {
+        ...b,
+        client_name: client_name || b.client_name,
+        client_profile_picture_url: pic || b.client_profile_picture_url || null,
+      };
+    });
+  } catch {
+    return bookings;
+  }
 }
 
 export interface CreateBookingInput {
@@ -147,7 +184,8 @@ export const bookingsService = {
         .order('scheduled_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      return mergeClientProfilesOntoCoachBookings(rows);
     } catch (error) {
       logger.error('Failed to fetch coach bookings:', error);
       return [];

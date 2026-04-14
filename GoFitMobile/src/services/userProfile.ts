@@ -3,6 +3,7 @@ import { VALIDATION_LIMITS } from '@/constants';
 import { z } from 'zod';
 import { sanitizeForDatabase } from '@/utils/sanitize';
 import { apiClient, ApiError } from '@/api/client';
+import { supabase } from '@/config/supabase';
 
 // Validation schema for goal field
 const goalSchema = z
@@ -33,6 +34,7 @@ export interface NotificationPreferences {
 
 export interface UserProfile {
   id: string;
+  display_name?: string | null;
   weight?: number;
   weight_unit?: 'kg' | 'lb';
   height?: number;
@@ -395,14 +397,16 @@ export const userProfileService = {
    */
   async updateProfilePictureUrl(userId: string, url: string | null): Promise<void> {
     try {
-      await apiClient.update<UserProfile>(
-        'user_profiles',
+      const now = new Date().toISOString();
+      const { error } = await supabase.from('user_profiles').upsert(
         {
+          id: userId,
           profile_picture_url: url,
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         },
-        (builder) => builder.eq('id', userId)
+        { onConflict: 'id' },
       );
+      if (error) throw error;
     } catch (error) {
       logger.error('Error updating profile picture URL:', error);
       throw error;

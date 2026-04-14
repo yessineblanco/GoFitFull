@@ -15,6 +15,38 @@ export interface Conversation {
   unread_count?: number;
 }
 
+async function enrichCoachConversationsWithClientAvatars(conversations: Conversation[]): Promise<Conversation[]> {
+  const ids = [...new Set(conversations.map((c) => c.client_id).filter(Boolean))];
+  if (!ids.length) return conversations;
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, profile_picture_url')
+      .in('id', ids);
+    if (error) {
+      logger.warn('enrichCoachConversationsWithClientAvatars: user_profiles select failed', error);
+      return conversations;
+    }
+    if (!data?.length) return conversations;
+    const map = new Map<string, string | null>(
+      data.map((r: { id: string; profile_picture_url: string | null }) => [
+        String(r.id).toLowerCase(),
+        r.profile_picture_url,
+      ]),
+    );
+    return conversations.map((c) => {
+      const url = map.get(String(c.client_id).toLowerCase());
+      if (url != null && String(url).trim()) {
+        return { ...c, other_user_picture: url };
+      }
+      return c;
+    });
+  } catch (e) {
+    logger.warn('enrichCoachConversationsWithClientAvatars', e);
+    return conversations;
+  }
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -56,7 +88,7 @@ export const chatService = {
         .rpc('get_conversations_enriched', { p_role: 'coach' });
 
       if (error) throw error;
-      return (data || []).map((row: any) => ({
+      const list = (data || []).map((row: any) => ({
         id: row.id,
         coach_id: row.coach_id,
         client_id: row.client_id,
@@ -66,6 +98,7 @@ export const chatService = {
         other_user_name: row.client_display_name,
         other_user_picture: row.client_profile_picture_url,
       }));
+      return enrichCoachConversationsWithClientAvatars(list);
     } catch (error) {
       logger.error('Failed to fetch coach conversations:', error);
       return [];
@@ -180,6 +213,36 @@ export const chatService = {
         .is('read_at', null);
     } catch (error) {
       logger.error('Failed to mark messages as read:', error);
+    }
+  },
+
+  async getUserProfilePictureUrl(userId: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('profile_picture_url')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) return null;
+      const u = data?.profile_picture_url?.trim();
+      return u || null;
+    } catch {
+      return null;
+    }
+  },
+
+  async getCoachProfilePictureUrl(coachProfileId: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('coach_profiles')
+        .select('profile_picture_url')
+        .eq('id', coachProfileId)
+        .maybeSingle();
+      if (error) return null;
+      const u = data?.profile_picture_url?.trim();
+      return u || null;
+    } catch {
+      return null;
     }
   },
 

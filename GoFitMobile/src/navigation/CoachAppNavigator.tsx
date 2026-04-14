@@ -4,6 +4,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import type { CoachAppTabParamList } from '@/types';
 import { CoachTabBar } from '@/components/shared/CoachTabBar';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
+import { useThemeStore } from '@/store/themeStore';
+import { getBackgroundColor } from '@/utils/colorUtils';
 
 import { CoachDashboardScreen } from '@/screens/coach-app/CoachDashboardScreen';
 import { ClientsListScreen } from '@/screens/coach-app/ClientsListScreen';
@@ -21,6 +23,7 @@ import { ProgramBuilderScreen } from '@/screens/coach-app/ProgramBuilderScreen';
 import { CoachAvailabilityScreen } from '@/screens/coach-app/CoachAvailabilityScreen';
 import { CoachWalletScreen } from '@/screens/coach-app/CoachWalletScreen';
 import { CoachSettingsScreen } from '@/screens/coach-app/CoachSettingsScreen';
+import { ThemeSettingsScreen } from '@/screens/profile/ThemeSettingsScreen';
 import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import { NotificationInboxScreen } from '@/screens/profile/NotificationInboxScreen';
 import { VideoCallScreen } from '@/screens/coach-app/VideoCallScreen';
@@ -41,6 +44,7 @@ const CoachProfileStackNavigator = () => (
     <CoachProfileStack.Screen name="ProgramBuilder" component={ProgramBuilderScreen} />
     <CoachProfileStack.Screen name="CoachWallet" component={CoachWalletScreen} />
     <CoachProfileStack.Screen name="CoachSettings" component={CoachSettingsScreen} />
+    <CoachProfileStack.Screen name="ThemeSettings" component={ThemeSettingsScreen} />
   </CoachProfileStack.Navigator>
 );
 
@@ -79,10 +83,13 @@ const ClientsStackNavigator = () => (
 );
 
 export const CoachAppNavigator: React.FC = () => {
+  const { isDark } = useThemeStore();
+
   return (
     <RouteErrorBoundary>
       <Tab.Navigator
         tabBar={(props) => <CoachTabBar {...props} />}
+        sceneContainerStyle={{ backgroundColor: getBackgroundColor(isDark) }}
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,

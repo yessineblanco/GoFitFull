@@ -34,8 +34,8 @@ const secureStorage = {
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
-      isDark: false,
-      theme: 'system',
+      isDark: true,
+      theme: 'dark',
       toggleTheme: () => set((state) => {
         const newIsDark = !state.isDark;
         return { 

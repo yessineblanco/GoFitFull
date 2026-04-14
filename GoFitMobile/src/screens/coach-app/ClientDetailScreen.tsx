@@ -1,7 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
 } from 'react-native';
+import { SkeletonCoachDetail } from '@/components/shared/Shimmer';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -14,6 +15,9 @@ import { useCoachStore } from '@/store/coachStore';
 import { useChatStore } from '@/store/chatStore';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -22,6 +26,8 @@ export const ClientDetailScreen: React.FC = () => {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { profile } = useCoachStore();
   const { selectedClientDetail, loadingDetail, loadClientDetail, clearSelectedClient } = useClientManagementStore();
   const { getOrCreateConversation, setActiveConversation } = useChatStore();
@@ -48,6 +54,7 @@ export const ClientDetailScreen: React.FC = () => {
         navigation.navigate('ChatScreen', {
           conversationId: convo.id,
           recipientName: clientName || convo.other_user_name,
+          recipientPictureUrl: client?.profile_picture_url ?? null,
         });
       }
     } catch {}
@@ -70,9 +77,16 @@ export const ClientDetailScreen: React.FC = () => {
 
   if (loadingDetail && !selectedClientDetail) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
-        <ActivityIndicator size="large" color={PRIMARY_GREEN} />
+      <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+        <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+        <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <ArrowLeft size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{clientName}</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <SkeletonCoachDetail />
       </View>
     );
   }
@@ -82,17 +96,17 @@ export const ClientDetailScreen: React.FC = () => {
 
   if (!client) {
     return (
-      <View style={styles.container}>
-        <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+      <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+        <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
         <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <ArrowLeft size={24} color="#FFFFFF" />
+            <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{clientName}</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{clientName}</Text>
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.loadingContainer}>
-          <Text style={styles.errorText}>{t('common.error')}</Text>
+          <Text style={[styles.errorText, { color: colors.textSecondary }]}>{t('common.error')}</Text>
         </View>
       </View>
     );
@@ -109,14 +123,14 @@ export const ClientDetailScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{client.display_name}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>{client.display_name}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -144,35 +158,35 @@ export const ClientDetailScreen: React.FC = () => {
 
         {/* Active Programs */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('clientManagement.activePrograms')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.activePrograms')}</Text>
           {detail?.activePrograms && detail.activePrograms.length > 0 ? (
             detail.activePrograms.map((p) => (
               <TouchableOpacity
                 key={p.id}
-                style={styles.listItem}
+                style={[styles.listItem, { backgroundColor: getGlassBg(isDark) }]}
                 onPress={() => navigation.navigate('ProgramDetail', { programId: p.id })}
               >
-                <Text style={styles.listItemText}>{p.title}</Text>
-                <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                <Text style={[styles.listItemText, { color: colors.text }]}>{p.title}</Text>
+                <ChevronRight size={16} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
               </TouchableOpacity>
             ))
           ) : (
-            <Text style={styles.emptyText}>{t('programs.noPrograms')}</Text>
+            <Text style={[styles.emptyText, { color: colors.textLight }]}>{t('programs.noPrograms')}</Text>
           )}
         </View>
 
         {/* Upcoming Bookings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('clientManagement.upcomingBookings')}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.upcomingBookings')}</Text>
           {detail?.upcomingBookings && detail.upcomingBookings.length > 0 ? (
             detail.upcomingBookings.map((b) => (
-              <View key={b.id} style={styles.listItem}>
+              <View key={b.id} style={[styles.listItem, { backgroundColor: getGlassBg(isDark) }]}>
                 <Calendar size={14} color={PRIMARY_GREEN} />
-                <Text style={styles.listItemText}>{formatDate(b.scheduled_at)}</Text>
+                <Text style={[styles.listItemText, { color: colors.text }]}>{formatDate(b.scheduled_at)}</Text>
               </View>
             ))
           ) : (
-            <Text style={styles.emptyText}>{t('booking.noBookings')}</Text>
+            <Text style={[styles.emptyText, { color: colors.textLight }]}>{t('booking.noBookings')}</Text>
           )}
         </View>
 
@@ -180,10 +194,10 @@ export const ClientDetailScreen: React.FC = () => {
         <TouchableOpacity style={styles.notesCard} onPress={handleNotes}>
           <StickyNote size={20} color={PRIMARY_GREEN} />
           <View style={styles.notesCardContent}>
-            <Text style={styles.notesCardTitle}>{t('clientManagement.privateNotes')}</Text>
-            <Text style={styles.notesCardSubtitle}>{t('clientManagement.addNote')}</Text>
+            <Text style={[styles.notesCardTitle, { color: colors.text }]}>{t('clientManagement.privateNotes')}</Text>
+            <Text style={[styles.notesCardSubtitle, { color: colors.textSecondary }]}>{t('clientManagement.addNote')}</Text>
           </View>
-          <ChevronRight size={20} color="rgba(255,255,255,0.3)" />
+          <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
         </TouchableOpacity>
       </ScrollView>
     </View>

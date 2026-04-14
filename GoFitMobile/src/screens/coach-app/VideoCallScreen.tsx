@@ -11,6 +11,9 @@ import { useTranslation } from 'react-i18next';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, SwitchCamera,
 } from 'lucide-react-native';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor } from '@/utils/colorUtils';
 
 let LiveKitRoom: any = null;
 let VideoTrack: any = null;
@@ -42,6 +45,8 @@ export const VideoCallScreen: React.FC = () => {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { user } = useAuthStore();
 
   const { bookingId, videoRoomId } = route.params || {};
@@ -91,18 +96,17 @@ export const VideoCallScreen: React.FC = () => {
   }, []);
 
   const handleFlipCamera = useCallback(() => {
-    // Camera flip handled by LiveKit track methods when available
   }, []);
 
   if (!LiveKitRoom) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: getBackgroundColor(isDark) }]}>
         <View style={styles.centered}>
-          <VideoOff size={48} color="rgba(255,255,255,0.3)" />
-          <Text style={styles.errorTitle}>{t('videoCall.unavailable')}</Text>
-          <Text style={styles.errorSubtitle}>{t('videoCall.requiresDevBuild')}</Text>
+          <VideoOff size={48} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
+          <Text style={[styles.errorTitle, { color: colors.text }]}>{t('videoCall.unavailable')}</Text>
+          <Text style={[styles.errorSubtitle, { color: colors.textSecondary }]}>{t('videoCall.requiresDevBuild')}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backButtonText}>{t('common.goBack')}</Text>
+            <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>{t('common.goBack')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -111,10 +115,10 @@ export const VideoCallScreen: React.FC = () => {
 
   if (connectionState === 'connecting' || connectionState === 'idle') {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: getBackgroundColor(isDark) }]}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={PRIMARY_GREEN} />
-          <Text style={styles.connectingText}>{t('videoCall.connecting')}</Text>
+          <Text style={[styles.connectingText, { color: colors.textSecondary }]}>{t('videoCall.connecting')}</Text>
         </View>
       </View>
     );
@@ -122,15 +126,15 @@ export const VideoCallScreen: React.FC = () => {
 
   if (connectionState === 'error') {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={[styles.container, { paddingTop: insets.top, backgroundColor: getBackgroundColor(isDark) }]}>
         <View style={styles.centered}>
           <VideoOff size={48} color="#FF6B6B" />
-          <Text style={styles.errorTitle}>{error || t('videoCall.connectionFailed')}</Text>
+          <Text style={[styles.errorTitle, { color: colors.text }]}>{error || t('videoCall.connectionFailed')}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={connect}>
             <Text style={styles.retryButtonText}>{t('videoCall.retry')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backButtonText}>{t('common.goBack')}</Text>
+            <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>{t('common.goBack')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,7 +142,7 @@ export const VideoCallScreen: React.FC = () => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: getBackgroundColor(isDark) }]}>
       {token && serverUrl ? (
         <LiveKitRoom
           serverUrl={serverUrl}
@@ -190,12 +194,14 @@ const RoomView: React.FC<RoomViewProps> = ({
   micEnabled, cameraEnabled, onToggleMic, onToggleCamera, onFlipCamera, onEndCall,
 }) => {
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
 
   return (
     <View style={styles.roomContainer}>
-      <View style={styles.videoArea}>
+      <View style={[styles.videoArea, { backgroundColor: isDark ? '#111111' : '#E8E8E8' }]}>
         <View style={styles.remoteVideoContainer}>
-          <Text style={styles.waitingText}>{t('videoCall.inCall')}</Text>
+          <Text style={[styles.waitingText, { color: colors.textSecondary }]}>{t('videoCall.inCall')}</Text>
         </View>
       </View>
 

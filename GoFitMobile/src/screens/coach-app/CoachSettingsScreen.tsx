@@ -28,6 +28,9 @@ import { useProfileStore } from '@/store/profileStore';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/config/supabase';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 const CANCELLATION_OPTIONS = ['flexible', 'moderate', 'strict'] as const;
@@ -39,6 +42,8 @@ export const CoachSettingsScreen: React.FC = () => {
   const { profile: coachProfile, updateProfile } = useCoachStore();
   const { profile: userProfile } = useProfileStore();
   const { user } = useAuthStore();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
 
   const notifPrefs = userProfile?.notification_preferences as any || {};
   const [bookingNotifs, setBookingNotifs] = useState(notifPrefs.booking_notifications !== false);
@@ -156,19 +161,25 @@ export const CoachSettingsScreen: React.FC = () => {
     );
   };
 
+  const switchTrackFalse = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+  const switchThumbOff = isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.25)';
+  const chevronColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)';
+  const dividerColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+  const iconWrapBg = isDark ? 'rgba(180,240,78,0.08)' : 'rgba(132,196,65,0.1)';
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
       <LinearGradient
-        colors={['#030303', '#0a1a0a', '#030303']}
+        colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]}
         locations={[0, 0.5, 1]}
         style={StyleSheet.absoluteFill}
       />
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={12}>
-          <ChevronLeft size={24} color="#FFFFFF" />
+          <ChevronLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -180,68 +191,68 @@ export const CoachSettingsScreen: React.FC = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionLabel}>Notifications</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Notifications</Text>
+        <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
           <View style={styles.toggleRow}>
-            <View style={styles.iconWrap}>
-              <Bell size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Bell size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Booking Notifications</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Booking Notifications</Text>
             <Switch
               value={bookingNotifs}
               onValueChange={handleToggleBooking}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(180,240,78,0.35)' }}
-              thumbColor={bookingNotifs ? PRIMARY_GREEN : 'rgba(255,255,255,0.45)'}
+              trackColor={{ false: switchTrackFalse, true: 'rgba(180,240,78,0.35)' }}
+              thumbColor={bookingNotifs ? PRIMARY_GREEN : switchThumbOff}
             />
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
           <View style={styles.toggleRow}>
-            <View style={styles.iconWrap}>
-              <Bell size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Bell size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Message Notifications</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Message Notifications</Text>
             <Switch
               value={messageNotifs}
               onValueChange={handleToggleMessage}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(180,240,78,0.35)' }}
-              thumbColor={messageNotifs ? PRIMARY_GREEN : 'rgba(255,255,255,0.45)'}
+              trackColor={{ false: switchTrackFalse, true: 'rgba(180,240,78,0.35)' }}
+              thumbColor={messageNotifs ? PRIMARY_GREEN : switchThumbOff}
             />
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
           <View style={styles.toggleRow}>
-            <View style={styles.iconWrap}>
-              <Bell size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Bell size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Review Notifications</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Review Notifications</Text>
             <Switch
               value={reviewNotifs}
               onValueChange={handleToggleReview}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(180,240,78,0.35)' }}
-              thumbColor={reviewNotifs ? PRIMARY_GREEN : 'rgba(255,255,255,0.45)'}
+              trackColor={{ false: switchTrackFalse, true: 'rgba(180,240,78,0.35)' }}
+              thumbColor={reviewNotifs ? PRIMARY_GREEN : switchThumbOff}
             />
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>Session defaults</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Session defaults</Text>
+        <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
           <TouchableOpacity style={styles.navRow} onPress={showDurationPicker} activeOpacity={0.7}>
-            <View style={styles.iconWrap}>
-              <Clock size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Clock size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Default Session Duration</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Default Session Duration</Text>
             <View style={styles.navRight}>
               <Text style={styles.valueText}>{sessionDuration} min</Text>
-              <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={18} color={chevronColor} />
             </View>
           </TouchableOpacity>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
           <TouchableOpacity style={styles.navRowMulti} onPress={showPolicyPicker} activeOpacity={0.7}>
-            <View style={styles.iconWrap}>
-              <Shield size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Shield size={20} color={colors.primary} />
             </View>
             <View style={styles.navMid}>
-              <Text style={styles.navTitle}>Cancellation Policy</Text>
-              <Text style={styles.policyHint} numberOfLines={1}>
+              <Text style={[styles.navTitle, { color: colors.text }]}>Cancellation Policy</Text>
+              <Text style={[styles.policyHint, { color: colors.textLight }]} numberOfLines={1}>
                 {cancellationPolicy === 'flexible' ? 'Free cancel anytime' :
                  cancellationPolicy === 'moderate' ? '12h notice required' :
                  '24h notice required'}
@@ -249,43 +260,43 @@ export const CoachSettingsScreen: React.FC = () => {
             </View>
             <View style={styles.navRight}>
               <Text style={styles.valueText}>{cancellationPolicy}</Text>
-              <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+              <ChevronRight size={18} color={chevronColor} />
             </View>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionLabel}>Profile</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Profile</Text>
+        <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
           <View style={styles.toggleRow}>
-            <View style={styles.iconWrap}>
-              <Eye size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Eye size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Profile Visibility</Text>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Profile Visibility</Text>
             <Switch
               value={profileVisible}
               onValueChange={handleToggleVisibility}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(180,240,78,0.35)' }}
-              thumbColor={profileVisible ? PRIMARY_GREEN : 'rgba(255,255,255,0.45)'}
+              trackColor={{ false: switchTrackFalse, true: 'rgba(180,240,78,0.35)' }}
+              thumbColor={profileVisible ? PRIMARY_GREEN : switchThumbOff}
             />
           </View>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: dividerColor }]} />
           <TouchableOpacity style={styles.navRow} onPress={openAvailability} activeOpacity={0.7}>
-            <View style={styles.iconWrap}>
-              <Clock size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Clock size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Edit Availability</Text>
-            <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Edit Availability</Text>
+            <ChevronRight size={18} color={chevronColor} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionLabel}>Account</Text>
-        <View style={styles.card}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Account</Text>
+        <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
           <TouchableOpacity style={styles.navRow} onPress={handleChangePassword} activeOpacity={0.7}>
-            <View style={styles.iconWrap}>
-              <Shield size={20} color={PRIMARY_GREEN} />
+            <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
+              <Shield size={20} color={colors.primary} />
             </View>
-            <Text style={styles.rowLabel}>Change Password</Text>
-            <ChevronRight size={18} color="rgba(255,255,255,0.3)" />
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Change Password</Text>
+            <ChevronRight size={18} color={chevronColor} />
           </TouchableOpacity>
         </View>
       </ScrollView>

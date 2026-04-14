@@ -13,6 +13,9 @@ import { useCoachStore } from '@/store/coachStore';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const PRIMARY_GREEN = '#B4F04E';
 
@@ -21,6 +24,8 @@ export const ClientNotesScreen: React.FC = () => {
   const route = useRoute<any>();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
   const { profile } = useCoachStore();
   const {
     clientNotes,
@@ -108,10 +113,10 @@ export const ClientNotesScreen: React.FC = () => {
   };
 
   const renderNote = ({ item }: { item: { id: string; note: string; updated_at: string } }) => (
-    <View style={styles.noteCard}>
-      <Text style={styles.noteText}>{item.note}</Text>
+    <View style={[styles.noteCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+      <Text style={[styles.noteText, { color: colors.text }]}>{item.note}</Text>
       <View style={styles.noteFooter}>
-        <Text style={styles.noteDate}>{formatDate(item.updated_at)}</Text>
+        <Text style={[styles.noteDate, { color: colors.textLight }]}>{formatDate(item.updated_at)}</Text>
         <View style={styles.noteActions}>
           <TouchableOpacity onPress={() => openEditModal(item.id, item.note)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <StickyNote size={16} color={PRIMARY_GREEN} />
@@ -127,20 +132,20 @@ export const ClientNotesScreen: React.FC = () => {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <StickyNote size={48} color="rgba(180,240,78,0.3)" />
-      <Text style={styles.emptyTitle}>{t('clientManagement.noNotes')}</Text>
-      <Text style={styles.emptySubtitle}>{t('clientManagement.noNotesDesc')}</Text>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('clientManagement.noNotes')}</Text>
+      <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>{t('clientManagement.noNotesDesc')}</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.container, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <ArrowLeft size={24} color="#FFFFFF" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('clientManagement.privateNotes')}</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('clientManagement.privateNotes')}</Text>
         <TouchableOpacity onPress={openAddModal} style={styles.addButton}>
           <Plus size={22} color="#000000" />
         </TouchableOpacity>
@@ -158,20 +163,20 @@ export const ClientNotesScreen: React.FC = () => {
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 20 }]}>
-            <LinearGradient colors={['#0a0a0a', '#0d1a0d', '#0a0a0a']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+          <View style={[styles.modalContent, { paddingBottom: insets.bottom + 20, backgroundColor: isDark ? '#0a0a0a' : colors.background }]}>
+            <LinearGradient colors={isDark ? ['#0a0a0a', '#0d1a0d', '#0a0a0a'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{editingNoteId ? t('clientManagement.editNote') : t('clientManagement.addNote')}</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{editingNoteId ? t('clientManagement.editNote') : t('clientManagement.addNote')}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <X size={22} color="#FFFFFF" />
+                <X size={22} color={colors.text} />
               </TouchableOpacity>
             </View>
             <TextInput
-              style={styles.noteInput}
+              style={[styles.noteInput, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', color: colors.text }]}
               value={noteText}
               onChangeText={setNoteText}
               placeholder={t('clientManagement.notesPlaceholder')}
-              placeholderTextColor="rgba(255,255,255,0.2)"
+              placeholderTextColor={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'}
               multiline
               numberOfLines={6}
               textAlignVertical="top"

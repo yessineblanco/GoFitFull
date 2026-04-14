@@ -24,6 +24,9 @@ import { useTranslation } from 'react-i18next';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { type Transaction } from '@/services/wallet';
 import { useWalletStore } from '@/stores/walletStore';
+import { useThemeStore } from '@/store/themeStore';
+import { useThemeColors } from '@/theme/useThemeColors';
+import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const BG = '#030303';
 const BRAND = '#B4F04E';
@@ -45,6 +48,8 @@ export const CoachWalletScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
+  const { isDark } = useThemeStore();
+  const colors = useThemeColors();
 
   const wallet = useWalletStore((s) => s.wallet);
   const transactions = useWalletStore((s) => s.transactions);
@@ -92,6 +97,9 @@ export const CoachWalletScreen: React.FC = () => {
     void refresh();
   }, [refresh]);
 
+  const txBorderColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const calendarIconColor = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.3)';
+
   const renderItem = useCallback(
     ({ item }: { item: Transaction }) => {
       const positive = item.amount >= 0;
@@ -99,17 +107,17 @@ export const CoachWalletScreen: React.FC = () => {
       const amountColor = positive ? POSITIVE : NEGATIVE;
       const amountPrefix = positive ? '+' : '';
       return (
-        <View style={styles.txRow}>
+        <View style={[styles.txRow, { borderBottomColor: txBorderColor }]}>
           <View style={[styles.txIconWrap, { backgroundColor: positive ? 'rgba(180,240,78,0.12)' : 'rgba(255,82,82,0.12)' }]}>
             <Icon size={20} color={positive ? POSITIVE : NEGATIVE} />
           </View>
           <View style={styles.txMid}>
-            <Text style={styles.txTitle} numberOfLines={2}>
+            <Text style={[styles.txTitle, { color: colors.text }]} numberOfLines={2}>
               {item.description ?? '—'}
             </Text>
             <View style={styles.txMeta}>
-              <Calendar size={12} color="rgba(255,255,255,0.35)" />
-              <Text style={styles.txDate}>{formatDate(item.created_at)}</Text>
+              <Calendar size={12} color={calendarIconColor} />
+              <Text style={[styles.txDate, { color: colors.textLight }]}>{formatDate(item.created_at)}</Text>
             </View>
           </View>
           <Text style={[styles.txAmount, { color: amountColor }]}>
@@ -119,7 +127,7 @@ export const CoachWalletScreen: React.FC = () => {
         </View>
       );
     },
-    [currency],
+    [currency, colors.text, colors.textLight, txBorderColor, calendarIconColor],
   );
 
   const listHeader = (
@@ -127,39 +135,51 @@ export const CoachWalletScreen: React.FC = () => {
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backBtn}
+          style={[styles.backBtn, {
+            backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+            borderColor: getGlassBorder(isDark),
+          }]}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <ChevronLeft size={26} color="#FFFFFF" />
+          <ChevronLeft size={26} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>{t('wallet.title', { defaultValue: 'Wallet' })}</Text>
+        <Text style={[styles.screenTitle, { color: colors.text }]}>{t('wallet.title', { defaultValue: 'Wallet' })}</Text>
         <View style={styles.topBarSpacer} />
       </View>
 
       <LinearGradient
-        colors={['rgba(180,240,78,0.28)', 'rgba(180,240,78,0.08)', 'rgba(3,10,6,0.95)']}
+        colors={isDark
+          ? ['rgba(180,240,78,0.28)', 'rgba(180,240,78,0.08)', 'rgba(3,10,6,0.95)']
+          : ['rgba(132,196,65,0.22)', 'rgba(132,196,65,0.06)', 'rgba(250,251,252,0.95)']
+        }
         locations={[0, 0.45, 1]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
-        style={styles.balanceCard}
+        style={[styles.balanceCard, { borderColor: isDark ? 'rgba(180,240,78,0.25)' : 'rgba(132,196,65,0.3)' }]}
       >
         <LinearGradient
-          colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
+          colors={isDark
+            ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']
+            : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.2)']
+          }
           style={styles.balanceCardShine}
           pointerEvents="none"
         />
         <View style={styles.balanceInner}>
           <View style={styles.balanceTopRow}>
-            <View style={styles.balancePill}>
+            <View style={[styles.balancePill, {
+              backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.6)',
+              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+            }]}>
               <Wallet size={16} color={BRAND} />
-              <Text style={styles.balancePillText}>{currency}</Text>
+              <Text style={[styles.balancePillText, { color: isDark ? 'rgba(255,255,255,0.85)' : colors.text }]}>{currency}</Text>
             </View>
-            <TrendingUp size={22} color="rgba(255,255,255,0.35)" />
+            <TrendingUp size={22} color={isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.25)'} />
           </View>
-          <Text style={styles.balanceAmount}>{formatMoney(currency, balance)}</Text>
-          <Text style={styles.balanceSubtitle}>Available Balance</Text>
+          <Text style={[styles.balanceAmount, { color: colors.text }]}>{formatMoney(currency, balance)}</Text>
+          <Text style={[styles.balanceSubtitle, { color: colors.textSecondary }]}>Available Balance</Text>
         </View>
       </LinearGradient>
 
@@ -169,11 +189,11 @@ export const CoachWalletScreen: React.FC = () => {
           { label: 'This Month', value: month },
           { label: 'All Time', value: allTime },
         ].map((cell) => (
-          <View key={cell.label} style={styles.summaryCard}>
-            <Text style={styles.summaryLabel} numberOfLines={1}>
+          <View key={cell.label} style={[styles.summaryCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+            <Text style={[styles.summaryLabel, { color: colors.textLight }]} numberOfLines={1}>
               {cell.label}
             </Text>
-            <Text style={styles.summaryValue} numberOfLines={1}>
+            <Text style={[styles.summaryValue, { color: colors.text }]} numberOfLines={1}>
               {formatMoney(currency, cell.value)}
             </Text>
           </View>
@@ -182,14 +202,18 @@ export const CoachWalletScreen: React.FC = () => {
 
       <View style={styles.sectionHead}>
         <DollarSign size={18} color={BRAND} />
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Transactions</Text>
       </View>
     </>
   );
 
   return (
-    <View style={styles.root}>
-      <LinearGradient colors={['#030303', '#0a1a0a', '#030303']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+    <View style={[styles.root, { backgroundColor: getBackgroundColor(isDark) }]}>
+      <LinearGradient
+        colors={isDark ? ['#030303', '#0a1a0a', '#030303'] : [colors.background, '#EAF0EA', colors.background]}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFill}
+      />
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
@@ -209,7 +233,7 @@ export const CoachWalletScreen: React.FC = () => {
             {initializing || isLoading ? (
               <ActivityIndicator color={BRAND} />
             ) : (
-              <Text style={styles.emptyText}>No transactions yet</Text>
+              <Text style={[styles.emptyText, { color: colors.textLight }]}>No transactions yet</Text>
             )}
           </View>
         }

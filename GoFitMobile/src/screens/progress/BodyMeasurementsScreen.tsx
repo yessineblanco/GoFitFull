@@ -36,11 +36,12 @@ const GLASS: View['props']['style'] = {
 };
 
 const FIELDS: { key: keyof MeasurementInput; label: string; grid: string }[] = [
+  { key: 'height_cm', label: 'Height', grid: 'Height' },
   { key: 'shoulder_width', label: 'Shoulders', grid: 'Shoulders' },
   { key: 'chest', label: 'Chest', grid: 'Chest' },
   { key: 'waist', label: 'Waist', grid: 'Waist' },
   { key: 'hips', label: 'Hips', grid: 'Hips' },
-  { key: 'left_arm', label: 'Left arm', grid: 'L. Arm' },
+    { key: 'left_arm', label: 'Left arm', grid: 'L. Arm' },
   { key: 'right_arm', label: 'Right arm', grid: 'R. Arm' },
   { key: 'left_thigh', label: 'Left thigh', grid: 'L. Thigh' },
   { key: 'right_thigh', label: 'Right thigh', grid: 'R. Thigh' },
@@ -95,7 +96,7 @@ export default function BodyMeasurementsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const next: Record<string, string> = {};
     FIELDS.forEach(({ key }) => {
-      next[key] = '';
+      next[key] = key === 'height_cm' && heightCm != null ? String(heightCm) : '';
     });
     setDraft(next);
     setManualOpen(true);
@@ -133,6 +134,9 @@ export default function BodyMeasurementsScreen() {
     if (Object.keys(input).length === 0) {
       Alert.alert('Measurements', 'Enter at least one value in centimeters.');
       return;
+    }
+    if (input.height_cm == null && heightCm != null) {
+      input.height_cm = heightCm;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const record = await saveManual(input);
@@ -231,6 +235,7 @@ export default function BodyMeasurementsScreen() {
             </View>
             {gridRow(latest, FIELDS.slice(0, 4))}
             {gridRow(latest, FIELDS.slice(4, 8))}
+            {gridRow(latest, FIELDS.slice(8, 9))}
             <View style={[S.rowGap, { marginTop: 14 }]}>
               <Calendar size={14} color="rgba(255,255,255,0.4)" />
               <Text style={S.dateSub}>{fmtDate(latest)}</Text>
@@ -282,6 +287,7 @@ export default function BodyMeasurementsScreen() {
                   <SourceBadge source={item.source} sm />
                 </View>
                 <Text style={S.hVals}>
+                  {item.height_cm != null ? `Hgt ${fmtCm(item.height_cm)} · ` : ''}
                   Chest {fmtCm(item.chest)} · Waist {fmtCm(item.waist)}
                 </Text>
               </View>

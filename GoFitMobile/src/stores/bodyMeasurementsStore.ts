@@ -86,10 +86,11 @@ export const useBodyMeasurementsStore = create<BodyMeasurementsState>((set, get)
   deleteMeasurement: async (id: string) => {
     try {
       await bodyMeasurementsService.deleteMeasurement(id);
-      set((state) => ({
-        history: state.history.filter((m) => m.id !== id),
-        latest: state.latest?.id === id ? state.history[1] || null : state.latest,
-      }));
+      const [history, latest] = await Promise.all([
+        bodyMeasurementsService.getHistory(),
+        bodyMeasurementsService.getLatest(),
+      ]);
+      set({ history, latest });
     } catch (error) {
       logger.error('Failed to delete measurement', error);
     }

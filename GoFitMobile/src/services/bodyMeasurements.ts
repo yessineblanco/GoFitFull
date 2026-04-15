@@ -46,7 +46,6 @@ class BodyMeasurementsService {
       body: {
         image_base64: imageBase64,
         user_height_cm: userHeightCm,
-        user_id: user.id,
       },
     });
 
@@ -96,7 +95,7 @@ class BodyMeasurementsService {
       .from('body_measurements')
       .select('*')
       .eq('user_id', user.id)
-      .order('measurement_date', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -115,7 +114,7 @@ class BodyMeasurementsService {
       .from('body_measurements')
       .select('*')
       .eq('user_id', user.id)
-      .order('measurement_date', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -128,10 +127,14 @@ class BodyMeasurementsService {
   }
 
   async deleteMeasurement(id: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
     const { error } = await supabase
       .from('body_measurements')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', user.id);
 
     if (error) throw error;
   }

@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Camera, ChevronLeft, TrendingUp, Edit3, Trash2, Calendar, Ruler } from 'lucide-react-native';
+import { Camera, ChevronLeft, TrendingUp, Edit3, Trash2, Calendar, Ruler, Images } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -25,6 +25,7 @@ import { useProfileStore } from '@/store/profileStore';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import type { BodyMeasurement, MeasurementInput } from '@/services/bodyMeasurements';
 import type { UserProfile } from '@/services/userProfile';
+import { prepareBodyScanImageBase64 } from '@/utils/bodyScanImage';
 
 const BRAND = '#84c441';
 const BG = '#030303';
@@ -67,6 +68,19 @@ const fmtDate = (m: BodyMeasurement) => {
 const heightCmFromProfile = (p: UserProfile | null) =>
   p?.height && p.height > 0 ? p.height : null;
 
+/** Sanity ranges (cm) for manual entry — aligned loosely with edge function / plausible adults */
+const MANUAL_LIMITS: Partial<Record<keyof MeasurementInput, { min: number; max: number }>> = {
+  height_cm: { min: 80, max: 280 },
+  shoulder_width: { min: 20, max: 90 },
+  chest: { min: 50, max: 220 },
+  waist: { min: 45, max: 200 },
+  hips: { min: 50, max: 220 },
+  left_arm: { min: 15, max: 80 },
+  right_arm: { min: 15, max: 80 },
+  left_thigh: { min: 25, max: 120 },
+  right_thigh: { min: 25, max: 120 },
+};
+
 const SourceBadge = ({ source, sm }: { source: 'ai' | 'manual'; sm?: boolean }) => {
   const ai = source === 'ai';
   return (
@@ -102,35 +116,89 @@ export default function BodyMeasurementsScreen() {
     setManualOpen(true);
   };
 
-  const runAiScan = useCallback(async () => {
-    if (heightCm == null) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      return;
-    }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const runAnalyzePipeline = useCallback(
+    async (uri: string, width?: number | null, height?: number | null) => {
+      if (heightCm == null) return;
+      try {
+        const b64 = await prepareBodyScanImageBase64(uri, { width, height });
+        await analyzePhoto(b64, heightCm);
+        if (useBodyMeasurementsStore.getState().error == null) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } else {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+      } catch (e) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert('Photo', e instanceof Error ? e.message : 'Could not prepare image.');
+      }
+    },
+    [heightCm, analyzePhoto],
+  );
+
+  const openCameraForScan = useCallback(async () => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('Camera', 'Camera access is needed for an AI scan.');
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.7, base64: true });
-    if (result.canceled || !result.assets?.[0]?.base64) return;
-    await analyzePhoto(result.assets[0].base64, heightCm);
-    if (useBodyMeasurementsStore.getState().error == null) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    const result = await ImagePicker.launchCameraAsync({ quality: 1, base64: false });
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset?.uri) return;
+    await runAnalyzePipeline(asset.uri, asset.width, asset.height);
+  }, [runAnalyzePipeline]);
+
+  const openLibraryForScan = useCallback(async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Photos', 'Photo library access is needed to choose a full-body picture.');
+      return;
     }
-  }, [heightCm, analyzePhoto]);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 1,
+      base64: false,
+      mediaTypes: ['images'],
+      allowsEditing: false,
+    });
+    const asset = result.assets?.[0];
+    if (result.canceled || !asset?.uri) return;
+    await runAnalyzePipeline(asset.uri, asset.width, asset.height);
+  }, [runAnalyzePipeline]);
+
+  const runAiScan = useCallback(() => {
+    if (heightCm == null) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert('AI scan', 'Use a full-body photo (head to feet), good light, one person.', [
+      { text: 'Take photo', onPress: () => void openCameraForScan() },
+      { text: 'Choose from library', onPress: () => void openLibraryForScan() },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }, [heightCm, openCameraForScan, openLibraryForScan]);
 
   const submitManual = async () => {
     const input: MeasurementInput = {};
-    FIELDS.forEach(({ key }) => {
+    const violations: string[] = [];
+    FIELDS.forEach(({ key, label }) => {
       const raw = draft[key]?.trim();
       if (!raw) return;
       const n = parseFloat(raw.replace(',', '.'));
-      if (!Number.isNaN(n) && n > 0) input[key] = n;
+      if (Number.isNaN(n) || n <= 0) {
+        violations.push(`${label}: invalid number`);
+        return;
+      }
+      const lim = MANUAL_LIMITS[key];
+      if (lim && (n < lim.min || n > lim.max)) {
+        violations.push(`${label}: use ${lim.min}–${lim.max} cm`);
+        return;
+      }
+      input[key] = n;
     });
+    if (violations.length > 0) {
+      Alert.alert('Measurements', violations.slice(0, 4).join('\n'));
+      return;
+    }
     if (Object.keys(input).length === 0) {
       Alert.alert('Measurements', 'Enter at least one value in centimeters.');
       return;
@@ -169,13 +237,17 @@ export default function BodyMeasurementsScreen() {
 
   const gridRow = (m: BodyMeasurement, slice: typeof FIELDS) => (
     <View style={S.gridRow}>
-      {slice.map(({ key, grid }) => (
-        <View key={key} style={[S.cell, GLASS]}>
-          <Text style={S.cellVal}>{fmtCm(m[key] as number | null)}</Text>
-          <Text style={S.cellUnit}>cm</Text>
-          <Text style={S.cellLbl}>{grid}</Text>
-        </View>
-      ))}
+      {slice.map(({ key, grid }) => {
+        const cellLabel =
+          key === 'height_cm' && m.source === 'ai' ? 'Profile height' : grid;
+        return (
+          <View key={key} style={[S.cell, GLASS]}>
+            <Text style={S.cellVal}>{fmtCm(m[key] as number | null)}</Text>
+            <Text style={S.cellUnit}>cm</Text>
+            <Text style={S.cellLbl}>{cellLabel}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 
@@ -208,7 +280,8 @@ export default function BodyMeasurementsScreen() {
           <View style={[S.banner, GLASS]}>
             <Text style={S.bannerTitle}>Add your height</Text>
             <Text style={S.bannerText}>
-              AI scans need your height to scale measurements. Set it in your profile to continue.
+              AI estimates use your profile height as a ruler — height is not detected from the photo. Set it in your
+              profile to continue.
             </Text>
             <TouchableOpacity onPress={goSetHeight} activeOpacity={0.85} style={{ borderRadius: 12, overflow: 'hidden' }}>
               <LinearGradient colors={['#6da835', BRAND]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={S.ctaGrad}>
@@ -236,11 +309,25 @@ export default function BodyMeasurementsScreen() {
             {gridRow(latest, FIELDS.slice(0, 4))}
             {gridRow(latest, FIELDS.slice(4, 8))}
             {gridRow(latest, FIELDS.slice(8, 9))}
+            {latest.source === 'ai' ? (
+              <Text style={S.aiDisclaimer}>
+                Profile height scales the estimate. Other numbers are approximate from your photo — not clinical
+                measurements. Use a full-body shot (head to feet); face-only photos are rejected.
+              </Text>
+            ) : null}
             <View style={[S.rowGap, { marginTop: 14 }]}>
               <Calendar size={14} color="rgba(255,255,255,0.4)" />
               <Text style={S.dateSub}>{fmtDate(latest)}</Text>
             </View>
           </View>
+        ) : null}
+
+        {heightCm != null ? (
+          <Text style={S.scanHint}>
+            Stand far enough that your whole body is in frame, good light, one person. You can take a new photo or pick
+            one from your library. The scan estimates circumferences from the image; it does not measure height from the
+            picture.
+          </Text>
         ) : null}
 
         <View style={S.actionsRow}>
@@ -260,9 +347,20 @@ export default function BodyMeasurementsScreen() {
               <Text style={[S.aiLbl, !heightCm && { color: 'rgba(255,255,255,0.35)' }]}>AI Scan</Text>
             </LinearGradient>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[S.flex1, !heightCm && { opacity: 0.85 }]}
+            onPress={openLibraryForScan}
+            activeOpacity={0.88}
+            disabled={!heightCm || isAnalyzing}
+          >
+            <View style={[S.libraryInner, GLASS, !heightCm && { opacity: 0.7 }]}>
+              <Images size={20} color="#fff" />
+              <Text style={S.manLbl}>Library</Text>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity style={[S.flex1, S.manual, GLASS]} onPress={openManual} activeOpacity={0.88}>
             <Edit3 size={20} color="#fff" />
-            <Text style={S.manLbl}>Manual Entry</Text>
+            <Text style={S.manLbl}>Manual</Text>
           </TouchableOpacity>
         </View>
 
@@ -303,7 +401,7 @@ export default function BodyMeasurementsScreen() {
         <View style={S.ov}>
           <View style={[S.ovCard, GLASS]}>
             <ActivityIndicator size="large" color={BRAND} />
-            <Text style={S.ovTxt}>Analyzing your pose...</Text>
+            <Text style={S.ovTxt}>Checking the photo and estimating…</Text>
           </View>
         </View>
       ) : null}
@@ -370,6 +468,20 @@ const S = StyleSheet.create({
   ctaTxt: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: '#0a0a0a' },
   err: { padding: 12, marginBottom: 12 },
   errTxt: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), color: '#ff8a80' },
+  scanHint: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(12),
+    color: 'rgba(255,255,255,0.45)',
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  aiDisclaimer: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(11),
+    color: 'rgba(255,255,255,0.4)',
+    lineHeight: 16,
+    marginTop: 10,
+  },
   latest: { padding: 16, marginBottom: 16 },
   latestHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   rowGap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -394,6 +506,14 @@ const S = StyleSheet.create({
   flex1: { flex: 1, borderRadius: 16, overflow: 'hidden' },
   aiInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 16 },
   aiLbl: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(15), color: '#0a0a0a' },
+  libraryInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 16,
+  },
   manual: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14 },
   manLbl: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(15), color: '#fff' },
   histHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },

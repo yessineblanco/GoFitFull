@@ -4,7 +4,13 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useThemeStore } from '@/store/themeStore';
 import { getBackgroundColor, getTextColor } from '@/utils/colorUtils';
-import type { AppTabParamList, ProfileStackParamList, LibraryStackParamList, HomeStackParamList } from '@/types';
+import type {
+  AppTabParamList,
+  ProfileStackParamList,
+  LibraryStackParamList,
+  HomeStackParamList,
+  ProgressStackParamList,
+} from '@/types';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 import { MarketplaceScreen } from '@/screens/marketplace/MarketplaceScreen';
 import { CoachDetailScreen } from '@/screens/marketplace/CoachDetailScreen';
@@ -34,6 +40,9 @@ import WorkoutStatisticsScreen from '@/screens/progress/WorkoutStatisticsScreen'
 import RecordDetailsScreen from '@/screens/progress/RecordDetailsScreen';
 import ConsistencyScreen from '@/screens/progress/ConsistencyScreen';
 import BodyMeasurementsScreen from '@/screens/progress/BodyMeasurementsScreen';
+import NutritionScreen from '@/screens/nutrition/NutritionScreen';
+import AddFoodScreen from '@/screens/nutrition/AddFoodScreen';
+import NutritionGoalsScreen from '@/screens/nutrition/NutritionGoalsScreen';
 import { WorkoutDetailScreen } from '@/screens/library/WorkoutDetailScreen';
 import { ExerciseSelectionScreen } from '@/screens/library/ExerciseSelectionScreen';
 import { WorkoutBuilderScreen } from '@/screens/library/WorkoutBuilderScreen';
@@ -132,8 +141,7 @@ const LibraryStackNavigator = () => {
   );
 };
 
-// Progress Stack
-const ProgressStack = createStackNavigator();
+const ProgressStack = createStackNavigator<ProgressStackParamList>();
 
 const ProgressStackNavigator = () => {
   return (
@@ -142,9 +150,12 @@ const ProgressStackNavigator = () => {
       <ProgressStack.Screen name="RecordDetails" component={RecordDetailsScreen} />
       <ProgressStack.Screen name="ConsistencyDetails" component={ConsistencyScreen} />
       <ProgressStack.Screen name="BodyMeasurements" component={BodyMeasurementsScreen} />
+      <ProgressStack.Screen name="Nutrition" component={NutritionScreen} />
+      <ProgressStack.Screen name="AddFood" component={AddFoodScreen} />
+      <ProgressStack.Screen name="NutritionGoals" component={NutritionGoalsScreen} />
     </ProgressStack.Navigator>
-  )
-}
+  );
+};
 export const AppNavigator: React.FC = () => {
   const { isDark } = useThemeStore();
 

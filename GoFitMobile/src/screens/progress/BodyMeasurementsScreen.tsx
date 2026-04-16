@@ -23,9 +23,9 @@ import * as Haptics from 'expo-haptics';
 import { useBodyMeasurementsStore } from '@/stores/bodyMeasurementsStore';
 import { useProfileStore } from '@/store/profileStore';
 import { getResponsiveFontSize } from '@/utils/responsive';
-import type { BodyMeasurement, MeasurementInput } from '@/services/bodyMeasurements';
+import type { BodyMeasurement, HeightMode, MeasurementInput } from '@/services/bodyMeasurements';
 import type { UserProfile } from '@/services/userProfile';
-import { prepareBodyScanImageBase64 } from '@/utils/bodyScanImage';
+import { assertUsableScanBase64, BODY_SCAN_PICKER_QUALITY } from '@/utils/bodyScanImage';
 
 const BRAND = '#84c441';
 const BG = '#030303';
@@ -117,11 +117,13 @@ export default function BodyMeasurementsScreen() {
   };
 
   const runAnalyzePipeline = useCallback(
-    async (uri: string, width?: number | null, height?: number | null) => {
-      if (heightCm == null) return;
+    async (base64: string | undefined | null, mode: HeightMode) => {
       try {
-        const b64 = await prepareBodyScanImageBase64(uri, { width, height });
-        await analyzePhoto(b64, heightCm);
+        const b64 = assertUsableScanBase64(base64);
+        await analyzePhoto(b64, {
+          heightMode: mode,
+          userHeightCm: heightCm ?? undefined,
+        });
         if (useBodyMeasurementsStore.getState().error == null) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } else {
@@ -135,34 +137,42 @@ export default function BodyMeasurementsScreen() {
     [heightCm, analyzePhoto],
   );
 
-  const openCameraForScan = useCallback(async () => {
+  const pickerOpts = useMemo(
+    () =>
+      ({
+        quality: BODY_SCAN_PICKER_QUALITY,
+        base64: true,
+        allowsEditing: false,
+      }) as const,
+    [],
+  );
+
+  const openCameraForScan = useCallback(async (mode: HeightMode) => {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('Camera', 'Camera access is needed for an AI scan.');
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ quality: 1, base64: false });
+    const result = await ImagePicker.launchCameraAsync(pickerOpts);
     const asset = result.assets?.[0];
-    if (result.canceled || !asset?.uri) return;
-    await runAnalyzePipeline(asset.uri, asset.width, asset.height);
-  }, [runAnalyzePipeline]);
+    if (result.canceled || !asset?.base64) return;
+    await runAnalyzePipeline(asset.base64, mode);
+  }, [runAnalyzePipeline, pickerOpts]);
 
-  const openLibraryForScan = useCallback(async () => {
+  const openLibraryForScan = useCallback(async (mode: HeightMode) => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('Photos', 'Photo library access is needed to choose a full-body picture.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      quality: 1,
-      base64: false,
+      ...pickerOpts,
       mediaTypes: ['images'],
-      allowsEditing: false,
     });
     const asset = result.assets?.[0];
-    if (result.canceled || !asset?.uri) return;
-    await runAnalyzePipeline(asset.uri, asset.width, asset.height);
-  }, [runAnalyzePipeline]);
+    if (result.canceled || !asset?.base64) return;
+    await runAnalyzePipeline(asset.base64, mode);
+  }, [runAnalyzePipeline, pickerOpts]);
 
   const runAiScan = useCallback(() => {
     if (heightCm == null) {
@@ -171,11 +181,24 @@ export default function BodyMeasurementsScreen() {
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert('AI scan', 'Use a full-body photo (head to feet), good light, one person.', [
-      { text: 'Take photo', onPress: () => void openCameraForScan() },
-      { text: 'Choose from library', onPress: () => void openLibraryForScan() },
+      { text: 'Take photo', onPress: () => void openCameraForScan('profile') },
+      { text: 'Choose from library', onPress: () => void openLibraryForScan('profile') },
       { text: 'Cancel', style: 'cancel' },
     ]);
   }, [heightCm, openCameraForScan, openLibraryForScan]);
+
+  const runA4HeightScan = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      'Estimate height (A4)',
+      'Hold one A4 sheet vertically beside your body. Keep full body visible (head to feet), one person, good light.',
+      [
+        { text: 'Take photo', onPress: () => void openCameraForScan('reference_a4') },
+        { text: 'Choose from library', onPress: () => void openLibraryForScan('reference_a4') },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
+  }, [openCameraForScan, openLibraryForScan]);
 
   const submitManual = async () => {
     const input: MeasurementInput = {};
@@ -239,7 +262,7 @@ export default function BodyMeasurementsScreen() {
     <View style={S.gridRow}>
       {slice.map(({ key, grid }) => {
         const cellLabel =
-          key === 'height_cm' && m.source === 'ai' ? 'Profile height' : grid;
+          key === 'height_cm' && m.source === 'ai' ? 'Scan height' : grid;
         return (
           <View key={key} style={[S.cell, GLASS]}>
             <Text style={S.cellVal}>{fmtCm(m[key] as number | null)}</Text>
@@ -280,8 +303,8 @@ export default function BodyMeasurementsScreen() {
           <View style={[S.banner, GLASS]}>
             <Text style={S.bannerTitle}>Add your height</Text>
             <Text style={S.bannerText}>
-              AI estimates use your profile height as a ruler — height is not detected from the photo. Set it in your
-              profile to continue.
+              Standard AI scan uses your profile height as a ruler. You can still scan now using "Estimate height (A4)"
+              if you hold an A4 sheet vertically in frame.
             </Text>
             <TouchableOpacity onPress={goSetHeight} activeOpacity={0.85} style={{ borderRadius: 12, overflow: 'hidden' }}>
               <LinearGradient colors={['#6da835', BRAND]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={S.ctaGrad}>
@@ -311,8 +334,8 @@ export default function BodyMeasurementsScreen() {
             {gridRow(latest, FIELDS.slice(8, 9))}
             {latest.source === 'ai' ? (
               <Text style={S.aiDisclaimer}>
-                Profile height scales the estimate. Other numbers are approximate from your photo — not clinical
-                measurements. Use a full-body shot (head to feet); face-only photos are rejected.
+                Height for AI rows comes from profile height or A4 reference mode. Other numbers are approximate from your
+                photo - not clinical measurements.
               </Text>
             ) : null}
             <View style={[S.rowGap, { marginTop: 14 }]}>
@@ -322,13 +345,18 @@ export default function BodyMeasurementsScreen() {
           </View>
         ) : null}
 
-        {heightCm != null ? (
+        <View style={{ marginBottom: 12 }}>
           <Text style={S.scanHint}>
-            Stand far enough that your whole body is in frame, good light, one person. You can take a new photo or pick
-            one from your library. The scan estimates circumferences from the image; it does not measure height from the
-            picture.
+            <Text style={S.scanHintLead}>AI Scan / Library: </Text>
+            Full body (head to feet), good light, one person. Circumferences are estimated from the photo; height is your
+            profile value and is not read from the pixels.
           </Text>
-        ) : null}
+          <Text style={[S.scanHint, { marginTop: 8 }]}>
+            <Text style={S.scanHintLead}>Estimate height (A4): </Text>
+            Same framing, plus one A4 sheet held vertical beside you. Height is estimated from the sheet scale (29.7 cm long
+            edge); circumferences then use that height like the standard scan.
+          </Text>
+        </View>
 
         <View style={S.actionsRow}>
           <TouchableOpacity
@@ -349,7 +377,7 @@ export default function BodyMeasurementsScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[S.flex1, !heightCm && { opacity: 0.85 }]}
-            onPress={openLibraryForScan}
+            onPress={() => openLibraryForScan('profile')}
             activeOpacity={0.88}
             disabled={!heightCm || isAnalyzing}
           >
@@ -363,6 +391,15 @@ export default function BodyMeasurementsScreen() {
             <Text style={S.manLbl}>Manual</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={[S.a4Cta, GLASS, isAnalyzing && { opacity: 0.7 }]}
+          onPress={runA4HeightScan}
+          disabled={isAnalyzing}
+          activeOpacity={0.88}
+        >
+          <Text style={S.a4Title}>Estimate height (A4)</Text>
+          <Text style={S.a4Sub}>Use a full-body photo with one A4 sheet visible and vertical.</Text>
+        </TouchableOpacity>
 
         <View style={S.histHead}>
           <View style={S.rowGap}>
@@ -473,8 +510,8 @@ const S = StyleSheet.create({
     fontSize: getResponsiveFontSize(12),
     color: 'rgba(255,255,255,0.45)',
     lineHeight: 18,
-    marginBottom: 12,
   },
+  scanHintLead: { fontFamily: 'Barlow_600SemiBold', color: 'rgba(255,255,255,0.62)' },
   aiDisclaimer: {
     fontFamily: 'Barlow_400Regular',
     fontSize: getResponsiveFontSize(11),
@@ -516,6 +553,15 @@ const S = StyleSheet.create({
   },
   manual: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14 },
   manLbl: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(15), color: '#fff' },
+  a4Cta: { padding: 12, marginTop: -10, marginBottom: 18 },
+  a4Title: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: '#fff' },
+  a4Sub: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(12),
+    color: 'rgba(255,255,255,0.55)',
+    marginTop: 4,
+    lineHeight: 17,
+  },
   histHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   histTitle: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(17), color: '#fff' },
   empty: { padding: 22, alignItems: 'center' },

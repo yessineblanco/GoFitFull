@@ -219,3 +219,13 @@ export type LibraryStackParamList = {
   };
 };
 
+export type ProgressStackParamList = {
+  ProgressMain: undefined;
+  RecordDetails: undefined;
+  ConsistencyDetails: undefined;
+  BodyMeasurements: undefined;
+  Nutrition: undefined;
+  AddFood: { mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; date?: string };
+  NutritionGoals: undefined;
+};
+

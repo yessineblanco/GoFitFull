@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   bodyMeasurementsService,
+  type AnalyzePhotoOptions,
   type BodyMeasurement,
   type MeasurementInput,
 } from '@/services/bodyMeasurements';
@@ -15,7 +16,7 @@ interface BodyMeasurementsState {
 
   loadHistory: () => Promise<void>;
   loadLatest: () => Promise<void>;
-  analyzePhoto: (imageBase64: string, userHeightCm: number) => Promise<BodyMeasurement | null>;
+  analyzePhoto: (imageBase64: string, options?: AnalyzePhotoOptions) => Promise<BodyMeasurement | null>;
   saveManual: (input: MeasurementInput) => Promise<BodyMeasurement | null>;
   deleteMeasurement: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -48,10 +49,10 @@ export const useBodyMeasurementsStore = create<BodyMeasurementsState>((set, get)
     }
   },
 
-  analyzePhoto: async (imageBase64: string, userHeightCm: number) => {
+  analyzePhoto: async (imageBase64: string, options: AnalyzePhotoOptions = {}) => {
     set({ isAnalyzing: true, error: null });
     try {
-      const result = await bodyMeasurementsService.analyzePhoto(imageBase64, userHeightCm);
+      const result = await bodyMeasurementsService.analyzePhoto(imageBase64, options);
       set((state) => ({
         isAnalyzing: false,
         latest: result.record,

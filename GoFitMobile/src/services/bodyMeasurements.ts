@@ -34,19 +34,32 @@ export type MeasurementInput = {
   height_cm?: number;
 };
 
+export type HeightMode = 'profile' | 'reference_a4';
+
+export type AnalyzePhotoOptions = {
+  heightMode?: HeightMode;
+  userHeightCm?: number;
+};
+
 class BodyMeasurementsService {
-  async analyzePhoto(imageBase64: string, userHeightCm: number): Promise<{
+  async analyzePhoto(imageBase64: string, options: AnalyzePhotoOptions = {}): Promise<{
     measurements: MeasurementInput;
     record: BodyMeasurement;
   }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
+    const heightMode: HeightMode = options.heightMode === 'reference_a4' ? 'reference_a4' : 'profile';
+    const payload: Record<string, unknown> = {
+      image_base64: imageBase64,
+      height_mode: heightMode,
+    };
+    if (options.userHeightCm != null) {
+      payload.user_height_cm = options.userHeightCm;
+    }
+
     const { data, error } = await supabase.functions.invoke('body-measurements', {
-      body: {
-        image_base64: imageBase64,
-        user_height_cm: userHeightCm,
-      },
+      body: payload,
     });
 
     if (error) {

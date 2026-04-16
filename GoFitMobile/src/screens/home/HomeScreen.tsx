@@ -10,6 +10,7 @@ import { TopWorkouts } from '@/components/home/TopWorkouts';
 import { TopTrainers } from '@/components/home/TopTrainers';
 import { YourPrograms } from '@/components/home/YourPrograms';
 import { ArticlesFeed } from '@/components/home/ArticlesFeed';
+import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
 import { getResponsiveSpacing } from '@/utils/responsive';
 import { theme } from '@/theme';
 import { getBackgroundColor, getSurfaceColor, getGlassBg, getGlassBorder, getShadow } from '@/utils/colorUtils';
@@ -78,6 +79,8 @@ export const HomeScreen: React.FC = () => {
         <TopTrainers key={`trainers-${refreshKey}`} />
 
         <YourPrograms key={`programs-${refreshKey}`} />
+
+        <NutritionHomeCard />
 
         <ArticlesFeed key={`articles-${refreshKey}`} />
       </Animated.ScrollView>

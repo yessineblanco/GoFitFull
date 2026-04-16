@@ -29,7 +29,8 @@ import {
   AlignJustify,
   ChevronUp,
   ChevronRight,
-  Trophy
+  Trophy,
+  Apple
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '@/store/authStore';
@@ -848,7 +849,7 @@ const MilestoneCard = ({
 // --- Main Screen Component ---
 
 export default function WorkoutStatisticsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
   const { user } = useAuthStore();
   const { isDark } = useThemeStore();
@@ -1134,6 +1135,64 @@ export default function WorkoutStatisticsScreen() {
                   backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                   alignItems: 'center', justifyContent: 'center',
                 }}>
+                  <ChevronRight size={16} color={TC.textMuted} />
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* 2.55. Nutrition quick link */}
+        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate('Nutrition');
+            }}
+          >
+            <LinearGradient
+              colors={isDark ? ['rgba(61,140,82,0.14)', 'rgba(132,196,65,0.04)'] : ['rgba(61,140,82,0.1)', 'rgba(132,196,65,0.02)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                borderRadius: 20,
+                padding: 18,
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(61,140,82,0.22)' : 'rgba(61,140,82,0.18)',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                  <View
+                    style={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: 15,
+                      backgroundColor: isDark ? 'rgba(61,140,82,0.18)' : 'rgba(61,140,82,0.12)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Apple size={22} color={THEME.primary} />
+                  </View>
+                  <View>
+                    <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 16, color: TC.text }}>Nutrition</Text>
+                    <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: TC.textMuted, marginTop: 3 }}>
+                      Log meals & daily macros
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <ChevronRight size={16} color={TC.textMuted} />
                 </View>
               </View>

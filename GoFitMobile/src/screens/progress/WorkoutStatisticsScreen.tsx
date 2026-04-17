@@ -24,7 +24,6 @@ import {
   Accessibility,
   Scale,
   CircleMinus,
-  Scan,
   Shield,
   AlignJustify,
   ChevronUp,
@@ -1099,50 +1098,7 @@ export default function WorkoutStatisticsScreen() {
           <ConsistencyCalendar volumeData={volumeHistory} streak={stats.consistency?.currentStreak || 0} />
         </View>
 
-        {/* 2.5. Body Measurements Quick Link */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate('BodyMeasurements');
-            }}
-          >
-            <LinearGradient
-              colors={isDark ? ['rgba(132,196,65,0.12)', 'rgba(132,196,65,0.03)'] : ['rgba(132,196,65,0.1)', 'rgba(132,196,65,0.02)']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={{
-                borderRadius: 20, padding: 18,
-                borderWidth: 1, borderColor: isDark ? 'rgba(132,196,65,0.2)' : 'rgba(132,196,65,0.18)',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                  <View style={{
-                    width: 46, height: 46, borderRadius: 15,
-                    backgroundColor: isDark ? 'rgba(132,196,65,0.15)' : 'rgba(132,196,65,0.12)',
-                    alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Scan size={22} color={THEME.primary} />
-                  </View>
-                  <View>
-                    <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 16, color: TC.text }}>Body Measurements</Text>
-                    <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: TC.textMuted, marginTop: 3 }}>AI-powered body tracking</Text>
-                  </View>
-                </View>
-                <View style={{
-                  width: 32, height: 32, borderRadius: 10,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                  alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <ChevronRight size={16} color={TC.textMuted} />
-                </View>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {/* 2.55. Nutrition quick link */}
+        {/* 2.5. Nutrition quick link */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
           <TouchableOpacity
             activeOpacity={0.85}

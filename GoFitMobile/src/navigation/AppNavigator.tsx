@@ -39,7 +39,6 @@ import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import WorkoutStatisticsScreen from '@/screens/progress/WorkoutStatisticsScreen';
 import RecordDetailsScreen from '@/screens/progress/RecordDetailsScreen';
 import ConsistencyScreen from '@/screens/progress/ConsistencyScreen';
-import BodyMeasurementsScreen from '@/screens/progress/BodyMeasurementsScreen';
 import NutritionScreen from '@/screens/nutrition/NutritionScreen';
 import AddFoodScreen from '@/screens/nutrition/AddFoodScreen';
 import NutritionGoalsScreen from '@/screens/nutrition/NutritionGoalsScreen';
@@ -85,6 +84,11 @@ const ProfileStackNavigator = () => {
       <ProfileStack.Screen name="ProfileMain" component={ProfileScreen} />
       <ProfileStack.Screen name="AccountInformation" component={AccountInformationScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="Goals" component={GoalsScreen} options={{ headerShown: false }} />
+      <ProfileStack.Screen
+        name="BodyMeasurement"
+        getComponent={() => require('@/screens/profile/BodyMeasurementScreen').default}
+        options={{ headerShown: false }}
+      />
       <ProfileStack.Screen name="EditWeightHeight" component={EditWeightHeightScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="UnitPreferences" component={UnitPreferencesScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="NotificationsSettings" component={NotificationsSettingsScreen} options={{ headerShown: false }} />
@@ -149,7 +153,6 @@ const ProgressStackNavigator = () => {
       <ProgressStack.Screen name="ProgressMain" component={WorkoutStatisticsScreen} />
       <ProgressStack.Screen name="RecordDetails" component={RecordDetailsScreen} />
       <ProgressStack.Screen name="ConsistencyDetails" component={ConsistencyScreen} />
-      <ProgressStack.Screen name="BodyMeasurements" component={BodyMeasurementsScreen} />
       <ProgressStack.Screen name="Nutrition" component={NutritionScreen} />
       <ProgressStack.Screen name="AddFood" component={AddFoodScreen} />
       <ProgressStack.Screen name="NutritionGoals" component={NutritionGoalsScreen} />

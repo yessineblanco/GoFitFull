@@ -47,6 +47,24 @@
       "bundler": "metro"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "kotlinVersion": "2.1.20"
+          }
+        }
+      ],
+      "react-native-fast-tflite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "GoFit uses the camera to estimate body measurements on your device. Photos are not uploaded."
+        }
+      ],
       "expo-font",
       [
         "expo-video",

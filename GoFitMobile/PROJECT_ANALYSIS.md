@@ -278,7 +278,6 @@ GoFit/
 - [ ] Progress Charts (Victory Native installed but not implemented)
 - [ ] Analytics Dashboard
 - [ ] Weight Tracking
-- [ ] Body Measurements
 - [ ] Progress Photos
 
 #### Notifications

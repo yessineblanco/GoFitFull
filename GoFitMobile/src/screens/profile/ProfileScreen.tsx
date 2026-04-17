@@ -28,7 +28,7 @@ import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } 
 import { StackNavigationProp } from '@react-navigation/stack';
 import type { ProfileStackParamList } from '@/types';
 import { Image as ExpoImage } from 'expo-image';
-import { Settings, User, LogOut, Bell, Type, ChevronRight, FileText, Shield, Pencil, Target, Ruler, Globe, Package, BookOpen, Calendar, MessageCircle } from 'lucide-react-native';
+import { Settings, User, LogOut, Bell, Type, ChevronRight, FileText, Shield, Pencil, Target, Ruler, Globe, Package, BookOpen, Calendar, MessageCircle, Scan } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { Alert } from 'react-native';
@@ -544,6 +544,26 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   <Text style={dynamicStyles.settingsItemText}>{t('profile.fitnessGoal')}</Text>
                   <Text style={[dynamicStyles.goalText, { marginTop: 4 }]} numberOfLines={1}>
                     {getGoalLabel(currentGoal)}
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('BodyMeasurement')}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <Scan size={20} color={theme.colors.primary} />
+                </View>
+                <View>
+                  <Text style={dynamicStyles.settingsItemText}>Body measurements</Text>
+                  <Text style={[dynamicStyles.goalText, { marginTop: 4, fontSize: 12 }]} numberOfLines={2}>
+                    On-device estimate — photos stay private
                   </Text>
                 </View>
               </View>

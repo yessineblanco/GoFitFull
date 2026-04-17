@@ -91,6 +91,7 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   AccountInformation: undefined;
   Goals: undefined;
+  BodyMeasurement: undefined;
   EditWeightHeight: { initialTab?: 'weight' | 'height' };
   EditProfile: undefined;
   UnitPreferences: undefined;
@@ -223,7 +224,6 @@ export type ProgressStackParamList = {
   ProgressMain: undefined;
   RecordDetails: undefined;
   ConsistencyDetails: undefined;
-  BodyMeasurements: undefined;
   Nutrition: undefined;
   AddFood: { mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; date?: string };
   NutritionGoals: undefined;

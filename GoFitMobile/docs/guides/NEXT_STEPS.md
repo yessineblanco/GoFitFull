@@ -71,7 +71,6 @@ Looking at your screens, they're currently placeholders. You could build:
 
 **4. Progress Screen** (Core Feature)
 - Weight tracking charts (victory-native)
-- Body measurements tracking
 - Progress photos
 - Statistics and analytics
 - Goal tracking

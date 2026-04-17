@@ -48,3 +48,5 @@ project_tree.txt
 *_temp.txt
 *.tmp
 *.temp
+.tmp-tflite-aar/
+.tmp-check-*/

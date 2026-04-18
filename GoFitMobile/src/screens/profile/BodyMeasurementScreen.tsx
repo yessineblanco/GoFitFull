@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   Image,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -29,6 +30,19 @@ const BRAND = '#84c441';
 const MIN_SAVE_CONFIDENCE = 0.25;
 
 type Phase = 'intro' | 'front' | 'side' | 'analyze' | 'result';
+
+type EditableMeasurements = {
+  chest: string;
+  waist: string;
+  hip: string;
+  shoulder: string;
+};
+
+type ResultTrustState = {
+  label: string;
+  message: string;
+  tone: 'success' | 'warning' | 'danger';
+};
 
 type BodyMeasurementHistoryEntry = {
   id: string;
@@ -58,6 +72,12 @@ export default function BodyMeasurementScreen() {
   const [cameraSession, setCameraSession] = useState(0);
   const [showCameraRetry, setShowCameraRetry] = useState(false);
   const [result, setResult] = useState<MeasurementResult | null>(null);
+  const [editedMeasurements, setEditedMeasurements] = useState<EditableMeasurements>({
+    chest: '',
+    waist: '',
+    hip: '',
+    shoulder: '',
+  });
   const [saving, setSaving] = useState(false);
   const [showHowTo, setShowHowTo] = useState(false);
   const [showPoseDebug, setShowPoseDebug] = useState(false);
@@ -155,6 +175,7 @@ export default function BodyMeasurementScreen() {
             heightCm,
           });
           setResult(res);
+          setEditedMeasurements(measurementResultToEditable(res));
           setPhase('result');
           Haptics.notificationAsync(
             res.error ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success,
@@ -187,6 +208,16 @@ export default function BodyMeasurementScreen() {
       Alert.alert('Low confidence', 'These values are only a rough draft. Please retake the photos before saving.');
       return;
     }
+    const corrected = parseEditableMeasurements(editedMeasurements);
+    if (!corrected) {
+      Alert.alert('Check measurements', 'Please enter valid centimeter values before saving.');
+      return;
+    }
+    if (!measurementsInExpectedRange(corrected)) {
+      Alert.alert('Check measurements', 'One or more values looks outside a realistic range. Please correct it before saving.');
+      return;
+    }
+    const correctedFields = correctedMeasurementFields(result, corrected);
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -199,12 +230,23 @@ export default function BodyMeasurementScreen() {
       const { error } = await supabase.from('body_measurements').insert({
         user_id: user.id,
         height_cm: heightCm,
-        chest_cm: result.chest_cm,
-        waist_cm: result.waist_cm,
-        hip_cm: result.hip_cm,
-        shoulder_cm: result.shoulder_cm,
+        chest_cm: corrected.chest,
+        waist_cm: corrected.waist,
+        hip_cm: corrected.hip,
+        shoulder_cm: corrected.shoulder,
         measurement_confidence: result.confidence,
         source: 'ai_ondevice',
+        manual_overrides: {
+          ai_ondevice: {
+            chest_cm: result.chest_cm,
+            waist_cm: result.waist_cm,
+            hip_cm: result.hip_cm,
+            shoulder_cm: result.shoulder_cm,
+            confidence: result.confidence,
+          },
+          corrected_fields: correctedFields,
+          corrected_at: correctedFields.length ? new Date().toISOString() : null,
+        },
       });
       if (error) throw error;
       await loadMeasurementHistory();
@@ -212,6 +254,7 @@ export default function BodyMeasurementScreen() {
       setFrontUri(null);
       setSideUri(null);
       setResult(null);
+      setEditedMeasurements(emptyEditableMeasurements());
       setShowPoseDebug(false);
       setPhase('intro');
     } catch (e: any) {
@@ -239,6 +282,7 @@ export default function BodyMeasurementScreen() {
     setFrontUri(null);
     setSideUri(null);
     setResult(null);
+    setEditedMeasurements(emptyEditableMeasurements());
     setShowPoseDebug(false);
     setPhase('intro');
     setCameraReady(false);
@@ -395,29 +439,39 @@ export default function BodyMeasurementScreen() {
         </View>
       ) : result ? (
         <ScrollView contentContainerStyle={styles.pad}>
+          <ResultTrustBanner state={getResultTrustState(result)} confidence={result.confidence} textColor={text} subColor={sub} />
           {result.error ? (
             <View style={[styles.warn, { borderColor: 'rgba(255,180,100,0.5)' }]}>
               <Text style={[styles.warnTxt, { color: '#ffb74d' }]}>{result.error}</Text>
+              {result.qualityIssues?.length ? (
+                <View style={styles.qualityList}>
+                  {result.qualityIssues.map((issue) => (
+                    <Text key={issue} style={[styles.qualityItem, { color: text }]}>
+                      {issue}
+                    </Text>
+                  ))}
+                </View>
+              ) : null}
+              <TouchableOpacity onPress={resetFlow} style={{ borderRadius: 14, overflow: 'hidden', marginTop: 16 }}>
+                <LinearGradient colors={['#6da835', BRAND]} style={styles.cta}>
+                  <Text style={styles.ctaTxt}>Retake photos</Text>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
           ) : null}
           {!result.error ? (
             <>
-          {result.confidence < MIN_SAVE_CONFIDENCE ? (
-            <View style={[styles.warn, { borderColor: 'rgba(255,180,100,0.5)' }]}>
-              <Text style={[styles.warnTxt, { color: '#ffb74d' }]}>
-                Low confidence scan. These values are draft estimates only, so retake before saving to progress.
-              </Text>
-            </View>
-          ) : null}
-          <Text style={[styles.metric, { color: text }]}>Chest: {result.chest_cm} cm</Text>
-          <Text style={[styles.metric, { color: text }]}>Waist: {result.waist_cm} cm</Text>
-          <Text style={[styles.metric, { color: text }]}>Hip: {result.hip_cm} cm</Text>
-          <Text style={[styles.metric, { color: text }]}>Shoulder: {result.shoulder_cm} cm</Text>
-          <Text style={[styles.p, { color: sub, marginTop: 8 }]}>Confidence: {result.confidence}</Text>
-          <Text style={[styles.p, { color: sub, marginTop: 14, fontSize: getResponsiveFontSize(13), lineHeight: 20 }]}>
-            Huge or tiny values usually mean the pose wasn’t read correctly — most often from mirror shots, cropping, or uneven light. Open
-            “How to get usable numbers” on the previous screen and try a direct photo with the back camera.
+          <Text style={[styles.p, { color: sub, marginBottom: 12, fontSize: getResponsiveFontSize(13), lineHeight: 20 }]}>
+            These are progress estimates, not tailoring or medical measurements. Correct the values if needed before saving.
           </Text>
+          <MeasurementEditFields
+            values={editedMeasurements}
+            onChange={setEditedMeasurements}
+            textColor={text}
+            subColor={sub}
+            borderColor={border}
+            backgroundColor={glass}
+          />
           <TouchableOpacity
             onPress={() => void saveToSupabase()}
             disabled={saving || result.confidence < MIN_SAVE_CONFIDENCE}
@@ -461,13 +515,96 @@ export default function BodyMeasurementScreen() {
               ) : null}
             </>
           ) : null}
-          <TouchableOpacity onPress={resetFlow} style={{ marginTop: 16, alignItems: 'center' }}>
-            <Text style={{ color: BRAND, fontFamily: 'Barlow_600SemiBold' }}>Start over</Text>
-          </TouchableOpacity>
+          {!result.error ? (
+            <TouchableOpacity onPress={resetFlow} style={{ marginTop: 16, alignItems: 'center' }}>
+              <Text style={{ color: BRAND, fontFamily: 'Barlow_600SemiBold' }}>Start over</Text>
+            </TouchableOpacity>
+          ) : null}
         </ScrollView>
       ) : null}
     </View>
   );
+}
+
+function emptyEditableMeasurements(): EditableMeasurements {
+  return { chest: '', waist: '', hip: '', shoulder: '' };
+}
+
+function measurementResultToEditable(result: MeasurementResult): EditableMeasurements {
+  if (result.error) return emptyEditableMeasurements();
+  return {
+    chest: String(result.chest_cm),
+    waist: String(result.waist_cm),
+    hip: String(result.hip_cm),
+    shoulder: String(result.shoulder_cm),
+  };
+}
+
+function parseCmInput(value: string): number | null {
+  const normalized = value.replace(',', '.').trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? Math.round(parsed * 10) / 10 : null;
+}
+
+function parseEditableMeasurements(values: EditableMeasurements) {
+  const chest = parseCmInput(values.chest);
+  const waist = parseCmInput(values.waist);
+  const hip = parseCmInput(values.hip);
+  const shoulder = parseCmInput(values.shoulder);
+  if (chest == null || waist == null || hip == null || shoulder == null) return null;
+  return { chest, waist, hip, shoulder };
+}
+
+function measurementsInExpectedRange(values: { chest: number; waist: number; hip: number; shoulder: number }) {
+  return (
+    values.chest >= 50 &&
+    values.chest <= 180 &&
+    values.waist >= 40 &&
+    values.waist <= 170 &&
+    values.hip >= 50 &&
+    values.hip <= 180 &&
+    values.shoulder >= 25 &&
+    values.shoulder <= 100
+  );
+}
+
+function correctedMeasurementFields(result: MeasurementResult, values: { chest: number; waist: number; hip: number; shoulder: number }) {
+  const fields: string[] = [];
+  if (Math.abs(values.chest - result.chest_cm) >= 0.1) fields.push('chest_cm');
+  if (Math.abs(values.waist - result.waist_cm) >= 0.1) fields.push('waist_cm');
+  if (Math.abs(values.hip - result.hip_cm) >= 0.1) fields.push('hip_cm');
+  if (Math.abs(values.shoulder - result.shoulder_cm) >= 0.1) fields.push('shoulder_cm');
+  return fields;
+}
+
+function getResultTrustState(result: MeasurementResult): ResultTrustState {
+  if (result.error) {
+    return {
+      label: 'Retake needed',
+      message: 'This scan could not produce reliable measurements. Retake the photos using the guidance below.',
+      tone: 'danger',
+    };
+  }
+  if (result.confidence < MIN_SAVE_CONFIDENCE) {
+    return {
+      label: 'Low confidence',
+      message: 'These values are only a rough draft. Retake before saving them to progress.',
+      tone: 'danger',
+    };
+  }
+  if (result.confidence >= 0.6) {
+    return {
+      label: 'Good scan',
+      message: 'Review the estimates, correct anything that looks off, then save them to progress.',
+      tone: 'success',
+    };
+  }
+  return {
+    label: 'Usable estimate',
+    message: 'The scan is usable for progress tracking. Review and adjust the numbers before saving.',
+    tone: 'warning',
+  };
 }
 
 function numberOrNull(value: number | string | null | undefined) {
@@ -522,6 +659,82 @@ function HistoryMetric({
       <Text style={[styles.historyMetricLabel, { color: subColor }]}>{label}</Text>
       <Text style={[styles.historyMetricValue, { color: textColor }]}>{formatCm(value)}</Text>
       {delta ? <Text style={[styles.historyDelta, { color: subColor }]}>{delta}</Text> : null}
+    </View>
+  );
+}
+
+function MeasurementEditFields({
+  values,
+  onChange,
+  textColor,
+  subColor,
+  borderColor,
+  backgroundColor,
+}: {
+  values: EditableMeasurements;
+  onChange: (next: EditableMeasurements) => void;
+  textColor: string;
+  subColor: string;
+  borderColor: string;
+  backgroundColor: string;
+}) {
+  const update = (key: keyof EditableMeasurements, value: string) => {
+    onChange({ ...values, [key]: value });
+  };
+
+  const fields: Array<{ key: keyof EditableMeasurements; label: string }> = [
+    { key: 'chest', label: 'Chest' },
+    { key: 'waist', label: 'Waist' },
+    { key: 'hip', label: 'Hip' },
+    { key: 'shoulder', label: 'Shoulder' },
+  ];
+
+  return (
+    <View style={[styles.editCard, { borderColor, backgroundColor }]}>
+      <Text style={[styles.editTitle, { color: textColor }]}>Review before saving</Text>
+      <Text style={[styles.editHelp, { color: subColor }]}>Adjust any value that looks off. Saved progress will use these numbers.</Text>
+      <View style={styles.editGrid}>
+        {fields.map((field) => (
+          <View key={field.key} style={styles.editField}>
+            <Text style={[styles.editLabel, { color: subColor }]}>{field.label}</Text>
+            <View style={[styles.editInputWrap, { borderColor }]}>
+              <TextInput
+                value={values[field.key]}
+                onChangeText={(value) => update(field.key, value)}
+                keyboardType="decimal-pad"
+                selectTextOnFocus
+                style={[styles.editInput, { color: textColor }]}
+                placeholder="0"
+                placeholderTextColor={subColor}
+              />
+              <Text style={[styles.editUnit, { color: subColor }]}>cm</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function ResultTrustBanner({
+  state,
+  confidence,
+  textColor,
+  subColor,
+}: {
+  state: ResultTrustState;
+  confidence: number;
+  textColor: string;
+  subColor: string;
+}) {
+  const toneColor = state.tone === 'success' ? BRAND : state.tone === 'warning' ? '#ffb74d' : '#ff8a65';
+  return (
+    <View style={[styles.trustBanner, { borderColor: `${toneColor}88` }]}>
+      <View style={styles.trustHeader}>
+        <Text style={[styles.trustLabel, { color: toneColor }]}>{state.label}</Text>
+        <Text style={[styles.trustConfidence, { color: subColor }]}>Confidence {confidence.toFixed(2)}</Text>
+      </View>
+      <Text style={[styles.trustMessage, { color: textColor }]}>{state.message}</Text>
     </View>
   );
 }
@@ -706,6 +919,55 @@ const styles = StyleSheet.create({
   metric: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(16), marginTop: 10 },
   warn: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 16 },
   warnTxt: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), lineHeight: 18 },
+  qualityList: { marginTop: 10, gap: 6 },
+  qualityItem: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), lineHeight: 18 },
+  trustBanner: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  trustHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  trustLabel: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15), flex: 1 },
+  trustConfidence: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(12) },
+  trustMessage: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(13), lineHeight: 19, marginTop: 8 },
+  editCard: {
+    marginTop: 4,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  editTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(16) },
+  editHelp: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(13), lineHeight: 19, marginTop: 6 },
+  editGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 14,
+  },
+  editField: { width: '47%' },
+  editLabel: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(12), marginBottom: 6 },
+  editInputWrap: {
+    minHeight: 46,
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  editInput: {
+    flex: 1,
+    minWidth: 0,
+    paddingVertical: 8,
+    fontFamily: 'Barlow_700Bold',
+    fontSize: getResponsiveFontSize(16),
+  },
+  editUnit: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(12), marginLeft: 6 },
   guideToggle: {
     marginTop: 16,
     flexDirection: 'row',

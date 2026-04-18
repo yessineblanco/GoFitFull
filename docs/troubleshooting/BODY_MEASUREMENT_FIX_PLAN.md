@@ -55,7 +55,7 @@ Purpose: stop nonsense outputs and identify the exact failure point.
 - [x] Show low-confidence scans as draft results, not trusted saved measurements.
 - [x] Confirm decoded image channel stride is correct.
 - [x] Add pose/keypoint debug overlay for front and side captures.
-- [ ] Replace failed result UI with a clear retake state.
+- [x] Replace failed result UI with a clear retake state.
 
 Success criteria:
 
@@ -67,19 +67,25 @@ Success criteria:
 
 Purpose: prevent unusable photos before analysis.
 
+Current task:
+
+- Add first-pass pose quality gates using the existing MoveNet output before adding a heavier silhouette/segmentation model.
+- Return specific retake reasons in the result/debug payload.
+- Keep the gates conservative so usable scans are not rejected too aggressively.
+
 - [ ] Add front-photo validation before capture.
 - [ ] Add side-photo validation before capture.
-- [ ] Require full body visibility:
+- [x] Require full body visibility:
   - head/nose visible
   - shoulders visible
   - hips visible
   - knees visible
   - ankles visible
-- [ ] Require minimum keypoint confidence.
-- [ ] Require person centered in frame.
-- [ ] Require person height to occupy a target range of the image.
+- [x] Require minimum keypoint confidence.
+- [x] Require person centered in frame.
+- [x] Require person height to occupy a target range of the image.
 - [ ] Detect likely mirror/cropped/too-close captures where possible.
-- [ ] Add user guidance messages:
+- [x] Add user guidance messages:
   - `Step back`
   - `Move into the center`
   - `Show your feet`
@@ -122,15 +128,21 @@ Success criteria:
 
 Purpose: make results useful even when AI is approximate.
 
+Current task:
+
+- Replace raw confidence-only UX with clear result states and save guidance.
+- Keep numeric confidence visible as secondary detail.
+- Make it explicit that values are estimates for progress tracking.
+
 - [x] Add saved body measurement history/progress view.
-- [ ] Add result states:
+- [x] Add result states:
   - success
   - low confidence
   - failed
-- [ ] Add manual edit fields for AI-generated measurements.
-- [ ] Save whether each value was AI-only or user-corrected.
-- [ ] Show confidence labels instead of only numeric confidence.
-- [ ] Add copy that says values are estimates for progress tracking.
+- [x] Add manual edit fields for AI-generated measurements.
+- [x] Save whether each value was AI-only or user-corrected.
+- [x] Show confidence labels instead of only numeric confidence.
+- [x] Add copy that says values are estimates for progress tracking.
 
 Success criteria:
 
@@ -225,6 +237,17 @@ Fix applied:
 - Saved AI scans now return the user to the measurement intro screen instead of leaving the flow.
 - The intro screen now loads the last 10 `body_measurements` rows for the signed-in user.
 - The intro screen shows the latest saved chest, waist, hip, shoulder, confidence, source, and recent scans for progress tracking.
+- Added first-pass pose quality gates to `bodyMeasurementService.ts`.
+- The measurement service now blocks scans with missing head/shoulder/hip/feet keypoints, off-center pose, too-small/too-close body framing, or side photos that still look front-facing.
+- Failed quality gates return `qualityIssues` so the result screen can show specific retake instructions.
+- The result screen now lists the exact retake reasons under the failure message.
+- The result screen now shows editable chest, waist, hip, and shoulder fields before saving.
+- Saved rows use the edited values in `chest_cm`, `waist_cm`, `hip_cm`, and `shoulder_cm`.
+- The original AI values, confidence, corrected fields, and correction timestamp are stored in `manual_overrides`.
+- The result screen now shows trust states: `Good scan`, `Usable estimate`, `Low confidence`, or `Retake needed`.
+- Confidence is now secondary detail inside the trust banner instead of the only user-facing quality signal.
+- Result copy now states that values are estimates for progress tracking and should be corrected before saving.
+- Failed result screens now show a direct `Retake photos` action instead of sharing the normal save/result flow.
 
 Verification:
 

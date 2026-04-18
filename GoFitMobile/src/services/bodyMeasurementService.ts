@@ -2,6 +2,7 @@ import { Image } from 'react-native';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { File } from 'expo-file-system';
 import { decode as decodeJpeg } from 'jpeg-js';
+import { VALIDATION_LIMITS } from '@/constants';
 
 export type MeasurementResult = {
   chest_cm: number;
@@ -10,9 +11,27 @@ export type MeasurementResult = {
   shoulder_cm: number;
   confidence: number;
   error?: string;
+  debug?: MeasurementDebug;
 };
 
-type Keypoint = { y: number; x: number; score: number };
+export type MeasurementDebugKeypoint = { y: number; x: number; score: number };
+
+export type MeasurementDebugImage = {
+  originalWidth: number;
+  originalHeight: number;
+  keypoints: MeasurementDebugKeypoint[];
+};
+
+export type MeasurementDebug = {
+  front?: MeasurementDebugImage;
+  side?: MeasurementDebugImage;
+  personHeightPx?: number;
+  scaleCmPerPx?: number;
+  heightSpanFrac?: number;
+  failedChecks?: string[];
+};
+
+type Keypoint = MeasurementDebugKeypoint;
 
 /** Loaded model handle — keep local so we never import fast-tflite types (that can pull the module into the graph early). */
 type LoadedTfliteModel = { run(inputs: ArrayBuffer[]): Promise<ArrayBuffer[]> };
@@ -42,7 +61,7 @@ function getImageSize(uri: string): Promise<{ width: number; height: number }> {
   });
 }
 
-/** Resize to 192×192 JPEG, build float32 NHWC tensor with RGB in 0–255; returns original image dimensions. */
+/** Resize to 192×192 JPEG and build the UINT8 NHWC RGB tensor expected by the bundled MoveNet model. */
 async function preprocessForModel(
   imageUri: string,
 ): Promise<{ inputBuffer: ArrayBuffer; originalWidth: number; originalHeight: number }> {
@@ -58,28 +77,31 @@ async function preprocessForModel(
   const decoded = decodeJpeg(jpegBytes, { useTArray: true });
   const { data, width, height } = decoded;
 
-  const floats = new Float32Array(1 * width * height * 3);
+  const rgb = new Uint8Array(1 * width * height * 3);
   let o = 0;
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 3;
-      floats[o++] = data[idx];
-      floats[o++] = data[idx + 1];
-      floats[o++] = data[idx + 2];
+      const idx = (y * width + x) * 4;
+      rgb[o++] = data[idx];
+      rgb[o++] = data[idx + 1];
+      rgb[o++] = data[idx + 2];
     }
   }
 
-  return { inputBuffer: floats.buffer, originalWidth, originalHeight };
+  return { inputBuffer: rgb.buffer, originalWidth, originalHeight };
 }
 
-function parseKeypoints(outputBuffer: ArrayBuffer): Keypoint[] {
+/** Interleaved keypoints: some TFLite exports use [y,x,score] (TF Hub), others [x,y,score]. */
+function parseKeypointsInterleaved(outputBuffer: ArrayBuffer, yFirst: boolean): Keypoint[] {
   const floats = new Float32Array(outputBuffer);
   const count = Math.min(17, Math.floor(floats.length / 3));
   const keypoints: Keypoint[] = [];
   for (let i = 0; i < count; i++) {
+    const a = floats[i * 3];
+    const b = floats[i * 3 + 1];
     keypoints.push({
-      y: floats[i * 3],
-      x: floats[i * 3 + 1],
+      y: yFirst ? a : b,
+      x: yFirst ? b : a,
       score: floats[i * 3 + 2],
     });
   }
@@ -89,6 +111,60 @@ function parseKeypoints(outputBuffer: ArrayBuffer): Keypoint[] {
   return keypoints;
 }
 
+/** If model outputs 0–192 instead of 0–1, scale to ~0–1 for geometry helpers. */
+function keypointsTo01Space(kf: Keypoint[]): Keypoint[] {
+  let m = 0;
+  for (let i = 0; i < 17; i++) {
+    const k = kf[i];
+    m = Math.max(m, Math.abs(k.x), Math.abs(k.y));
+  }
+  if (m <= 1.05) return kf;
+  const s = 1 / 192;
+  return kf.map((k) => ({ x: k.x * s, y: k.y * s, score: k.score }));
+}
+
+/** Standing pose: head above hips above feet in image Y (origin top). */
+function anatomicalScore(kf: Keypoint[]): number {
+  const nose = kf[0];
+  const hipY = (kf[11].y + kf[12].y) / 2;
+  const ankleY = Math.max(kf[15].y, kf[16].y);
+  let s = 0;
+  if (nose.score >= 0.2 && kf[11].score >= 0.15 && nose.y < hipY - 0.02) s += 1;
+  if (kf[11].score >= 0.15 && ankleY >= hipY - 0.05) s += 1;
+  if (nose.score >= 0.2 && ankleY > nose.y + 0.12) s += 1;
+  return s;
+}
+
+/** Pick [y,x,score] vs [x,y,score] using plausible span + anatomy + confidence. */
+function parseKeypointsAuto(outputBuffer: ArrayBuffer): Keypoint[] {
+  const yx = keypointsTo01Space(parseKeypointsInterleaved(outputBuffer, true));
+  const xy = keypointsTo01Space(parseKeypointsInterleaved(outputBuffer, false));
+  const scoreLayout = (kf: Keypoint[]) => {
+    const h = estimatePersonHeightPx(kf, 1);
+    if (!h) return -1;
+    const span = h.bottomNorm - h.topNorm;
+    if (span < 0.12 || span > 0.95) return -1;
+    const conf =
+      (kf[0]?.score ?? 0) +
+      (kf[15]?.score ?? 0) +
+      (kf[16]?.score ?? 0) +
+      (kf[5]?.score ?? 0) +
+      (kf[6]?.score ?? 0);
+    const anatomy = anatomicalScore(kf);
+    return span * 2.2 + conf * 0.18 + anatomy * 1.2;
+  };
+  const sy = scoreLayout(yx);
+  const sx = scoreLayout(xy);
+  const picked = sy < 0 && sx < 0 ? 'fallback-yx' : sx > sy ? 'xy' : 'yx';
+  // #region agent log
+  if (__DEV__) {
+    console.log('[DEBUG edb295] parseKeypointsAuto', { sy, sx, picked });
+  }
+  // #endregion
+  if (sy < 0 && sx < 0) return yx;
+  return sx > sy ? xy : yx;
+}
+
 async function runMoveNet(imageUri: string): Promise<{ keypoints: Keypoint[]; originalWidth: number; originalHeight: number }> {
   const model = await getModel();
   const { inputBuffer, originalWidth, originalHeight } = await preprocessForModel(imageUri);
@@ -96,7 +172,7 @@ async function runMoveNet(imageUri: string): Promise<{ keypoints: Keypoint[]; or
   if (!outputs?.length) {
     throw new Error('Model produced no output');
   }
-  const keypoints = parseKeypoints(outputs[0]);
+  const keypoints = parseKeypointsAuto(outputs[0]);
   return { keypoints, originalWidth, originalHeight };
 }
 
@@ -109,7 +185,7 @@ function round2(n: number): number {
 }
 
 const SANITY_ERROR =
-  'Measurements outside expected range — please retake photos with your full body in frame and even lighting.';
+  'Measurements outside expected range — please retake with your full body in frame and even lighting. Mirror selfies often break scale: use the back camera (or a timer) and photograph yourself directly, head-to-toe, a few meters from the lens.';
 
 const EMPTY: MeasurementResult = {
   chest_cm: 0,
@@ -123,6 +199,93 @@ function measurementErrorResult(message: string): MeasurementResult {
   return { ...EMPTY, error: message };
 }
 
+function debugImage(run: { keypoints: Keypoint[]; originalWidth: number; originalHeight: number }): MeasurementDebugImage {
+  return {
+    originalWidth: run.originalWidth,
+    originalHeight: run.originalHeight,
+    keypoints: run.keypoints.map((k) => ({ x: round2(k.x), y: round2(k.y), score: round2(k.score) })),
+  };
+}
+
+/** MoveNet y is top=0. Use head top → ankles; also bbox of core joints so EXIF / rotation mismatches don’t shrink height. */
+function estimatePersonHeightPx(kf: Keypoint[], fh: number): { px: number; topNorm: number; bottomNorm: number } | null {
+  const headIdx = [0, 1, 2] as const;
+  let topNorm = 1;
+  let anyHead = false;
+  for (const i of headIdx) {
+    const k = kf[i];
+    if (k.score >= 0.25 && k.y < topNorm) {
+      topNorm = k.y;
+      anyHead = true;
+    }
+  }
+  if (!anyHead && kf[0].score > 0) {
+    topNorm = kf[0].y;
+    anyHead = true;
+  }
+  if (!anyHead) return null;
+
+  const la = kf[15];
+  const ra = kf[16];
+  let bottomNorm = 0;
+  if (la.score >= 0.25 && ra.score >= 0.25) {
+    bottomNorm = Math.max(la.y, ra.y);
+  } else if (la.score >= ra.score && la.score >= 0.2) {
+    bottomNorm = la.y;
+  } else if (ra.score >= 0.2) {
+    bottomNorm = ra.y;
+  } else {
+    bottomNorm = Math.max(la.y, ra.y);
+  }
+
+  const linePx = bottomNorm * fh - topNorm * fh;
+  return { px: linePx, topNorm, bottomNorm };
+}
+
+/**
+ * Pixel extent used for height scaling: max of nose–ankle line (Y) and tight bbox of torso+feet (handles sideways metadata vs upright subject).
+ */
+function estimateScaleHeightPixels(kf: Keypoint[], fw: number, fh: number): number {
+  const est = estimatePersonHeightPx(kf, fh);
+  if (!est) return 0;
+  const linePx = Math.max(est.px, 1);
+
+  const idx = [0, 5, 6, 11, 12, 15, 16] as const;
+  let minX = 1;
+  let maxX = 0;
+  let minY = 1;
+  let maxY = 0;
+  let any = false;
+  for (const i of idx) {
+    const k = kf[i];
+    if (k.score < 0.12) continue;
+    any = true;
+    minX = Math.min(minX, k.x);
+    maxX = Math.max(maxX, k.x);
+    minY = Math.min(minY, k.y);
+    maxY = Math.max(maxY, k.y);
+  }
+  if (!any) return linePx;
+  const boxPx = Math.max((maxX - minX) * fw, (maxY - minY) * fh, 1);
+  return Math.max(linePx, boxPx);
+}
+
+function shoulderSeparationPx(kf: Keypoint[], fw: number, fh: number): number {
+  const ls = kf[5];
+  const rs = kf[6];
+  const dx = Math.abs(ls.x - rs.x) * fw;
+  const dy = Math.abs(ls.y - rs.y) * fh;
+  return Math.max(dx, dy, 1);
+}
+
+function hipSeparationPx(kf: Keypoint[], fw: number, fh: number): number {
+  const lh = kf[11];
+  const rh = kf[12];
+  const dx = Math.abs(lh.x - rh.x) * fw;
+  const dy = Math.abs(lh.y - rh.y) * fh;
+  return Math.max(dx, dy, 1);
+}
+
 async function analyzeMeasurementsInner(params: {
   frontImageUri: string;
   sideImageUri: string;
@@ -132,16 +295,15 @@ async function analyzeMeasurementsInner(params: {
 
   const front = await runMoveNet(frontImageUri);
   const { keypoints: kf, originalWidth: fw, originalHeight: fh } = front;
+  const debug: MeasurementDebug = {
+    front: debugImage(front),
+  };
 
-  const nose = kf[0];
-  const leftAnkle = kf[15];
-  const rightAnkle = kf[16];
+  const heightEst = estimatePersonHeightPx(kf, fh);
+  const personHeightPx = estimateScaleHeightPixels(kf, fw, fh);
+  debug.personHeightPx = round1(personHeightPx);
 
-  const noseYpx = nose.y * fh;
-  const ankleYpx = (leftAnkle.y * fh + rightAnkle.y * fh) / 2;
-  const personHeightPx = ankleYpx - noseYpx;
-
-  if (personHeightPx <= 1) {
+  if (personHeightPx <= 1 || !heightEst) {
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -149,26 +311,49 @@ async function analyzeMeasurementsInner(params: {
       shoulder_cm: 0,
       confidence: 0,
       error: 'Could not estimate body height from the front photo. Stand farther away so your full body is visible.',
+      debug,
     };
   }
 
   const scale = heightCm / personHeightPx;
+  const longEdge = Math.max(fw, fh);
+  const heightSpanFrac = personHeightPx / longEdge;
+  debug.scaleCmPerPx = round2(scale);
+  debug.heightSpanFrac = round2(heightSpanFrac);
+  /** Normalized span vs long image edge (robust to width/height vs rotation). */
+  if (heightSpanFrac < 0.14) {
+    return {
+      chest_cm: 0,
+      waist_cm: 0,
+      hip_cm: 0,
+      shoulder_cm: 0,
+      confidence: 0,
+      error:
+        'Body height in the photo looks too small — step back so head-to-feet uses more of the frame, or retake with full body visible.',
+    };
+  }
+  /** cm/px — typical phone full-body ~0.06–0.35; higher usually means bad pose scale. */
+  if (scale > 0.42) {
+    return {
+      chest_cm: 0,
+      waist_cm: 0,
+      hip_cm: 0,
+      shoulder_cm: 0,
+      confidence: 0,
+      error:
+        'Could not reliably match your profile height to this photo. Use portrait orientation, full body head-to-toe, and even lighting. Check that your profile height is correct (cm).',
+    };
+  }
 
-  const leftShoulderX = kf[5].x * fw;
-  const rightShoulderX = kf[6].x * fw;
-  const leftHipX = kf[11].x * fw;
-  const rightHipX = kf[12].x * fw;
-
-  const shoulderWidthCm = Math.abs(leftShoulderX - rightShoulderX) * scale;
-  const hipWidthCm = Math.abs(leftHipX - rightHipX) * scale;
+  const shoulderWidthCm = shoulderSeparationPx(kf, fw, fh) * scale;
+  const hipWidthCm = hipSeparationPx(kf, fw, fh) * scale;
   const waistWidthCm = hipWidthCm * 0.82;
 
   const side = await runMoveNet(sideImageUri);
-  const { keypoints: ks, originalWidth: sw } = side;
+  const { keypoints: ks, originalWidth: sw, originalHeight: sh } = side;
+  debug.side = debugImage(side);
 
-  const sideLeftShoulderX = ks[5].x * sw;
-  const sideRightShoulderX = ks[6].x * sw;
-  const chestDepthCm = Math.abs(sideLeftShoulderX - sideRightShoulderX) * scale;
+  const chestDepthCm = shoulderSeparationPx(ks, sw, sh) * scale;
   const abdomenDepthCm = chestDepthCm * 0.9;
 
   const chestCm = Math.PI * (shoulderWidthCm / 2 + chestDepthCm / 2);
@@ -192,12 +377,59 @@ async function analyzeMeasurementsInner(params: {
   const saneWaist = waistR >= 50 && waistR <= 150;
   const saneHip = hipR >= 60 && hipR <= 160;
   const saneShoulder = shoulderR >= 30 && shoulderR <= 80;
-  const saneHeight = heightCm >= 140 && heightCm <= 220;
+  /** Must match profile/editor limits — DB allows 100–250 cm; old 140–220 zeroed valid users. */
+  const saneHeight =
+    heightCm >= VALIDATION_LIMITS.HEIGHT_MIN_CM && heightCm <= VALIDATION_LIMITS.HEIGHT_MAX_CM;
+
+  const failedChecks = [
+    !saneChest ? 'chest' : null,
+    !saneWaist ? 'waist' : null,
+    !saneHip ? 'hip' : null,
+    !saneShoulder ? 'shoulder' : null,
+    !saneHeight ? 'heightCm' : null,
+  ].filter(Boolean);
+  debug.failedChecks = failedChecks as string[];
+  // #region agent log
+  if (__DEV__) {
+    console.log('[DEBUG edb295] pre-sanity', {
+      heightCm,
+      fw,
+      fh,
+      personHeightPx,
+      scale,
+      heightSpanFrac,
+      shoulderWidthCm,
+      hipWidthCm,
+      waistWidthCm,
+      chestDepthCm,
+      abdomenDepthCm,
+      chestR,
+      waistR,
+      hipR,
+      shoulderR,
+      saneChest,
+      saneWaist,
+      saneHip,
+      saneShoulder,
+      saneHeight,
+      failedChecks,
+    });
+  }
+  // #endregion
 
   let error: string | undefined;
   if (!saneChest || !saneWaist || !saneHip || !saneShoulder || !saneHeight) {
     confidence = 0.3;
     error = SANITY_ERROR;
+    return {
+      chest_cm: 0,
+      waist_cm: 0,
+      hip_cm: 0,
+      shoulder_cm: 0,
+      confidence,
+      error,
+      debug,
+    };
   }
 
   return {
@@ -207,6 +439,7 @@ async function analyzeMeasurementsInner(params: {
     shoulder_cm: shoulderR,
     confidence,
     error,
+    debug,
   };
 }
 

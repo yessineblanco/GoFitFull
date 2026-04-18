@@ -81,7 +81,8 @@
             "microphonePermission": "GoFit needs microphone access for video calls with your coach"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {

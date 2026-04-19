@@ -23,17 +23,86 @@ export type MeasurementDebugImage = {
   keypoints: MeasurementDebugKeypoint[];
 };
 
+export type MeasurementDebugFormula = {
+  frontShoulderPx?: number;
+  frontHipPx?: number;
+  sideShoulderPx?: number;
+  shoulderWidthCm?: number;
+  hipWidthCm?: number;
+  waistWidthCm?: number;
+  chestDepthCm?: number;
+  abdomenDepthCm?: number;
+  rawChestCm?: number;
+  rawWaistCm?: number;
+  rawHipCm?: number;
+  rawShoulderCm?: number;
+};
+
+export type MeasurementSegmentationFeatureVector = {
+  model?: string;
+  bodyClassIndex?: number;
+  frontRawCoverage?: number;
+  frontCleanCoverage?: number;
+  sideRawCoverage?: number;
+  sideCleanCoverage?: number;
+  frontChestWidthCm?: number;
+  frontWaistWidthCm?: number;
+  frontHipWidthCm?: number;
+  sideChestDepthCm?: number;
+  sideWaistDepthCm?: number;
+  sideHipDepthCm?: number;
+  chestDepthToWidthRatio?: number;
+  waistDepthToWidthRatio?: number;
+  hipDepthToWidthRatio?: number;
+};
+
+export type MeasurementFeatureVector = {
+  version: 1;
+  heightCm: number;
+  personHeightPx?: number;
+  scaleCmPerPx?: number;
+  heightSpanFrac?: number;
+  frontPoseMeanScore?: number;
+  sidePoseMeanScore?: number;
+  frontVisibleCoreKeypoints?: number;
+  sideVisibleCoreKeypoints?: number;
+  frontBodyCenterX?: number;
+  sideBodyCenterX?: number;
+  frontBodyTopNorm?: number;
+  frontBodyBottomNorm?: number;
+  frontShoulderPx?: number;
+  frontHipPx?: number;
+  sideShoulderPx?: number;
+  sideToFrontShoulderRatio?: number;
+  frontShoulderWidthCm?: number;
+  frontHipWidthCm?: number;
+  estimatedWaistWidthCm?: number;
+  estimatedChestDepthCm?: number;
+  estimatedAbdomenDepthCm?: number;
+  draftChestCm?: number;
+  draftWaistCm?: number;
+  draftHipCm?: number;
+  draftShoulderCm?: number;
+  confidence?: number;
+  qualityIssues?: string[];
+  failedChecks?: string[];
+  segmentation?: MeasurementSegmentationFeatureVector;
+};
+
 export type MeasurementDebug = {
   front?: MeasurementDebugImage;
   side?: MeasurementDebugImage;
   personHeightPx?: number;
   scaleCmPerPx?: number;
   heightSpanFrac?: number;
+  formula?: MeasurementDebugFormula;
+  featureVector?: MeasurementFeatureVector;
   qualityIssues?: string[];
   failedChecks?: string[];
 };
 
 type Keypoint = MeasurementDebugKeypoint;
+const CORE_FEATURE_KEYPOINTS = [0, 5, 6, 11, 12, 15, 16] as const;
 
 /** Loaded model handle — keep local so we never import fast-tflite types (that can pull the module into the graph early). */
 type LoadedTfliteModel = { run(inputs: ArrayBuffer[]): Promise<ArrayBuffer[]> };
@@ -187,7 +256,7 @@ function round2(n: number): number {
 }
 
 const SANITY_ERROR =
-  'Measurements outside expected range — please retake with your full body in frame and even lighting. Mirror selfies often break scale: use the back camera (or a timer) and photograph yourself directly, head-to-toe, a few meters from the lens.';
+  'Measurements outside expected range — please retake with your full body in frame and even lighting. Mirror photos are okay when your whole body is visible, the phone is away from your torso, and your side photo is fully sideways.';
 
 const EMPTY: MeasurementResult = {
   chest_cm: 0,
@@ -239,6 +308,46 @@ function debugImage(run: { keypoints: Keypoint[]; originalWidth: number; origina
     originalWidth: run.originalWidth,
     originalHeight: run.originalHeight,
     keypoints: run.keypoints.map((k) => ({ x: round2(k.x), y: round2(k.y), score: round2(k.score) })),
+  };
+}
+
+function meanKeypointScore(kf: Keypoint[], indices = CORE_FEATURE_KEYPOINTS): number {
+  let sum = 0;
+  let count = 0;
+  for (const index of indices) {
+    const score = kf[index]?.score;
+    if (score == null || !Number.isFinite(score)) continue;
+    sum += score;
+    count += 1;
+  }
+  return count ? round2(sum / count) : 0;
+}
+
+function visibleKeypointCount(kf: Keypoint[], indices = CORE_FEATURE_KEYPOINTS, minScore = 0.15): number {
+  let count = 0;
+  for (const index of indices) {
+    if ((kf[index]?.score ?? 0) >= minScore) count += 1;
+  }
+  return count;
+}
+
+function assignFeatureQuality(
+  debug: MeasurementDebug,
+  next: Pick<MeasurementFeatureVector, 'confidence' | 'qualityIssues' | 'failedChecks'>,
+) {
+  if (!debug.featureVector) return;
+  debug.featureVector = {
+    ...debug.featureVector,
+    ...next,
+  };
+}
+
+function updateFeatureVector(debug: MeasurementDebug, heightCm: number, next: Partial<MeasurementFeatureVector>) {
+  debug.featureVector = {
+    version: 1,
+    heightCm: round1(heightCm),
+    ...(debug.featureVector ?? {}),
+    ...next,
   };
 }
 
@@ -382,6 +491,16 @@ async function analyzeMeasurementsInner(params: {
   const debug: MeasurementDebug = {
     front: debugImage(front),
   };
+  const frontBody = keypointBounds(kf, CORE_FEATURE_KEYPOINTS);
+  debug.featureVector = {
+    version: 1,
+    heightCm: round1(heightCm),
+    frontPoseMeanScore: meanKeypointScore(kf),
+    frontVisibleCoreKeypoints: visibleKeypointCount(kf),
+    frontBodyCenterX: frontBody ? round2(frontBody.centerX) : undefined,
+    frontBodyTopNorm: frontBody ? round2(frontBody.minY) : undefined,
+    frontBodyBottomNorm: frontBody ? round2(frontBody.maxY) : undefined,
+  };
 
   const heightEst = estimatePersonHeightPx(kf, fh);
   const personHeightPx = estimateScaleHeightPixels(kf, fw, fh);
@@ -390,6 +509,7 @@ async function analyzeMeasurementsInner(params: {
   if (personHeightPx <= 1 || !heightEst) {
     const qualityIssues = ['Stand farther away so your full body is visible.'];
     debug.qualityIssues = qualityIssues;
+    assignFeatureQuality(debug, { confidence: 0, qualityIssues });
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -407,8 +527,16 @@ async function analyzeMeasurementsInner(params: {
   const heightSpanFrac = personHeightPx / longEdge;
   debug.scaleCmPerPx = round2(scale);
   debug.heightSpanFrac = round2(heightSpanFrac);
+  updateFeatureVector(debug, heightCm, {
+    personHeightPx: round1(personHeightPx),
+    scaleCmPerPx: round2(scale),
+    heightSpanFrac: round2(heightSpanFrac),
+  });
   /** Normalized span vs long image edge (robust to width/height vs rotation). */
   if (heightSpanFrac < 0.14) {
+    const qualityIssues = ['Step back so head-to-feet uses more of the frame, or retake with full body visible.'];
+    debug.qualityIssues = qualityIssues;
+    assignFeatureQuality(debug, { confidence: 0, qualityIssues });
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -421,6 +549,9 @@ async function analyzeMeasurementsInner(params: {
   }
   /** cm/px — typical phone full-body ~0.06–0.35; higher usually means bad pose scale. */
   if (scale > 0.42) {
+    const qualityIssues = ['Use portrait orientation, full body head-to-toe, and check that your profile height is correct.'];
+    debug.qualityIssues = qualityIssues;
+    assignFeatureQuality(debug, { confidence: 0, qualityIssues });
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -435,6 +566,7 @@ async function analyzeMeasurementsInner(params: {
   const frontQualityIssues = validateFrontPoseQuality(kf, heightEst, heightSpanFrac);
   if (frontQualityIssues.length) {
     debug.qualityIssues = frontQualityIssues;
+    assignFeatureQuality(debug, { confidence: 0, qualityIssues: frontQualityIssues });
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -452,15 +584,31 @@ async function analyzeMeasurementsInner(params: {
   const shoulderWidthCm = frontShoulderPx * scale;
   const hipWidthCm = frontHipPx * scale;
   const waistWidthCm = hipWidthCm * 0.82;
+  updateFeatureVector(debug, heightCm, {
+    frontShoulderPx: round1(frontShoulderPx),
+    frontHipPx: round1(frontHipPx),
+    frontShoulderWidthCm: round1(shoulderWidthCm),
+    frontHipWidthCm: round1(hipWidthCm),
+    estimatedWaistWidthCm: round1(waistWidthCm),
+  });
 
   const side = await runMoveNet(sideImageUri);
   const { keypoints: ks, originalWidth: sw, originalHeight: sh } = side;
   debug.side = debugImage(side);
 
   const sideShoulderPx = shoulderSeparationPx(ks, sw, sh);
+  const sideBody = keypointBounds(ks, CORE_FEATURE_KEYPOINTS);
+  updateFeatureVector(debug, heightCm, {
+    sidePoseMeanScore: meanKeypointScore(ks),
+    sideVisibleCoreKeypoints: visibleKeypointCount(ks),
+    sideBodyCenterX: sideBody ? round2(sideBody.centerX) : undefined,
+    sideShoulderPx: round1(sideShoulderPx),
+    sideToFrontShoulderRatio: round2(sideShoulderPx / Math.max(frontShoulderPx, 1)),
+  });
   const sideQualityIssues = validateSidePoseQuality(kf, ks, frontShoulderPx, sideShoulderPx);
   if (sideQualityIssues.length) {
     debug.qualityIssues = sideQualityIssues;
+    assignFeatureQuality(debug, { confidence: 0, qualityIssues: sideQualityIssues });
     return {
       chest_cm: 0,
       waist_cm: 0,
@@ -475,18 +623,41 @@ async function analyzeMeasurementsInner(params: {
 
   const chestDepthCm = sideShoulderPx * scale;
   const abdomenDepthCm = chestDepthCm * 0.9;
+  updateFeatureVector(debug, heightCm, {
+    estimatedChestDepthCm: round1(chestDepthCm),
+    estimatedAbdomenDepthCm: round1(abdomenDepthCm),
+  });
 
   const chestCm = Math.PI * (shoulderWidthCm / 2 + chestDepthCm / 2);
   const waistCm = Math.PI * (waistWidthCm / 2 + abdomenDepthCm / 2);
   const hipCm = Math.PI * (hipWidthCm / 2 + (abdomenDepthCm * 0.95) / 2);
   const shoulderCm = Math.PI * (shoulderWidthCm / 2) * 1.15;
+  debug.formula = {
+    frontShoulderPx: round1(frontShoulderPx),
+    frontHipPx: round1(frontHipPx),
+    sideShoulderPx: round1(sideShoulderPx),
+    shoulderWidthCm: round1(shoulderWidthCm),
+    hipWidthCm: round1(hipWidthCm),
+    waistWidthCm: round1(waistWidthCm),
+    chestDepthCm: round1(chestDepthCm),
+    abdomenDepthCm: round1(abdomenDepthCm),
+    rawChestCm: round1(chestCm),
+    rawWaistCm: round1(waistCm),
+    rawHipCm: round1(hipCm),
+    rawShoulderCm: round1(shoulderCm),
+  };
+  updateFeatureVector(debug, heightCm, {
+    draftChestCm: round1(chestCm),
+    draftWaistCm: round1(waistCm),
+    draftHipCm: round1(hipCm),
+    draftShoulderCm: round1(shoulderCm),
+  });
 
-  const usedIdx = [0, 5, 6, 11, 12, 15, 16] as const;
   let confSum = 0;
-  for (const i of usedIdx) {
+  for (const i of CORE_FEATURE_KEYPOINTS) {
     confSum += kf[i]?.score ?? 0;
   }
-  let confidence = round2(confSum / usedIdx.length);
+  let confidence = round2(confSum / CORE_FEATURE_KEYPOINTS.length);
 
   let chestR = round1(chestCm);
   let waistR = round1(waistCm);
@@ -509,6 +680,7 @@ async function analyzeMeasurementsInner(params: {
     !saneHeight ? 'heightCm' : null,
   ].filter(Boolean);
   debug.failedChecks = failedChecks as string[];
+  assignFeatureQuality(debug, { confidence, failedChecks: debug.failedChecks });
   // #region agent log
   if (__DEV__) {
     console.log('[DEBUG edb295] pre-sanity', {
@@ -541,6 +713,7 @@ async function analyzeMeasurementsInner(params: {
   if (!saneChest || !saneWaist || !saneHip || !saneShoulder || !saneHeight) {
     confidence = 0.3;
     error = SANITY_ERROR;
+    assignFeatureQuality(debug, { confidence, failedChecks: debug.failedChecks });
     return {
       chest_cm: 0,
       waist_cm: 0,

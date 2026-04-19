@@ -38,7 +38,7 @@ Purpose: stop nonsense outputs and identify the exact failure point.
 - [x] Confirm whether `movenet_lightning.tflite` expects `uint8` or `float32` input.
 - [x] Fix preprocessing if the input buffer type is wrong.
 - [x] Remove localhost debug `fetch()` calls from the production measurement service.
-- [ ] Add a structured local diagnostics object for each scan.
+- [x] Add a structured local diagnostics object for each scan.
 - [ ] Add debug logs for:
   - keypoint scores
   - selected keypoint layout
@@ -67,6 +67,12 @@ Success criteria:
 
 Purpose: prevent unusable photos before analysis.
 
+Important finding from phone testing:
+
+- If the capture guide is hard to follow, the model will keep failing even if the math improves.
+- The old thin body outline is not friendly enough for real users.
+- Capture UX must be improved before more estimator work.
+
 Current task:
 
 - Add first-pass pose quality gates using the existing MoveNet output before adding a heavier silhouette/segmentation model.
@@ -75,6 +81,8 @@ Current task:
 
 - [ ] Add front-photo validation before capture.
 - [ ] Add side-photo validation before capture.
+- [x] Replace the hard-to-follow thin silhouette with a clearer safe-zone guide.
+- [x] Add front/side specific capture prompts inside the camera view.
 - [x] Require full body visibility:
   - head/nose visible
   - shoulders visible
@@ -84,7 +92,7 @@ Current task:
 - [x] Require minimum keypoint confidence.
 - [x] Require person centered in frame.
 - [x] Require person height to occupy a target range of the image.
-- [ ] Detect likely mirror/cropped/too-close captures where possible.
+- [ ] Detect cropped/too-close captures and mirror captures with bad geometry where possible.
 - [x] Add user guidance messages:
   - `Step back`
   - `Move into the center`
@@ -96,12 +104,18 @@ Success criteria:
 
 - Bad captures are blocked before measurement.
 - The user gets specific instructions instead of generic failure text.
+- The camera guide is easy to follow without reading the debug overlay.
 
 ## Phase 3: Replace Keypoint-Only Measurement Math
 
 Purpose: move from pose estimation to body-outline measurement.
 
-- [ ] Choose a person segmentation model or body parsing model.
+- [x] Choose a first person segmentation model candidate.
+- [x] Inspect the first segmentation model input/output tensors.
+- [x] Add a separate segmentation inference helper.
+- [x] Render segmentation class candidates in the debug overlay.
+- [x] Add debug-only Class 4 mask width/depth measurements.
+- [x] Add first Class 4 mask cleanup pass.
 - [ ] Test whether it can run on-device with acceptable performance.
 - [ ] Extract a clean body silhouette mask from front and side photos.
 - [ ] Use pose keypoints only to locate anatomical levels:
@@ -123,6 +137,70 @@ Success criteria:
 
 - Measurements are based on body outline, not only joint distance.
 - Bad silhouette or inconsistent photos produce a failed scan, not fake numbers.
+
+Research:
+
+- [Body Measurement Segmentation Research](./BODY_MEASUREMENT_SEGMENTATION_RESEARCH.md)
+
+### Phase 3 Notes
+
+#### 2026-04-19
+
+Added first segmentation candidate:
+
+- `GoFitMobile/assets/models/selfie_multiclass_256x256.tflite`
+
+Confirmed by direct FlatBuffer inspection:
+
+- File identifier: `TFL3`
+- Model version: `3`
+- File size: `16,371,837` bytes
+- Input tensor: `input_29`
+- Input shape: `[1, 256, 256, 3]`
+- Input type: `FLOAT32`
+- Output tensor: `Identity`
+- Output shape: `[1, 256, 256, 6]`
+- Output type: `FLOAT32`
+
+Decision:
+
+- This is good enough for the first free/on-device segmentation prototype.
+- Because the output has 6 channels, the next code task is to run the model in a separate segmentation helper and render candidate class masks in the debug overlay before changing measurement formulas.
+- Do not replace the current measurement math until the mask is visually confirmed on real front and side photos.
+
+Implemented:
+
+- Added `GoFitMobile/src/services/bodySegmentationService.ts`.
+- Wired segmentation analysis into `BodyMeasurementScreen.tsx` after the existing pose measurement completes.
+- The pose/keypoint measurement result remains the source of displayed and saved measurements.
+- The debug drawer now shows all 6 segmentation output classes for both front and side photos.
+- The sampled mask preview is intentionally diagnostic only; it does not affect confidence, save gating, or formulas yet.
+- After the first phone test, Class 4 looked like the best full-body mask candidate.
+- Added debug-only Class 4 scan lines for chest, waist, and hip on both front and side photos.
+- The debug drawer now reports those mask widths/depths in image pixels and centimeters using the current height scale.
+- Added first cleanup pass before measuring Class 4:
+  - keep the largest connected Class 4 component
+  - ignore smaller disconnected mask noise
+  - select the continuous row segment nearest the torso center
+  - show raw vs cleaned mask coverage and row segment count in the debug UI
+- Phone testing found an important flaw: some mirror photos can look like a `Good scan` because MoveNet pose confidence is high, while direct side-profile photos can fail because the old keypoint formula treats side shoulder separation as body depth.
+- Product decision: mirror photos must be supported because many gym users will take progress photos in a mirror. The app should reject bad geometry, phone/body occlusion, or unusable side poses, not mirrors as a category.
+- Added a segmentation geometry warning:
+  - compares cleaned side chest/waist depth against cleaned front chest/waist width
+  - shows advisory warnings for mildly wide/thin side geometry
+  - blocks saving only when side/front geometry is extreme enough to be clearly broken
+  - prevents high pose confidence alone from producing a trusted `Good scan`
+  - no longer frames mirrors as automatically invalid
+- Added the first segmentation-based draft formula:
+  - if cleaned front/side mask lines are available, chest/waist/hip are estimated from front width plus side depth
+  - circumference uses an ellipse approximation from cleaned mask width/depth
+  - this replaces the old side-shoulder-depth failure path for draft results
+  - save gating still uses segmentation geometry warnings
+- Added the first plausibility score layer:
+  - suspicious but editable numbers become `Review carefully`
+  - mild geometry issues stay `Usable estimate`
+  - extreme geometry or impossible ratios remain `Retake needed`
+  - save is blocked only for true blockers, not advisory review warnings
 
 ## Phase 4: Manual Correction And Trust UX
 
@@ -153,7 +231,7 @@ Success criteria:
 
 Purpose: stop guessing and measure accuracy.
 
-- [ ] Create a small test protocol.
+- [x] Create a small test protocol.
 - [ ] Collect real tape measurements for test users:
   - chest
   - waist
@@ -161,13 +239,18 @@ Purpose: stop guessing and measure accuracy.
   - shoulder
 - [ ] Capture front and side photos under good conditions.
 - [ ] Capture bad-condition examples:
-  - mirror selfie
+  - mirror selfie with phone covering torso
+  - angled mirror/reflection distortion
   - cropped feet
   - loose clothes
   - bad lighting
   - too close
 - [ ] Compare AI estimates to tape measurements.
 - [ ] Track average error per measurement.
+
+Protocol:
+
+- [Body Measurement Validation Protocol](./BODY_MEASUREMENT_VALIDATION_PROTOCOL.md)
 
 Target:
 
@@ -179,8 +262,13 @@ Target:
 
 Purpose: decide whether to build or integrate a true body measurement system.
 
+- [x] Research the linked ACM paper direction for statistical body-measurement prediction.
 - [ ] Research commercial body-scan SDKs.
 - [ ] Research open-source server-side body model options.
+- [ ] Decide whether the next production estimator should be:
+  - local statistical regression
+  - server-side body-shape model
+  - commercial SDK
 - [ ] Compare:
   - accuracy
   - cost
@@ -194,7 +282,11 @@ Purpose: decide whether to build or integrate a true body measurement system.
 
 Recommendation:
 
-Start with the free/on-device path through segmentation and manual correction. Move to a commercial or server-side body model only if clothing-fit accuracy becomes a core product requirement.
+Keep the current free/on-device pose + segmentation flow as a feature extractor and draft fallback, but do not treat direct pixel circumference as the final solution. The next serious fix is a statistical estimator trained or calibrated from body features and validated measurements.
+
+Research decision:
+
+- [Body Measurement Statistical Model Plan](./BODY_MEASUREMENT_STATISTICAL_MODEL_PLAN.md)
 
 ## First Task To Do
 
@@ -248,6 +340,10 @@ Fix applied:
 - Confidence is now secondary detail inside the trust banner instead of the only user-facing quality signal.
 - Result copy now states that values are estimates for progress tracking and should be corrected before saving.
 - Failed result screens now show a direct `Retake photos` action instead of sharing the normal save/result flow.
+- Debug results now include formula inputs: front shoulder pixels, front hip pixels, side depth pixels, width/depth cm estimates, raw circumference outputs, quality issues, and failed sanity checks.
+- The pose debug overlay now displays the formula diagnostics alongside the front/side keypoint images.
+- Added a validation protocol document for comparing AI estimates, corrected saved values, and real tape measurements before changing the formula again.
+- Added segmentation research for moving from keypoint-only math to body-outline/mask-based measurement.
 
 Verification:
 

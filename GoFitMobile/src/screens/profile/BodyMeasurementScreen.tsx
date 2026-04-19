@@ -15,12 +15,18 @@ import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown, ChevronLeft, ChevronUp } from 'lucide-react-native';
-import Svg, { Circle, Line } from 'react-native-svg';
+import Svg, { Circle, Line, Rect } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/config/supabase';
 import { useProfileStore } from '@/store/profileStore';
-import { analyzeMeasurements, type MeasurementDebugImage, type MeasurementResult } from '@/services/bodyMeasurementService';
+import {
+  analyzeMeasurements,
+  type MeasurementDebugImage,
+  type MeasurementFeatureVector,
+  type MeasurementResult,
+} from '@/services/bodyMeasurementService';
+import { analyzeBodySegmentation, type BodySegmentationDebug, type SegmentationImageDebug } from '@/services/bodySegmentationService';
 import { BodyGuideOverlay } from '@/components/shared/BodyGuideOverlay';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
@@ -42,6 +48,12 @@ type ResultTrustState = {
   label: string;
   message: string;
   tone: 'success' | 'warning' | 'danger';
+};
+
+type SegmentationGeometryWarning = {
+  message: string;
+  severity: 'advisory' | 'blocking';
+  kind?: 'geometry' | 'plausibility';
 };
 
 type BodyMeasurementHistoryEntry = {
@@ -72,6 +84,7 @@ export default function BodyMeasurementScreen() {
   const [cameraSession, setCameraSession] = useState(0);
   const [showCameraRetry, setShowCameraRetry] = useState(false);
   const [result, setResult] = useState<MeasurementResult | null>(null);
+  const [segmentationDebug, setSegmentationDebug] = useState<BodySegmentationDebug | null>(null);
   const [editedMeasurements, setEditedMeasurements] = useState<EditableMeasurements>({
     chest: '',
     waist: '',
@@ -150,6 +163,10 @@ export default function BodyMeasurementScreen() {
   const sub = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   const glass = getGlassBg(isDark);
   const border = getGlassBorder(isDark);
+  const segmentationWarnings = getSegmentationGeometryWarnings(segmentationDebug);
+  const plausibilityWarnings = getMeasurementPlausibilityWarnings(result);
+  const scanWarnings = [...segmentationWarnings, ...plausibilityWarnings];
+  const blockingScanWarnings = scanWarnings.filter((warning) => warning.severity === 'blocking');
 
   const capturePhoto = useCallback(async () => {
     if (!cameraRef.current || !cameraReady || captureInFlight.current) return;
@@ -168,17 +185,36 @@ export default function BodyMeasurementScreen() {
         setSideUri(photo.uri);
         setPhase('analyze');
         setCameraReady(false);
+        setSegmentationDebug(null);
         try {
           const res = await analyzeMeasurements({
             frontImageUri: frontUri,
             sideImageUri: photo.uri,
             heightCm,
           });
-          setResult(res);
-          setEditedMeasurements(measurementResultToEditable(res));
+          let finalResult = res;
+          try {
+            const segmentation = await analyzeBodySegmentation({
+              frontImageUri: frontUri,
+              sideImageUri: photo.uri,
+              frontPose: res.debug?.front,
+              sidePose: res.debug?.side,
+            });
+            setSegmentationDebug(segmentation);
+            finalResult = measurementResultFromSegmentation(res, segmentation) ?? res;
+          } catch (segmentationError) {
+            setSegmentationDebug({
+              model: 'selfie_multiclass_256x256.tflite',
+              input: 'FLOAT32 [1, 256, 256, 3], RGB normalized 0..1',
+              output: 'FLOAT32 [1, 256, 256, 6], argmax class preview',
+              error: segmentationError instanceof Error ? segmentationError.message : String(segmentationError),
+            });
+          }
+          setResult(finalResult);
+          setEditedMeasurements(measurementResultToEditable(finalResult));
           setPhase('result');
           Haptics.notificationAsync(
-            res.error ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success,
+            finalResult.error ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success,
           );
         } catch (e) {
           Alert.alert('Analysis', e instanceof Error ? e.message : 'On-device analysis failed.');
@@ -206,6 +242,12 @@ export default function BodyMeasurementScreen() {
     }
     if (result.confidence < MIN_SAVE_CONFIDENCE) {
       Alert.alert('Low confidence', 'These values are only a rough draft. Please retake the photos before saving.');
+      return;
+    }
+    const warnings = [...getSegmentationGeometryWarnings(segmentationDebug), ...getMeasurementPlausibilityWarnings(result)];
+    const blockingWarning = warnings.find((warning) => warning.severity === 'blocking');
+    if (blockingWarning) {
+      Alert.alert('Retake needed', blockingWarning.message);
       return;
     }
     const corrected = parseEditableMeasurements(editedMeasurements);
@@ -244,6 +286,7 @@ export default function BodyMeasurementScreen() {
             shoulder_cm: result.shoulder_cm,
             confidence: result.confidence,
           },
+          measurement_feature_vector: result.debug?.featureVector ?? null,
           corrected_fields: correctedFields,
           corrected_at: correctedFields.length ? new Date().toISOString() : null,
         },
@@ -254,6 +297,7 @@ export default function BodyMeasurementScreen() {
       setFrontUri(null);
       setSideUri(null);
       setResult(null);
+      setSegmentationDebug(null);
       setEditedMeasurements(emptyEditableMeasurements());
       setShowPoseDebug(false);
       setPhase('intro');
@@ -282,6 +326,7 @@ export default function BodyMeasurementScreen() {
     setFrontUri(null);
     setSideUri(null);
     setResult(null);
+    setSegmentationDebug(null);
     setEditedMeasurements(emptyEditableMeasurements());
     setShowPoseDebug(false);
     setPhase('intro');
@@ -348,17 +393,17 @@ export default function BodyMeasurementScreen() {
           {showHowTo ? (
             <View style={[styles.guideBody, { borderColor: border, backgroundColor: glass }]}>
               <Text style={[styles.guideBullet, { color: text }]}>
-                <Text style={styles.guideEm}>Avoid mirror selfies.</Text> The model measures your outline in the photo. Mirrors add wrong
-                depth, reflections, and glare — numbers often explode or collapse. Use the <Text style={styles.guideEm}>back camera</Text>, step
-                back, and put only your real body in the frame (timer, tripod, or a friend helps).
+                <Text style={styles.guideEm}>Mirror photos are supported.</Text> Use one flat mirror, keep the phone away from your torso,
+                avoid covering your waist or hips, and keep your whole body visible. The app checks body geometry instead of rejecting mirrors
+                automatically.
               </Text>
               <Text style={[styles.guideBullet, { color: text, marginTop: 12 }]}>
-                <Text style={styles.guideEm}>Full body:</Text> head to feet visible, upright, arms slightly away from the torso. Step back until
-                you fill most of the frame vertically.
+                <Text style={styles.guideEm}>Use the green guide:</Text> keep your head below the top line and your feet above the bottom line.
+                Step back if your body does not fit.
               </Text>
               <Text style={[styles.guideBullet, { color: text, marginTop: 12 }]}>
-                <Text style={styles.guideEm}>Two poses:</Text> first photo facing the phone; second photo turned ~90° (true profile). Keep similar
-                distance from the camera for both.
+                <Text style={styles.guideEm}>Two poses:</Text> first photo facing the phone; second photo turned sideways. Keep the same distance
+                from the camera for both.
               </Text>
               <Text style={[styles.guideBullet, { color: text, marginTop: 12 }]}>
                 <Text style={styles.guideEm}>Light & clothes:</Text> even indoor light; avoid heavy shadows. Fitted clothing works better than
@@ -408,8 +453,8 @@ export default function BodyMeasurementScreen() {
           <View style={[styles.banner, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
             <Text style={styles.bannerTxt}>
               {phase === 'front'
-                ? 'Step back — full body, face the phone (avoid mirror reflections)'
-                : 'Turn ~90° — side profile, same distance as before'}
+                ? '1/2 Front photo: fit head and feet inside the guide'
+                : '2/2 Side photo: turn sideways, same distance'}
             </Text>
           </View>
           {showCameraRetry && !cameraReady ? (
@@ -439,7 +484,21 @@ export default function BodyMeasurementScreen() {
         </View>
       ) : result ? (
         <ScrollView contentContainerStyle={styles.pad}>
-          <ResultTrustBanner state={getResultTrustState(result)} confidence={result.confidence} textColor={text} subColor={sub} />
+          <ResultTrustBanner
+            state={getResultTrustState(result, scanWarnings)}
+            confidence={result.confidence}
+            textColor={text}
+            subColor={sub}
+          />
+          {scanWarnings.length ? (
+            <View style={[styles.warn, { borderColor: 'rgba(255,180,100,0.5)' }]}>
+              {scanWarnings.map((warning) => (
+                <Text key={warning.message} style={[styles.warnTxt, { color: '#ffb74d', marginBottom: 6 }]}>
+                  {warning.message}
+                </Text>
+              ))}
+            </View>
+          ) : null}
           {result.error ? (
             <View style={[styles.warn, { borderColor: 'rgba(255,180,100,0.5)' }]}>
               <Text style={[styles.warnTxt, { color: '#ffb74d' }]}>{result.error}</Text>
@@ -474,17 +533,17 @@ export default function BodyMeasurementScreen() {
           />
           <TouchableOpacity
             onPress={() => void saveToSupabase()}
-            disabled={saving || result.confidence < MIN_SAVE_CONFIDENCE}
+            disabled={saving || result.confidence < MIN_SAVE_CONFIDENCE || blockingScanWarnings.length > 0}
             style={{
               borderRadius: 14,
               overflow: 'hidden',
               marginTop: 24,
-              opacity: result.confidence < MIN_SAVE_CONFIDENCE ? 0.45 : 1,
+              opacity: result.confidence < MIN_SAVE_CONFIDENCE || blockingScanWarnings.length > 0 ? 0.45 : 1,
             }}
           >
             <LinearGradient colors={['#6da835', BRAND]} style={styles.cta}>
               <Text style={styles.ctaTxt}>
-                {result.confidence < MIN_SAVE_CONFIDENCE ? 'Retake to save' : saving ? 'Saving…' : 'Save to progress'}
+                {result.confidence < MIN_SAVE_CONFIDENCE || blockingScanWarnings.length > 0 ? 'Retake to save' : saving ? 'Saving…' : 'Save to progress'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -505,6 +564,38 @@ export default function BodyMeasurementScreen() {
                   <Text style={[styles.p, { color: sub, marginBottom: 10 }]}>
                     Scale: {result.debug.scaleCmPerPx ?? '--'} cm/px | Height pixels: {result.debug.personHeightPx ?? '--'}
                   </Text>
+                  {result.debug.formula ? (
+                    <DiagnosticGrid
+                      values={[
+                        ['Front shoulders', `${result.debug.formula.frontShoulderPx ?? '--'} px`],
+                        ['Front hips', `${result.debug.formula.frontHipPx ?? '--'} px`],
+                        ['Side depth', `${result.debug.formula.sideShoulderPx ?? '--'} px`],
+                        ['Shoulder width', `${result.debug.formula.shoulderWidthCm ?? '--'} cm`],
+                        ['Hip width', `${result.debug.formula.hipWidthCm ?? '--'} cm`],
+                        ['Chest depth', `${result.debug.formula.chestDepthCm ?? '--'} cm`],
+                      ]}
+                      textColor={text}
+                      subColor={sub}
+                    />
+                  ) : null}
+                  {result.debug.featureVector ? (
+                    <FeatureVectorDebugPanel featureVector={result.debug.featureVector} textColor={text} subColor={sub} />
+                  ) : null}
+                  {result.debug.failedChecks?.length ? (
+                    <Text style={[styles.debugMeta, { color: '#ffb74d', marginBottom: 10 }]}>
+                      Failed checks: {result.debug.failedChecks.join(', ')}
+                    </Text>
+                  ) : null}
+                  {segmentationDebug ? (
+                    <SegmentationDebugPanel
+                      debug={segmentationDebug}
+                      frontUri={frontUri}
+                      sideUri={sideUri}
+                      scaleCmPerPx={result.debug.scaleCmPerPx}
+                      textColor={text}
+                      subColor={sub}
+                    />
+                  ) : null}
                   {frontUri && result.debug.front ? (
                     <PoseDebugOverlay title="Front photo" uri={frontUri} image={result.debug.front} textColor={text} subColor={sub} />
                   ) : null}
@@ -578,12 +669,33 @@ function correctedMeasurementFields(result: MeasurementResult, values: { chest: 
   return fields;
 }
 
-function getResultTrustState(result: MeasurementResult): ResultTrustState {
+function getResultTrustState(result: MeasurementResult, segmentationWarnings: SegmentationGeometryWarning[] = []): ResultTrustState {
   if (result.error) {
     return {
       label: 'Retake needed',
       message: 'This scan could not produce reliable measurements. Retake the photos using the guidance below.',
       tone: 'danger',
+    };
+  }
+  if (segmentationWarnings.some((warning) => warning.severity === 'blocking')) {
+    return {
+      label: 'Retake needed',
+      message: 'The pose model looked confident, but the body mask geometry is not reliable enough to save.',
+      tone: 'danger',
+    };
+  }
+  if (segmentationWarnings.some((warning) => warning.kind === 'plausibility')) {
+    return {
+      label: 'Review carefully',
+      message: 'One or more values looks unusual. Correct anything that looks off before saving.',
+      tone: 'warning',
+    };
+  }
+  if (segmentationWarnings.length) {
+    return {
+      label: 'Usable estimate',
+      message: 'The scan is usable for progress tracking. Review and correct the numbers before saving.',
+      tone: 'warning',
     };
   }
   if (result.confidence < MIN_SAVE_CONFIDENCE) {
@@ -604,6 +716,222 @@ function getResultTrustState(result: MeasurementResult): ResultTrustState {
     label: 'Usable estimate',
     message: 'The scan is usable for progress tracking. Review and adjust the numbers before saving.',
     tone: 'warning',
+  };
+}
+
+function getBodyMaskLine(image: SegmentationImageDebug | undefined, label: 'chest' | 'waist' | 'hip') {
+  return image?.bodyMask?.lines.find((line) => line.label === label);
+}
+
+function getSegmentationGeometryWarnings(debug: BodySegmentationDebug | null): SegmentationGeometryWarning[] {
+  if (!debug?.front?.bodyMask || !debug.side?.bodyMask) return [];
+
+  const frontChest = getBodyMaskLine(debug.front, 'chest');
+  const sideChest = getBodyMaskLine(debug.side, 'chest');
+  const frontWaist = getBodyMaskLine(debug.front, 'waist');
+  const sideWaist = getBodyMaskLine(debug.side, 'waist');
+  if (!frontChest || !sideChest || !frontWaist || !sideWaist) return [];
+
+  const chestRatio = frontChest.widthImagePx > 1 ? sideChest.widthImagePx / frontChest.widthImagePx : 0;
+  const waistRatio = frontWaist.widthImagePx > 1 ? sideWaist.widthImagePx / frontWaist.widthImagePx : 0;
+  const warnings: SegmentationGeometryWarning[] = [];
+
+  if (chestRatio > 1.05 || waistRatio > 1.05) {
+    warnings.push({
+      kind: 'geometry',
+      severity: 'blocking',
+      message:
+        'The side photo looks wider than the front photo, so body depth could not be trusted. Retake with a clean side profile and keep the phone away from your torso.',
+    });
+  } else if (chestRatio > 0.9 || waistRatio > 0.9) {
+    warnings.push({
+      kind: 'geometry',
+      severity: 'advisory',
+      message:
+        'The side photo looks wide compared with the front photo. You can save after reviewing the values, but a cleaner side profile may improve accuracy.',
+    });
+  } else if (chestRatio < 0.18 || waistRatio < 0.18) {
+    warnings.push({
+      kind: 'geometry',
+      severity: 'blocking',
+      message:
+        'The side photo looks too thin compared with the front photo, so body depth could not be trusted. Retake with your full body visible and arms slightly away from the torso.',
+    });
+  } else if (chestRatio < 0.28 || waistRatio < 0.28) {
+    warnings.push({
+      kind: 'geometry',
+      severity: 'advisory',
+      message:
+        'The side photo looks narrow compared with the front photo. You can save after reviewing the values, but retaking may improve accuracy.',
+    });
+  }
+
+  return warnings;
+}
+
+function getMeasurementPlausibilityWarnings(result: MeasurementResult | null): SegmentationGeometryWarning[] {
+  if (!result || result.error) return [];
+
+  const { chest_cm: chest, waist_cm: waist, hip_cm: hip, shoulder_cm: shoulder } = result;
+  const warnings: SegmentationGeometryWarning[] = [];
+
+  if (waist > chest * 1.45 || waist > hip * 1.35) {
+    warnings.push({
+      kind: 'plausibility',
+      severity: 'blocking',
+      message: 'The waist estimate is extremely high compared with the chest/hip. Retake or correct the scan before saving.',
+    });
+  } else if (waist > chest * 1.18 || waist > hip * 1.05) {
+    warnings.push({
+      kind: 'plausibility',
+      severity: 'advisory',
+      message: 'The waist estimate looks high compared with chest/hip. Review and correct it before saving.',
+    });
+  }
+
+  if (chest >= 145 || waist >= 135) {
+    warnings.push({
+      kind: 'plausibility',
+      severity: 'advisory',
+      message: 'Chest or waist looks unusually high for this scan. Save only after checking the values.',
+    });
+  }
+
+  if (shoulder >= 85) {
+    warnings.push({
+      kind: 'plausibility',
+      severity: 'blocking',
+      message: 'The shoulder estimate is extremely high. Retake or correct the scan before saving.',
+    });
+  } else if (shoulder >= 70) {
+    warnings.push({
+      kind: 'plausibility',
+      severity: 'advisory',
+      message: 'The shoulder estimate looks high. Review and correct it before saving.',
+    });
+  }
+
+  return warnings;
+}
+
+function ellipseCircumference(widthCm: number, depthCm: number): number {
+  const a = Math.max(widthCm / 2, 0.1);
+  const b = Math.max(depthCm / 2, 0.1);
+  return Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+}
+
+function roundMeasurement(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+function segmentationLineCm(image: SegmentationImageDebug | undefined, label: 'chest' | 'waist' | 'hip', scaleCmPerPx?: number) {
+  const line = getBodyMaskLine(image, label);
+  if (!line || scaleCmPerPx == null || scaleCmPerPx <= 0) return null;
+  const value = line.widthImagePx * scaleCmPerPx;
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function roundRatio(value: number | null) {
+  return value == null || !Number.isFinite(value) ? undefined : Math.round(value * 100) / 100;
+}
+
+function buildSegmentationFeatureVector(
+  featureVector: MeasurementFeatureVector | undefined,
+  segmentation: BodySegmentationDebug,
+  scaleCmPerPx: number,
+  draft: { chest: number; waist: number; hip: number; shoulder: number; confidence: number },
+): MeasurementFeatureVector | undefined {
+  if (!featureVector) return undefined;
+
+  const frontChest = segmentationLineCm(segmentation.front, 'chest', scaleCmPerPx);
+  const frontWaist = segmentationLineCm(segmentation.front, 'waist', scaleCmPerPx);
+  const frontHip = segmentationLineCm(segmentation.front, 'hip', scaleCmPerPx);
+  const sideChest = segmentationLineCm(segmentation.side, 'chest', scaleCmPerPx);
+  const sideWaist = segmentationLineCm(segmentation.side, 'waist', scaleCmPerPx);
+  const sideHip = segmentationLineCm(segmentation.side, 'hip', scaleCmPerPx);
+
+  return {
+    ...featureVector,
+    draftChestCm: draft.chest,
+    draftWaistCm: draft.waist,
+    draftHipCm: draft.hip,
+    draftShoulderCm: draft.shoulder,
+    confidence: draft.confidence,
+    segmentation: {
+      model: segmentation.model,
+      bodyClassIndex: segmentation.front?.bodyMask?.classIndex ?? segmentation.side?.bodyMask?.classIndex,
+      frontRawCoverage: segmentation.front?.bodyMask ? Math.round(segmentation.front.bodyMask.rawCoverage * 10000) / 10000 : undefined,
+      frontCleanCoverage: segmentation.front?.bodyMask ? Math.round(segmentation.front.bodyMask.cleanedCoverage * 10000) / 10000 : undefined,
+      sideRawCoverage: segmentation.side?.bodyMask ? Math.round(segmentation.side.bodyMask.rawCoverage * 10000) / 10000 : undefined,
+      sideCleanCoverage: segmentation.side?.bodyMask ? Math.round(segmentation.side.bodyMask.cleanedCoverage * 10000) / 10000 : undefined,
+      frontChestWidthCm: frontChest == null ? undefined : roundMeasurement(frontChest),
+      frontWaistWidthCm: frontWaist == null ? undefined : roundMeasurement(frontWaist),
+      frontHipWidthCm: frontHip == null ? undefined : roundMeasurement(frontHip),
+      sideChestDepthCm: sideChest == null ? undefined : roundMeasurement(sideChest),
+      sideWaistDepthCm: sideWaist == null ? undefined : roundMeasurement(sideWaist),
+      sideHipDepthCm: sideHip == null ? undefined : roundMeasurement(sideHip),
+      chestDepthToWidthRatio: roundRatio(frontChest && sideChest ? sideChest / frontChest : null),
+      waistDepthToWidthRatio: roundRatio(frontWaist && sideWaist ? sideWaist / frontWaist : null),
+      hipDepthToWidthRatio: roundRatio(frontHip && sideHip ? sideHip / frontHip : null),
+    },
+  };
+}
+
+function measurementResultFromSegmentation(
+  base: MeasurementResult,
+  segmentation: BodySegmentationDebug,
+): MeasurementResult | null {
+  const scaleCmPerPx = base.debug?.scaleCmPerPx;
+  const frontChest = segmentationLineCm(segmentation.front, 'chest', scaleCmPerPx);
+  const frontWaist = segmentationLineCm(segmentation.front, 'waist', scaleCmPerPx);
+  const frontHip = segmentationLineCm(segmentation.front, 'hip', scaleCmPerPx);
+  const sideChest = segmentationLineCm(segmentation.side, 'chest', scaleCmPerPx);
+  const sideWaist = segmentationLineCm(segmentation.side, 'waist', scaleCmPerPx);
+  const sideHip = segmentationLineCm(segmentation.side, 'hip', scaleCmPerPx);
+
+  if (
+    scaleCmPerPx == null ||
+    frontChest == null ||
+    frontWaist == null ||
+    frontHip == null ||
+    sideChest == null ||
+    sideWaist == null ||
+    sideHip == null
+  ) {
+    return null;
+  }
+
+  const chest = roundMeasurement(ellipseCircumference(frontChest, sideChest));
+  const waist = roundMeasurement(ellipseCircumference(frontWaist, sideWaist));
+  const hip = roundMeasurement(ellipseCircumference(frontHip, sideHip));
+  const shoulderFallback = base.debug?.formula?.rawShoulderCm ?? base.shoulder_cm;
+  const shoulder = roundMeasurement(shoulderFallback >= 25 && shoulderFallback <= 100 ? shoulderFallback : frontChest * 1.45);
+
+  if (!measurementsInExpectedRange({ chest, waist, hip, shoulder })) {
+    return null;
+  }
+
+  return {
+    ...base,
+    chest_cm: chest,
+    waist_cm: waist,
+    hip_cm: hip,
+    shoulder_cm: shoulder,
+    confidence: Math.max(base.confidence, 0.52),
+    debug: base.debug
+      ? {
+          ...base.debug,
+          featureVector: buildSegmentationFeatureVector(base.debug.featureVector, segmentation, scaleCmPerPx, {
+            chest,
+            waist,
+            hip,
+            shoulder,
+            confidence: Math.max(base.confidence, 0.52),
+          }),
+        }
+      : base.debug,
+    error: undefined,
+    qualityIssues: undefined,
   };
 }
 
@@ -739,6 +1067,97 @@ function ResultTrustBanner({
   );
 }
 
+function DiagnosticGrid({
+  values,
+  textColor,
+  subColor,
+}: {
+  values: Array<[string, string]>;
+  textColor: string;
+  subColor: string;
+}) {
+  return (
+    <View style={styles.diagnosticGrid}>
+      {values.map(([label, value]) => (
+        <View key={label} style={styles.diagnosticItem}>
+          <Text style={[styles.diagnosticLabel, { color: subColor }]}>{label}</Text>
+          <Text style={[styles.diagnosticValue, { color: textColor }]}>{value}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function formatDebugValue(value: number | undefined, suffix = '', digits = 1) {
+  return value == null || !Number.isFinite(value) ? '--' : `${value.toFixed(digits)}${suffix}`;
+}
+
+function FeatureVectorDebugPanel({
+  featureVector,
+  textColor,
+  subColor,
+}: {
+  featureVector: MeasurementFeatureVector;
+  textColor: string;
+  subColor: string;
+}) {
+  const segmentation = featureVector.segmentation;
+  return (
+    <View style={styles.debugBlock}>
+      <Text style={[styles.debugTitle, { color: textColor }]}>Measurement feature vector</Text>
+      <DiagnosticGrid
+        values={[
+          ['Height input', formatDebugValue(featureVector.heightCm, ' cm')],
+          ['Person height', formatDebugValue(featureVector.personHeightPx, ' px')],
+          ['Scale', formatDebugValue(featureVector.scaleCmPerPx, ' cm/px', 2)],
+          ['Height span', formatDebugValue(featureVector.heightSpanFrac, '', 2)],
+          [
+            'Front pose',
+            `${formatDebugValue(featureVector.frontPoseMeanScore, '', 2)} | ${featureVector.frontVisibleCoreKeypoints ?? '--'} pts`,
+          ],
+          [
+            'Side pose',
+            `${formatDebugValue(featureVector.sidePoseMeanScore, '', 2)} | ${featureVector.sideVisibleCoreKeypoints ?? '--'} pts`,
+          ],
+          ['Front shoulder', formatDebugValue(featureVector.frontShoulderWidthCm, ' cm')],
+          ['Front hip', formatDebugValue(featureVector.frontHipWidthCm, ' cm')],
+          ['Est. chest depth', formatDebugValue(featureVector.estimatedChestDepthCm, ' cm')],
+          ['Side/front ratio', formatDebugValue(featureVector.sideToFrontShoulderRatio, '', 2)],
+          [
+            'Draft C/W/H',
+            `${formatDebugValue(featureVector.draftChestCm, '')}/${formatDebugValue(featureVector.draftWaistCm, '')}/${formatDebugValue(
+              featureVector.draftHipCm,
+              '',
+            )} cm`,
+          ],
+          ['Draft shoulder', formatDebugValue(featureVector.draftShoulderCm, ' cm')],
+        ]}
+        textColor={textColor}
+        subColor={subColor}
+      />
+      {segmentation ? (
+        <>
+          <Text style={[styles.debugMeta, { color: subColor }]}>
+            Segmentation: {segmentation.model ?? 'mask'} | Class {segmentation.bodyClassIndex ?? '--'}
+          </Text>
+          <DiagnosticGrid
+            values={[
+              ['Front mask clean', formatDebugValue(segmentation.frontCleanCoverage == null ? undefined : segmentation.frontCleanCoverage * 100, '%', 0)],
+              ['Side mask clean', formatDebugValue(segmentation.sideCleanCoverage == null ? undefined : segmentation.sideCleanCoverage * 100, '%', 0)],
+              ['Front C/W/H', `${formatDebugValue(segmentation.frontChestWidthCm)}/${formatDebugValue(segmentation.frontWaistWidthCm)}/${formatDebugValue(segmentation.frontHipWidthCm)} cm`],
+              ['Side C/W/H', `${formatDebugValue(segmentation.sideChestDepthCm)}/${formatDebugValue(segmentation.sideWaistDepthCm)}/${formatDebugValue(segmentation.sideHipDepthCm)} cm`],
+              ['Depth ratio C', formatDebugValue(segmentation.chestDepthToWidthRatio, '', 2)],
+              ['Depth ratio W/H', `${formatDebugValue(segmentation.waistDepthToWidthRatio, '', 2)}/${formatDebugValue(segmentation.hipDepthToWidthRatio, '', 2)}`],
+            ]}
+            textColor={textColor}
+            subColor={subColor}
+          />
+        </>
+      ) : null}
+    </View>
+  );
+}
+
 function MeasurementHistory({
   history,
   loading,
@@ -870,6 +1289,126 @@ function PoseDebugOverlay({
       <Text style={[styles.debugMeta, { color: subColor }]}>
         Green line: scale estimate. Yellow: shoulders. Blue: hips. Orange dots are low-confidence points.
       </Text>
+    </View>
+  );
+}
+
+function SegmentationDebugPanel({
+  debug,
+  frontUri,
+  sideUri,
+  scaleCmPerPx,
+  textColor,
+  subColor,
+}: {
+  debug: BodySegmentationDebug;
+  frontUri: string | null;
+  sideUri: string | null;
+  scaleCmPerPx?: number;
+  textColor: string;
+  subColor: string;
+}) {
+  return (
+    <View style={styles.segmentationPanel}>
+      <Text style={[styles.debugTitle, { color: textColor }]}>Segmentation mask candidates</Text>
+      <Text style={[styles.debugMeta, { color: subColor }]}>
+        {debug.model} | {debug.output}
+      </Text>
+      {debug.error ? <Text style={[styles.debugMeta, { color: '#ffb74d' }]}>Segmentation error: {debug.error}</Text> : null}
+      {frontUri && debug.front ? (
+        <SegmentationImagePanel
+          title="Front masks"
+          uri={frontUri}
+          image={debug.front}
+          scaleCmPerPx={scaleCmPerPx}
+          textColor={textColor}
+          subColor={subColor}
+        />
+      ) : null}
+      {sideUri && debug.side ? (
+        <SegmentationImagePanel
+          title="Side masks"
+          uri={sideUri}
+          image={debug.side}
+          scaleCmPerPx={scaleCmPerPx}
+          textColor={textColor}
+          subColor={subColor}
+        />
+      ) : null}
+    </View>
+  );
+}
+
+function SegmentationImagePanel({
+  title,
+  uri,
+  image,
+  scaleCmPerPx,
+  textColor,
+  subColor,
+}: {
+  title: string;
+  uri: string;
+  image: SegmentationImageDebug;
+  scaleCmPerPx?: number;
+  textColor: string;
+  subColor: string;
+}) {
+  const bodyMaskRows =
+    image.bodyMask?.lines.map((line) => {
+      const cm = scaleCmPerPx == null ? '--' : `${(line.widthImagePx * scaleCmPerPx).toFixed(1)} cm`;
+      return [`Clean ${line.label}`, `${line.widthImagePx.toFixed(1)} px | ${cm} | ${line.segmentCount} seg`] as [string, string];
+    }) ?? [];
+  const bodyMaskMeta = image.bodyMask
+    ? `Class ${image.bodyMask.classIndex} cleanup: raw ${Math.round(image.bodyMask.rawCoverage * 100)}%, main blob ${Math.round(
+        image.bodyMask.cleanedCoverage * 100,
+      )}%`
+    : null;
+
+  return (
+    <View style={styles.debugBlock}>
+      <Text style={[styles.debugTitle, { color: textColor }]}>{title}</Text>
+      {bodyMaskMeta ? <Text style={[styles.debugMeta, { color: subColor, marginBottom: 8 }]}>{bodyMaskMeta}</Text> : null}
+      {bodyMaskRows.length ? <DiagnosticGrid values={bodyMaskRows} textColor={textColor} subColor={subColor} /> : null}
+      <DiagnosticGrid
+        values={image.classes.map((entry) => [`Class ${entry.classIndex}`, `${Math.round(entry.coverage * 100)}%`])}
+        textColor={textColor}
+        subColor={subColor}
+      />
+      <View style={styles.maskGrid}>
+        {image.classes.map((entry) => (
+          <View key={entry.classIndex} style={styles.maskPreview}>
+            <Text style={[styles.maskTitle, { color: textColor }]}>Class {entry.classIndex}</Text>
+            <View style={[styles.maskImageWrap, { aspectRatio: image.originalWidth / image.originalHeight }]}>
+              <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              <Svg width="100%" height="100%" viewBox={`0 0 ${image.sampleSize} ${image.sampleSize}`} preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+                {image.classCells.map((classIndex, cellIndex) => {
+                  if (classIndex !== entry.classIndex) return null;
+                  const x = cellIndex % image.sampleSize;
+                  const y = Math.floor(cellIndex / image.sampleSize);
+                  return <Rect key={cellIndex} x={x} y={y} width={1} height={1} fill="rgba(132,196,65,0.48)" />;
+                })}
+                {entry.classIndex === image.bodyMask?.classIndex
+                  ? image.bodyMask.lines.map((line) => (
+                      <Line
+                        key={line.label}
+                        x1={(line.leftX ?? 0) * image.sampleSize}
+                        y1={line.y * image.sampleSize}
+                        x2={(line.rightX ?? 0) * image.sampleSize}
+                        y2={line.y * image.sampleSize}
+                        stroke="rgba(255,210,80,0.95)"
+                        strokeWidth={0.5}
+                      />
+                    ))
+                  : null}
+              </Svg>
+            </View>
+            <Text style={[styles.maskMeta, { color: subColor }]}>
+              {Math.round(entry.coverage * 100)}% cover | score {entry.meanScore.toFixed(2)}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -1049,4 +1588,35 @@ const styles = StyleSheet.create({
   debugTitle: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), marginBottom: 8 },
   debugImageWrap: { width: '100%', borderRadius: 10, overflow: 'hidden', backgroundColor: '#111' },
   debugMeta: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), lineHeight: 18, marginTop: 8 },
+  segmentationPanel: {
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  maskGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  maskPreview: {
+    width: '48%',
+    marginBottom: 8,
+  },
+  maskTitle: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(12), marginBottom: 6 },
+  maskImageWrap: { width: '100%', borderRadius: 8, overflow: 'hidden', backgroundColor: '#111' },
+  maskMeta: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), lineHeight: 15, marginTop: 5 },
+  diagnosticGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  diagnosticItem: {
+    width: '48%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(132,196,65,0.18)',
+    padding: 8,
+  },
+  diagnosticLabel: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), marginBottom: 3 },
+  diagnosticValue: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(12) },
 });

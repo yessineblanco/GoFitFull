@@ -285,6 +285,18 @@ Debug overlay wiring completed:
   - native inference time
   - separate MediaPipe front and side overlays
 - This is intentionally comparison-only. It does not replace MoveNet, segmentation, saved measurements, confidence scoring, or save gating.
+- The JS wrapper now uses `requireOptionalNativeModule` so a build that does not contain the native module reports a debug error instead of crashing the screen.
+
+Runtime failure found during EAS testing:
+
+- Error seen on device: `Cannot find native module 'MediaPipePoseLandmarker'`.
+- Root cause: `GoFitMobile/modules/` was still untracked by git, so EAS cloud build did not receive the local native module files.
+- Local Metro could still bundle the TypeScript wrapper from the filesystem, which made JS call a native module that the installed binary did not contain.
+- Required unblock before the next EAS build:
+  - track the local module files with git, including `pose_landmarker_full.task`, or
+  - use a deliberate `.easignore` upload strategy, or
+  - run a fully local Android build with `npx expo run:android --device`.
+- Clean production recommendation: track and commit the local module files so EAS builds from a reproducible git state.
 
 Original scaffold command used:
 

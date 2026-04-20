@@ -230,6 +230,15 @@ Implemented:
   - shows front/side landmark counts, average visibility score, visible core points, and inference timing
   - draws a 33-landmark body overlay beside the existing MoveNet and segmentation debug views
   - does not change displayed measurements, saved measurements, confidence, or save gating yet
+- EAS runtime test failed with `Cannot find native module 'MediaPipePoseLandmarker'`.
+- Root cause: the local module folder was still untracked by git, so EAS cloud build did not upload it.
+- Added a defensive JS wrapper so missing native module shows a debug error instead of crashing.
+- Next EAS build must include tracked local module files, especially:
+  - `GoFitMobile/modules/mediapipe-pose-landmarker/expo-module.config.json`
+  - Android Kotlin bridge and `build.gradle`
+  - `pose_landmarker_full.task`
+  - TypeScript wrapper/types
+  - iOS placeholder files
 
 ## Phase 4: Manual Correction And Trust UX
 

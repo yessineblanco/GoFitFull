@@ -31,6 +31,7 @@ import { BodyGuideOverlay } from '@/components/shared/BodyGuideOverlay';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
 import { getBackgroundColor, getGlassBg, getGlassBorder, getTextColor } from '@/utils/colorUtils';
+import type { MediaPipePoseLandmark, MediaPipePoseResult } from '../../../modules/mediapipe-pose-landmarker';
 
 const BRAND = '#84c441';
 const MIN_SAVE_CONFIDENCE = 0.25;
@@ -68,6 +69,34 @@ type BodyMeasurementHistoryEntry = {
   source?: string | null;
 };
 
+type MediaPipeComparisonDebug = {
+  front?: MediaPipePoseResult;
+  side?: MediaPipePoseResult;
+  error?: string;
+};
+
+type MediaPipePoseLandmarkerModuleShape = {
+  analyzePoseFromImage(uri: string): Promise<MediaPipePoseResult>;
+};
+
+async function analyzeMediaPipeComparison(frontImageUri: string, sideImageUri: string): Promise<MediaPipeComparisonDebug> {
+  if (Platform.OS !== 'android') {
+    return { error: 'MediaPipe Pose Landmarker debug bridge is Android-only until the iOS bridge is implemented.' };
+  }
+
+  try {
+    // Lazy load keeps old dev clients from crashing before this debug path is used.
+    const MediaPipePoseLandmarker = require('../../../modules/mediapipe-pose-landmarker').default as MediaPipePoseLandmarkerModuleShape;
+    const [front, side] = await Promise.all([
+      MediaPipePoseLandmarker.analyzePoseFromImage(frontImageUri),
+      MediaPipePoseLandmarker.analyzePoseFromImage(sideImageUri),
+    ]);
+    return { front, side };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 export default function BodyMeasurementScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
@@ -85,6 +114,7 @@ export default function BodyMeasurementScreen() {
   const [showCameraRetry, setShowCameraRetry] = useState(false);
   const [result, setResult] = useState<MeasurementResult | null>(null);
   const [segmentationDebug, setSegmentationDebug] = useState<BodySegmentationDebug | null>(null);
+  const [mediaPipeDebug, setMediaPipeDebug] = useState<MediaPipeComparisonDebug | null>(null);
   const [editedMeasurements, setEditedMeasurements] = useState<EditableMeasurements>({
     chest: '',
     waist: '',
@@ -177,6 +207,7 @@ export default function BodyMeasurementScreen() {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.92, shutterSound: false });
       if (!photo?.uri) return;
       if (phase === 'front') {
+        setMediaPipeDebug(null);
         setFrontUri(photo.uri);
         setPhase('side');
         await primeAndroidPreview(cameraRef.current);
@@ -186,12 +217,14 @@ export default function BodyMeasurementScreen() {
         setPhase('analyze');
         setCameraReady(false);
         setSegmentationDebug(null);
+        setMediaPipeDebug(null);
         try {
           const res = await analyzeMeasurements({
             frontImageUri: frontUri,
             sideImageUri: photo.uri,
             heightCm,
           });
+          const mediaPipeComparisonPromise = analyzeMediaPipeComparison(frontUri, photo.uri);
           let finalResult = res;
           try {
             const segmentation = await analyzeBodySegmentation({
@@ -210,6 +243,7 @@ export default function BodyMeasurementScreen() {
               error: segmentationError instanceof Error ? segmentationError.message : String(segmentationError),
             });
           }
+          setMediaPipeDebug(await mediaPipeComparisonPromise);
           setResult(finalResult);
           setEditedMeasurements(measurementResultToEditable(finalResult));
           setPhase('result');
@@ -220,6 +254,7 @@ export default function BodyMeasurementScreen() {
           Alert.alert('Analysis', e instanceof Error ? e.message : 'On-device analysis failed.');
           setPhase('side');
           setSideUri(null);
+          setMediaPipeDebug(null);
         }
       }
     } catch (e) {
@@ -298,6 +333,7 @@ export default function BodyMeasurementScreen() {
       setSideUri(null);
       setResult(null);
       setSegmentationDebug(null);
+      setMediaPipeDebug(null);
       setEditedMeasurements(emptyEditableMeasurements());
       setShowPoseDebug(false);
       setPhase('intro');
@@ -327,6 +363,7 @@ export default function BodyMeasurementScreen() {
     setSideUri(null);
     setResult(null);
     setSegmentationDebug(null);
+    setMediaPipeDebug(null);
     setEditedMeasurements(emptyEditableMeasurements());
     setShowPoseDebug(false);
     setPhase('intro');
@@ -592,6 +629,15 @@ export default function BodyMeasurementScreen() {
                       frontUri={frontUri}
                       sideUri={sideUri}
                       scaleCmPerPx={result.debug.scaleCmPerPx}
+                      textColor={text}
+                      subColor={sub}
+                    />
+                  ) : null}
+                  {mediaPipeDebug ? (
+                    <MediaPipeDebugPanel
+                      debug={mediaPipeDebug}
+                      frontUri={frontUri}
+                      sideUri={sideUri}
                       textColor={text}
                       subColor={sub}
                     />
@@ -1288,6 +1334,154 @@ function PoseDebugOverlay({
       </View>
       <Text style={[styles.debugMeta, { color: subColor }]}>
         Green line: scale estimate. Yellow: shoulders. Blue: hips. Orange dots are low-confidence points.
+      </Text>
+    </View>
+  );
+}
+
+const MEDIAPIPE_POSE_CONNECTIONS: Array<[number, number, string]> = [
+  [11, 12, 'rgba(255,210,80,0.95)'],
+  [23, 24, 'rgba(80,180,255,0.95)'],
+  [11, 23, 'rgba(132,196,65,0.8)'],
+  [12, 24, 'rgba(132,196,65,0.8)'],
+  [11, 13, 'rgba(132,196,65,0.55)'],
+  [13, 15, 'rgba(132,196,65,0.55)'],
+  [12, 14, 'rgba(132,196,65,0.55)'],
+  [14, 16, 'rgba(132,196,65,0.55)'],
+  [23, 25, 'rgba(132,196,65,0.65)'],
+  [25, 27, 'rgba(132,196,65,0.65)'],
+  [27, 31, 'rgba(132,196,65,0.55)'],
+  [24, 26, 'rgba(132,196,65,0.65)'],
+  [26, 28, 'rgba(132,196,65,0.65)'],
+  [28, 32, 'rgba(132,196,65,0.55)'],
+];
+
+const MEDIAPIPE_DEBUG_POINTS = [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28, 31, 32];
+const MEDIAPIPE_CORE_POINTS = [0, 11, 12, 23, 24, 27, 28, 31, 32];
+
+function mediaPipeLandmarkScore(landmark?: MediaPipePoseLandmark) {
+  if (!landmark) return 0;
+  if (typeof landmark.visibility === 'number') return landmark.visibility;
+  if (typeof landmark.presence === 'number') return landmark.presence;
+  return 1;
+}
+
+function mediaPipeLandmarkIsDrawable(landmark?: MediaPipePoseLandmark, minScore = 0.2) {
+  return (
+    !!landmark &&
+    Number.isFinite(landmark.x) &&
+    Number.isFinite(landmark.y) &&
+    landmark.x >= -0.05 &&
+    landmark.x <= 1.05 &&
+    landmark.y >= -0.05 &&
+    landmark.y <= 1.05 &&
+    mediaPipeLandmarkScore(landmark) >= minScore
+  );
+}
+
+function mediaPipeAverageScore(result?: MediaPipePoseResult) {
+  if (!result?.landmarks?.length) return undefined;
+  const sum = result.landmarks.reduce((total, landmark) => total + mediaPipeLandmarkScore(landmark), 0);
+  return sum / result.landmarks.length;
+}
+
+function mediaPipeVisibleCoreCount(result?: MediaPipePoseResult) {
+  if (!result?.landmarks?.length) return 0;
+  return MEDIAPIPE_CORE_POINTS.filter((index) => mediaPipeLandmarkScore(result.landmarks[index]) >= 0.5).length;
+}
+
+function MediaPipeDebugPanel({
+  debug,
+  frontUri,
+  sideUri,
+  textColor,
+  subColor,
+}: {
+  debug: MediaPipeComparisonDebug;
+  frontUri: string | null;
+  sideUri: string | null;
+  textColor: string;
+  subColor: string;
+}) {
+  return (
+    <View style={styles.debugBlock}>
+      <Text style={[styles.debugTitle, { color: textColor }]}>MediaPipe Pose Landmarker</Text>
+      <Text style={[styles.debugMeta, { color: subColor, marginTop: 0 }]}>
+        Debug-only comparison. These landmarks do not change the saved measurements yet.
+      </Text>
+      {debug.error ? <Text style={[styles.debugMeta, { color: '#ffb74d' }]}>MediaPipe error: {debug.error}</Text> : null}
+      <DiagnosticGrid
+        values={[
+          ['Front landmarks', debug.front ? `${debug.front.landmarks.length} pts | ${debug.front.poseCount ?? 0} pose` : '--'],
+          ['Side landmarks', debug.side ? `${debug.side.landmarks.length} pts | ${debug.side.poseCount ?? 0} pose` : '--'],
+          ['Front score', formatDebugValue(mediaPipeAverageScore(debug.front), '', 2)],
+          ['Side score', formatDebugValue(mediaPipeAverageScore(debug.side), '', 2)],
+          ['Front core', debug.front ? `${mediaPipeVisibleCoreCount(debug.front)}/${MEDIAPIPE_CORE_POINTS.length} pts` : '--'],
+          ['Side core', debug.side ? `${mediaPipeVisibleCoreCount(debug.side)}/${MEDIAPIPE_CORE_POINTS.length} pts` : '--'],
+          ['Front time', debug.front?.inferenceMs == null ? '--' : `${debug.front.inferenceMs} ms`],
+          ['Side time', debug.side?.inferenceMs == null ? '--' : `${debug.side.inferenceMs} ms`],
+        ]}
+        textColor={textColor}
+        subColor={subColor}
+      />
+      {frontUri && debug.front ? (
+        <MediaPipePoseOverlay title="MediaPipe front photo" uri={frontUri} result={debug.front} textColor={textColor} subColor={subColor} />
+      ) : null}
+      {sideUri && debug.side ? (
+        <MediaPipePoseOverlay title="MediaPipe side photo" uri={sideUri} result={debug.side} textColor={textColor} subColor={subColor} />
+      ) : null}
+    </View>
+  );
+}
+
+function MediaPipePoseOverlay({
+  title,
+  uri,
+  result,
+  textColor,
+  subColor,
+}: {
+  title: string;
+  uri: string;
+  result: MediaPipePoseResult;
+  textColor: string;
+  subColor: string;
+}) {
+  const point = (index: number) => result.landmarks[index];
+  const aspectRatio = result.imageWidth > 0 && result.imageHeight > 0 ? result.imageWidth / result.imageHeight : 1;
+  const line = (a: number, b: number, color: string) => {
+    const pa = point(a);
+    const pb = point(b);
+    if (!mediaPipeLandmarkIsDrawable(pa) || !mediaPipeLandmarkIsDrawable(pb)) return null;
+    return <Line key={`${a}-${b}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} stroke={color} strokeWidth={0.006} />;
+  };
+
+  return (
+    <View style={styles.debugBlock}>
+      <Text style={[styles.debugTitle, { color: textColor }]}>{title}</Text>
+      <View style={[styles.debugImageWrap, { aspectRatio }]}>
+        <Image source={{ uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <Svg width="100%" height="100%" viewBox="0 0 1 1" preserveAspectRatio="none" style={StyleSheet.absoluteFill}>
+          {MEDIAPIPE_POSE_CONNECTIONS.map(([a, b, color]) => line(a, b, color))}
+          {MEDIAPIPE_DEBUG_POINTS.map((index) => {
+            const p = point(index);
+            if (!mediaPipeLandmarkIsDrawable(p, 0.05)) return null;
+            const score = mediaPipeLandmarkScore(p);
+            return (
+              <Circle
+                key={index}
+                cx={p.x}
+                cy={p.y}
+                r={0.011}
+                fill={score >= 0.5 ? BRAND : '#ffb74d'}
+                opacity={score >= 0.2 ? 0.95 : 0.35}
+              />
+            );
+          })}
+        </Svg>
+      </View>
+      <Text style={[styles.debugMeta, { color: subColor }]}>
+        Yellow: shoulders. Blue: hips. Green: torso, arms, legs. Orange points are lower visibility.
       </Text>
     </View>
   );

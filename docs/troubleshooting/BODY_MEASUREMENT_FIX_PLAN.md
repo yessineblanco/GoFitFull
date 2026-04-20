@@ -116,6 +116,14 @@ Purpose: move from pose estimation to body-outline measurement.
 - [x] Render segmentation class candidates in the debug overlay.
 - [x] Add debug-only Class 4 mask width/depth measurements.
 - [x] Add first Class 4 mask cleanup pass.
+- [x] Decide that the current selfie segmentation mask is not satisfying enough for production measurement.
+- [x] Choose MediaPipe Pose Landmarker Full as the next model candidate.
+- [x] Scaffold cross-platform MediaPipe Pose Landmarker native module.
+- [x] Remove approved unused generated view/web boilerplate.
+- [x] Implement Android MediaPipe Pose Landmarker native bridge.
+- [x] Compile-check Android MediaPipe Pose Landmarker native bridge with a JDK.
+- [x] Wire Android MediaPipe Pose Landmarker into the debug-only comparison overlay.
+- [ ] Implement iOS MediaPipe Pose Landmarker native bridge.
 - [ ] Test whether it can run on-device with acceptable performance.
 - [ ] Extract a clean body silhouette mask from front and side photos.
 - [ ] Use pose keypoints only to locate anatomical levels:
@@ -141,6 +149,7 @@ Success criteria:
 Research:
 
 - [Body Measurement Segmentation Research](./BODY_MEASUREMENT_SEGMENTATION_RESEARCH.md)
+- [Body Measurement MediaPipe Pose Landmarker Spike](./BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md)
 
 ### Phase 3 Notes
 
@@ -201,6 +210,26 @@ Implemented:
   - mild geometry issues stay `Usable estimate`
   - extreme geometry or impossible ratios remain `Retake needed`
   - save is blocked only for true blockers, not advisory review warnings
+- Added the local Expo native module for MediaPipe Pose Landmarker:
+  - Android uses `com.google.mediapipe:tasks-vision:0.10.33`
+  - Android bundles `pose_landmarker_full.task`
+  - Android `analyzePoseFromImage(uri)` decodes/rotates the photo and returns 33 landmarks, world landmarks, pose count, and inference time
+  - iOS still has the placeholder bridge and must be implemented before production replacement
+- Set up the local Android build environment:
+  - installed Microsoft OpenJDK 17
+  - installed Android SDK command-line tools
+  - installed Android SDK Platform 36, Build-Tools 36.0.0, and Platform-Tools
+  - Gradle auto-installed required NDK packages during verification
+  - added local SDK pointer at `GoFitMobile/android/local.properties`
+  - saved `JAVA_HOME` and `ANDROID_HOME` for future terminals
+- Verified the Android bridge compiles:
+  - `.\gradlew.bat :mediapipe-pose-landmarker:compileDebugKotlin`
+- Wired the Android MediaPipe bridge into `BodyMeasurementScreen.tsx` as a debug-only comparison path:
+  - runs on the same front/side photos after the existing MoveNet analysis
+  - renders a separate MediaPipe Pose Landmarker diagnostics panel
+  - shows front/side landmark counts, average visibility score, visible core points, and inference timing
+  - draws a 33-landmark body overlay beside the existing MoveNet and segmentation debug views
+  - does not change displayed measurements, saved measurements, confidence, or save gating yet
 
 ## Phase 4: Manual Correction And Trust UX
 

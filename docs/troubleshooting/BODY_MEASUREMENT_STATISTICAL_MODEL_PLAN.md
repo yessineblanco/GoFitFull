@@ -153,7 +153,7 @@ Recommended flow:
 ```text
 Photos
   -> Pose model
-  -> Segmentation / human parsing model
+  -> Segmentation / human parsing model when reliable
   -> Feature extractor
   -> Statistical measurement estimator
   -> Plausibility + uncertainty scoring
@@ -216,6 +216,11 @@ Actions:
 - Keep user review/edit before saving.
 - Keep debug overlay for feature inspection.
 - Do not tune rules only around one person's photos.
+- Replace the weak selfie segmentation experiment with a stronger pose/body candidate before investing in another formula pass.
+
+Current model decision:
+
+- [Body Measurement MediaPipe Pose Landmarker Spike](./BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md)
 
 ### Stage 2: Log feature vectors
 

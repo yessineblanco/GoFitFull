@@ -2,6 +2,25 @@
 
 A comprehensive fitness platform consisting of a mobile app and admin panel, built with React Native (Expo) and Next.js, powered by Supabase.
 
+## Current Focus: Body Measurement AI
+
+The active mobile-app work is the body measurement feature in `GoFitMobile`.
+
+Current status:
+
+- The saved measurement flow still uses guarded draft estimates with manual review before saving.
+- MoveNet and the selfie segmentation model remain part of the existing debug/measurement stack.
+- MediaPipe Pose Landmarker Full is now integrated as a debug-only comparison path through a local Expo native module.
+- Android phone testing confirms MediaPipe is working in the dev client: front and side photos returned `33 pts | 1 pose`, high scores, `9/9` visible core points, and native inference around `38 ms` to `65 ms`.
+- MediaPipe does not yet change displayed measurements, saved measurements, confidence, formulas, or save gating.
+- iOS still needs the matching native bridge before MediaPipe can be considered for production replacement.
+
+Important body-measurement docs:
+
+- [Body Measurement Fix Plan](docs/troubleshooting/BODY_MEASUREMENT_FIX_PLAN.md)
+- [MediaPipe Pose Landmarker Spike](docs/troubleshooting/BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md)
+- [Statistical Model Plan](docs/troubleshooting/BODY_MEASUREMENT_STATISTICAL_MODEL_PLAN.md)
+
 ## Project Structure
 
 This is a monorepo containing two main applications:
@@ -43,6 +62,14 @@ npm start
 ```
 
 See [GoFitMobile/PROJECT_GUIDE.md](GoFitMobile/PROJECT_GUIDE.md) for detailed documentation.
+
+**Body measurement native module:**
+
+```text
+GoFitMobile/modules/mediapipe-pose-landmarker/
+```
+
+The MediaPipe module currently exposes `analyzePoseFromImage(uri)` for Android debug comparison. Keep local native module files tracked before EAS builds so the native binary and JS wrapper stay in sync.
 
 ### 💻 Admin Panel (Admin-panel)
 

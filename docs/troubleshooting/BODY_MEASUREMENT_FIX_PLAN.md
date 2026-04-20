@@ -255,6 +255,8 @@ Implemented:
   - Reported native inference timing was about `38 ms` for the front photo and `65 ms` for the side photo.
   - Visual overlay appears to follow the body substantially better than the previous unreliable path for shoulders, hips, knees, and ankles on the tested mirror photos.
   - The test photos still include phone/hand occlusion over the torso, so the next step is repeat testing across mirror and direct captures before any measurement formula or save-gating changes.
+- 2026-04-20 README update:
+  - Root `README.md` now summarizes the body measurement focus, the debug-only MediaPipe Android status, the unchanged saved-measurement behavior, and links to the current troubleshooting/planning docs.
 
 ## Phase 4: Manual Correction And Trust UX
 

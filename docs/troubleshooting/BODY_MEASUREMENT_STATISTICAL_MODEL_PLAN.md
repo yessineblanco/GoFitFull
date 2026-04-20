@@ -336,6 +336,17 @@ Reason:
 
 Before replacing the formula, we need to collect the exact inputs that a statistical estimator would learn from. This avoids guessing and avoids tuning the app around one user's photos.
 
+### 2026-04-20
+
+Current measurement work is now past the first Android MediaPipe runtime blocker, but it is still not ready for a statistical estimator code change.
+
+Status:
+
+- EAS reports a finished Android development build at `3c3a3c1`, which includes the MediaPipe debug comparison commit `2695f2c`.
+- First Android phone test confirms MediaPipe returns `33 pts | 1 pose` for both front and side photos, with high scores and `9/9` visible core points.
+- The next validation step is repeat testing across mirror and direct front/side captures, comparing MoveNet, segmentation, and MediaPipe overlays on the same photos.
+- Do not replace the production formula or train a baseline estimator until MediaPipe proves stable across repeat captures and its feature vectors are logged cleanly enough to be a trustworthy input source.
+
 ## Sources
 
 - ACM paper page: https://dl.acm.org/doi/fullHtml/10.1145/3606305.3606323

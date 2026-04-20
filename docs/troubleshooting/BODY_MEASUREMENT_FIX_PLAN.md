@@ -123,8 +123,9 @@ Purpose: move from pose estimation to body-outline measurement.
 - [x] Implement Android MediaPipe Pose Landmarker native bridge.
 - [x] Compile-check Android MediaPipe Pose Landmarker native bridge with a JDK.
 - [x] Wire Android MediaPipe Pose Landmarker into the debug-only comparison overlay.
+- [x] Test Android MediaPipe Pose Landmarker on-device with acceptable performance.
 - [ ] Implement iOS MediaPipe Pose Landmarker native bridge.
-- [ ] Test whether it can run on-device with acceptable performance.
+- [ ] Test iOS MediaPipe Pose Landmarker on-device after the iOS bridge is implemented.
 - [ ] Extract a clean body silhouette mask from front and side photos.
 - [ ] Use pose keypoints only to locate anatomical levels:
   - shoulder
@@ -239,6 +240,21 @@ Implemented:
   - `pose_landmarker_full.task`
   - TypeScript wrapper/types
   - iOS placeholder files
+- 2026-04-20 build status check:
+  - local git worktree is clean
+  - direct GitHub check shows `origin/master` at `4524391`, which includes `2695f2c`
+  - `master` is one commit ahead of `origin/master` with `3c3a3c1 fix(eas): move .easignore to EAS project root with anchored native-build patterns`
+  - EAS reports the newest Android development build finished from `3c3a3c1`, so that build includes the MediaPipe module commit and the EAS upload-ignore fix
+  - if the next build is started from GitHub/remote instead of local EAS upload, push `3c3a3c1` first because GitHub does not have that `.easignore` fix yet
+  - next phone test is to install the newest `3c3a3c1` Android dev-client APK, fully close the old app, run body measurement, open `Pose debug overlay`, and confirm the MediaPipe panel returns `33 pts` instead of `Cannot find native module`
+- 2026-04-20 Android phone test result:
+  - MediaPipe native module is present in the installed dev-client build; the previous `Cannot find native module 'MediaPipePoseLandmarker'` failure is resolved.
+  - The debug panel returned `33 pts | 1 pose` for both front and side photos.
+  - Front score was about `0.99`; side score was about `0.98`.
+  - Front and side core points both reported `9/9`.
+  - Reported native inference timing was about `38 ms` for the front photo and `65 ms` for the side photo.
+  - Visual overlay appears to follow the body substantially better than the previous unreliable path for shoulders, hips, knees, and ankles on the tested mirror photos.
+  - The test photos still include phone/hand occlusion over the torso, so the next step is repeat testing across mirror and direct captures before any measurement formula or save-gating changes.
 
 ## Phase 4: Manual Correction And Trust UX
 

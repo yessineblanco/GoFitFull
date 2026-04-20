@@ -298,6 +298,28 @@ Runtime failure found during EAS testing:
   - run a fully local Android build with `npx expo run:android --device`.
 - Clean production recommendation: track and commit the local module files so EAS builds from a reproducible git state.
 
+Current EAS/build status, checked 2026-04-20:
+
+- Before this documentation update, `git status --short --branch` reported a clean worktree on `master`, one commit ahead of `origin/master`.
+- Direct GitHub check reports `origin/master` at `4524391`, which includes `2695f2c feat: add MediaPipe Pose Landmarker debug comparison to body measurement`.
+- The only local-only commit is `3c3a3c1 fix(eas): move .easignore to EAS project root with anchored native-build patterns`.
+- EAS build list reports the newest Android `development` build as `FINISHED` at commit `3c3a3c1`.
+- Latest finished Android build id: `87a04a81-3804-4eb5-96f7-6f5edecb73ad`.
+- Latest APK URL reported by EAS: `https://expo.dev/artifacts/eas/hKneZs7FHjCc6HM6mEdgon.apk`.
+- Phone-test target: install that APK, force-close the old app, run a new body measurement, open `Pose debug overlay`, and verify that the MediaPipe panel appears with 33 landmarks for front and side images.
+- If building from GitHub/remote instead of the current local workspace, push `3c3a3c1` first because GitHub does not have the `.easignore` location fix yet.
+
+Android phone-test result, checked 2026-04-20:
+
+- MediaPipe is working in the installed Android dev-client build.
+- The debug comparison panel appears inside the body measurement pose debug overlay.
+- Front image result: `33 pts | 1 pose`, score about `0.99`, core `9/9`, inference about `38 ms`.
+- Side image result: `33 pts | 1 pose`, score about `0.98`, core `9/9`, inference about `65 ms`.
+- The overlay visually tracks shoulders, hips, knees, and ankles on the tested mirror front and side photos.
+- This validates the Android native bridge and EAS packaging path.
+- It does not yet validate production measurement accuracy, because the tested mirror photos include phone/hand occlusion and MediaPipe is still debug-only.
+- Next comparison task: repeat the same debug capture with several mirror and direct front/side photo pairs, then compare MediaPipe stability against MoveNet and segmentation before changing formulas or save gating.
+
 Original scaffold command used:
 
 ```bash

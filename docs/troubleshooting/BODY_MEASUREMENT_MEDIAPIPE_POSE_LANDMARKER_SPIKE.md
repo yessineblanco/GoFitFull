@@ -320,6 +320,24 @@ Android phone-test result, checked 2026-04-20:
 - It does not yet validate production measurement accuracy, because the tested mirror photos include phone/hand occlusion and MediaPipe is still debug-only.
 - Next comparison task: repeat the same debug capture with several mirror and direct front/side photo pairs, then compare MediaPipe stability against MoveNet and segmentation before changing formulas or save gating.
 
+Direct-capture Android phone-test result, checked 2026-04-20:
+
+- A second person took the photos directly, so this test removes the mirror phone/hand occlusion from the first validation pair.
+- Front image result: `33 pts | 1 pose`, score about `0.99`, core `9/9`, inference about `130 ms`.
+- Side image result: `33 pts | 1 pose`, score about `0.81`, core `9/9`, inference about `74 ms`.
+- The overlay visually tracks the full body on both direct front and direct side photos.
+- The side score is lower than the mirror side test, so future quality scoring should not rely only on landmark count; it should preserve average visibility, core visibility, and side/front consistency.
+- This is still debug-only validation. Do not change displayed measurements, saved measurements, formulas, confidence, or save gating from this result alone.
+
+Migration/removal decision, checked 2026-04-20:
+
+- Do not remove MoveNet or the selfie segmentation model yet.
+- MediaPipe is the likely replacement for MoveNet as the pose landmark source if repeat Android tests stay stable and iOS reaches parity.
+- MediaPipe Pose Landmarker does not automatically replace segmentation or a body-outline estimator. Landmarks identify body joints and useful anatomical levels; they do not directly measure chest, waist, or hip circumference.
+- Keep the current segmentation diagnostics until either MediaPipe segmentation output or another body-outline/human-parsing source is proven better.
+- Keep MoveNet as a fallback/comparison path until MediaPipe feature vectors, quality gates, debug overlays, and both Android/iOS native builds are validated.
+- Removal should be a final cleanup step, not part of the spike. Delete model files and old services only after nothing imports them, saved measurements still work, and the debug overlay has an equivalent MediaPipe-based replacement.
+
 Original scaffold command used:
 
 ```bash

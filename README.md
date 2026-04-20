@@ -11,7 +11,7 @@ Current status:
 - The saved measurement flow still uses guarded draft estimates with manual review before saving.
 - MoveNet and the selfie segmentation model remain part of the existing debug/measurement stack.
 - MediaPipe Pose Landmarker Full is now integrated as a debug-only comparison path through a local Expo native module.
-- Android phone testing confirms MediaPipe is working in the dev client: front and side photos returned `33 pts | 1 pose`, high scores, `9/9` visible core points, and native inference around `38 ms` to `65 ms`.
+- Android phone testing confirms MediaPipe is working in the dev client on both mirror and direct captures: front and side photos returned `33 pts | 1 pose`, `9/9` visible core points, and native inference around `38 ms` to `130 ms`.
 - MediaPipe does not yet change displayed measurements, saved measurements, confidence, formulas, or save gating.
 - iOS still needs the matching native bridge before MediaPipe can be considered for production replacement.
 

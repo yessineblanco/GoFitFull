@@ -343,8 +343,9 @@ Current measurement work is now past the first Android MediaPipe runtime blocker
 Status:
 
 - EAS reports a finished Android development build at `3c3a3c1`, which includes the MediaPipe debug comparison commit `2695f2c`.
-- First Android phone test confirms MediaPipe returns `33 pts | 1 pose` for both front and side photos, with high scores and `9/9` visible core points.
-- The next validation step is repeat testing across mirror and direct front/side captures, comparing MoveNet, segmentation, and MediaPipe overlays on the same photos.
+- Android phone testing now confirms MediaPipe returns `33 pts | 1 pose` for both mirror captures and direct photos taken by another person.
+- Direct-capture testing still returned `9/9` visible core points for front and side, but the side score was lower at about `0.81`, so future feature vectors should preserve visibility/quality details rather than treating all `33 pts` results as equal.
+- The next validation step is repeat testing across more mirror and direct front/side captures, comparing MoveNet, segmentation, and MediaPipe overlays on the same photos.
 - Do not replace the production formula or train a baseline estimator until MediaPipe proves stable across repeat captures and its feature vectors are logged cleanly enough to be a trustworthy input source.
 
 ## Sources

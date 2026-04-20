@@ -141,6 +141,8 @@ Purpose: move from pose estimation to body-outline measurement.
   - front/side consistency
   - plausible human ratios
   - height scale stability
+- [ ] Decide whether to retire MoveNet after MediaPipe is validated on Android and iOS.
+- [ ] Decide whether to keep, replace, or remove the current selfie segmentation model after a better body-outline source is proven.
 
 Success criteria:
 
@@ -255,8 +257,22 @@ Implemented:
   - Reported native inference timing was about `38 ms` for the front photo and `65 ms` for the side photo.
   - Visual overlay appears to follow the body substantially better than the previous unreliable path for shoulders, hips, knees, and ankles on the tested mirror photos.
   - The test photos still include phone/hand occlusion over the torso, so the next step is repeat testing across mirror and direct captures before any measurement formula or save-gating changes.
+- 2026-04-20 direct-capture phone test result:
+  - A second person took the front and side photos directly, without mirror/phone-in-frame occlusion.
+  - MediaPipe again returned `33 pts | 1 pose` for both front and side photos.
+  - Front score was about `0.99`; side score was about `0.81`.
+  - Front and side core points both reported `9/9`.
+  - Reported native inference timing was about `130 ms` for the front photo and `74 ms` for the side photo.
+  - Visual overlay still tracks shoulders, hips, knees, and ankles well enough for debug comparison.
+  - This strengthens the case that MediaPipe is a better pose feature source than the current MoveNet-only path, but the side score drop means we still need repeat tests before changing formulas or save gating.
 - 2026-04-20 README update:
   - Root `README.md` now summarizes the body measurement focus, the debug-only MediaPipe Android status, the unchanged saved-measurement behavior, and links to the current troubleshooting/planning docs.
+- 2026-04-20 migration/removal decision:
+  - Do not remove MoveNet or the current segmentation model yet.
+  - MediaPipe can become the primary pose feature source if repeat Android tests remain stable and the iOS bridge returns the same result shape.
+  - MoveNet should stay as a fallback/comparison path until MediaPipe is cross-platform, logged in feature vectors, and validated against enough real captures.
+  - Segmentation/body-outline logic is still needed because pose landmarks alone do not produce true chest, waist, or hip circumferences.
+  - Only remove old models/code after the production estimator no longer references them and a new build proves saved measurements, debug overlays, and failure states still work.
 
 ## Phase 4: Manual Correction And Trust UX
 

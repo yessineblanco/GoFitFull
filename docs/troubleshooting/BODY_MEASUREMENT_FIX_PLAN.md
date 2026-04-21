@@ -348,6 +348,27 @@ Implemented:
   - Remaining decision: the previously tracked asset `GoFitMobile/assets/models/selfie_multiclass_256x256.tflite` is still marked deleted, and that removal should stay pending explicit approval.
   - Do not treat this change as merge-ready until the old asset removal is explicitly approved/decided.
   - After that repo-state fix, the next validation should be a fresh-checkout style run/build to prove segmentation still loads outside the current local working tree.
+- 2026-04-21 build-readiness call:
+  - The new segmentation asset is staged, so the main reproducibility blocker for the binary-mask swap is fixed.
+  - User decision: retire `selfie_multiclass_256x256.tflite` rather than keep carrying a failing model as rollback baggage.
+  - Build implication: the next Android EAS build should use the binary `selfie_segmenter.tflite` path only.
+  - Local build command from `C:\Users\yessi\Desktop\work\GoFit\GoFitMobile`:
+    - `eas build --profile development --platform android`
+  - After that, do a new Android EAS build for phone validation of the binary person-mask path.
+- 2026-04-21 repo instruction update:
+  - The Karpathy behavioral guidelines are now stored in the project itself, not only in chat context.
+  - Added repo-wide guidance in `AGENTS.md` so project-local agents have an always-on instruction source inside the repo.
+  - Updated `.cursor/rules/karpathy-behavioral-guidelines.mdc` to match the requested wording and removed the previous encoding artifacts.
+  - Normalized punctuation to ASCII in both files to keep the rule stable across editors and terminals.
+- 2026-04-21 review of the unresolved-ops segmentation follow-up:
+  - The new diagnosis is coherent: the previous `selfie_segmenter.tflite` failure was a runtime/model-compatibility problem in `react-native-fast-tflite`, not a bug in the mask-decoding code.
+  - The service now points at `selfie_segmentation.tflite`, and the screen/debug metadata were updated to match that asset name.
+  - Current repo blocker: `GoFitMobile/assets/models/selfie_segmentation.tflite` is still untracked, so a fresh checkout or remote EAS build from git will not contain the model that the code now requires.
+  - Secondary repo note: `GoFitMobile/assets/models/selfie_segmentation_legacy.tflite` is present locally with the same hash as `selfie_segmentation.tflite`, so it should either be explained as an intentional backup or removed later once the tracked asset is settled.
+- 2026-04-21 build guidance for the new selfie segmentation asset:
+  - No native code or plugin wiring changed for this swap; the project already supports `.tflite` assets in Metro and already includes `react-native-fast-tflite`.
+  - For an existing installed development client connected to Metro, a JS reload plus restarting Expo/Metro is enough to pick up the new model asset.
+  - For a self-contained APK or any build that should work without Metro, do a new Android EAS build after `selfie_segmentation.tflite` is tracked in the repo state you are building from.
 
 ## Phase 4: Manual Correction And Trust UX
 

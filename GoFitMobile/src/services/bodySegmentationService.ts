@@ -61,23 +61,22 @@ export type BodySegmentationDebug = {
   error?: string;
 };
 
-const MODEL = require('../../assets/models/selfie_segmenter.tflite');
-const MODEL_NAME = 'selfie_segmenter.tflite';
+const MODEL = require('../../assets/models/selfie_segmentation.tflite');
+const MODEL_NAME = 'selfie_segmentation.tflite';
 const INPUT_SIZE = 256;
 const SAMPLE_SIZE = 32;
 /**
- * selfie_segmenter produces a single-channel sigmoid output: each pixel is
- * the probability that the pixel belongs to the person (foreground). We
- * threshold at 0.5 to get a binary person mask, then pass that mask through
- * the same pose-anchored flood-fill we used with the multiclass model.
+ * Classic MediaPipe **Selfie Segmentation** TFLite (same graph shipped in
+ * `@mediapipe/selfie_segmentation`): single-channel person confidence per
+ * pixel, thresholded at 0.5, then pose-anchored flood-fill like before.
  *
- * This replaces the previous `selfie_multiclass_256x256` pipeline which
- * tried to combine 4 of 6 human subclasses (hair, body-skin, face-skin,
- * clothes). In full-body shots with busy backgrounds the multiclass model
- * frequently mislabeled walls/doorframes as `hair` or `face-skin` (one real
- * capture had 36 % of the frame tagged `face-skin`), which polluted the
- * merged mask. The binary segmenter has a single "person" class with much
- * tighter boundaries and is the right tool for this screen.
+ * We intentionally do **not** load the newer MediaPipe Tasks
+ * `selfie_segmenter` asset from `mediapipe-models/.../float16/...` here:
+ * that build fails on `react-native-fast-tflite`'s bundled LiteRT with
+ * `Status: unresolved-ops` (often surfaced as a bogus allocation error).
+ *
+ * Compared to `selfie_multiclass_256x256`, this stays a single foreground
+ * class so we avoid hair / face-skin subclasses painting the background.
  */
 const PERSON_THRESHOLD = 0.5;
 /** Debug class labels: 0 = background, 1 = person. */
@@ -418,7 +417,7 @@ function measureMaskLines(
 }
 
 /**
- * Decodes `selfie_segmenter`'s single-channel sigmoid output into:
+ * Decodes the selfie segmentation model's single-channel confidence output into:
  *   - a binary person-vs-background mask (thresholded at 0.5),
  *   - per-class coverage/bounds debug entries (background + person),
  *   - a downsampled `classCells` grid used by the debug overlay UI.
@@ -537,7 +536,7 @@ export async function analyzeBodySegmentation(params: {
   return {
     model: MODEL_NAME,
     input: 'FLOAT32 [1, 256, 256, 3], RGB normalized 0..1',
-    output: 'FLOAT32 [1, 256, 256, 1], sigmoid person probability (thresholded at 0.5)',
+    output: 'FLOAT32 [1, 256, 256, 1], person confidence (thresholded at 0.5)',
     front,
     side,
   };

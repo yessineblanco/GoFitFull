@@ -24,6 +24,20 @@ export type MeasurementLogEntry = {
     shoulder_cm: number;
   } | null;
   result: MeasurementResult;
+  /**
+   * Capture-quality score after anomaly dampening (what the UI actually
+   * showed the user). `result.confidence` is the raw service value; this is
+   * what the user saw on the screen after history/ratio gates had a chance
+   * to penalize a drifted scan. Missing on old entries.
+   */
+  effectiveConfidence?: number;
+  /**
+   * Short labels of any capture-anomaly gates that fired (e.g.
+   * 'history-shoulder-drift', 'height-ratio-out-of-band'). Persisted so that
+   * an old log can still explain why a scan looked "off" even after the
+   * anomaly rules change later.
+   */
+  anomalyFlags?: string[];
   note?: string;
 };
 
@@ -97,16 +111,29 @@ export function formatMeasurementLogForShare(entries: MeasurementLogEntry[]): st
     const poseFront = r.debug?.front?.source ?? '--';
     const poseSide = r.debug?.side?.source ?? '--';
     const depthModel = fv?.depthModel ?? '--';
+    const depthSource = fv?.depthSource ?? '--';
     const chestDepth = fv?.estimatedChestDepthCm;
     const abdomenDepth = fv?.estimatedAbdomenDepthCm;
+    // Shoulder / height ratio is a cheap plausibility signal — adult humans
+    // sit in 0.22–0.30. Out-of-band means either the pose landmarks drifted
+    // (scan #11 style) or the user typed the wrong profile height.
+    const shoulderOverHeight =
+      entry.heightCm && entry.heightCm > 0 && r.shoulder_cm > 0
+        ? (r.shoulder_cm / entry.heightCm).toFixed(3)
+        : '--';
     const edited = entry.edited
       ? `  edited → chest ${entry.edited.chest_cm} / waist ${entry.edited.waist_cm} / hip ${entry.edited.hip_cm} / shoulder ${entry.edited.shoulder_cm}`
       : '';
     return [
       `#${idx + 1}  ${ts}`,
-      `  height: ${entry.heightCm ?? '--'} cm  |  detection quality: ${r.confidence.toFixed(2)}`,
+      `  height: ${entry.heightCm ?? '--'} cm  |  capture quality: ${r.confidence.toFixed(2)}${
+        entry.effectiveConfidence != null && entry.effectiveConfidence !== r.confidence
+          ? ` (dampened ${entry.effectiveConfidence.toFixed(2)})`
+          : ''
+      }${entry.anomalyFlags?.length ? `  |  anomalies: ${entry.anomalyFlags.join(', ')}` : ''}`,
       `  chest ${r.chest_cm} cm  |  waist ${r.waist_cm} cm  |  hip ${r.hip_cm} cm  |  shoulder ${r.shoulder_cm} cm`,
-      `  depth model: ${depthModel}  |  chestDepth ${chestDepth ?? '--'} cm  |  abdomenDepth ${abdomenDepth ?? '--'} cm`,
+      `  depth source: ${depthSource}  |  depth model: ${depthModel}  |  chestDepth ${chestDepth ?? '--'} cm  |  abdomenDepth ${abdomenDepth ?? '--'} cm`,
+      `  shoulder/height: ${shoulderOverHeight}   (healthy 0.22–0.30)`,
       `  pose front: ${poseFront}  |  pose side: ${poseSide}`,
       formula
         ? `  formula: shoulderPx ${formula.frontShoulderPx ?? '--'} / hipPx ${formula.frontHipPx ?? '--'} / scale ${r.debug?.scaleCmPerPx ?? '--'}`

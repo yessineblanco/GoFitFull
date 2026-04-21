@@ -154,6 +154,13 @@ export default function BodyMeasurementScreen() {
   const [scanLogCount, setScanLogCount] = useState(0);
   const [scanLogViewerOpen, setScanLogViewerOpen] = useState(false);
   const [scanLogViewerText, setScanLogViewerText] = useState('');
+  /**
+   * Rolling list of shoulder measurements from past logged scans. Used by
+   * `getCaptureAnomalyWarnings` to flag scans that drift from the user's
+   * own historical median — see log scan #11 for the motivating example.
+   * Only good scans (no error, shoulder in [25, 85] cm) are included.
+   */
+  const [historyShoulders, setHistoryShoulders] = useState<number[]>([]);
   const captureInFlight = useRef(false);
 
   const heightCm = profile?.height && profile.height > 0 ? profile.height : null;
@@ -180,6 +187,14 @@ export default function BodyMeasurementScreen() {
   const refreshScanLogCount = useCallback(async () => {
     const entries = await readMeasurementLog();
     setScanLogCount(entries.length);
+    // Keep the last 20 good shoulder measurements for the history gate. We
+    // filter obvious garbage (errors, impossibly small/large shoulders) so
+    // legacy bad entries don't poison the median.
+    const shoulders = entries
+      .slice(-20)
+      .map((e) => e.edited?.shoulder_cm ?? e.result?.shoulder_cm ?? 0)
+      .filter((v) => v >= 25 && v <= 85);
+    setHistoryShoulders(shoulders);
   }, []);
 
   React.useEffect(() => {
@@ -235,8 +250,16 @@ export default function BodyMeasurementScreen() {
   const border = getGlassBorder(isDark);
   const segmentationWarnings = getSegmentationGeometryWarnings(segmentationDebug);
   const plausibilityWarnings = getMeasurementPlausibilityWarnings(result);
-  const scanWarnings = [...segmentationWarnings, ...plausibilityWarnings];
+  const anomalyWarnings = getCaptureAnomalyWarnings(result, heightCm, historyShoulders);
+  const scanWarnings = [...segmentationWarnings, ...plausibilityWarnings, ...anomalyWarnings];
   const blockingScanWarnings = scanWarnings.filter((warning) => warning.severity === 'blocking');
+  // Dampen the displayed capture quality score when any anomaly (soft or
+  // hard) is raised. Prevents a scan like log entry #11 from showing 0.82
+  // "Capture quality" while actually being ~5 cm off on the shoulder.
+  const effectiveConfidence =
+    result && anomalyWarnings.length > 0
+      ? Math.max(result.confidence * 0.6, 0.2)
+      : result?.confidence ?? 0;
 
   const capturePhoto = useCallback(async () => {
     if (!cameraRef.current || !cameraReady || captureInFlight.current) return;
@@ -280,7 +303,14 @@ export default function BodyMeasurementScreen() {
               sidePose: res.debug?.side,
             });
             setSegmentationDebug(segmentation);
-            finalResult = measurementResultFromSegmentation(res, segmentation) ?? res;
+            // Depth preference order:
+            //   1. segmentation-derived depth (if mask + ratios are healthy)  — most accurate
+            //   2. full segmentation rescue (if base is untrusted + masks ok) — last-ditch
+            //   3. statistical prior already in `res`                         — stable default
+            finalResult =
+              refineMeasurementWithSegmentationDepth(res, segmentation) ??
+              measurementResultFromSegmentation(res, segmentation) ??
+              res;
           } catch (segmentationError) {
             setSegmentationDebug({
               model: 'selfie_multiclass_256x256.tflite',
@@ -293,11 +323,26 @@ export default function BodyMeasurementScreen() {
           setResult(finalResult);
           setEditedMeasurements(measurementResultToEditable(finalResult));
           setPhase('result');
+          // Compute dampened confidence + anomaly flags at log time so the
+          // entry captures what the user actually saw and why. Uses the
+          // current (pre-append) history so this scan isn't compared against
+          // itself.
+          const logAnomalies = computeCaptureAnomalies(
+            finalResult,
+            heightCm,
+            historyShoulders,
+          );
+          const logEffectiveConfidence =
+            logAnomalies.warnings.length > 0
+              ? Math.max(finalResult.confidence * 0.6, 0.2)
+              : finalResult.confidence;
           void (async () => {
             await appendMeasurementLog({
               timestamp: new Date().toISOString(),
               heightCm,
               result: finalResult,
+              effectiveConfidence: Math.round(logEffectiveConfidence * 100) / 100,
+              anomalyFlags: logAnomalies.flags,
             });
             await refreshScanLogCount();
           })();
@@ -333,7 +378,11 @@ export default function BodyMeasurementScreen() {
       Alert.alert('Low confidence', 'These values are only a rough draft. Please retake the photos before saving.');
       return;
     }
-    const warnings = [...getSegmentationGeometryWarnings(segmentationDebug), ...getMeasurementPlausibilityWarnings(result)];
+    const warnings = [
+      ...getSegmentationGeometryWarnings(segmentationDebug),
+      ...getMeasurementPlausibilityWarnings(result),
+      ...getCaptureAnomalyWarnings(result, heightCm, historyShoulders),
+    ];
     const blockingWarning = warnings.find((warning) => warning.severity === 'blocking');
     if (blockingWarning) {
       Alert.alert('Retake needed', blockingWarning.message);
@@ -630,7 +679,7 @@ export default function BodyMeasurementScreen() {
         <ScrollView contentContainerStyle={styles.pad}>
           <ResultTrustBanner
             state={getResultTrustState(result, scanWarnings)}
-            confidence={result.confidence}
+            confidence={effectiveConfidence}
             textColor={text}
             subColor={sub}
           />
@@ -988,6 +1037,126 @@ function getMeasurementPlausibilityWarnings(result: MeasurementResult | null): S
   return warnings;
 }
 
+/**
+ * Expected shoulder/height ratios for adult humans. Rough bounds across sexes
+ * and builds; going outside signals that either the pose landmarker drifted
+ * or the profile height doesn't match the person in the photo.
+ *
+ *   0.22 – 0.30  = plausible band (~39–53 cm on a 175 cm person)
+ *   < 0.20 or > 0.32 = almost certainly a scan error
+ */
+const SHOULDER_OVER_HEIGHT_MIN_BLOCKING = 0.2;
+const SHOULDER_OVER_HEIGHT_MAX_BLOCKING = 0.32;
+const SHOULDER_OVER_HEIGHT_MIN_ADVISORY = 0.22;
+const SHOULDER_OVER_HEIGHT_MAX_ADVISORY = 0.3;
+
+/**
+ * Minimum number of logged scans before we start comparing a new scan against
+ * the user's own history. Too few samples → the median isn't meaningful and
+ * we'd reject the second scan just because it's different from the first.
+ */
+const HISTORY_MEDIAN_MIN_SAMPLES = 3;
+/**
+ * New-scan shoulder must be within this many cm of the user's own rolling
+ * median to avoid the soft-anomaly flag. Good scans in the log cluster with
+ * a σ ≈ 0.9 cm; pose-drifted scans (friend-held, busy background) measured
+ * 3.0 and 5.4 cm off. 2.5 cm threshold puts the boundary at ~2.5σ — good
+ * catch rate without false-firing on legitimate ±1–2 cm breath/posture noise.
+ */
+const HISTORY_SHOULDER_DEVIATION_CM = 2.5;
+
+/**
+ * Capture-anomaly warnings that aren't about anatomic plausibility of a
+ * single scan but about whether this scan is consistent with either
+ * absolute anthropometry (height × ratio) or the user's own recent history.
+ *
+ * This is the layer that catches scans like #11 in the log: mask failed, the
+ * pipeline correctly fell back to the statistical prior, but the underlying
+ * pose landmarks were already off by ~5 cm — so no single-scan check would
+ * catch it. Context (height + prior scans) catches it.
+ */
+/**
+ * Short labels for persisted log entries. These stay stable even if the
+ * warning copy is reworded later, so old scans remain explainable.
+ */
+type CaptureAnomalyFlag =
+  | 'shoulder-height-ratio-blocking'
+  | 'shoulder-height-ratio-advisory'
+  | 'history-shoulder-drift';
+
+type CaptureAnomalyResult = {
+  warnings: SegmentationGeometryWarning[];
+  flags: CaptureAnomalyFlag[];
+};
+
+function getCaptureAnomalyWarnings(
+  result: MeasurementResult | null,
+  heightCm: number | null,
+  historyShoulders: number[],
+): SegmentationGeometryWarning[] {
+  return computeCaptureAnomalies(result, heightCm, historyShoulders).warnings;
+}
+
+function computeCaptureAnomalies(
+  result: MeasurementResult | null,
+  heightCm: number | null,
+  historyShoulders: number[],
+): CaptureAnomalyResult {
+  if (!result || result.error) return { warnings: [], flags: [] };
+  const warnings: SegmentationGeometryWarning[] = [];
+  const flags: CaptureAnomalyFlag[] = [];
+  const shoulder = result.shoulder_cm;
+
+  if (heightCm != null && heightCm > 0 && shoulder > 0) {
+    const ratio = shoulder / heightCm;
+    if (ratio < SHOULDER_OVER_HEIGHT_MIN_BLOCKING || ratio > SHOULDER_OVER_HEIGHT_MAX_BLOCKING) {
+      warnings.push({
+        kind: 'plausibility',
+        severity: 'blocking',
+        message:
+          'Shoulders measured are out of the expected range for your height. Retake with the full body framed, phone at chest level, and arms slightly away from the torso.',
+      });
+      flags.push('shoulder-height-ratio-blocking');
+    } else if (
+      ratio < SHOULDER_OVER_HEIGHT_MIN_ADVISORY ||
+      ratio > SHOULDER_OVER_HEIGHT_MAX_ADVISORY
+    ) {
+      warnings.push({
+        kind: 'plausibility',
+        severity: 'advisory',
+        message:
+          'Shoulders look unusual for your height. Double-check the values, or retake in portrait with your whole body visible.',
+      });
+      flags.push('shoulder-height-ratio-advisory');
+    }
+  }
+
+  if (historyShoulders.length >= HISTORY_MEDIAN_MIN_SAMPLES) {
+    const median = rollingMedian(historyShoulders);
+    if (median > 0 && Math.abs(shoulder - median) >= HISTORY_SHOULDER_DEVIATION_CM) {
+      warnings.push({
+        kind: 'plausibility',
+        severity: 'advisory',
+        message: `This scan's shoulder measurement (${shoulder.toFixed(
+          1,
+        )} cm) differs from your recent scans (~${median.toFixed(
+          1,
+        )} cm). Retake with better framing for a reliable reading.`,
+      });
+      flags.push('history-shoulder-drift');
+    }
+  }
+
+  return { warnings, flags };
+}
+
+function rollingMedian(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
 function ellipseCircumference(widthCm: number, depthCm: number): number {
   const a = Math.max(widthCm / 2, 0.1);
   const b = Math.max(depthCm / 2, 0.1);
@@ -1084,6 +1253,136 @@ function baseResultIsTrustworthy(base: MeasurementResult): boolean {
     shoulder_cm > 0 &&
     measurementsInExpectedRange({ chest: chest_cm, waist: waist_cm, hip: hip_cm, shoulder: shoulder_cm })
   );
+}
+
+/**
+ * Minimum side-mask cleaned coverage required for segmentation to *refine*
+ * (not rescue) the depths. Slightly higher than the rescue-path threshold —
+ * we want a clearly healthy mask before overriding the stable statistical
+ * prior.
+ */
+const MIN_SIDE_COVERAGE_FOR_DEPTH_REFINE = 0.08;
+/**
+ * Valid window for (segmentation side-depth / front shoulder width). Values
+ * outside this are almost certainly mask defects (e.g. 7 cm chest depth vs
+ * 45 cm shoulders → ratio 0.15, nonsense). The cap also catches masks that
+ * leak into background objects.
+ */
+const MIN_CHEST_DEPTH_OVER_SHOULDER = 0.38;
+const MAX_CHEST_DEPTH_OVER_SHOULDER = 0.65;
+const MIN_WAIST_DEPTH_OVER_SHOULDER = 0.28;
+const MAX_WAIST_DEPTH_OVER_SHOULDER = 0.6;
+/**
+ * Maximum allowed deviation of segmentation depth from the statistical prior,
+ * in cm. A healthy mask never disagrees with population-average anthropometry
+ * by more than this for an adult. Prevents rare-but-real mask glitches from
+ * turning a good scan into a bad one.
+ */
+const MAX_DEPTH_DELTA_FROM_STATISTICAL_CM = 8;
+
+/**
+ * Refines the measurement result by substituting the statistical depth prior
+ * with the actual side-mask depth from segmentation — *only* when the mask
+ * is healthy and the depth sits inside an anatomically plausible window.
+ *
+ * If any gate fails, returns `null` and the caller keeps the (stable)
+ * statistical result.
+ *
+ * Hip depth is intentionally left on the statistical fallback: hip-level side
+ * masks are the least reliable part of the segmentation pipeline because
+ * legs/arms occlude the torso silhouette and the mask can swallow a thigh.
+ */
+function refineMeasurementWithSegmentationDepth(
+  base: MeasurementResult,
+  segmentation: BodySegmentationDebug,
+): MeasurementResult | null {
+  if (base.error) return null;
+  const fv = base.debug?.featureVector;
+  const scale = base.debug?.scaleCmPerPx;
+  const shoulderWidth = fv?.frontShoulderWidthCm;
+  const hipWidth = fv?.frontHipWidthCm;
+  const waistWidthStat = fv?.estimatedWaistWidthCm;
+  const abdomenOverChest = fv?.abdomenDepthOverChest;
+  if (
+    !fv ||
+    scale == null ||
+    scale <= 0 ||
+    shoulderWidth == null ||
+    shoulderWidth <= 0 ||
+    hipWidth == null ||
+    hipWidth <= 0 ||
+    waistWidthStat == null ||
+    waistWidthStat <= 0
+  ) {
+    return null;
+  }
+
+  const sideCov = segmentation.side?.bodyMask?.cleanedCoverage ?? 0;
+  const frontCov = segmentation.front?.bodyMask?.cleanedCoverage ?? 0;
+  if (sideCov < MIN_SIDE_COVERAGE_FOR_DEPTH_REFINE) return null;
+  if (frontCov < MIN_FRONT_SEGMENTATION_COVERAGE) return null;
+
+  const sideChestDepth = segmentationLineCm(segmentation.side, 'chest', scale);
+  const sideWaistDepth = segmentationLineCm(segmentation.side, 'waist', scale);
+  if (sideChestDepth == null || sideWaistDepth == null) return null;
+
+  const chestOverShoulder = sideChestDepth / shoulderWidth;
+  const waistOverShoulder = sideWaistDepth / shoulderWidth;
+  if (
+    chestOverShoulder < MIN_CHEST_DEPTH_OVER_SHOULDER ||
+    chestOverShoulder > MAX_CHEST_DEPTH_OVER_SHOULDER ||
+    waistOverShoulder < MIN_WAIST_DEPTH_OVER_SHOULDER ||
+    waistOverShoulder > MAX_WAIST_DEPTH_OVER_SHOULDER
+  ) {
+    return null;
+  }
+
+  const statisticalChestDepth = fv.estimatedChestDepthCm;
+  const statisticalAbdomenDepth = fv.estimatedAbdomenDepthCm;
+  if (
+    statisticalChestDepth != null &&
+    Math.abs(sideChestDepth - statisticalChestDepth) > MAX_DEPTH_DELTA_FROM_STATISTICAL_CM
+  ) {
+    return null;
+  }
+  if (
+    statisticalAbdomenDepth != null &&
+    Math.abs(sideWaistDepth - statisticalAbdomenDepth) > MAX_DEPTH_DELTA_FROM_STATISTICAL_CM
+  ) {
+    return null;
+  }
+
+  // Recompute circumferences using pose-derived widths + segmentation depths.
+  // Keep hip on the original (statistical) depth path — see doc comment.
+  const chestWidth = shoulderWidth * 0.88;
+  const chest = roundMeasurement(ellipseCircumference(chestWidth, sideChestDepth));
+  const waist = roundMeasurement(ellipseCircumference(waistWidthStat, sideWaistDepth));
+  // Hip depth preserved from the statistical path (hip = hipWidth × 0.95 × statisticalAbdomenDepth).
+  const hipDepth =
+    statisticalAbdomenDepth != null
+      ? statisticalAbdomenDepth * 0.95
+      : sideWaistDepth * (abdomenOverChest ?? 0.84);
+  const hip = roundMeasurement(ellipseCircumference(hipWidth, hipDepth));
+
+  if (!measurementsInExpectedRange({ chest, waist, hip, shoulder: base.shoulder_cm })) {
+    return null;
+  }
+
+  return {
+    ...base,
+    chest_cm: chest,
+    waist_cm: waist,
+    hip_cm: hip,
+    debug: {
+      ...base.debug,
+      featureVector: {
+        ...fv,
+        estimatedChestDepthCm: roundMeasurement(sideChestDepth),
+        estimatedAbdomenDepthCm: roundMeasurement(sideWaistDepth),
+        depthSource: 'segmentation',
+      },
+    },
+  };
 }
 
 function measurementResultFromSegmentation(
@@ -1436,7 +1735,7 @@ function ResultTrustBanner({
     <View style={[styles.trustBanner, { borderColor: `${toneColor}88` }]}>
       <View style={styles.trustHeader}>
         <Text style={[styles.trustLabel, { color: toneColor }]}>{state.label}</Text>
-        <Text style={[styles.trustConfidence, { color: subColor }]}>Detection quality {confidence.toFixed(2)}</Text>
+        <Text style={[styles.trustConfidence, { color: subColor }]}>Capture quality {confidence.toFixed(2)}</Text>
       </View>
       <Text style={[styles.trustMessage, { color: textColor }]}>{state.message}</Text>
     </View>
@@ -1588,7 +1887,7 @@ function MeasurementHistory({
             />
           </View>
           <Text style={[styles.historyMeta, { color: subColor }]}>
-            Detection quality: {formatConfidence(latest.measurement_confidence)} | Source: {latest.source || 'saved scan'}
+            Capture quality: {formatConfidence(latest.measurement_confidence)} | Source: {latest.source || 'saved scan'}
           </Text>
 
           {recent.length > 0 ? (

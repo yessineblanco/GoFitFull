@@ -383,6 +383,18 @@ Status:
   - use the statistical branch as the main branch for future calibration work
   - before using these logs as supervision data, compare the stable statistical cluster against manual tape measurements for chest, waist, hip, and shoulder
   - confidence must be rebuilt as an estimator-quality signal, not reused as-is from the current detection-quality number
+- Accuracy-ceiling review, checked 2026-04-21:
+  - The current statistical branch is more stable, but it is still not actually measuring torso depth. It is using a population prior from shoulder width and sex preset.
+  - Waist is even more prior-driven: width is derived from hip width and depth is derived from chest depth, so the current pipeline does not truly observe waist shape from the images.
+  - Because of that, the current branch is useful as a stable baseline estimator, but not yet as a high-precision anthropometry system.
+  - The side image now contributes mostly to gating/pose validation, not direct numeric depth measurement. This is a product cost and a compute cost that should be justified explicitly.
+  - The segmentation pipeline is close to dead code for mainline results. For the statistical-model roadmap, that means we should choose deliberately between:
+    - fallback-only segmentation, run lazily
+    - or gated segmentation depth, promoted back into the main estimator when mask health is high
+  - The clearest ceiling-raising roadmap is:
+    - short term: gated segmentation-derived depth with statistical fallback
+    - medium term: one-time per-user calibration from a real tape measurement
+    - long term: learned body model / mesh fitting rather than hand-built torso priors
 
 ## Sources
 

@@ -95,6 +95,12 @@ export type MeasurementFeatureVector = {
   depthModel?: 'statistical-male' | 'statistical-female' | 'statistical-neutral';
   chestDepthOverShoulder?: number;
   abdomenDepthOverChest?: number;
+  /**
+   * Where the final chest/waist depth came from. `statistical` = priors only
+   * (default). `segmentation` = segmentation mask depth passed all health +
+   * sanity gates and overrode the priors for this scan.
+   */
+  depthSource?: 'statistical' | 'segmentation';
   draftChestCm?: number;
   draftWaistCm?: number;
   draftHipCm?: number;
@@ -844,6 +850,7 @@ async function analyzeMeasurementsInner(params: {
         : depthPreset.key === 'female'
           ? 'statistical-female'
           : 'statistical-neutral',
+    depthSource: 'statistical',
     chestDepthOverShoulder: round2(depthPreset.chestDepthOverShoulder),
     abdomenDepthOverChest: round2(depthPreset.abdomenDepthOverChest),
   });
@@ -898,16 +905,21 @@ async function analyzeMeasurementsInner(params: {
     confSum += kf[i]?.score ?? 0;
   }
   const poseVisibility = round2(confSum / CORE_FEATURE_KEYPOINTS.length);
-  // Ideal vertical coverage is ~0.85 of the frame. Clamp at 0.4 so a single
-  // weak signal can never zero-out an otherwise solid scan.
-  const heightSpanQuality = Math.max(0.4, Math.min(1, heightSpanFrac / 0.85));
+  // Empirically, scans that fill ~70 % of the frame already produce stable
+  // measurements (see log scans #5–#9). Saturating at 0.70 (instead of 0.85)
+  // stops this factor from single-handedly dragging accurate scans below 0.5.
+  // Floor raised from 0.40 → 0.55 so no single sub-signal can collapse the
+  // composite score when the other two are strong.
+  const heightSpanQuality = Math.max(0.55, Math.min(1, heightSpanFrac / 0.7));
   // Anatomical shoulder-depth:shoulder-width ≈ 0.30–0.45 for a true 90°
   // profile. `validateSidePoseQuality` already rejects anything above 0.60,
   // so by the time we reach here the capture is usable — but 0.25–0.55 is
   // ideal, and we give a light 30 % penalty outside that window.
   const sideShoulderRatio = sideShoulderPx / Math.max(frontShoulderPx, 1);
+  // Floor matches heightSpanQuality — no single sub-signal should be able to
+  // push the composite below ~0.5 on an otherwise valid scan.
   const sideGeometryQuality =
-    sideShoulderRatio >= 0.25 && sideShoulderRatio <= 0.55 ? 1 : 0.7;
+    sideShoulderRatio >= 0.25 && sideShoulderRatio <= 0.55 ? 1 : 0.8;
   let confidence = round2(poseVisibility * heightSpanQuality * sideGeometryQuality);
 
   let chestR = round1(chestCm);

@@ -70,10 +70,23 @@ const CHANNELS = 6;
  * selfie_multiclass_256x256 output channels:
  *   0 background, 1 hair, 2 body-skin, 3 face-skin, 4 clothes, 5 others.
  * We combine the human classes (hair + skin + clothes) so the mask captures
- * the whole silhouette including bare arms/face, not just what the person is
- * wearing. `others` (backpacks, watches, phones) is intentionally excluded.
+ * the whole torso silhouette. We deliberately exclude:
+ *
+ *   - class 1 (hair) — rarely touches the torso circumferences we measure
+ *     and the selfie_multiclass model frequently mislabels dark background
+ *     (doorframes, wooden floors) as hair in full-body shots.
+ *   - class 3 (face skin) — the model is trained on selfies, not full-body
+ *     scenes; in busy rooms it paints huge stripes of walls/ceilings as
+ *     "face skin" (observed 36 % frame coverage in one real capture). That
+ *     leaks into the flood-fill through silhouette-edge pixels and pollutes
+ *     the final mask. The face is also < 1 % of a full-body frame, so
+ *     dropping it loses essentially nothing that we use.
+ *   - `others` (backpacks, watches, phones) — never wanted for body shape.
+ *
+ * We keep class 2 (body-skin) and class 4 (clothes) — the two classes that
+ * actually cover the chest/waist/hip we're trying to measure.
  */
-const BODY_CLASS_INDICES = [1, 2, 3, 4] as const;
+const BODY_CLASS_INDICES = [2, 4] as const;
 const PRIMARY_BODY_CLASS_INDEX = 4; // reported in debug output for continuity
 
 /** Pose-landmark indices used to anchor the mask to the actual user. */

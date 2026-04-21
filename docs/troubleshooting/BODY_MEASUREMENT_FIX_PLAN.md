@@ -322,6 +322,20 @@ Implemented:
     - make the estimator branch explicit in debug output and UI/dev logs
     - use the statistical-depth-model branch as the current preferred direction for formula work
     - do not remove the old path yet until repeat testing and manual-baseline comparison confirm the improvement
+- 2026-04-21 accuracy-ceiling review:
+  - The two biggest remaining limits are now explicit:
+    - depth is statistical, not measured per person
+    - waist is derived from hip/depth priors rather than directly measured from the image
+  - That means the pipeline is now optimized for stability over individual precision. This was the right move for the current noisy data, but it creates a real ceiling on how accurate one scan can be for different body compositions.
+  - The current side photo is mostly acting as gating/validation, not as a true numeric measurement input. That means we are still asking the user for a strict side pose even though the side pixels no longer carry most of the torso-depth math.
+  - `detection quality` is measuring capture cleanliness more than measurement truth. It should not be treated as a user-facing accuracy claim in its current form.
+  - The segmentation path is now close to fallback-only behavior. That is a sign to either:
+    - defer running it until the pose path fails or asks for help
+    - or explicitly reinstate it as a depth source when mask health is strong enough
+  - The current ranking of next measurement-ceiling improvements is:
+    - short term: gated segmentation-derived depth with statistical fallback
+    - medium term: per-user calibration from one real tape measurement
+    - long term: a learned body model / mesh-fitting approach from the two images
 
 ## Phase 4: Manual Correction And Trust UX
 

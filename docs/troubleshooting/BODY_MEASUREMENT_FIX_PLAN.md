@@ -336,6 +336,18 @@ Implemented:
     - short term: gated segmentation-derived depth with statistical fallback
     - medium term: per-user calibration from one real tape measurement
     - long term: a learned body model / mesh-fitting approach from the two images
+- 2026-04-21 pose-engine retention decision:
+  - Do not remove MoveNet yet.
+  - iOS still depends on MoveNet as the only shipped pose path.
+  - Android still benefits from MoveNet as a crash/fallback safety net if the MediaPipe native module fails or is unavailable.
+  - MediaPipe has earned primary-pose status on Android, but MoveNet is still real infrastructure, not dead weight.
+  - Revisit removal only after iOS has MediaPipe parity and Android fallback history suggests the extra safety net is no longer worth the bundle cost.
+- 2026-04-21 review of the binary-segmentation model swap:
+  - The TypeScript swap from `selfie_multiclass_256x256.tflite` to `selfie_segmenter.tflite` is internally consistent in the local code paths reviewed.
+  - Repo-state update: the new asset `GoFitMobile/assets/models/selfie_segmenter.tflite` is now tracked/staged.
+  - Remaining decision: the previously tracked asset `GoFitMobile/assets/models/selfie_multiclass_256x256.tflite` is still marked deleted, and that removal should stay pending explicit approval.
+  - Do not treat this change as merge-ready until the old asset removal is explicitly approved/decided.
+  - After that repo-state fix, the next validation should be a fresh-checkout style run/build to prove segmentation still loads outside the current local working tree.
 
 ## Phase 4: Manual Correction And Trust UX
 

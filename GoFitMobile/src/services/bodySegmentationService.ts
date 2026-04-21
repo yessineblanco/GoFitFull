@@ -61,33 +61,29 @@ export type BodySegmentationDebug = {
   error?: string;
 };
 
-const MODEL = require('../../assets/models/selfie_multiclass_256x256.tflite');
-const MODEL_NAME = 'selfie_multiclass_256x256.tflite';
+const MODEL = require('../../assets/models/selfie_segmenter.tflite');
+const MODEL_NAME = 'selfie_segmenter.tflite';
 const INPUT_SIZE = 256;
 const SAMPLE_SIZE = 32;
-const CHANNELS = 6;
 /**
- * selfie_multiclass_256x256 output channels:
- *   0 background, 1 hair, 2 body-skin, 3 face-skin, 4 clothes, 5 others.
- * We combine the human classes (hair + skin + clothes) so the mask captures
- * the whole torso silhouette. We deliberately exclude:
+ * selfie_segmenter produces a single-channel sigmoid output: each pixel is
+ * the probability that the pixel belongs to the person (foreground). We
+ * threshold at 0.5 to get a binary person mask, then pass that mask through
+ * the same pose-anchored flood-fill we used with the multiclass model.
  *
- *   - class 1 (hair) — rarely touches the torso circumferences we measure
- *     and the selfie_multiclass model frequently mislabels dark background
- *     (doorframes, wooden floors) as hair in full-body shots.
- *   - class 3 (face skin) — the model is trained on selfies, not full-body
- *     scenes; in busy rooms it paints huge stripes of walls/ceilings as
- *     "face skin" (observed 36 % frame coverage in one real capture). That
- *     leaks into the flood-fill through silhouette-edge pixels and pollutes
- *     the final mask. The face is also < 1 % of a full-body frame, so
- *     dropping it loses essentially nothing that we use.
- *   - `others` (backpacks, watches, phones) — never wanted for body shape.
- *
- * We keep class 2 (body-skin) and class 4 (clothes) — the two classes that
- * actually cover the chest/waist/hip we're trying to measure.
+ * This replaces the previous `selfie_multiclass_256x256` pipeline which
+ * tried to combine 4 of 6 human subclasses (hair, body-skin, face-skin,
+ * clothes). In full-body shots with busy backgrounds the multiclass model
+ * frequently mislabeled walls/doorframes as `hair` or `face-skin` (one real
+ * capture had 36 % of the frame tagged `face-skin`), which polluted the
+ * merged mask. The binary segmenter has a single "person" class with much
+ * tighter boundaries and is the right tool for this screen.
  */
-const BODY_CLASS_INDICES = [2, 4] as const;
-const PRIMARY_BODY_CLASS_INDEX = 4; // reported in debug output for continuity
+const PERSON_THRESHOLD = 0.5;
+/** Debug class labels: 0 = background, 1 = person. */
+const BACKGROUND_CLASS_INDEX = 0;
+const PERSON_CLASS_INDEX = 1;
+const DEBUG_CLASS_COUNT = 2;
 
 /** Pose-landmark indices used to anchor the mask to the actual user. */
 const MASK_ANCHOR_KEYPOINT_INDICES = [0, 5, 6, 11, 12] as const; // nose, shoulders, hips
@@ -199,21 +195,6 @@ function torsoCenterX(pose?: SegmentationPoseDebug): number {
   if (shoulderX != null) return shoulderX;
   if (hipX != null) return hipX;
   return 0.5;
-}
-
-function buildClassMask(argmaxClasses: Uint8Array, classes: readonly number[]): Uint8Array {
-  const mask = new Uint8Array(argmaxClasses.length);
-  // Small fixed-size class list — linear scan is faster than Set here.
-  for (let i = 0; i < argmaxClasses.length; i++) {
-    const c = argmaxClasses[i];
-    for (let k = 0; k < classes.length; k++) {
-      if (classes[k] === c) {
-        mask[i] = 1;
-        break;
-      }
-    }
-  }
-  return mask;
 }
 
 /**
@@ -406,11 +387,10 @@ function pickTorsoSegment(mask: Uint8Array, centerY: number, centerX: number) {
 }
 
 function measureMaskLines(
-  argmaxClasses: Uint8Array,
+  bodyMask: Uint8Array,
   originalWidth: number,
   pose?: SegmentationPoseDebug,
 ): SegmentationBodyMaskDebug {
-  const bodyMask = buildClassMask(argmaxClasses, BODY_CLASS_INDICES);
   const cleaned = keepPoseAnchoredComponents(bodyMask, pose);
   const centerX = torsoCenterX(pose);
 
@@ -430,13 +410,19 @@ function measureMaskLines(
   });
 
   return {
-    classIndex: PRIMARY_BODY_CLASS_INDEX,
+    classIndex: PERSON_CLASS_INDEX,
     rawCoverage: round4(cleaned.rawCount / (INPUT_SIZE * INPUT_SIZE)),
     cleanedCoverage: round4(cleaned.cleanedCount / (INPUT_SIZE * INPUT_SIZE)),
     lines,
   };
 }
 
+/**
+ * Decodes `selfie_segmenter`'s single-channel sigmoid output into:
+ *   - a binary person-vs-background mask (thresholded at 0.5),
+ *   - per-class coverage/bounds debug entries (background + person),
+ *   - a downsampled `classCells` grid used by the debug overlay UI.
+ */
 function createClassDebug(
   outputBuffer: ArrayBuffer,
   originalWidth: number,
@@ -445,24 +431,24 @@ function createClassDebug(
 ): SegmentationImageDebug {
   const output = new Float32Array(outputBuffer);
   const pixelCount = INPUT_SIZE * INPUT_SIZE;
-  const expectedLength = pixelCount * CHANNELS;
-  if (output.length < expectedLength) {
-    throw new Error(`Segmentation output was too small: expected ${expectedLength} floats, got ${output.length}.`);
+  if (output.length < pixelCount) {
+    throw new Error(`Segmentation output was too small: expected ${pixelCount} floats, got ${output.length}.`);
   }
 
-  const classCounts = Array(CHANNELS).fill(0) as number[];
-  const scoreSums = Array(CHANNELS).fill(0) as number[];
-  const minX = Array(CHANNELS).fill(INPUT_SIZE) as number[];
-  const minY = Array(CHANNELS).fill(INPUT_SIZE) as number[];
-  const maxX = Array(CHANNELS).fill(-1) as number[];
-  const maxY = Array(CHANNELS).fill(-1) as number[];
+  const classCounts = [0, 0];
+  const scoreSums = [0, 0];
+  const minX = [INPUT_SIZE, INPUT_SIZE];
+  const minY = [INPUT_SIZE, INPUT_SIZE];
+  const maxX = [-1, -1];
+  const maxY = [-1, -1];
   const classCells: number[] = [];
-  const argmaxClasses = new Uint8Array(pixelCount);
+  const bodyMask = new Uint8Array(pixelCount);
 
   const cellSize = INPUT_SIZE / SAMPLE_SIZE;
   for (let cy = 0; cy < SAMPLE_SIZE; cy++) {
     for (let cx = 0; cx < SAMPLE_SIZE; cx++) {
-      const localCounts = Array(CHANNELS).fill(0) as number[];
+      let localPerson = 0;
+      let localBackground = 0;
       const startX = Math.floor(cx * cellSize);
       const endX = Math.floor((cx + 1) * cellSize);
       const startY = Math.floor(cy * cellSize);
@@ -471,36 +457,30 @@ function createClassDebug(
       for (let y = startY; y < endY; y++) {
         for (let x = startX; x < endX; x++) {
           const pixel = y * INPUT_SIZE + x;
-          let bestClass = 0;
-          let bestScore = output[pixel * CHANNELS];
-          for (let c = 1; c < CHANNELS; c++) {
-            const score = output[pixel * CHANNELS + c];
-            if (score > bestScore) {
-              bestScore = score;
-              bestClass = c;
-            }
+          const prob = output[pixel];
+          const isPerson = prob >= PERSON_THRESHOLD;
+          const cls = isPerson ? PERSON_CLASS_INDEX : BACKGROUND_CLASS_INDEX;
+          // The raw mask fed into flood-fill/torso measurement only needs
+          // foreground pixels, but we track both classes for the debug UI.
+          if (isPerson) {
+            bodyMask[pixel] = 1;
+            localPerson += 1;
+          } else {
+            localBackground += 1;
           }
-
-          argmaxClasses[pixel] = bestClass;
-          localCounts[bestClass] += 1;
-          classCounts[bestClass] += 1;
-          scoreSums[bestClass] += bestScore;
-          minX[bestClass] = Math.min(minX[bestClass], x);
-          minY[bestClass] = Math.min(minY[bestClass], y);
-          maxX[bestClass] = Math.max(maxX[bestClass], x);
-          maxY[bestClass] = Math.max(maxY[bestClass], y);
+          classCounts[cls] += 1;
+          // `scoreSums` stores the person probability for person pixels and
+          // (1 - prob) for background pixels so `meanScore` stays a
+          // "confidence in the assigned class" figure like the old model.
+          scoreSums[cls] += isPerson ? prob : 1 - prob;
+          if (x < minX[cls]) minX[cls] = x;
+          if (y < minY[cls]) minY[cls] = y;
+          if (x > maxX[cls]) maxX[cls] = x;
+          if (y > maxY[cls]) maxY[cls] = y;
         }
       }
 
-      let cellClass = 0;
-      let cellCount = localCounts[0];
-      for (let c = 1; c < CHANNELS; c++) {
-        if (localCounts[c] > cellCount) {
-          cellCount = localCounts[c];
-          cellClass = c;
-        }
-      }
-      classCells.push(cellClass);
+      classCells.push(localPerson >= localBackground ? PERSON_CLASS_INDEX : BACKGROUND_CLASS_INDEX);
     }
   }
 
@@ -526,11 +506,11 @@ function createClassDebug(
     originalHeight,
     maskWidth: INPUT_SIZE,
     maskHeight: INPUT_SIZE,
-    channels: CHANNELS,
+    channels: DEBUG_CLASS_COUNT,
     sampleSize: SAMPLE_SIZE,
     classCells,
     classes,
-    bodyMask: measureMaskLines(argmaxClasses, originalWidth, pose),
+    bodyMask: measureMaskLines(bodyMask, originalWidth, pose),
   };
 }
 
@@ -557,7 +537,7 @@ export async function analyzeBodySegmentation(params: {
   return {
     model: MODEL_NAME,
     input: 'FLOAT32 [1, 256, 256, 3], RGB normalized 0..1',
-    output: 'FLOAT32 [1, 256, 256, 6], argmax class preview',
+    output: 'FLOAT32 [1, 256, 256, 1], sigmoid person probability (thresholded at 0.5)',
     front,
     side,
   };

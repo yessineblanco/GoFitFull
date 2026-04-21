@@ -394,6 +394,14 @@ Nine-scan Android log review, checked 2026-04-21:
   - the statistical depth branch now looks like the best measurement direction to push forward
   - the next implementation step should still be confidence/trust cleanup first, but the formula cleanup should target the statistical-depth branch rather than the old heuristic-depth branch
 
+Pose-engine retention decision, checked 2026-04-21:
+
+- Do not remove MoveNet yet.
+- On iOS, MoveNet is still the only shipped pose engine.
+- On Android, MoveNet is still the fallback if the MediaPipe native module throws or fails to load.
+- The current logs show MediaPipe doing the real work on Android, but that does not make MoveNet useless. It is still protecting iOS and Android fallback behavior.
+- Only revisit MoveNet removal after iOS has MediaPipe parity and Android fallback value has been proven low over time.
+
 Original scaffold command used:
 
 ```bash

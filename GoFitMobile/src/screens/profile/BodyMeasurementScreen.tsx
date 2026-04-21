@@ -313,9 +313,9 @@ export default function BodyMeasurementScreen() {
               res;
           } catch (segmentationError) {
             setSegmentationDebug({
-              model: 'selfie_segmentation.tflite',
-              input: 'FLOAT32 [1, 256, 256, 3], RGB normalized 0..1',
-              output: 'FLOAT32 [1, 256, 256, 1], person confidence (thresholded at 0.5)',
+              model: 'MediaPipe Image Segmenter (selfie_segmenter.tflite)',
+              input: 'Native MediaPipe Tasks bitmap input',
+              output: 'Confidence mask/category mask resized to 256x256, decoded as person confidence',
               error: segmentationError instanceof Error ? segmentationError.message : String(segmentationError),
             });
           }

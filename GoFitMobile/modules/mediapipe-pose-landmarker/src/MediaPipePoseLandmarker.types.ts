@@ -12,6 +12,22 @@ export type MediaPipePoseSegmentationMask = {
   valuesBase64?: string;
 };
 
+export type MediaPipeImageSegmenterMask = {
+  width: number;
+  height: number;
+  valuesBase64?: string;
+};
+
+export type MediaPipeImageSegmenterResult = {
+  imageWidth: number;
+  imageHeight: number;
+  labels?: string[];
+  qualityScores?: number[];
+  confidenceMasks?: MediaPipeImageSegmenterMask[];
+  categoryMask?: MediaPipeImageSegmenterMask;
+  inferenceMs?: number;
+};
+
 export type MediaPipePoseResult = {
   imageWidth: number;
   imageHeight: number;

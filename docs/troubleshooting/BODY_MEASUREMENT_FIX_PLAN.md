@@ -369,6 +369,27 @@ Implemented:
   - No native code or plugin wiring changed for this swap; the project already supports `.tflite` assets in Metro and already includes `react-native-fast-tflite`.
   - For an existing installed development client connected to Metro, a JS reload plus restarting Expo/Metro is enough to pick up the new model asset.
   - For a self-contained APK or any build that should work without Metro, do a new Android EAS build after `selfie_segmentation.tflite` is tracked in the repo state you are building from.
+- 2026-04-21 stale-bundle diagnosis for segmentation retest:
+  - The phone screenshot still shows `selfie_segmenter.tflite` and `sigmoid person probability`.
+  - The current source tree no longer contains those runtime strings in the active segmentation path; it now says `selfie_segmentation.tflite` and `person confidence`.
+  - That means the device is still executing an older JS bundle / older installed build, so the latest segmentation swap has not actually been tested yet.
+  - Until the on-device debug text changes to the new strings, any segmentation failure seen on the phone should be treated as evidence about the old path, not the new `selfie_segmentation.tflite` path.
+- 2026-04-21 Metro-log correction to the stale-bundle theory:
+  - New Expo/Metro logs show the current dev session resolving `./assets/models/selfie_segmentation.tflite` with a Metro asset URL and hash.
+  - That proves the running app did fetch the new JS path at least for the latest scan attempt, so the earlier stale-bundle theory is no longer the primary explanation.
+  - The remaining likely root cause is runtime compatibility of the current segmentation model with `react-native-fast-tflite` / the bundled LiteRT on this Android build.
+  - Secondary observation: the segmentation model is being requested twice in quick succession (front + side `Promise.all`), so duplicate model creation is happening during one scan; this is worth keeping in mind, but the specific `unresolved-ops` status still points more strongly to operator support than to pure memory pressure.
+- 2026-04-21 internet research on `unresolved-ops`:
+  - The strongest external explanation is custom-op incompatibility, not preprocessing or asset resolution.
+  - `react-native-fast-tflite` documents standard TFLite model loading and delegates, but does not document MediaPipe custom-op registration.
+  - TensorFlow Lite docs state that unresolved custom ops require explicit operator registration in the runtime.
+  - External runtime evidence from `flutter_litert` is especially relevant: it explicitly bundles MediaPipe's `Convolution2DTransposeBias` custom op and says this is required for MediaPipe Selfie Segmentation models such as `selfie_segmenter.tflite`.
+  - Official MediaPipe issue logs for image/selfie segmentation also show `Found Custom Op: Convolution2DTransposeBias`, which fits the above.
+  - Current planning conclusion: no further JS-only model swapping inside the MediaPipe selfie-segmentation family should be expected to fix this by itself.
+  - The realistic solution paths are:
+    - use MediaPipe Tasks `ImageSegmenter` natively for segmentation, as documented by Google AI Edge
+    - or add/register the required MediaPipe custom op in the native TFLite runtime used by `react-native-fast-tflite`
+    - or switch to a segmentation model that is verified to use only built-in TFLite ops
 
 ## Phase 4: Manual Correction And Trust UX
 
@@ -519,3 +540,37 @@ Verification:
 - Ran `npm run type-check` in `GoFitMobile`.
 - Type-check did not report errors in the measurement files.
 - Type-check still fails on existing unrelated TypeScript issues in navigation, marketplace, profile weight/height, notification routing, and deep-link store typing.
+
+2026-04-21 follow-up research:
+
+- Confirmed from Metro logs that the current dev session is loading `selfie_segmentation.tflite`, so the newer failure is not explained by stale JS bundle / asset caching alone.
+- Confirmed by inspecting the actual `.tflite` bytes in this repo that both `selfie_segmenter.tflite` and `selfie_segmentation.tflite` contain the custom op name `Convolution2DTransposeBias`; the older `selfie_multiclass_256x256.tflite` does not expose that string.
+- Official LiteRT docs state that models using custom operators still fail on the default interpreter until the operator is created and registered in the runtime.
+- The `flutter_litert` package docs explicitly call out MediaPipe Selfie Segmentation as requiring MediaPipe's `Convolution2DTransposeBias` custom op, and show that they bundle/register it as a special case.
+- Current working inference: `react-native-fast-tflite` is loading the model asset correctly, but its bundled Android LiteRT runtime does not currently register the MediaPipe custom op used by the newer selfie-segmentation models.
+
+Implication:
+
+- More JS-only swapping within the MediaPipe selfie-segmentation family is unlikely to fix `Status: unresolved-ops`.
+- Real solution paths are:
+  - use native MediaPipe Image Segmenter / Tasks for segmentation,
+  - extend the native TFLite runtime with the needed MediaPipe custom op registration,
+  - or switch to a segmentation model verified to use only builtin LiteRT ops.
+
+2026-04-21 native segmenter implementation:
+
+- Chosen path: native MediaPipe Image Segmenter on Android.
+- Reused the existing local Expo module `mediapipe-pose-landmarker` instead of creating a second bridge.
+- Added `analyzeSegmentationFromImage()` to the module, backed by `com.google.mediapipe:tasks-vision:0.10.33` `ImageSegmenter`.
+- The native bridge now loads `selfie_segmenter.tflite` from Android assets, requests both confidence masks and category mask, and resizes output to `256x256` so the existing JS torso-mask heuristics can stay intact.
+- `bodySegmentationService.ts` no longer uses `react-native-fast-tflite` for segmentation. It now consumes the native MediaPipe mask output and keeps the old pose-anchored cleanup and torso-width measurement logic.
+- `BodyMeasurementScreen.tsx` debug fallback text was updated to reflect the native MediaPipe segmenter path.
+
+Verification:
+
+- `npm run type-check` still fails only on the same unrelated repo issues in navigation / marketplace / profile / deep-link files. No new segmentation-specific TS error surfaced.
+- `android\\gradlew :mediapipe-pose-landmarker:compileDebugKotlin` succeeded after targeting the correct local module project path.
+
+Operational note:
+
+- Because this is a native Expo module change plus a new Android asset, testing requires a rebuilt Android dev client / EAS dev build. Metro reload alone is not enough for this step.

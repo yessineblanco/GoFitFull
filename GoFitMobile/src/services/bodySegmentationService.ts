@@ -1,9 +1,4 @@
-import { Image } from 'react-native';
-import * as ImageManipulator from 'expo-image-manipulator';
-import { File } from 'expo-file-system';
-import { decode as decodeJpeg } from 'jpeg-js';
-
-type LoadedTfliteModel = { run(inputs: ArrayBuffer[]): Promise<ArrayBuffer[]> };
+import type { MediaPipeImageSegmenterMask, MediaPipeImageSegmenterResult } from '../../modules/mediapipe-pose-landmarker';
 
 export type SegmentationClassDebug = {
   classIndex: number;
@@ -61,22 +56,24 @@ export type BodySegmentationDebug = {
   error?: string;
 };
 
-const MODEL = require('../../assets/models/selfie_segmentation.tflite');
-const MODEL_NAME = 'selfie_segmentation.tflite';
+type MediaPipePoseLandmarkerModuleShape = {
+  analyzeSegmentationFromImage(uri: string): Promise<MediaPipeImageSegmenterResult>;
+};
+
+type MediaPipePoseLandmarkerExports = {
+  default?: MediaPipePoseLandmarkerModuleShape;
+  isMediaPipePoseLandmarkerAvailable?: boolean;
+};
+
+const MODEL_NAME = 'MediaPipe Image Segmenter (selfie_segmenter.tflite)';
 const INPUT_SIZE = 256;
 const SAMPLE_SIZE = 32;
 /**
- * Classic MediaPipe **Selfie Segmentation** TFLite (same graph shipped in
- * `@mediapipe/selfie_segmentation`): single-channel person confidence per
- * pixel, thresholded at 0.5, then pose-anchored flood-fill like before.
+ * Native MediaPipe Image Segmenter (Android Expo module) returns masks from
+ * the Tasks runtime, which knows how to execute MediaPipe's custom ops.
  *
- * We intentionally do **not** load the newer MediaPipe Tasks
- * `selfie_segmenter` asset from `mediapipe-models/.../float16/...` here:
- * that build fails on `react-native-fast-tflite`'s bundled LiteRT with
- * `Status: unresolved-ops` (often surfaced as a bogus allocation error).
- *
- * Compared to `selfie_multiclass_256x256`, this stays a single foreground
- * class so we avoid hair / face-skin subclasses painting the background.
+ * We keep the post-processing logic in JS so the torso cleanup, mask health,
+ * and line measurements stay identical across segmentation backends.
  */
 const PERSON_THRESHOLD = 0.5;
 /** Debug class labels: 0 = background, 1 = person. */
@@ -89,52 +86,64 @@ const MASK_ANCHOR_KEYPOINT_INDICES = [0, 5, 6, 11, 12] as const; // nose, should
 const MASK_ANCHOR_MIN_SCORE = 0.3;
 const MASK_ANCHOR_SEARCH_RADIUS = 10;
 
-let cachedModel: LoadedTfliteModel | null = null;
-
-async function getModel(): Promise<LoadedTfliteModel> {
-  if (cachedModel) return cachedModel;
-  const { loadTensorflowModel } = await import('react-native-fast-tflite');
-  cachedModel = await loadTensorflowModel(MODEL, []);
-  return cachedModel;
-}
-
-function getImageSize(uri: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    Image.getSize(
-      uri,
-      (width, height) => resolve({ width, height }),
-      (e) => reject(e),
-    );
-  });
-}
-
-async function preprocessForSegmentation(
-  imageUri: string,
-): Promise<{ inputBuffer: ArrayBuffer; originalWidth: number; originalHeight: number }> {
-  const { width: originalWidth, height: originalHeight } = await getImageSize(imageUri);
-
-  const manipulated = await ImageManipulator.manipulateAsync(
-    imageUri,
-    [{ resize: { width: INPUT_SIZE, height: INPUT_SIZE } }],
-    { compress: 1, format: ImageManipulator.SaveFormat.JPEG },
-  );
-
-  const jpegBytes = new Uint8Array(await new File(manipulated.uri).arrayBuffer());
-  const decoded = decodeJpeg(jpegBytes, { useTArray: true });
-  const { data, width, height } = decoded;
-
-  const rgb = new Float32Array(1 * width * height * 3);
-  let o = 0;
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      rgb[o++] = data[idx] / 255;
-      rgb[o++] = data[idx + 1] / 255;
-      rgb[o++] = data[idx + 2] / 255;
-    }
+function getMediaPipeSegmentationModule(): MediaPipePoseLandmarkerModuleShape {
+  const mediaPipeModule = require('../../modules/mediapipe-pose-landmarker') as MediaPipePoseLandmarkerExports;
+  if (!mediaPipeModule?.default?.analyzeSegmentationFromImage || mediaPipeModule.isMediaPipePoseLandmarkerAvailable === false) {
+    throw new Error('MediaPipe Image Segmenter native module is unavailable in this build. Rebuild the dev client.');
   }
+  return mediaPipeModule.default;
+}
 
-  return { inputBuffer: rgb.buffer as ArrayBuffer, originalWidth, originalHeight };
+function decodeBase64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+function findPersonMaskIndex(labels: string[] | undefined, maskCount: number): number {
+  if (maskCount <= 1) return 0;
+  const explicit = labels?.findIndex((label) => /person|human|selfie/i.test(label) && !/background/i.test(label));
+  if (explicit != null && explicit >= 0 && explicit < maskCount) return explicit;
+  if (labels?.length === 2 && /background/i.test(labels[0])) return 1;
+  return Math.min(maskCount - 1, PERSON_CLASS_INDEX);
+}
+
+function confidenceMaskToBuffer(mask: MediaPipeImageSegmenterMask): ArrayBuffer {
+  if (!mask.valuesBase64) {
+    throw new Error('MediaPipe confidence mask did not include values.');
+  }
+  return decodeBase64ToArrayBuffer(mask.valuesBase64);
+}
+
+function categoryMaskToPersonConfidenceBuffer(
+  mask: MediaPipeImageSegmenterMask,
+  personIndex: number,
+): ArrayBuffer {
+  if (!mask.valuesBase64) {
+    throw new Error('MediaPipe category mask did not include values.');
+  }
+  const bytes = new Uint8Array(decodeBase64ToArrayBuffer(mask.valuesBase64));
+  const floats = new Float32Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) {
+    floats[i] = bytes[i] === personIndex ? 1 : 0;
+  }
+  return floats.buffer;
+}
+
+function segmentationOutputBuffer(result: MediaPipeImageSegmenterResult): ArrayBuffer {
+  const confidenceMasks = result.confidenceMasks ?? [];
+  if (confidenceMasks.length > 0) {
+    const personMaskIndex = findPersonMaskIndex(result.labels, confidenceMasks.length);
+    return confidenceMaskToBuffer(confidenceMasks[personMaskIndex]);
+  }
+  if (result.categoryMask) {
+    const personMaskIndex = findPersonMaskIndex(result.labels, result.labels?.length ?? 0);
+    return categoryMaskToPersonConfidenceBuffer(result.categoryMask, personMaskIndex);
+  }
+  throw new Error('MediaPipe Image Segmenter returned no confidence or category mask.');
 }
 
 function round2(n: number): number {
@@ -514,13 +523,16 @@ function createClassDebug(
 }
 
 async function segmentImage(imageUri: string, pose?: SegmentationPoseDebug): Promise<SegmentationImageDebug> {
-  const model = await getModel();
-  const { inputBuffer, originalWidth, originalHeight } = await preprocessForSegmentation(imageUri);
-  const outputs = await model.run([inputBuffer]);
-  if (!outputs?.length) {
-    throw new Error('Segmentation model produced no output.');
+  const result = await getMediaPipeSegmentationModule().analyzeSegmentationFromImage(imageUri);
+  if (result.imageWidth <= 0 || result.imageHeight <= 0) {
+    throw new Error('MediaPipe Image Segmenter returned invalid image dimensions.');
   }
-  return createClassDebug(outputs[0], originalWidth, originalHeight, pose);
+  return createClassDebug(
+    segmentationOutputBuffer(result),
+    result.imageWidth,
+    result.imageHeight,
+    pose,
+  );
 }
 
 export async function analyzeBodySegmentation(params: {
@@ -535,8 +547,8 @@ export async function analyzeBodySegmentation(params: {
   ]);
   return {
     model: MODEL_NAME,
-    input: 'FLOAT32 [1, 256, 256, 3], RGB normalized 0..1',
-    output: 'FLOAT32 [1, 256, 256, 1], person confidence (thresholded at 0.5)',
+    input: 'Native MediaPipe Tasks bitmap input',
+    output: 'Confidence mask/category mask resized to 256x256, decoded as person confidence',
     front,
     side,
   };

@@ -345,8 +345,44 @@ Status:
 - EAS reports a finished Android development build at `3c3a3c1`, which includes the MediaPipe debug comparison commit `2695f2c`.
 - Android phone testing now confirms MediaPipe returns `33 pts | 1 pose` for both mirror captures and direct photos taken by another person.
 - Direct-capture testing still returned `9/9` visible core points for front and side, but the side score was lower at about `0.81`, so future feature vectors should preserve visibility/quality details rather than treating all `33 pts` results as equal.
-- The next validation step is repeat testing across more mirror and direct front/side captures, comparing MoveNet, segmentation, and MediaPipe overlays on the same photos.
+- Android measurement service now prefers MediaPipe as the primary pose source and records which pose model was used per image, while still keeping MoveNet as fallback during the transition.
+- The next validation step is repeat testing across more mirror and direct front/side captures, now using the MediaPipe-first pipeline and comparing MoveNet, segmentation, and MediaPipe overlays on the same photos.
 - Do not replace the production formula or train a baseline estimator until MediaPipe proves stable across repeat captures and its feature vectors are logged cleanly enough to be a trustworthy input source.
+- Latest mirror retest with MediaPipe-primary pose confirms the current blocker has shifted:
+  - pose is strong (`33 pts`, high scores, `9/9` core), but the final body measurements are still implausible
+  - segmentation coverage is still weak (`7%` front, `5%` side)
+  - the app still displayed `confidence 1.00`, which means the current confidence signal is not a trustworthy training or product signal
+- Planning decision before more code changes:
+  - first fix confidence synthesis and feature-vector logging
+  - then revisit the formulas
+  - only after those are honest/stable should we treat this data as useful for a baseline estimator
+- Four-scan Android log review, checked 2026-04-21:
+  - all four scans already used MediaPipe for front and side pose, so this dataset is measuring current estimator variance rather than old MoveNet pose noise
+  - pose-scale inputs were fairly stable across scans: scale stayed about `0.07 cm/px`, front shoulder width about `616 px` to `657 px`, front hip width about `325 px` to `346 px`
+  - final torso outputs still moved too much for a training-quality signal: chest `70.4 cm` to `114.8 cm`, waist `52.7 cm` to `89.9 cm`, hip `52.3 cm` to `96.9 cm`
+  - shoulder output is closer to believable now, but scan `#1` still produced an `82.2 cm` outlier, so the estimator is not robust enough yet
+  - numeric confidence (`0.52`, `1.00`, `0.71`, `0.70`) is not a dependable proxy for final measurement quality
+  - scan `#1` also shows that `raw*` formula outputs and `draft*` outputs can diverge sharply, so future dataset logging must preserve the full estimator pipeline, not just the final measurement
+- Planning implication for the statistical-model path:
+  - do not treat the current four-scan set as clean supervision data yet
+  - first fix confidence synthesis and explicit stage logging
+  - then stabilize the formulas
+  - only after that should we use repeated scans as a serious baseline-training dataset
+- Nine-scan Android log review, checked 2026-04-21:
+  - scans `#5-#9` are the first set explicitly using `depth model: statistical-male`, while scans `#1-#4` were still on the earlier depth path
+  - the statistical group is much tighter than the earlier group:
+    - chest `100.2 cm` to `103.9 cm`
+    - waist `75.6 cm` to `77.7 cm`
+    - hip `82.9 cm` to `85.5 cm`
+    - shoulder `45.8 cm` to `47.5 cm`
+  - depth estimates also stabilized in that group: chest depth `24.2 cm` to `25.2 cm`, abdomen depth `21.3 cm` to `22.1 cm`
+  - this is not enough to claim accuracy yet, but it is enough to say the statistical-depth branch is producing a far cleaner repeated-scan cluster than the older heuristic branch
+  - numeric `detection quality` is still not suitable as a target or label because the more stable statistical runs scored as low as `0.47` to `0.48`
+- Planning implication for the statistical-model path:
+  - preserve the estimator-branch label in every future log/export (`heuristic` vs `statistical-male` and later variants)
+  - use the statistical branch as the main branch for future calibration work
+  - before using these logs as supervision data, compare the stable statistical cluster against manual tape measurements for chest, waist, hip, and shoulder
+  - confidence must be rebuilt as an estimator-quality signal, not reused as-is from the current detection-quality number
 
 ## Sources
 

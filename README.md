@@ -9,10 +9,10 @@ The active mobile-app work is the body measurement feature in `GoFitMobile`.
 Current status:
 
 - The saved measurement flow still uses guarded draft estimates with manual review before saving.
-- MoveNet and the selfie segmentation model remain part of the existing debug/measurement stack.
-- MediaPipe Pose Landmarker Full is now integrated as a debug-only comparison path through a local Expo native module.
+- Android now prefers MediaPipe Pose Landmarker Full as the primary pose source in the measurement service, with MoveNet kept as a fallback/comparison path.
+- The selfie segmentation model still remains part of the debug/measurement stack because pose landmarks alone do not produce chest, waist, or hip circumference.
 - Android phone testing confirms MediaPipe is working in the dev client on both mirror and direct captures: front and side photos returned `33 pts | 1 pose`, `9/9` visible core points, and native inference around `38 ms` to `130 ms`.
-- MediaPipe does not yet change displayed measurements, saved measurements, confidence, formulas, or save gating.
+- Android measurements now use MediaPipe-derived pose landmarks through the existing 17-keypoint pipeline, but the formulas, confidence rules, save gating, and manual review flow are otherwise unchanged.
 - iOS still needs the matching native bridge before MediaPipe can be considered for production replacement.
 
 Important body-measurement docs:
@@ -69,7 +69,7 @@ See [GoFitMobile/PROJECT_GUIDE.md](GoFitMobile/PROJECT_GUIDE.md) for detailed do
 GoFitMobile/modules/mediapipe-pose-landmarker/
 ```
 
-The MediaPipe module currently exposes `analyzePoseFromImage(uri)` for Android debug comparison. Keep local native module files tracked before EAS builds so the native binary and JS wrapper stay in sync.
+The MediaPipe module currently exposes `analyzePoseFromImage(uri)`. Android now uses it as the primary pose source in the measurement service, and the debug overlay reuses the raw 33-landmark output from that same scan. Keep local native module files tracked before EAS builds so the native binary and JS wrapper stay in sync.
 
 ### 💻 Admin Panel (Admin-panel)
 

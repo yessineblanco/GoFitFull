@@ -4,7 +4,7 @@
 
 Make the body measurement feature stop producing impossible values, then move it toward a realistic camera-based measurement workflow.
 
-The current implementation uses MoveNet keypoints and hand-written formulas. That is useful for pose detection, but it is not enough for true chest, waist, hip, and shoulder measurement. The first priority is to make the feature fail safely and reveal exactly where the pipeline breaks.
+The current implementation now prefers MediaPipe pose landmarks on Android, with MoveNet kept as a fallback and compatibility path. The formulas are still hand-written and still not enough for true chest, waist, hip, and shoulder measurement. The first priority is to make the feature fail safely and reveal exactly where the pipeline breaks.
 
 ## Current Problem
 
@@ -124,6 +124,8 @@ Purpose: move from pose estimation to body-outline measurement.
 - [x] Compile-check Android MediaPipe Pose Landmarker native bridge with a JDK.
 - [x] Wire Android MediaPipe Pose Landmarker into the debug-only comparison overlay.
 - [x] Test Android MediaPipe Pose Landmarker on-device with acceptable performance.
+- [x] Promote Android body measurement pose sourcing to MediaPipe first, with MoveNet kept as fallback and comparison.
+- [x] Reuse service-returned MediaPipe results in the debug overlay instead of running MediaPipe twice per scan.
 - [ ] Implement iOS MediaPipe Pose Landmarker native bridge.
 - [ ] Test iOS MediaPipe Pose Landmarker on-device after the iOS bridge is implemented.
 - [ ] Extract a clean body silhouette mask from front and side photos.
@@ -273,6 +275,53 @@ Implemented:
   - MoveNet should stay as a fallback/comparison path until MediaPipe is cross-platform, logged in feature vectors, and validated against enough real captures.
   - Segmentation/body-outline logic is still needed because pose landmarks alone do not produce true chest, waist, or hip circumferences.
   - Only remove old models/code after the production estimator no longer references them and a new build proves saved measurements, debug overlays, and failure states still work.
+- 2026-04-21 Android primary pose-source rollout:
+  - `bodyMeasurementService.ts` now uses MediaPipe as the primary pose source on Android and maps the 33-landmark result into the existing 17-keypoint contract so the current quality gates, segmentation diagnostics, and draft formulas continue to run.
+  - `BodyMeasurementScreen.tsx` now reuses the raw MediaPipe result returned by the measurement service, so Android scans no longer run a second MediaPipe pass just to populate the debug panel.
+  - The MediaPipe debug panel now tells us whether MediaPipe was the primary pose source for the scan or whether a fallback happened.
+  - MoveNet remains in place as fallback/comparison and must not be removed yet.
+  - Saved measurements, formulas, confidence, and save gating are still on the existing estimator path; this change only switches the primary Android pose source.
+- 2026-04-21 Android mirror retest after MediaPipe-primary rollout:
+  - The debug overlay now correctly reports that Android used MediaPipe as the primary pose source for the scan.
+  - MediaPipe still looks strong on the same mirror workflow: front `33 pts | 1 pose`, side `33 pts | 1 pose`, front score about `0.99`, side score about `0.97`, and both front/side core counts at `9/9`.
+  - Final measurement output is still not trustworthy for this scan even though pose is good: chest `76.1 cm`, waist `61.0 cm`, hip `62.3 cm`, shoulder `77.8 cm` for a `175 cm` user.
+  - The trust banner correctly says `Review carefully`, but the numeric confidence still showed `1.00`, which is misleading because the final estimator is clearly less certain than the pose model.
+  - Segmentation debug still looks weak: front Class 4 cleaned coverage was about `7%`, side cleaned coverage about `5%`, and the mask widths/depths are too narrow/inconsistent to justify a near-perfect final confidence.
+  - This narrows the problem: pose source is no longer the main blocker; the remaining reliability issue is the measurement estimator plus confidence synthesis.
+- 2026-04-21 planned next implementation order before more code changes:
+  - Stage 1: make confidence honest.
+    - Separate pose confidence from final measurement confidence.
+    - Penalize final confidence using segmentation coverage, side/front geometry mismatch, implausible draft outputs, and warning severity.
+    - Keep the current review UX, but stop showing `1.00` when the scan is obviously only advisory quality.
+  - Stage 2: make the feature vector explicit about why confidence dropped.
+    - Record pose score, segmentation coverage, geometry penalties, plausibility penalties, and final confidence separately in debug/feature-vector output.
+  - Stage 3: revisit the current formulas.
+    - Reduce dependence on shoulder-based depth/circumference heuristics.
+    - Re-check chest/waist/hip computation against segmentation widths/depths and MediaPipe-aligned anatomical levels.
+  - Stage 4: only after confidence and formula cleanup, revisit save gating thresholds.
+- 2026-04-21 four-scan log review after MediaPipe-primary rollout:
+  - All four scans used MediaPipe for both front and side pose, so this log is good evidence about the current estimator path rather than the old MoveNet pose source.
+  - Low-level scale and front geometry were relatively stable across scans: scale stayed at about `0.07 cm/px`, front shoulder width stayed about `616 px` to `657 px`, and front hip width stayed about `325 px` to `346 px`.
+  - Final torso outputs still swung too much for that level of pose stability: chest ranged `70.4 cm` to `114.8 cm`, waist `52.7 cm` to `89.9 cm`, hip `52.3 cm` to `96.9 cm`.
+  - Shoulder is now mostly in a believable band (`46.0 cm` to `48.5 cm`) but still produced one extreme outlier at `82.2 cm`, so the estimator is not yet robust.
+  - Numeric confidence still does not track cross-scan reliability: the four scans came back at `0.52`, `1.00`, `0.71`, and `0.70`, even though the measurement spread is still too large for a trusted production result.
+  - Scan `#1` also exposed a debug-transparency problem: `rawChestCm` was `110.3` while `draftChestCm` and the final chest output were `70.4`, with similar drops for waist and hip. That means the estimator is applying later-stage adjustments that are not obvious enough in the current debug story.
+  - Planning implication: do not touch save gating or remove segmentation yet. First make final confidence honest, then expose every estimator stage clearly in debug output, then tighten the formulas with repeat testing against those new signals.
+- 2026-04-21 nine-scan review with the first statistical-depth-model runs:
+  - Scans `#1-#4` still used the old depth path (`depth model: --`), while scans `#5-#9` used `depth model: statistical-male`. That gives a useful A/B split inside the same day on the same subject.
+  - The statistical-depth-model group is much more stable than the first four scans:
+    - chest tightened to `100.2 cm` to `103.9 cm`
+    - waist tightened to `75.6 cm` to `77.7 cm`
+    - hip tightened to `82.9 cm` to `85.5 cm`
+    - shoulder stayed in a believable band at `45.8 cm` to `47.5 cm`
+  - Depth estimates also became stable in the statistical group: chest depth about `24.2 cm` to `25.2 cm`, abdomen depth about `21.3 cm` to `22.1 cm`.
+  - That stability is materially better than the first four scans and strongly suggests the new statistical depth branch is a better direction than the old heuristic depth path.
+  - But `detection quality` is still not calibrated correctly. The statistical runs are the most stable/plausible measurements in the set, yet they only reported about `0.47` to `0.71`, while one weaker pre-statistical scan reported `1.00`.
+  - Planning implication:
+    - keep treating numeric quality as a temporary internal signal, not a user-trust signal
+    - make the estimator branch explicit in debug output and UI/dev logs
+    - use the statistical-depth-model branch as the current preferred direction for formula work
+    - do not remove the old path yet until repeat testing and manual-baseline comparison confirm the improvement
 
 ## Phase 4: Manual Correction And Trust UX
 

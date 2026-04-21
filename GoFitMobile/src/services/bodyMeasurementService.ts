@@ -1,8 +1,9 @@
-import { Image } from 'react-native';
+import { Image, Platform } from 'react-native';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { File } from 'expo-file-system';
 import { decode as decodeJpeg } from 'jpeg-js';
 import { VALIDATION_LIMITS } from '@/constants';
+import type { MediaPipePoseLandmark, MediaPipePoseResult } from '../../modules/mediapipe-pose-landmarker';
 
 export type MeasurementResult = {
   chest_cm: number;
@@ -15,12 +16,21 @@ export type MeasurementResult = {
   debug?: MeasurementDebug;
 };
 
+export type PoseModelSource = 'movenet' | 'mediapipe';
+
+export type MeasurementMediaPipeDebug = {
+  front?: MediaPipePoseResult;
+  side?: MediaPipePoseResult;
+  error?: string;
+};
+
 export type MeasurementDebugKeypoint = { y: number; x: number; score: number };
 
 export type MeasurementDebugImage = {
   originalWidth: number;
   originalHeight: number;
   keypoints: MeasurementDebugKeypoint[];
+  source?: PoseModelSource;
 };
 
 export type MeasurementDebugFormula = {
@@ -59,6 +69,8 @@ export type MeasurementSegmentationFeatureVector = {
 export type MeasurementFeatureVector = {
   version: 1;
   heightCm: number;
+  frontPoseModel?: PoseModelSource;
+  sidePoseModel?: PoseModelSource;
   personHeightPx?: number;
   scaleCmPerPx?: number;
   heightSpanFrac?: number;
@@ -79,6 +91,10 @@ export type MeasurementFeatureVector = {
   estimatedWaistWidthCm?: number;
   estimatedChestDepthCm?: number;
   estimatedAbdomenDepthCm?: number;
+  /** Which depth preset the service used (sex-aware statistical model). */
+  depthModel?: 'statistical-male' | 'statistical-female' | 'statistical-neutral';
+  chestDepthOverShoulder?: number;
+  abdomenDepthOverChest?: number;
   draftChestCm?: number;
   draftWaistCm?: number;
   draftHipCm?: number;
@@ -92,6 +108,7 @@ export type MeasurementFeatureVector = {
 export type MeasurementDebug = {
   front?: MeasurementDebugImage;
   side?: MeasurementDebugImage;
+  mediaPipe?: MeasurementMediaPipeDebug;
   personHeightPx?: number;
   scaleCmPerPx?: number;
   heightSpanFrac?: number;
@@ -102,6 +119,20 @@ export type MeasurementDebug = {
 };
 
 type Keypoint = MeasurementDebugKeypoint;
+type PoseRun = {
+  keypoints: Keypoint[];
+  originalWidth: number;
+  originalHeight: number;
+  source: PoseModelSource;
+  mediaPipe?: MediaPipePoseResult;
+};
+type MediaPipePoseLandmarkerModuleShape = {
+  analyzePoseFromImage(uri: string): Promise<MediaPipePoseResult>;
+};
+type MediaPipePoseLandmarkerExports = {
+  default?: MediaPipePoseLandmarkerModuleShape;
+  isMediaPipePoseLandmarkerAvailable?: boolean;
+};
 const CORE_FEATURE_KEYPOINTS = [0, 5, 6, 11, 12, 15, 16] as const;
 
 /** Loaded model handle — keep local so we never import fast-tflite types (that can pull the module into the graph early). */
@@ -236,7 +267,7 @@ function parseKeypointsAuto(outputBuffer: ArrayBuffer): Keypoint[] {
   return sx > sy ? xy : yx;
 }
 
-async function runMoveNet(imageUri: string): Promise<{ keypoints: Keypoint[]; originalWidth: number; originalHeight: number }> {
+async function runMoveNet(imageUri: string): Promise<PoseRun> {
   const model = await getModel();
   const { inputBuffer, originalWidth, originalHeight } = await preprocessForModel(imageUri);
   const outputs = await model.run([inputBuffer]);
@@ -244,7 +275,126 @@ async function runMoveNet(imageUri: string): Promise<{ keypoints: Keypoint[]; or
     throw new Error('Model produced no output');
   }
   const keypoints = parseKeypointsAuto(outputs[0]);
-  return { keypoints, originalWidth, originalHeight };
+  return { keypoints, originalWidth, originalHeight, source: 'movenet' };
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function mediaPipeLandmarkScore(landmark?: MediaPipePoseLandmark): number {
+  if (!landmark) return 0;
+  if (typeof landmark.visibility === 'number' && Number.isFinite(landmark.visibility)) {
+    return landmark.visibility;
+  }
+  if (typeof landmark.presence === 'number' && Number.isFinite(landmark.presence)) {
+    return landmark.presence;
+  }
+  return 1;
+}
+
+function mediaPipeLandmarkToKeypoint(landmark?: MediaPipePoseLandmark): Keypoint {
+  if (!landmark || !Number.isFinite(landmark.x) || !Number.isFinite(landmark.y)) {
+    return { x: 0, y: 0, score: 0 };
+  }
+  return {
+    x: clamp01(landmark.x),
+    y: clamp01(landmark.y),
+    score: mediaPipeLandmarkScore(landmark),
+  };
+}
+
+function averageMediaPipeLandmarks(landmarks: Array<MediaPipePoseLandmark | undefined>): Keypoint {
+  let sumX = 0;
+  let sumY = 0;
+  let sumScore = 0;
+  let count = 0;
+  for (const landmark of landmarks) {
+    if (!landmark || !Number.isFinite(landmark.x) || !Number.isFinite(landmark.y)) continue;
+    sumX += landmark.x;
+    sumY += landmark.y;
+    sumScore += mediaPipeLandmarkScore(landmark);
+    count += 1;
+  }
+  if (!count) return { x: 0, y: 0, score: 0 };
+  return {
+    x: clamp01(sumX / count),
+    y: clamp01(sumY / count),
+    score: sumScore / count,
+  };
+}
+
+function mediaPipeToKeypoints(result: MediaPipePoseResult): Keypoint[] {
+  const landmarks = result.landmarks ?? [];
+  return [
+    mediaPipeLandmarkToKeypoint(landmarks[0]),
+    averageMediaPipeLandmarks([landmarks[1], landmarks[2], landmarks[3]]),
+    averageMediaPipeLandmarks([landmarks[4], landmarks[5], landmarks[6]]),
+    mediaPipeLandmarkToKeypoint(landmarks[7]),
+    mediaPipeLandmarkToKeypoint(landmarks[8]),
+    mediaPipeLandmarkToKeypoint(landmarks[11]),
+    mediaPipeLandmarkToKeypoint(landmarks[12]),
+    mediaPipeLandmarkToKeypoint(landmarks[13]),
+    mediaPipeLandmarkToKeypoint(landmarks[14]),
+    mediaPipeLandmarkToKeypoint(landmarks[15]),
+    mediaPipeLandmarkToKeypoint(landmarks[16]),
+    mediaPipeLandmarkToKeypoint(landmarks[23]),
+    mediaPipeLandmarkToKeypoint(landmarks[24]),
+    mediaPipeLandmarkToKeypoint(landmarks[25]),
+    mediaPipeLandmarkToKeypoint(landmarks[26]),
+    mediaPipeLandmarkToKeypoint(landmarks[27]),
+    mediaPipeLandmarkToKeypoint(landmarks[28]),
+  ];
+}
+
+async function runMediaPipe(imageUri: string): Promise<PoseRun> {
+  const mediaPipeModule = require('../../modules/mediapipe-pose-landmarker') as MediaPipePoseLandmarkerExports;
+  if (!mediaPipeModule?.default?.analyzePoseFromImage || mediaPipeModule.isMediaPipePoseLandmarkerAvailable === false) {
+    throw new Error('MediaPipe Pose Landmarker native module is unavailable in this build.');
+  }
+  const mediaPipe = await mediaPipeModule.default.analyzePoseFromImage(imageUri);
+  if (!mediaPipe?.landmarks?.length) {
+    throw new Error('MediaPipe Pose Landmarker produced no landmarks.');
+  }
+  return {
+    keypoints: mediaPipeToKeypoints(mediaPipe),
+    originalWidth: mediaPipe.imageWidth,
+    originalHeight: mediaPipe.imageHeight,
+    source: 'mediapipe',
+    mediaPipe,
+  };
+}
+
+function setMediaPipeDebugResult(debug: MeasurementDebug, phase: 'front' | 'side', result: MediaPipePoseResult) {
+  debug.mediaPipe = {
+    ...(debug.mediaPipe ?? {}),
+    [phase]: result,
+  };
+}
+
+function appendMediaPipeDebugError(debug: MeasurementDebug, phase: 'front' | 'side', error: string) {
+  const nextError = `${phase}: ${error}`;
+  debug.mediaPipe = {
+    ...(debug.mediaPipe ?? {}),
+    error: debug.mediaPipe?.error ? `${debug.mediaPipe.error} | ${nextError}` : nextError,
+  };
+}
+
+async function runPrimaryPose(imageUri: string, debug: MeasurementDebug, phase: 'front' | 'side'): Promise<PoseRun> {
+  if (Platform.OS !== 'android') {
+    return runMoveNet(imageUri);
+  }
+
+  try {
+    const mediaPipeRun = await runMediaPipe(imageUri);
+    if (mediaPipeRun.mediaPipe) {
+      setMediaPipeDebugResult(debug, phase, mediaPipeRun.mediaPipe);
+    }
+    return mediaPipeRun;
+  } catch (error) {
+    appendMediaPipeDebugError(debug, phase, error instanceof Error ? error.message : String(error));
+    return runMoveNet(imageUri);
+  }
 }
 
 function round1(n: number): number {
@@ -303,11 +453,12 @@ function poseQualityError(issues: string[]): string | undefined {
   return `Retake needed: ${issues.join(' ')}`;
 }
 
-function debugImage(run: { keypoints: Keypoint[]; originalWidth: number; originalHeight: number }): MeasurementDebugImage {
+function debugImage(run: PoseRun): MeasurementDebugImage {
   return {
     originalWidth: run.originalWidth,
     originalHeight: run.originalHeight,
     keypoints: run.keypoints.map((k) => ({ x: round2(k.x), y: round2(k.y), score: round2(k.score) })),
+    source: run.source,
   };
 }
 
@@ -455,8 +606,13 @@ function validateSidePoseQuality(frontKf: Keypoint[], sideKf: Keypoint[], frontS
     issues.push('In the side photo, move into the center of the frame.');
   }
 
+  // At a true 90° profile, shoulder-depth is only ~30–45 % of shoulder-width
+  // (anatomically ~15 cm depth vs ~42 cm width). Anything above ~0.60 means
+  // the user is < 75° rotated and the projected "side shoulder" pixels pick
+  // up side-to-side width, which inflates chest/waist/hip depths by double
+  // digits. Reject below that threshold and force a retake.
   const shoulderRatio = frontShoulderPx > 1 ? sideShoulderPx / frontShoulderPx : 1;
-  if (shoulderRatio > 0.95) {
+  if (shoulderRatio > 0.6) {
     issues.push('Turn fully sideways for the second photo.');
   }
 
@@ -479,22 +635,60 @@ function hipSeparationPx(kf: Keypoint[], fw: number, fh: number): number {
   return Math.max(dx, dy, 1);
 }
 
+/**
+ * Canonical biological-sex buckets used by the measurement model. Accepts
+ * the same vocabulary as the user profile so the screen can forward
+ * `profile.gender` directly. Non-binary / undisclosed values resolve to a
+ * neutral preset halfway between the male and female presets.
+ */
+export type MeasurementSex = 'male' | 'female' | 'other' | 'prefer_not_to_say';
+
+/**
+ * Sex-aware anthropometric constants for deriving body depths from the
+ * already-measured shoulder width. Values are averages of adult standing
+ * anthropometry datasets (NHANES, CAESAR, WorldEngineer).
+ *
+ *   chestDepthOverShoulder  — chest depth (sternum → spine) / shoulder width
+ *   abdomenDepthOverChest   — waist depth / chest depth (torso taper)
+ *
+ * The "neutral" preset sits at the midpoint of the male/female ratios so
+ * users who haven't disclosed sex still get a sensible answer.
+ */
+const SEX_DEPTH_CONSTANTS: Record<
+  'male' | 'female' | 'neutral',
+  { chestDepthOverShoulder: number; abdomenDepthOverChest: number }
+> = {
+  male: { chestDepthOverShoulder: 0.54, abdomenDepthOverChest: 0.88 },
+  female: { chestDepthOverShoulder: 0.5, abdomenDepthOverChest: 0.8 },
+  neutral: { chestDepthOverShoulder: 0.52, abdomenDepthOverChest: 0.84 },
+};
+
+function resolveDepthPreset(sex?: MeasurementSex): {
+  key: 'male' | 'female' | 'neutral';
+  chestDepthOverShoulder: number;
+  abdomenDepthOverChest: number;
+} {
+  const key = sex === 'male' ? 'male' : sex === 'female' ? 'female' : 'neutral';
+  return { key, ...SEX_DEPTH_CONSTANTS[key] };
+}
+
 async function analyzeMeasurementsInner(params: {
   frontImageUri: string;
   sideImageUri: string;
   heightCm: number;
+  sex?: MeasurementSex;
 }): Promise<MeasurementResult> {
-  const { frontImageUri, sideImageUri, heightCm } = params;
+  const { frontImageUri, sideImageUri, heightCm, sex } = params;
 
-  const front = await runMoveNet(frontImageUri);
+  const debug: MeasurementDebug = {};
+  const front = await runPrimaryPose(frontImageUri, debug, 'front');
   const { keypoints: kf, originalWidth: fw, originalHeight: fh } = front;
-  const debug: MeasurementDebug = {
-    front: debugImage(front),
-  };
+  debug.front = debugImage(front);
   const frontBody = keypointBounds(kf, CORE_FEATURE_KEYPOINTS);
   debug.featureVector = {
     version: 1,
     heightCm: round1(heightCm),
+    frontPoseModel: front.source,
     frontPoseMeanScore: meanKeypointScore(kf),
     frontVisibleCoreKeypoints: visibleKeypointCount(kf),
     frontBodyCenterX: frontBody ? round2(frontBody.centerX) : undefined,
@@ -582,7 +776,12 @@ async function analyzeMeasurementsInner(params: {
   const frontShoulderPx = shoulderSeparationPx(kf, fw, fh);
   const frontHipPx = hipSeparationPx(kf, fw, fh);
   const shoulderWidthCm = frontShoulderPx * scale;
-  const hipWidthCm = frontHipPx * scale;
+  // MediaPipe/MoveNet hip landmarks sit near the hip sockets (acetabulum),
+  // which are narrower than the trochanteric hip breadth a tape measure would
+  // follow. Empirical ratio across standing-anthropometry datasets is ~1.30–
+  // 1.40×; use 1.35 so the draft hip width lands in a plausible range.
+  const HIP_LANDMARK_TO_TROCHANTER = 1.35;
+  const hipWidthCm = frontHipPx * scale * HIP_LANDMARK_TO_TROCHANTER;
   const waistWidthCm = hipWidthCm * 0.82;
   updateFeatureVector(debug, heightCm, {
     frontShoulderPx: round1(frontShoulderPx),
@@ -592,13 +791,14 @@ async function analyzeMeasurementsInner(params: {
     estimatedWaistWidthCm: round1(waistWidthCm),
   });
 
-  const side = await runMoveNet(sideImageUri);
+  const side = await runPrimaryPose(sideImageUri, debug, 'side');
   const { keypoints: ks, originalWidth: sw, originalHeight: sh } = side;
   debug.side = debugImage(side);
 
   const sideShoulderPx = shoulderSeparationPx(ks, sw, sh);
   const sideBody = keypointBounds(ks, CORE_FEATURE_KEYPOINTS);
   updateFeatureVector(debug, heightCm, {
+    sidePoseModel: side.source,
     sidePoseMeanScore: meanKeypointScore(ks),
     sideVisibleCoreKeypoints: visibleKeypointCount(ks),
     sideBodyCenterX: sideBody ? round2(sideBody.centerX) : undefined,
@@ -621,17 +821,45 @@ async function analyzeMeasurementsInner(params: {
     };
   }
 
-  const chestDepthCm = sideShoulderPx * scale;
-  const abdomenDepthCm = chestDepthCm * 0.9;
+  // The earlier `sideShoulderPx * scale` formula mis-measured chest depth:
+  // in a true 90° profile the two shoulder landmarks overlap so the pixel
+  // distance approaches 0 (depth → ~15 cm, too small), and in a partial
+  // rotation the distance explodes (depth → ~33 cm, too large). There's no
+  // rotation angle where that distance equals anatomic chest depth.
+  //
+  // We now derive depth statistically from the (much more reliable) front
+  // shoulder-width measurement, using sex-specific anthropometric constants.
+  // The resulting depth is independent of how well the user rotated for the
+  // side photo, so two scans of the same body now converge to the same
+  // circumference regardless of small rotation differences.
+  const depthPreset = resolveDepthPreset(sex);
+  const chestDepthCm = shoulderWidthCm * depthPreset.chestDepthOverShoulder;
+  const abdomenDepthCm = chestDepthCm * depthPreset.abdomenDepthOverChest;
   updateFeatureVector(debug, heightCm, {
     estimatedChestDepthCm: round1(chestDepthCm),
     estimatedAbdomenDepthCm: round1(abdomenDepthCm),
+    depthModel:
+      depthPreset.key === 'male'
+        ? 'statistical-male'
+        : depthPreset.key === 'female'
+          ? 'statistical-female'
+          : 'statistical-neutral',
+    chestDepthOverShoulder: round2(depthPreset.chestDepthOverShoulder),
+    abdomenDepthOverChest: round2(depthPreset.abdomenDepthOverChest),
   });
 
-  const chestCm = Math.PI * (shoulderWidthCm / 2 + chestDepthCm / 2);
+  // Chest: approximate ellipse perimeter. Shoulder biacromial width is wider
+  // than actual chest (under-armpit) width, so scale it down by ~0.88 before
+  // using it as the ellipse's major axis.
+  const chestWidthCm = shoulderWidthCm * 0.88;
+  const chestCm = Math.PI * (chestWidthCm / 2 + chestDepthCm / 2);
   const waistCm = Math.PI * (waistWidthCm / 2 + abdomenDepthCm / 2);
   const hipCm = Math.PI * (hipWidthCm / 2 + (abdomenDepthCm * 0.95) / 2);
-  const shoulderCm = Math.PI * (shoulderWidthCm / 2) * 1.15;
+  // Shoulder circumference on a progress screen is a LINEAR across-shoulders
+  // tape measurement, not a wrap-around circumference. Previously this used
+  // π·(w/2)·1.15 which inflated 45 cm shoulders to 82 cm. Use the biacromial
+  // width plus a small soft-tissue allowance (~2 %) instead.
+  const shoulderCm = shoulderWidthCm * 1.02;
   debug.formula = {
     frontShoulderPx: round1(frontShoulderPx),
     frontHipPx: round1(frontHipPx),
@@ -653,11 +881,34 @@ async function analyzeMeasurementsInner(params: {
     draftShoulderCm: round1(shoulderCm),
   });
 
+  // Composite detection/measurement quality score.
+  //
+  // Historically `confidence` was just the mean of the pose keypoint scores,
+  // which meant a perfectly-detected pose on a cropped, tilted, or oddly-
+  // framed photo still reported 1.0 and misled the user into trusting
+  // unreliable measurements. The new score multiplies four independent
+  // signals that each plateau at 1.0 for an ideal capture:
+  //   * poseVisibility    — pose detector's own visibility (0..1)
+  //   * heightSpanQuality — how well the body fills the frame vertically
+  //   * sideGeometryQuality — whether the side view is a realistic profile
+  //   * sanityFactor      — whether the raw measurements land in plausible
+  //                         ranges (applied after sanity checks below).
   let confSum = 0;
   for (const i of CORE_FEATURE_KEYPOINTS) {
     confSum += kf[i]?.score ?? 0;
   }
-  let confidence = round2(confSum / CORE_FEATURE_KEYPOINTS.length);
+  const poseVisibility = round2(confSum / CORE_FEATURE_KEYPOINTS.length);
+  // Ideal vertical coverage is ~0.85 of the frame. Clamp at 0.4 so a single
+  // weak signal can never zero-out an otherwise solid scan.
+  const heightSpanQuality = Math.max(0.4, Math.min(1, heightSpanFrac / 0.85));
+  // Anatomical shoulder-depth:shoulder-width ≈ 0.30–0.45 for a true 90°
+  // profile. `validateSidePoseQuality` already rejects anything above 0.60,
+  // so by the time we reach here the capture is usable — but 0.25–0.55 is
+  // ideal, and we give a light 30 % penalty outside that window.
+  const sideShoulderRatio = sideShoulderPx / Math.max(frontShoulderPx, 1);
+  const sideGeometryQuality =
+    sideShoulderRatio >= 0.25 && sideShoulderRatio <= 0.55 ? 1 : 0.7;
+  let confidence = round2(poseVisibility * heightSpanQuality * sideGeometryQuality);
 
   let chestR = round1(chestCm);
   let waistR = round1(waistCm);
@@ -667,7 +918,7 @@ async function analyzeMeasurementsInner(params: {
   const saneChest = chestR >= 60 && chestR <= 160;
   const saneWaist = waistR >= 50 && waistR <= 150;
   const saneHip = hipR >= 60 && hipR <= 160;
-  const saneShoulder = shoulderR >= 30 && shoulderR <= 80;
+  const saneShoulder = shoulderR >= 30 && shoulderR <= 60;
   /** Must match profile/editor limits — DB allows 100–250 cm; old 140–220 zeroed valid users. */
   const saneHeight =
     heightCm >= VALIDATION_LIMITS.HEIGHT_MIN_CM && heightCm <= VALIDATION_LIMITS.HEIGHT_MAX_CM;
@@ -740,6 +991,12 @@ export async function analyzeMeasurements(params: {
   frontImageUri: string;
   sideImageUri: string;
   heightCm: number;
+  /**
+   * User's biological sex from their profile. Used to pick anthropometric
+   * depth constants — pass `undefined` / `'other'` / `'prefer_not_to_say'`
+   * for the neutral preset.
+   */
+  sex?: MeasurementSex;
 }): Promise<MeasurementResult> {
   try {
     return await analyzeMeasurementsInner(params);

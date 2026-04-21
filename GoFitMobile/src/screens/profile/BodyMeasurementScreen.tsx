@@ -10,6 +10,8 @@ import {
   Platform,
   Image,
   TextInput,
+  Share,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -27,6 +29,12 @@ import {
   type MeasurementResult,
 } from '@/services/bodyMeasurementService';
 import { analyzeBodySegmentation, type BodySegmentationDebug, type SegmentationImageDebug } from '@/services/bodySegmentationService';
+import {
+  appendMeasurementLog,
+  clearMeasurementLog,
+  formatMeasurementLogForShare,
+  readMeasurementLog,
+} from '@/services/measurementLogger';
 import { BodyGuideOverlay } from '@/components/shared/BodyGuideOverlay';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
@@ -73,6 +81,7 @@ type MediaPipeComparisonDebug = {
   front?: MediaPipePoseResult;
   side?: MediaPipePoseResult;
   error?: string;
+  usage?: 'debug-only' | 'primary' | 'mixed-fallback';
 };
 
 type MediaPipePoseLandmarkerModuleShape = {
@@ -81,7 +90,10 @@ type MediaPipePoseLandmarkerModuleShape = {
 
 async function analyzeMediaPipeComparison(frontImageUri: string, sideImageUri: string): Promise<MediaPipeComparisonDebug> {
   if (Platform.OS !== 'android') {
-    return { error: 'MediaPipe Pose Landmarker debug bridge is Android-only until the iOS bridge is implemented.' };
+    return {
+      error: 'MediaPipe Pose Landmarker debug bridge is Android-only until the iOS bridge is implemented.',
+      usage: 'debug-only',
+    };
   }
 
   try {
@@ -91,10 +103,22 @@ async function analyzeMediaPipeComparison(frontImageUri: string, sideImageUri: s
       MediaPipePoseLandmarker.analyzePoseFromImage(frontImageUri),
       MediaPipePoseLandmarker.analyzePoseFromImage(sideImageUri),
     ]);
-    return { front, side };
+    return { front, side, usage: 'debug-only' };
   } catch (error) {
-    return { error: error instanceof Error ? error.message : String(error) };
+    return { error: error instanceof Error ? error.message : String(error), usage: 'debug-only' };
   }
+}
+
+function mediaPipeDebugUsage(result: MeasurementResult): NonNullable<MediaPipeComparisonDebug['usage']> {
+  const frontSource = result.debug?.front?.source;
+  const sideSource = result.debug?.side?.source;
+  if (frontSource === 'mediapipe' && sideSource === 'mediapipe') {
+    return 'primary';
+  }
+  if (frontSource === 'mediapipe' || sideSource === 'mediapipe') {
+    return 'mixed-fallback';
+  }
+  return 'debug-only';
 }
 
 export default function BodyMeasurementScreen() {
@@ -127,9 +151,16 @@ export default function BodyMeasurementScreen() {
   const [history, setHistory] = useState<BodyMeasurementHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
+  const [scanLogCount, setScanLogCount] = useState(0);
+  const [scanLogViewerOpen, setScanLogViewerOpen] = useState(false);
+  const [scanLogViewerText, setScanLogViewerText] = useState('');
   const captureInFlight = useRef(false);
 
   const heightCm = profile?.height && profile.height > 0 ? profile.height : null;
+  // Sex is used only to pick anthropometric depth constants inside the
+  // measurement service. `undefined`, `'other'` and `'prefer_not_to_say'`
+  // all resolve to the neutral preset.
+  const measurementSex = profile?.gender;
 
   /** Android: after takePicture the preview session can need an explicit resume before the next capture. */
   const primeAndroidPreview = useCallback(async (cam: InstanceType<typeof CameraView> | null) => {
@@ -145,6 +176,15 @@ export default function BodyMeasurementScreen() {
   React.useEffect(() => {
     loadProfile();
   }, [loadProfile]);
+
+  const refreshScanLogCount = useCallback(async () => {
+    const entries = await readMeasurementLog();
+    setScanLogCount(entries.length);
+  }, []);
+
+  React.useEffect(() => {
+    void refreshScanLogCount();
+  }, [refreshScanLogCount]);
 
   const loadMeasurementHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -223,8 +263,14 @@ export default function BodyMeasurementScreen() {
             frontImageUri: frontUri,
             sideImageUri: photo.uri,
             heightCm,
+            sex: measurementSex,
           });
-          const mediaPipeComparisonPromise = analyzeMediaPipeComparison(frontUri, photo.uri);
+          const mediaPipeComparisonPromise = res.debug?.mediaPipe
+            ? Promise.resolve({
+                ...res.debug.mediaPipe,
+                usage: mediaPipeDebugUsage(res),
+              })
+            : analyzeMediaPipeComparison(frontUri, photo.uri);
           let finalResult = res;
           try {
             const segmentation = await analyzeBodySegmentation({
@@ -247,6 +293,14 @@ export default function BodyMeasurementScreen() {
           setResult(finalResult);
           setEditedMeasurements(measurementResultToEditable(finalResult));
           setPhase('result');
+          void (async () => {
+            await appendMeasurementLog({
+              timestamp: new Date().toISOString(),
+              heightCm,
+              result: finalResult,
+            });
+            await refreshScanLogCount();
+          })();
           Haptics.notificationAsync(
             finalResult.error ? Haptics.NotificationFeedbackType.Warning : Haptics.NotificationFeedbackType.Success,
           );
@@ -267,7 +321,7 @@ export default function BodyMeasurementScreen() {
     } finally {
       captureInFlight.current = false;
     }
-  }, [phase, cameraReady, frontUri, heightCm, primeAndroidPreview]);
+  }, [phase, cameraReady, frontUri, heightCm, measurementSex, primeAndroidPreview]);
 
   const saveToSupabase = async () => {
     if (!result || heightCm == null) return;
@@ -344,6 +398,59 @@ export default function BodyMeasurementScreen() {
       setSaving(false);
     }
   };
+
+  const openScanLogViewer = useCallback(async () => {
+    try {
+      const entries = await readMeasurementLog();
+      if (entries.length === 0) {
+        Alert.alert('Measurement log', 'No scans have been logged yet. Complete a scan first.');
+        return;
+      }
+      setScanLogViewerText(formatMeasurementLogForShare(entries));
+      setScanLogViewerOpen(true);
+    } catch (e: any) {
+      Alert.alert('View log', e?.message || 'Could not open the measurement log.');
+    }
+  }, []);
+
+  const shareScanLog = useCallback(async () => {
+    try {
+      const entries = await readMeasurementLog();
+      if (entries.length === 0) {
+        Alert.alert('Measurement log', 'No scans have been logged yet. Complete a scan first.');
+        return;
+      }
+      // NOTE: intentionally sharing the compact text summary only. Passing the
+      // full JSON debug dump through `Share.share` on Android hits the ~1 MB
+      // binder limit and freezes the system share sheet. Raw JSON lives on
+      // disk — see `getMeasurementLogFileUri()`.
+      const payload = formatMeasurementLogForShare(entries);
+      await Share.share({
+        title: `GoFit measurement log (${entries.length})`,
+        message: payload,
+      });
+    } catch (e: any) {
+      Alert.alert('Share log', e?.message || 'Could not share the measurement log.');
+    }
+  }, []);
+
+  const clearScanLog = useCallback(() => {
+    Alert.alert(
+      'Clear measurement log?',
+      `Remove all ${scanLogCount} logged scan${scanLogCount === 1 ? '' : 's'} from the device? Saved Supabase history is not affected.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await clearMeasurementLog();
+            await refreshScanLogCount();
+          },
+        },
+      ],
+    );
+  }, [scanLogCount, refreshScanLogCount]);
 
   const openCameraPhase = async (next: 'front' | 'side') => {
     if (!permission?.granted) {
@@ -586,6 +693,16 @@ export default function BodyMeasurementScreen() {
           </TouchableOpacity>
             </>
           ) : null}
+          <ScanLogBar
+            count={scanLogCount}
+            onView={() => void openScanLogViewer()}
+            onShare={() => void shareScanLog()}
+            onClear={clearScanLog}
+            textColor={text}
+            subColor={sub}
+            borderColor={border}
+            backgroundColor={glass}
+          />
           {result.debug ? (
             <>
               <TouchableOpacity
@@ -659,6 +776,17 @@ export default function BodyMeasurementScreen() {
           ) : null}
         </ScrollView>
       ) : null}
+      <ScanLogViewerModal
+        visible={scanLogViewerOpen}
+        text={scanLogViewerText}
+        onClose={() => setScanLogViewerOpen(false)}
+        onShare={() => void shareScanLog()}
+        backgroundColor={bg}
+        surfaceColor={glass}
+        borderColor={border}
+        textColor={text}
+        subColor={sub}
+      />
     </View>
   );
 }
@@ -923,10 +1051,56 @@ function buildSegmentationFeatureVector(
   };
 }
 
+// Minimum body-pixel coverage for a segmentation result to be trusted. Front
+// silhouettes typically occupy 12–25 % of the frame; side silhouettes 6–15 %.
+// Going below these thresholds means the mask is under-detecting body pixels
+// and depth/width measurements become meaningless (side hip of 7.9 cm etc.).
+const MIN_FRONT_SEGMENTATION_COVERAGE = 0.08;
+const MIN_SIDE_SEGMENTATION_COVERAGE = 0.045;
+// Reject anatomically impossible torso proportions. Real hip/waist depth is
+// usually 0.55–0.95 of the matching width; sub-0.5 means the side mask is
+// clipping the body or capturing the person in a non-standing pose.
+const MIN_DEPTH_TO_WIDTH_RATIO = 0.5;
+const MAX_DEPTH_TO_WIDTH_RATIO = 1.2;
+
+function segmentationCoverageOk(segmentation: BodySegmentationDebug): boolean {
+  const frontCov = segmentation.front?.bodyMask?.cleanedCoverage ?? 0;
+  const sideCov = segmentation.side?.bodyMask?.cleanedCoverage ?? 0;
+  return (
+    frontCov >= MIN_FRONT_SEGMENTATION_COVERAGE &&
+    sideCov >= MIN_SIDE_SEGMENTATION_COVERAGE
+  );
+}
+
+function baseResultIsTrustworthy(base: MeasurementResult): boolean {
+  if (base.error) return false;
+  if (!base.debug) return false;
+  if (base.debug.failedChecks?.length) return false;
+  const { chest_cm, waist_cm, hip_cm, shoulder_cm } = base;
+  return (
+    chest_cm > 0 &&
+    waist_cm > 0 &&
+    hip_cm > 0 &&
+    shoulder_cm > 0 &&
+    measurementsInExpectedRange({ chest: chest_cm, waist: waist_cm, hip: hip_cm, shoulder: shoulder_cm })
+  );
+}
+
 function measurementResultFromSegmentation(
   base: MeasurementResult,
   segmentation: BodySegmentationDebug,
 ): MeasurementResult | null {
+  // Only use segmentation as a rescue path when (a) the pose-formula base
+  // result is clearly untrustworthy and (b) the segmentation masks themselves
+  // look healthy. A broken side mask + an error-free pose result now keeps
+  // the pose numbers instead of being overridden with garbage.
+  if (baseResultIsTrustworthy(base)) {
+    return null;
+  }
+  if (!segmentationCoverageOk(segmentation)) {
+    return null;
+  }
+
   const scaleCmPerPx = base.debug?.scaleCmPerPx;
   const frontChest = segmentationLineCm(segmentation.front, 'chest', scaleCmPerPx);
   const frontWaist = segmentationLineCm(segmentation.front, 'waist', scaleCmPerPx);
@@ -947,11 +1121,24 @@ function measurementResultFromSegmentation(
     return null;
   }
 
+  // Anatomical sanity on depth-to-width ratios. Impossible proportions (e.g.,
+  // hip depth 7.9 cm vs width 23.4 cm → 0.34 ratio) indicate mask defects.
+  const chestRatio = sideChest / frontChest;
+  const waistRatio = sideWaist / frontWaist;
+  const hipRatio = sideHip / frontHip;
+  const ratiosOk =
+    chestRatio >= MIN_DEPTH_TO_WIDTH_RATIO && chestRatio <= MAX_DEPTH_TO_WIDTH_RATIO &&
+    waistRatio >= MIN_DEPTH_TO_WIDTH_RATIO && waistRatio <= MAX_DEPTH_TO_WIDTH_RATIO &&
+    hipRatio >= MIN_DEPTH_TO_WIDTH_RATIO && hipRatio <= MAX_DEPTH_TO_WIDTH_RATIO;
+  if (!ratiosOk) {
+    return null;
+  }
+
   const chest = roundMeasurement(ellipseCircumference(frontChest, sideChest));
   const waist = roundMeasurement(ellipseCircumference(frontWaist, sideWaist));
   const hip = roundMeasurement(ellipseCircumference(frontHip, sideHip));
   const shoulderFallback = base.debug?.formula?.rawShoulderCm ?? base.shoulder_cm;
-  const shoulder = roundMeasurement(shoulderFallback >= 25 && shoulderFallback <= 100 ? shoulderFallback : frontChest * 1.45);
+  const shoulder = roundMeasurement(shoulderFallback >= 25 && shoulderFallback <= 60 ? shoulderFallback : frontChest * 1.25);
 
   if (!measurementsInExpectedRange({ chest, waist, hip, shoulder })) {
     return null;
@@ -1012,6 +1199,149 @@ function formatDelta(current: number | string | null | undefined, previous: numb
   const delta = now - before;
   if (Math.abs(delta) < 0.05) return 'No change';
   return `${delta > 0 ? '+' : ''}${delta.toFixed(1)} cm`;
+}
+
+function ScanLogBar({
+  count,
+  onView,
+  onShare,
+  onClear,
+  textColor,
+  subColor,
+  borderColor,
+  backgroundColor,
+}: {
+  count: number;
+  onView: () => void;
+  onShare: () => void;
+  onClear: () => void;
+  textColor: string;
+  subColor: string;
+  borderColor: string;
+  backgroundColor: string;
+}) {
+  return (
+    <View
+      style={[
+        styles.scanLogBar,
+        { borderColor, backgroundColor },
+      ]}
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.scanLogTitle, { color: textColor }]}>
+          Scan log · {count} saved
+        </Text>
+        <Text style={[styles.scanLogHint, { color: subColor }]}>
+          Every scan is logged on-device so you don't have to screenshot the results.
+        </Text>
+      </View>
+      <View style={styles.scanLogActions}>
+        <TouchableOpacity
+          onPress={onView}
+          disabled={count === 0}
+          style={[
+            styles.scanLogButton,
+            { borderColor: BRAND, opacity: count === 0 ? 0.4 : 1 },
+          ]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.scanLogButtonTxt, { color: BRAND }]}>View</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onShare}
+          disabled={count === 0}
+          style={[
+            styles.scanLogButton,
+            { borderColor: BRAND, opacity: count === 0 ? 0.4 : 1 },
+          ]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.scanLogButtonTxt, { color: BRAND }]}>Share</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onClear}
+          disabled={count === 0}
+          style={[
+            styles.scanLogButton,
+            { borderColor: 'rgba(255,120,120,0.6)', opacity: count === 0 ? 0.4 : 1 },
+          ]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.scanLogButtonTxt, { color: '#ff8b8b' }]}>Clear</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+/**
+ * Full-screen modal that shows the on-device measurement log inline. Text is
+ * `selectable` so the user can long-press to copy without going through the
+ * system share sheet (which freezes on Android when given large payloads).
+ */
+function ScanLogViewerModal({
+  visible,
+  text,
+  onClose,
+  onShare,
+  backgroundColor,
+  surfaceColor,
+  borderColor,
+  textColor,
+  subColor,
+}: {
+  visible: boolean;
+  text: string;
+  onClose: () => void;
+  onShare: () => void;
+  backgroundColor: string;
+  surfaceColor: string;
+  borderColor: string;
+  textColor: string;
+  subColor: string;
+}) {
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+      presentationStyle="fullScreen"
+    >
+      <View style={[styles.logModalRoot, { backgroundColor }]}>
+        <View style={[styles.logModalHeader, { borderColor }]}>
+          <Text style={[styles.logModalTitle, { color: textColor }]}>Measurement log</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity
+              onPress={onShare}
+              style={[styles.scanLogButton, { borderColor: BRAND }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.scanLogButtonTxt, { color: BRAND }]}>Share</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onClose}
+              style={[styles.scanLogButton, { borderColor }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.scanLogButtonTxt, { color: textColor }]}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Text style={[styles.logModalHint, { color: subColor }]}>
+          Long-press any block of text to select and copy it.
+        </Text>
+        <ScrollView
+          style={[styles.logModalScroll, { backgroundColor: surfaceColor, borderColor }]}
+          contentContainerStyle={{ padding: 14 }}
+        >
+          <Text selectable style={[styles.logModalText, { color: textColor }]}>
+            {text}
+          </Text>
+        </ScrollView>
+      </View>
+    </Modal>
+  );
 }
 
 function HistoryMetric({
@@ -1106,7 +1436,7 @@ function ResultTrustBanner({
     <View style={[styles.trustBanner, { borderColor: `${toneColor}88` }]}>
       <View style={styles.trustHeader}>
         <Text style={[styles.trustLabel, { color: toneColor }]}>{state.label}</Text>
-        <Text style={[styles.trustConfidence, { color: subColor }]}>Confidence {confidence.toFixed(2)}</Text>
+        <Text style={[styles.trustConfidence, { color: subColor }]}>Detection quality {confidence.toFixed(2)}</Text>
       </View>
       <Text style={[styles.trustMessage, { color: textColor }]}>{state.message}</Text>
     </View>
@@ -1258,7 +1588,7 @@ function MeasurementHistory({
             />
           </View>
           <Text style={[styles.historyMeta, { color: subColor }]}>
-            Confidence: {formatConfidence(latest.measurement_confidence)} | Source: {latest.source || 'saved scan'}
+            Detection quality: {formatConfidence(latest.measurement_confidence)} | Source: {latest.source || 'saved scan'}
           </Text>
 
           {recent.length > 0 ? (
@@ -1403,12 +1733,17 @@ function MediaPipeDebugPanel({
   textColor: string;
   subColor: string;
 }) {
+  const subtitle =
+    debug.usage === 'primary'
+      ? 'Android used MediaPipe as the primary pose source for this scan. This panel shows the raw 33-landmark output.'
+      : debug.usage === 'mixed-fallback'
+        ? 'MediaPipe was attempted for this scan, but at least one image fell back to MoveNet. This panel shows the raw MediaPipe output when available.'
+        : 'Debug-only comparison. These landmarks do not change the saved measurements yet.';
+
   return (
     <View style={styles.debugBlock}>
       <Text style={[styles.debugTitle, { color: textColor }]}>MediaPipe Pose Landmarker</Text>
-      <Text style={[styles.debugMeta, { color: subColor, marginTop: 0 }]}>
-        Debug-only comparison. These landmarks do not change the saved measurements yet.
-      </Text>
+      <Text style={[styles.debugMeta, { color: subColor, marginTop: 0 }]}>{subtitle}</Text>
       {debug.error ? <Text style={[styles.debugMeta, { color: '#ffb74d' }]}>MediaPipe error: {debug.error}</Text> : null}
       <DiagnosticGrid
         values={[
@@ -1771,6 +2106,73 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 14,
     borderWidth: 1,
+  },
+  scanLogBar: {
+    marginTop: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+  },
+  scanLogTitle: {
+    fontFamily: 'Barlow_600SemiBold',
+    fontSize: getResponsiveFontSize(14),
+    marginBottom: 2,
+  },
+  scanLogHint: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(12),
+    lineHeight: 16,
+  },
+  scanLogActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  scanLogButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  scanLogButtonTxt: {
+    fontFamily: 'Barlow_600SemiBold',
+    fontSize: getResponsiveFontSize(13),
+  },
+  logModalRoot: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 54 : 28,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  logModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginBottom: 8,
+  },
+  logModalTitle: {
+    fontFamily: 'Barlow_700Bold',
+    fontSize: getResponsiveFontSize(18),
+  },
+  logModalHint: {
+    fontFamily: 'Barlow_400Regular',
+    fontSize: getResponsiveFontSize(12),
+    marginBottom: 10,
+  },
+  logModalScroll: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  logModalText: {
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontSize: getResponsiveFontSize(12),
+    lineHeight: 18,
   },
   debugCard: {
     marginTop: 8,

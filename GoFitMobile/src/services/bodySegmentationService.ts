@@ -66,7 +66,20 @@ const MODEL_NAME = 'selfie_multiclass_256x256.tflite';
 const INPUT_SIZE = 256;
 const SAMPLE_SIZE = 32;
 const CHANNELS = 6;
-const BODY_CLASS_INDEX = 4;
+/**
+ * selfie_multiclass_256x256 output channels:
+ *   0 background, 1 hair, 2 body-skin, 3 face-skin, 4 clothes, 5 others.
+ * We combine the human classes (hair + skin + clothes) so the mask captures
+ * the whole silhouette including bare arms/face, not just what the person is
+ * wearing. `others` (backpacks, watches, phones) is intentionally excluded.
+ */
+const BODY_CLASS_INDICES = [1, 2, 3, 4] as const;
+const PRIMARY_BODY_CLASS_INDEX = 4; // reported in debug output for continuity
+
+/** Pose-landmark indices used to anchor the mask to the actual user. */
+const MASK_ANCHOR_KEYPOINT_INDICES = [0, 5, 6, 11, 12] as const; // nose, shoulders, hips
+const MASK_ANCHOR_MIN_SCORE = 0.3;
+const MASK_ANCHOR_SEARCH_RADIUS = 10;
 
 let cachedModel: LoadedTfliteModel | null = null;
 
@@ -175,65 +188,67 @@ function torsoCenterX(pose?: SegmentationPoseDebug): number {
   return 0.5;
 }
 
-function buildClassMask(argmaxClasses: Uint8Array, classIndex: number): Uint8Array {
+function buildClassMask(argmaxClasses: Uint8Array, classes: readonly number[]): Uint8Array {
   const mask = new Uint8Array(argmaxClasses.length);
+  // Small fixed-size class list — linear scan is faster than Set here.
   for (let i = 0; i < argmaxClasses.length; i++) {
-    mask[i] = argmaxClasses[i] === classIndex ? 1 : 0;
+    const c = argmaxClasses[i];
+    for (let k = 0; k < classes.length; k++) {
+      if (classes[k] === c) {
+        mask[i] = 1;
+        break;
+      }
+    }
   }
   return mask;
 }
 
-function keepLargestConnectedComponent(mask: Uint8Array): { mask: Uint8Array; rawCount: number; cleanedCount: number } {
-  const visited = new Uint8Array(mask.length);
-  const cleaned = new Uint8Array(mask.length);
-  const queue = new Int32Array(mask.length);
-  let rawCount = 0;
-  let bestStart = -1;
-  let bestCount = 0;
-
-  for (let i = 0; i < mask.length; i++) {
-    if (mask[i]) rawCount += 1;
-    if (!mask[i] || visited[i]) continue;
-
-    let head = 0;
-    let tail = 0;
-    let count = 0;
-    visited[i] = 1;
-    queue[tail++] = i;
-
-    while (head < tail) {
-      const current = queue[head++];
-      count += 1;
-      const x = current % INPUT_SIZE;
-      const y = Math.floor(current / INPUT_SIZE);
-      const neighbors = [
-        x > 0 ? current - 1 : -1,
-        x < INPUT_SIZE - 1 ? current + 1 : -1,
-        y > 0 ? current - INPUT_SIZE : -1,
-        y < INPUT_SIZE - 1 ? current + INPUT_SIZE : -1,
-      ];
-
-      for (const next of neighbors) {
-        if (next < 0 || visited[next] || !mask[next]) continue;
-        visited[next] = 1;
-        queue[tail++] = next;
+/**
+ * Returns the pixel index of the nearest body-mask pixel around `anchorIdx`,
+ * searching outward in concentric squares up to `radius`. Used to recover
+ * when the exact landmark lands on a background pixel (e.g. hair gap or
+ * shoulder edge jitter). Returns -1 if nothing is found within radius.
+ */
+function findNearbyBodyPixel(mask: Uint8Array, anchorIdx: number, radius: number): number {
+  if (mask[anchorIdx]) return anchorIdx;
+  const ax = anchorIdx % INPUT_SIZE;
+  const ay = Math.floor(anchorIdx / INPUT_SIZE);
+  for (let r = 1; r <= radius; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      const ny = ay + dy;
+      if (ny < 0 || ny >= INPUT_SIZE) continue;
+      for (let dx = -r; dx <= r; dx++) {
+        // Only scan the ring at distance r to avoid revisiting earlier rings.
+        if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+        const nx = ax + dx;
+        if (nx < 0 || nx >= INPUT_SIZE) continue;
+        const idx = ny * INPUT_SIZE + nx;
+        if (mask[idx]) return idx;
       }
     }
-
-    if (count > bestCount) {
-      bestCount = count;
-      bestStart = i;
-    }
   }
+  return -1;
+}
 
-  if (bestStart < 0) {
-    return { mask: cleaned, rawCount, cleanedCount: 0 };
-  }
-
+/**
+ * Flood-fills from `seed` across `mask`, marking reached pixels in `cleaned`
+ * and skipping pixels already in `visited`. Returns the count of new pixels
+ * added to `cleaned`.
+ */
+function floodFillFromSeed(
+  mask: Uint8Array,
+  seed: number,
+  visited: Uint8Array,
+  cleaned: Uint8Array,
+  queue: Int32Array,
+): number {
+  if (visited[seed] || !mask[seed]) return 0;
   let head = 0;
   let tail = 0;
-  queue[tail++] = bestStart;
-  cleaned[bestStart] = 1;
+  visited[seed] = 1;
+  cleaned[seed] = 1;
+  queue[tail++] = seed;
+  let count = 1;
 
   while (head < tail) {
     const current = queue[head++];
@@ -245,15 +260,102 @@ function keepLargestConnectedComponent(mask: Uint8Array): { mask: Uint8Array; ra
       y > 0 ? current - INPUT_SIZE : -1,
       y < INPUT_SIZE - 1 ? current + INPUT_SIZE : -1,
     ];
-
     for (const next of neighbors) {
-      if (next < 0 || cleaned[next] || !mask[next]) continue;
+      if (next < 0 || visited[next] || !mask[next]) continue;
+      visited[next] = 1;
       cleaned[next] = 1;
       queue[tail++] = next;
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function countMaskPixels(mask: Uint8Array): number {
+  let n = 0;
+  for (let i = 0; i < mask.length; i++) if (mask[i]) n += 1;
+  return n;
+}
+
+/**
+ * Keep only the connected component(s) that actually contain the user.
+ *
+ * Previously this kept the single largest blob, which failed whenever a
+ * non-person object near the subject (a chair behind them, furniture, a
+ * backpack on the floor) produced a bigger silhouette than the partially
+ * captured user. We now flood-fill from the positions of the MediaPipe
+ * pose keypoints (nose, shoulders, hips) so the kept blob is always the
+ * one the pose detector agrees is the person. Falls back to the largest
+ * component when pose anchors aren't available.
+ */
+function keepPoseAnchoredComponents(
+  mask: Uint8Array,
+  pose?: SegmentationPoseDebug,
+): { mask: Uint8Array; rawCount: number; cleanedCount: number } {
+  const rawCount = countMaskPixels(mask);
+  const cleaned = new Uint8Array(mask.length);
+  if (rawCount === 0) return { mask: cleaned, rawCount: 0, cleanedCount: 0 };
+
+  const visited = new Uint8Array(mask.length);
+  const queue = new Int32Array(mask.length);
+
+  if (pose) {
+    let cleanedCount = 0;
+    for (const kpIndex of MASK_ANCHOR_KEYPOINT_INDICES) {
+      const kp = pose.keypoints[kpIndex];
+      if (!kp || (kp.score ?? 0) < MASK_ANCHOR_MIN_SCORE) continue;
+      const x = Math.max(0, Math.min(INPUT_SIZE - 1, Math.round(kp.x * (INPUT_SIZE - 1))));
+      const y = Math.max(0, Math.min(INPUT_SIZE - 1, Math.round(kp.y * (INPUT_SIZE - 1))));
+      const anchorIdx = y * INPUT_SIZE + x;
+      const seed = findNearbyBodyPixel(mask, anchorIdx, MASK_ANCHOR_SEARCH_RADIUS);
+      if (seed < 0) continue;
+      cleanedCount += floodFillFromSeed(mask, seed, visited, cleaned, queue);
+    }
+    if (cleanedCount > 0) {
+      return { mask: cleaned, rawCount, cleanedCount };
+    }
+    // Every anchor was too far from any body pixel — fall through to the
+    // largest-component fallback so we still return _something_ instead of
+    // an empty mask.
+  }
+
+  let bestStart = -1;
+  let bestCount = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (!mask[i] || visited[i]) continue;
+    let head = 0;
+    let tail = 0;
+    let count = 0;
+    visited[i] = 1;
+    queue[tail++] = i;
+    while (head < tail) {
+      const current = queue[head++];
+      count += 1;
+      const x = current % INPUT_SIZE;
+      const y = Math.floor(current / INPUT_SIZE);
+      const neighbors = [
+        x > 0 ? current - 1 : -1,
+        x < INPUT_SIZE - 1 ? current + 1 : -1,
+        y > 0 ? current - INPUT_SIZE : -1,
+        y < INPUT_SIZE - 1 ? current + INPUT_SIZE : -1,
+      ];
+      for (const next of neighbors) {
+        if (next < 0 || visited[next] || !mask[next]) continue;
+        visited[next] = 1;
+        queue[tail++] = next;
+      }
+    }
+    if (count > bestCount) {
+      bestCount = count;
+      bestStart = i;
     }
   }
 
-  return { mask: cleaned, rawCount, cleanedCount: bestCount };
+  if (bestStart < 0) return { mask: cleaned, rawCount, cleanedCount: 0 };
+
+  const fallbackVisited = new Uint8Array(mask.length);
+  const cleanedCount = floodFillFromSeed(mask, bestStart, fallbackVisited, cleaned, queue);
+  return { mask: cleaned, rawCount, cleanedCount };
 }
 
 function findSegmentsOnRow(mask: Uint8Array, y: number): Array<{ left: number; right: number; width: number; center: number }> {
@@ -295,8 +397,8 @@ function measureMaskLines(
   originalWidth: number,
   pose?: SegmentationPoseDebug,
 ): SegmentationBodyMaskDebug {
-  const bodyMask = buildClassMask(argmaxClasses, BODY_CLASS_INDEX);
-  const cleaned = keepLargestConnectedComponent(bodyMask);
+  const bodyMask = buildClassMask(argmaxClasses, BODY_CLASS_INDICES);
+  const cleaned = keepPoseAnchoredComponents(bodyMask, pose);
   const centerX = torsoCenterX(pose);
 
   const lines = bodyLevelRows(pose).map((level) => {
@@ -315,7 +417,7 @@ function measureMaskLines(
   });
 
   return {
-    classIndex: BODY_CLASS_INDEX,
+    classIndex: PRIMARY_BODY_CLASS_INDEX,
     rawCoverage: round4(cleaned.rawCount / (INPUT_SIZE * INPUT_SIZE)),
     cleanedCoverage: round4(cleaned.cleanedCount / (INPUT_SIZE * INPUT_SIZE)),
     lines,

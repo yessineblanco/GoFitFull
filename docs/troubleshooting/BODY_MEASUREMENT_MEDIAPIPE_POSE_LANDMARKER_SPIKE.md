@@ -187,6 +187,8 @@ This keeps the feature useful while the model improves.
 - [x] Compile-check the Android bridge with a local JDK.
 - [ ] Implement the same `analyzePoseFromImage(uri)` function on iOS.
 - [x] Render a MediaPipe debug overlay beside the existing MoveNet overlay.
+- [x] Promote Android measurement pose sourcing to MediaPipe first while keeping MoveNet as fallback.
+- [x] Reuse service-returned MediaPipe results in the debug overlay so Android does not run a second native MediaPipe pass for the same scan.
 - [ ] Compare on the same real front/side photos:
   - MoveNet 17 keypoints
   - MediaPipe 33 landmarks
@@ -337,6 +339,60 @@ Migration/removal decision, checked 2026-04-20:
 - Keep the current segmentation diagnostics until either MediaPipe segmentation output or another body-outline/human-parsing source is proven better.
 - Keep MoveNet as a fallback/comparison path until MediaPipe feature vectors, quality gates, debug overlays, and both Android/iOS native builds are validated.
 - Removal should be a final cleanup step, not part of the spike. Delete model files and old services only after nothing imports them, saved measurements still work, and the debug overlay has an equivalent MediaPipe-based replacement.
+
+Android primary-source rollout, checked 2026-04-21:
+
+- `bodyMeasurementService.ts` now tries MediaPipe first on Android, then falls back to MoveNet if the native module is unavailable or MediaPipe throws.
+- The MediaPipe 33-landmark result is mapped into the existing 17-keypoint shape so the current validation, debug overlays, segmentation diagnostics, and draft formulas keep working during the transition.
+- `MeasurementDebug` now carries the raw MediaPipe result plus `frontPoseModel` / `sidePoseModel` markers in the feature vector so we can see which pose source was used for each image.
+- `BodyMeasurementScreen.tsx` now reuses the service-returned MediaPipe result for the raw 33-landmark panel instead of triggering a second native inference call for the same front/side pair.
+- The Android debug panel subtitle now distinguishes between a primary MediaPipe scan, a mixed fallback case, and the older debug-only comparison mode.
+- This is still not the final production estimator. Segmentation, formulas, and save gating remain in place until iOS parity and further validation are done.
+
+Mirror retest after MediaPipe-primary rollout, checked 2026-04-21:
+
+- The new debug subtitle confirms that Android used MediaPipe as the primary pose source for this scan.
+- Front result: `33 pts | 1 pose`, score about `0.99`, core `9/9`, inference about `396 ms`.
+- Side result: `33 pts | 1 pose`, score about `0.97`, core `9/9`, inference about `66 ms`.
+- The raw MediaPipe overlay still tracks the body well, so the pose-source migration itself looks successful.
+- But the end-to-end body measurements are still weak on this mirror capture: chest `76.1 cm`, waist `61.0 cm`, hip `62.3 cm`, shoulder `77.8 cm`.
+- Segmentation debug still shows thin body-mask coverage (`7%` front, `5%` side), which matches the narrow torso widths/depths and suggests the current mask/formula path is still the limiting factor.
+- Important product/trust issue: the result state said `Review carefully`, but the numeric confidence displayed `1.00`. That means the confidence number is still too pose-heavy and not honest about estimator uncertainty.
+
+Planning conclusion from this retest:
+
+- The MediaPipe spike succeeded as a pose-source replacement candidate on Android.
+- The next code step should not be another pose change. It should be a confidence-model cleanup:
+  - separate pose confidence from measurement confidence
+  - penalize confidence with segmentation coverage, geometry mismatch, and plausibility warnings
+  - log those penalties in the feature vector/debug output
+- After that, revisit the old draft formulas, especially the shoulder-based depth/circumference heuristic.
+
+Four-scan Android log review, checked 2026-04-21:
+
+- All four logged scans used MediaPipe for front and side pose, so the repeated variance is happening after pose detection rather than inside the pose-source migration.
+- Pose/scale inputs were fairly steady across the set: scale stayed about `0.07 cm/px`, front shoulder width stayed about `616 px` to `657 px`, and front hip width stayed about `325 px` to `346 px`.
+- Final body outputs were not steady enough for those inputs: chest moved from `70.4 cm` to `114.8 cm`, waist from `52.7 cm` to `89.9 cm`, and hip from `52.3 cm` to `96.9 cm`.
+- Shoulder output improved versus the old inflated mirror result and was mostly stable at `46 cm` to `48.5 cm`, but scan `#1` still produced an `82.2 cm` shoulder outlier.
+- Confidence is still not calibrated to end-to-end reliability: the four scans produced `0.52`, `1.00`, `0.71`, and `0.70`, which does not match the remaining spread in the measurements.
+- Scan `#1` also showed that the debug path is not explicit enough yet: `rawChestCm` was `110.3` while `draftChestCm` and the final chest output were `70.4`, with the same kind of drop on waist and hip. That means later adjustment stages are materially changing the result but are not yet obvious in the product/debug story.
+- Conclusion from this log: the MediaPipe spike has done its job. The next work item is not more pose integration. It is confidence/trust cleanup plus stage-by-stage estimator logging, followed by formula cleanup.
+
+Nine-scan Android log review, checked 2026-04-21:
+
+- Scans `#1-#4` used the older depth path (`depth model: --`). Scans `#5-#9` are the first set using `depth model: statistical-male`.
+- That later group is much more stable than the first four scans even though pose remained MediaPipe throughout:
+  - chest `100.2 cm` to `103.9 cm`
+  - waist `75.6 cm` to `77.7 cm`
+  - hip `82.9 cm` to `85.5 cm`
+  - shoulder `45.8 cm` to `47.5 cm`
+- Depth estimates also tightened in the statistical group: chest depth `24.2 cm` to `25.2 cm`, abdomen depth `21.3 cm` to `22.1 cm`.
+- This is the first strong sign that the remaining instability was living in the old depth/formula path more than in MediaPipe pose itself.
+- Important caveat: `detection quality` still is not honest. The statistical runs look like the best cluster in the set, but they only scored about `0.47` to `0.71`, while one earlier weaker run scored `1.00`.
+- Planning conclusion from the nine-scan set:
+  - the MediaPipe spike remains a success
+  - the statistical depth branch now looks like the best measurement direction to push forward
+  - the next implementation step should still be confidence/trust cleanup first, but the formula cleanup should target the statistical-depth branch rather than the old heuristic-depth branch
 
 Original scaffold command used:
 

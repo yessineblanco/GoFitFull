@@ -145,6 +145,7 @@ Purpose: move from pose estimation to body-outline measurement.
   - height scale stability
 - [ ] Decide whether to retire MoveNet after MediaPipe is validated on Android and iOS.
 - [ ] Decide whether to keep, replace, or remove the current selfie segmentation model after a better body-outline source is proven.
+- [ ] Run a 5-10 scan repeatability baseline after the native Android segmenter rollout before changing formulas again.
 
 Success criteria:
 
@@ -574,3 +575,47 @@ Verification:
 Operational note:
 
 - Because this is a native Expo module change plus a new Android asset, testing requires a rebuilt Android dev client / EAS dev build. Metro reload alone is not enough for this step.
+
+2026-04-21 first native-run result:
+
+- The result screen now shows segmentation masks instead of `Status: unresolved-ops`, which confirms the Android native MediaPipe Image Segmenter path is running end-to-end.
+- Front and side mask debug panes render successfully, so the previous failure mode (generic TFLite runtime missing MediaPipe custom op support) appears resolved on-device.
+- This clears the runtime/blocker question. The next evaluation focus is no longer "does segmentation run?" but "are the masks clean enough to improve depth/width estimates across repeated scans?"
+
+2026-04-21 mini-baseline plan after native segmentation rollout:
+
+- Purpose:
+  - separate runtime success from measurement benefit
+  - prove whether native segmentation improves repeatability enough to justify more formula work
+- Working assumption for the first batch:
+  - use one subject, one height value, one clothing setup, one room/background, one phone, and one capture workflow for the whole batch
+  - do not mix mirror and direct-capture scans in the same 5-10 scan batch
+- First batch procedure:
+  - clear the on-device scan log before starting so the batch is isolated
+  - run 5-10 full front+side scans without changing formulas or manually editing values
+  - after each scan, keep the raw result and use the debug view plus `Scan log -> View` or `Share`
+  - record for each scan:
+    - chest / waist / hip / shoulder
+    - capture quality
+    - depth source
+    - depth model
+    - front clean mask coverage
+    - side clean mask coverage
+    - front C/W/H mask widths
+    - side C/W/H mask depths
+    - chest / waist / hip depth-to-width ratios
+    - warnings, anomalies, or failed sanity checks
+- Interpretation rules for this batch:
+  - if masks render but front clean coverage stays below about `8%` or side clean coverage stays below about `4.5%` on most scans, native segmentation solved runtime only, not measurement quality
+  - if side clean coverage reaches about `8%+` and `depth source` flips to `segmentation` on repeat scans without widening measurement spread, native segmentation is contributing useful numeric depth
+  - treat spread as the main stability test before formula changes:
+    - chest / waist / hip should ideally stay within about `3-4 cm` across the batch
+    - shoulder should ideally stay within about `1-2 cm` across the batch
+  - if segmentation-enabled scans are less stable than statistical-only scans, keep segmentation as debug/gating input and do not promote it further yet
+- Repo support added for this baseline:
+  - the result feature vector is now augmented with segmentation coverage and line metrics even when formulas remain on the statistical path
+  - the debug panel now shows `depth source` and `depth model`
+  - the on-device measurement log text now includes compact segmentation coverage, line, and ratio summaries so the batch can be reviewed without digging into raw JSON
+- Suggested execution order:
+  - first run one clean mirror batch because that is the highest-risk real-user workflow already discussed
+  - if that looks stable, repeat the same protocol with direct captures as a second comparison batch

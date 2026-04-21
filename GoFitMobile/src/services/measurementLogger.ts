@@ -102,28 +102,30 @@ export function formatMeasurementLogForShare(entries: MeasurementLogEntry[]): st
   if (entries.length === 0) {
     return 'GoFit measurement log is empty.';
   }
-  const header = `GoFit measurement log — ${entries.length} scan${entries.length === 1 ? '' : 's'}`;
+
+  const header = `GoFit measurement log - ${entries.length} scan${entries.length === 1 ? '' : 's'}`;
   const lines = entries.map((entry, idx) => {
     const r = entry.result;
     const ts = entry.timestamp;
     const formula = r.debug?.formula;
     const fv = r.debug?.featureVector;
+    const seg = fv?.segmentation;
     const poseFront = r.debug?.front?.source ?? '--';
     const poseSide = r.debug?.side?.source ?? '--';
     const depthModel = fv?.depthModel ?? '--';
     const depthSource = fv?.depthSource ?? '--';
     const chestDepth = fv?.estimatedChestDepthCm;
     const abdomenDepth = fv?.estimatedAbdomenDepthCm;
-    // Shoulder / height ratio is a cheap plausibility signal — adult humans
-    // sit in 0.22–0.30. Out-of-band means either the pose landmarks drifted
-    // (scan #11 style) or the user typed the wrong profile height.
+    // Shoulder / height ratio is a cheap plausibility signal; adult humans
+    // sit in 0.22-0.30. Out-of-band usually means pose drift or wrong height.
     const shoulderOverHeight =
       entry.heightCm && entry.heightCm > 0 && r.shoulder_cm > 0
         ? (r.shoulder_cm / entry.heightCm).toFixed(3)
         : '--';
     const edited = entry.edited
-      ? `  edited → chest ${entry.edited.chest_cm} / waist ${entry.edited.waist_cm} / hip ${entry.edited.hip_cm} / shoulder ${entry.edited.shoulder_cm}`
+      ? `  edited -> chest ${entry.edited.chest_cm} / waist ${entry.edited.waist_cm} / hip ${entry.edited.hip_cm} / shoulder ${entry.edited.shoulder_cm}`
       : '';
+
     return [
       `#${idx + 1}  ${ts}`,
       `  height: ${entry.heightCm ?? '--'} cm  |  capture quality: ${r.confidence.toFixed(2)}${
@@ -133,7 +135,13 @@ export function formatMeasurementLogForShare(entries: MeasurementLogEntry[]): st
       }${entry.anomalyFlags?.length ? `  |  anomalies: ${entry.anomalyFlags.join(', ')}` : ''}`,
       `  chest ${r.chest_cm} cm  |  waist ${r.waist_cm} cm  |  hip ${r.hip_cm} cm  |  shoulder ${r.shoulder_cm} cm`,
       `  depth source: ${depthSource}  |  depth model: ${depthModel}  |  chestDepth ${chestDepth ?? '--'} cm  |  abdomenDepth ${abdomenDepth ?? '--'} cm`,
-      `  shoulder/height: ${shoulderOverHeight}   (healthy 0.22–0.30)`,
+      seg
+        ? `  segmentation: clean ${seg.frontCleanCoverage != null ? `${Math.round(seg.frontCleanCoverage * 100)}%` : '--'} / ${seg.sideCleanCoverage != null ? `${Math.round(seg.sideCleanCoverage * 100)}%` : '--'}  |  ratios C ${seg.chestDepthToWidthRatio ?? '--'}  W ${seg.waistDepthToWidthRatio ?? '--'}  H ${seg.hipDepthToWidthRatio ?? '--'}`
+        : '',
+      seg
+        ? `  seg lines: front ${seg.frontChestWidthCm ?? '--'}/${seg.frontWaistWidthCm ?? '--'}/${seg.frontHipWidthCm ?? '--'} cm  |  side ${seg.sideChestDepthCm ?? '--'}/${seg.sideWaistDepthCm ?? '--'}/${seg.sideHipDepthCm ?? '--'} cm`
+        : '',
+      `  shoulder/height: ${shoulderOverHeight}   (healthy 0.22-0.30)`,
       `  pose front: ${poseFront}  |  pose side: ${poseSide}`,
       formula
         ? `  formula: shoulderPx ${formula.frontShoulderPx ?? '--'} / hipPx ${formula.frontHipPx ?? '--'} / scale ${r.debug?.scaleCmPerPx ?? '--'}`
@@ -145,6 +153,7 @@ export function formatMeasurementLogForShare(entries: MeasurementLogEntry[]): st
       .filter(Boolean)
       .join('\n');
   });
+
   const footer = `\n\nFull raw JSON (with pose keypoints / debug) is stored on-device at:\n${getLogFileUri()}`;
   return [header, '', ...lines].join('\n\n') + footer;
 }

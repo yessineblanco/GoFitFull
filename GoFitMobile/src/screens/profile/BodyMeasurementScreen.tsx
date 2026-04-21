@@ -311,6 +311,7 @@ export default function BodyMeasurementScreen() {
               refineMeasurementWithSegmentationDepth(res, segmentation) ??
               measurementResultFromSegmentation(res, segmentation) ??
               res;
+            finalResult = attachSegmentationFeatureVector(finalResult, segmentation);
           } catch (segmentationError) {
             setSegmentationDebug({
               model: 'MediaPipe Image Segmenter (selfie_segmenter.tflite)',
@@ -1220,6 +1221,36 @@ function buildSegmentationFeatureVector(
   };
 }
 
+function attachSegmentationFeatureVector(
+  result: MeasurementResult,
+  segmentation: BodySegmentationDebug,
+): MeasurementResult {
+  const featureVector = result.debug?.featureVector;
+  const scaleCmPerPx = result.debug?.scaleCmPerPx;
+  if (!featureVector || scaleCmPerPx == null || scaleCmPerPx <= 0) {
+    return result;
+  }
+
+  const nextFeatureVector = buildSegmentationFeatureVector(featureVector, segmentation, scaleCmPerPx, {
+    chest: result.chest_cm,
+    waist: result.waist_cm,
+    hip: result.hip_cm,
+    shoulder: result.shoulder_cm,
+    confidence: result.confidence,
+  });
+  if (!nextFeatureVector || !result.debug) {
+    return result;
+  }
+
+  return {
+    ...result,
+    debug: {
+      ...result.debug,
+      featureVector: nextFeatureVector,
+    },
+  };
+}
+
 // Minimum body-pixel coverage for a segmentation result to be trusted. Front
 // silhouettes typically occupy 12–25 % of the frame; side silhouettes 6–15 %.
 // Going below these thresholds means the mask is under-detecting body pixels
@@ -1786,6 +1817,8 @@ function FeatureVectorDebugPanel({
           ['Person height', formatDebugValue(featureVector.personHeightPx, ' px')],
           ['Scale', formatDebugValue(featureVector.scaleCmPerPx, ' cm/px', 2)],
           ['Height span', formatDebugValue(featureVector.heightSpanFrac, '', 2)],
+          ['Depth source', featureVector.depthSource ?? '--'],
+          ['Depth model', featureVector.depthModel ?? '--'],
           [
             'Front pose',
             `${formatDebugValue(featureVector.frontPoseMeanScore, '', 2)} | ${featureVector.frontVisibleCoreKeypoints ?? '--'} pts`,

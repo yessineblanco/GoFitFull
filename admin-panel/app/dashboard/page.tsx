@@ -26,6 +26,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import CoachPerformanceTable from "@/components/analytics/CoachPerformanceTable";
 import AdvancedBISavedViews from "@/components/analytics/AdvancedBISavedViews";
+import AdvancedBISnapshotButton from "@/components/analytics/AdvancedBISnapshotButton";
 import BIThresholdAlertsCard from "@/components/analytics/BIThresholdAlertsCard";
 import ClientHealthTrendDetailCard from "@/components/analytics/ClientHealthTrendDetailCard";
 import CoachOpsDetailCard from "@/components/analytics/CoachOpsDetailCard";
@@ -43,6 +44,7 @@ import RecentActivityFeed from "@/components/analytics/RecentActivityFeed";
 import { SystemHealth } from "@/components/health/SystemHealth";
 import {
   buildAdvancedBISavedViewsSettingKey,
+  isMissingAdminSettingsTableError,
   parseAdvancedBISavedViewsValue,
   type AdvancedBISavedView,
 } from "@/lib/bi-saved-views";
@@ -334,6 +336,10 @@ async function getAdvancedBISavedViews(): Promise<AdvancedBISavedView[]> {
     .single();
 
   if (error && error.code !== "PGRST116") {
+    if (isMissingAdminSettingsTableError(error)) {
+      return [];
+    }
+
     throw new Error(`Failed to fetch BI saved views: ${error.message}`);
   }
 
@@ -861,6 +867,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     </a>
                   </Button>
                 ))}
+                <AdvancedBISnapshotButton
+                  currentView={{
+                    rangeKey: advancedData.window.key,
+                    coachId: selectedCoach?.id || null,
+                    coachName: selectedCoach?.name || null,
+                    packId: selectedPack?.id || null,
+                    packName: selectedPack?.name || null,
+                  }}
+                />
                 <AdvancedBISavedViews
                   coachOptions={filterOptions.coaches.map((coach) => ({
                     id: coach.id,
@@ -884,6 +899,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               <p className="text-xs text-muted-foreground">
                 Exports honor the selected date range, plus coach and package filters
                 only where the semantic layer already supports that scope.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                BI snapshots currently deliver into the existing admin notification
+                center first, using the current range and truthful coach/package scope.
               </p>
             </div>
             <p className="text-xs text-muted-foreground">

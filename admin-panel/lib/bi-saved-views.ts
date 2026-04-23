@@ -63,6 +63,26 @@ export function buildAdvancedBISavedViewsSettingKey(adminUserId: string) {
   return `advanced_bi_saved_views:${adminUserId}`;
 }
 
+export function isMissingAdminSettingsTableError(error: {
+  code?: string | null;
+  message?: string | null;
+} | null | undefined) {
+  if (!error) {
+    return false;
+  }
+
+  if (error.code === "PGRST205" || error.code === "42P01") {
+    return true;
+  }
+
+  const message = error.message || "";
+
+  return (
+    message.includes("public.admin_settings") ||
+    message.includes("relation \"admin_settings\" does not exist")
+  );
+}
+
 export function parseAdvancedBISavedViewsValue(value: unknown) {
   const rawViews = Array.isArray(value)
     ? value

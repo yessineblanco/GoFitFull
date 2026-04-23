@@ -4,6 +4,7 @@ import {
   ADVANCED_BI_SAVED_VIEWS_MAX,
   ADVANCED_BI_SAVED_VIEW_RANGE_KEYS,
   buildAdvancedBISavedViewsSettingKey,
+  isMissingAdminSettingsTableError,
   parseAdvancedBISavedViewsValue,
   type AdvancedBISavedView,
   type AdvancedBISavedViewRangeKey,
@@ -77,6 +78,15 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error fetching BI saved views:", error);
+
+    if (
+      isMissingAdminSettingsTableError(
+        error instanceof Error ? { message: error.message } : undefined
+      )
+    ) {
+      return NextResponse.json({ savedViews: [] }, { status: 200 });
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch BI saved views." },
       { status: 500 }
@@ -150,6 +160,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ savedViews: nextViews }, { status: 200 });
   } catch (error) {
     console.error("Error saving BI view:", error);
+
+    if (
+      isMissingAdminSettingsTableError(
+        error instanceof Error ? { message: error.message } : undefined
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Saved views are unavailable because admin_settings is not provisioned in this database yet.",
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to save BI view." },
       { status: 500 }
@@ -189,6 +214,21 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ savedViews: nextViews }, { status: 200 });
   } catch (error) {
     console.error("Error deleting BI saved view:", error);
+
+    if (
+      isMissingAdminSettingsTableError(
+        error instanceof Error ? { message: error.message } : undefined
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Saved views are unavailable because admin_settings is not provisioned in this database yet.",
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to delete BI saved view." },
       { status: 500 }

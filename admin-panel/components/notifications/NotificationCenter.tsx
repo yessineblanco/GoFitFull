@@ -21,6 +21,16 @@ interface Notification {
   href?: string;
 }
 
+interface NotificationApiRow {
+  created_at: string;
+  href?: string | null;
+  id: string;
+  message: string;
+  read: boolean;
+  title: string;
+  type: Notification["type"];
+}
+
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -35,7 +45,7 @@ export function NotificationCenter() {
       if (!response.ok) throw new Error("Failed to fetch notifications");
       
       const { data } = await response.json();
-      const formatted = (data || []).map((n: any) => ({
+      const formatted = ((data || []) as NotificationApiRow[]).map((n) => ({
         id: n.id,
         type: n.type,
         title: n.title,
@@ -59,7 +69,16 @@ export function NotificationCenter() {
     fetchNotifications();
     // Refresh notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    const handleRefresh = () => {
+      void fetchNotifications();
+    };
+
+    window.addEventListener("admin-notifications:refresh", handleRefresh);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("admin-notifications:refresh", handleRefresh);
+    };
   }, []);
 
   const markAsRead = async (id: string) => {

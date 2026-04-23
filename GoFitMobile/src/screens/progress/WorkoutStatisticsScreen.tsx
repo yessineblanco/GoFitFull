@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   View,
   ScrollView,
@@ -39,12 +39,13 @@ import { workoutService } from '@/services/workouts';
 import type { WorkoutStatsData, PersonalRecord, MuscleGroupData, VolumeProgressItem } from '@/services/workoutStats';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { ScreenHeader } from '@/components/shared/ScreenHeader';
 import { Shimmer, ChartSkeleton, StatCardSkeleton, PRCardSkeleton } from '@/components/shared/Shimmer';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { useThemeStore } from '@/store/themeStore';
+import { supabase } from '@/config/supabase';
 
 const THEME = {
   primary: '#84c440',
@@ -77,6 +78,61 @@ const useTC = () => {
   return { isDark, ...getThemeColors(isDark) };
 };
 
+type BodyMeasurementHistoryEntry = {
+  id: string;
+  measurement_date?: string | null;
+  created_at?: string | null;
+  chest_cm: number | null;
+  waist_cm: number | null;
+  hip_cm: number | null;
+  shoulder_cm: number | null;
+  chest: number | null;
+  waist: number | null;
+  hips: number | null;
+  shoulder_width: number | null;
+  measurement_confidence: number | null;
+  source?: string | null;
+};
+
+function numberOrNull(value: number | null | undefined) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function resolveBodyMeasurements(entry: BodyMeasurementHistoryEntry) {
+  return {
+    chest: numberOrNull(entry.chest_cm ?? entry.chest),
+    waist: numberOrNull(entry.waist_cm ?? entry.waist),
+    hip: numberOrNull(entry.hip_cm ?? entry.hips),
+    shoulder: numberOrNull(entry.shoulder_cm ?? entry.shoulder_width),
+  };
+}
+
+function formatBodyMeasurementDate(entry: BodyMeasurementHistoryEntry) {
+  const raw = entry.measurement_date || entry.created_at;
+  if (!raw) return 'Unknown date';
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatBodyMeasurementSource(source: string | null | undefined) {
+  if (!source) return 'Saved scan';
+  if (source === 'ai_ondevice') return 'AI on-device';
+  if (source === 'manual') return 'Manual';
+  if (source === 'ai') return 'AI';
+  return source;
+}
+
+function formatBodyMeasurementValue(value: number | null) {
+  if (value == null) return '--';
+  return `${Math.round(value * 10) / 10} cm`;
+}
+
+function formatMeasurementConfidence(value: number | null) {
+  if (value == null) return 'n/a';
+  return `${Math.round(value * 100)}%`;
+}
+
 // --- Helper Components ---
 
 const GlassPanel = ({ children, style, intensity = 1, isDark = true }: { children: React.ReactNode, style?: any, intensity?: number, isDark?: boolean }) => (
@@ -87,6 +143,149 @@ const GlassPanel = ({ children, style, intensity = 1, isDark = true }: { childre
     {children}
   </View>
 );
+
+const BodyMeasurementsSection = ({ measurements }: { measurements: BodyMeasurementHistoryEntry[] }) => {
+  const TC = useTC();
+  const [expanded, setExpanded] = useState(false);
+  const latest = measurements[0];
+  const recent = measurements.slice(1);
+  const latestValues = latest ? resolveBodyMeasurements(latest) : null;
+  const canExpand = recent.length > 0;
+
+  return (
+    <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+      <View
+        style={[
+          styles.bodyMeasurementsCard,
+          {
+            backgroundColor: TC.isDark ? '#0f110d' : '#F0F4EA',
+            borderColor: TC.isDark ? '#266637' : 'rgba(132, 196, 65, 0.2)',
+          },
+        ]}
+      >
+        <View style={styles.bodyMeasurementsHeaderRow}>
+          <View style={styles.bodyMeasurementsHeaderMain}>
+            <View style={[styles.bodyMeasurementsHeaderIcon, { backgroundColor: TC.overlayBg, borderColor: TC.border }]}>
+              <Accessibility size={18} color={THEME.primary} />
+            </View>
+            <View style={styles.bodyMeasurementsHeaderCopy}>
+              <Text style={[styles.cardTitle, { color: TC.text }]}>Body measurements</Text>
+              <Text style={[styles.cardSubtitle, { color: TC.textMuted }]}>
+                {latest ? `Latest scan · ${formatBodyMeasurementDate(latest)}` : 'Save a body scan to see it here.'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.bodyMeasurementsHeaderActions}>
+            {measurements.length > 0 ? (
+              <View style={[styles.bodyMeasurementsCountPill, { backgroundColor: TC.overlayBg }]}>
+                <Text style={[styles.bodyMeasurementsCountText, { color: TC.text }]}>{measurements.length} saved</Text>
+              </View>
+            ) : null}
+            {canExpand ? (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setExpanded((value) => !value)}
+                style={[styles.bodyMeasurementsExpandButton, { backgroundColor: TC.overlayBg, borderColor: TC.border }]}
+              >
+                {expanded ? <ChevronUp size={16} color={TC.text} /> : <ChevronRight size={16} color={TC.text} />}
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+
+        {!latest || !latestValues ? (
+          <Text style={[styles.bodyMeasurementsEmptyText, { color: TC.textDim }]}>Your saved body scans will appear here inside Progress.</Text>
+        ) : (
+          <>
+            <View style={styles.bodyMeasurementsSummaryGrid}>
+              {[
+                ['Chest', latestValues.chest],
+                ['Waist', latestValues.waist],
+                ['Hip', latestValues.hip],
+                ['Shoulder', latestValues.shoulder],
+              ].map(([label, value]) => (
+                <View
+                  key={label}
+                  style={[
+                    styles.bodyMeasurementsSummaryChip,
+                    {
+                      backgroundColor: TC.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.7)',
+                      borderColor: TC.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.bodyMeasurementsSummaryLabel, { color: TC.textMuted }]}>{label}</Text>
+                  <Text style={[styles.bodyMeasurementsSummaryValue, { color: TC.text }]}>{formatBodyMeasurementValue(value as number | null)}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.bodyMeasurementsMetaRow}>
+              <Text style={[styles.bodyMeasurementsMetaText, { color: TC.textDim }]}>
+                {formatBodyMeasurementSource(latest.source)}
+              </Text>
+              <View style={[styles.bodyMeasurementsMetaDot, { backgroundColor: TC.textMuted }]} />
+              <Text style={[styles.bodyMeasurementsMetaText, { color: TC.textDim }]}>
+                Confidence {formatMeasurementConfidence(latest.measurement_confidence)}
+              </Text>
+            </View>
+
+            {canExpand ? (
+              <View style={styles.bodyMeasurementsHistoryWrap}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => setExpanded((value) => !value)}
+                  style={[
+                    styles.bodyMeasurementsHistoryToggle,
+                    {
+                      borderTopColor: TC.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.bodyMeasurementsHistoryToggleText, { color: THEME.primary }]}>
+                    {expanded ? 'Hide history' : `View history (${recent.length})`}
+                  </Text>
+                  {expanded ? <ChevronUp size={16} color={THEME.primary} /> : <ChevronRight size={16} color={THEME.primary} />}
+                </TouchableOpacity>
+
+                {expanded ? (
+                  <View style={styles.bodyMeasurementsHistoryList}>
+                    {recent.map((entry) => {
+                      const values = resolveBodyMeasurements(entry);
+                      return (
+                        <View
+                          key={entry.id}
+                          style={[
+                            styles.bodyMeasurementsHistoryItem,
+                            {
+                              borderTopColor: TC.border,
+                            },
+                          ]}
+                        >
+                          <View style={styles.bodyMeasurementsHistoryItemHeader}>
+                            <Text style={[styles.bodyMeasurementsHistoryDate, { color: TC.text }]}>
+                              {formatBodyMeasurementDate(entry)}
+                            </Text>
+                            <Text style={[styles.bodyMeasurementsHistorySource, { color: TC.textDim }]}>
+                              {formatBodyMeasurementSource(entry.source)}
+                            </Text>
+                          </View>
+                          <Text style={[styles.bodyMeasurementsHistoryValues, { color: TC.textDim }]}>
+                            Chest {formatBodyMeasurementValue(values.chest)} | Waist {formatBodyMeasurementValue(values.waist)} | Hip {formatBodyMeasurementValue(values.hip)} | Shoulder {formatBodyMeasurementValue(values.shoulder)}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+          </>
+        )}
+      </View>
+    </View>
+  );
+};
 
 // --- Animation Components ---
 
@@ -863,6 +1062,7 @@ export default function WorkoutStatisticsScreen() {
     prs: PersonalRecord[];
     volumeHistory: VolumeProgressItem[];
     muscleGroups: MuscleGroupData[];
+    bodyMeasurements: BodyMeasurementHistoryEntry[];
   } | null>(null);
 
   const [unit, setUnit] = useState<'lbs' | 'kg'>('lbs');
@@ -901,22 +1101,33 @@ export default function WorkoutStatisticsScreen() {
     )).start();
   }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
     try {
-      const [statsData, prs, sessions] = await Promise.all([
+      const [statsData, prs, sessions, bodyMeasurementsResult] = await Promise.all([
         fetchWorkoutStatistics(user.id, 'year'),
         fetchLifetimePRs(user.id),
-        getSessions(user.id)
+        getSessions(user.id),
+        supabase
+          .from('body_measurements')
+          .select('id,measurement_date,created_at,chest_cm,waist_cm,hip_cm,shoulder_cm,chest,waist,hips,shoulder_width,measurement_confidence,source')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(6),
       ]);
+
+      if (bodyMeasurementsResult.error) {
+        console.error('Failed to load body measurements for progress screen:', bodyMeasurementsResult.error);
+      }
 
       setData({
         stats: statsData.stats,
         volumeHistory: statsData.volumeProgress,
         prs: prs,
-        muscleGroups: statsData.muscleGroups || []
+        muscleGroups: statsData.muscleGroups || [],
+        bodyMeasurements: bodyMeasurementsResult.error ? [] : (bodyMeasurementsResult.data || []) as BodyMeasurementHistoryEntry[],
       });
 
       // --- Current Workout Logic ---
@@ -991,11 +1202,13 @@ export default function WorkoutStatisticsScreen() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadData();
   }, [user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadData();
+    }, [loadData])
+  );
 
   if (loading && !data) {
     return (
@@ -1033,7 +1246,7 @@ export default function WorkoutStatisticsScreen() {
 
   if (!data) return null; // Should not happen if loading is false and error is null, but safe guard
 
-  const { stats, prs, volumeHistory, muscleGroups } = data;
+  const { stats, prs, volumeHistory, muscleGroups, bodyMeasurements } = data;
 
   return (
     <View style={[styles.container, { backgroundColor: TC.background }]}>
@@ -1097,6 +1310,9 @@ export default function WorkoutStatisticsScreen() {
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
           <ConsistencyCalendar volumeData={volumeHistory} streak={stats.consistency?.currentStreak || 0} />
         </View>
+
+        {/* 2.4. Body measurements */}
+        <BodyMeasurementsSection measurements={bodyMeasurements} />
 
         {/* 2.5. Nutrition quick link */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
@@ -1409,6 +1625,140 @@ const styles = StyleSheet.create({
   shareText: {
     fontWeight: 'bold',
     fontSize: 14
+  },
+  bodyMeasurementsCard: {
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  bodyMeasurementsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 14,
+  },
+  bodyMeasurementsHeaderMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  bodyMeasurementsHeaderCopy: {
+    flex: 1,
+  },
+  bodyMeasurementsHeaderIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  bodyMeasurementsHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  bodyMeasurementsCountPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  bodyMeasurementsCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  bodyMeasurementsExpandButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  bodyMeasurementsEmptyText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  bodyMeasurementsSummaryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 14,
+  },
+  bodyMeasurementsSummaryChip: {
+    width: '48%',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+  },
+  bodyMeasurementsSummaryLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  bodyMeasurementsSummaryValue: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  bodyMeasurementsMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  bodyMeasurementsMetaText: {
+    fontSize: 12,
+  },
+  bodyMeasurementsMetaDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 999,
+  },
+  bodyMeasurementsHistoryWrap: {
+    marginTop: 4,
+  },
+  bodyMeasurementsHistoryToggle: {
+    marginTop: 10,
+    paddingTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+  },
+  bodyMeasurementsHistoryToggleText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  bodyMeasurementsHistoryList: {
+    marginTop: 4,
+  },
+  bodyMeasurementsHistoryItem: {
+    paddingTop: 12,
+    marginTop: 12,
+    borderTopWidth: 1,
+  },
+  bodyMeasurementsHistoryItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 6,
+  },
+  bodyMeasurementsHistoryDate: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  bodyMeasurementsHistorySource: {
+    fontSize: 12,
+  },
+  bodyMeasurementsHistoryValues: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 
   // Consistency
@@ -1875,4 +2225,3 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24
   }
 });
-

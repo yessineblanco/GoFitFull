@@ -124,6 +124,11 @@ export type MeasurementDebug = {
   failedChecks?: string[];
 };
 
+export type MeasurementCaptureValidation = {
+  ok: boolean;
+  issues: string[];
+};
+
 type Keypoint = MeasurementDebugKeypoint;
 type PoseRun = {
   keypoints: Keypoint[];
@@ -459,6 +464,15 @@ function poseQualityError(issues: string[]): string | undefined {
   return `Retake needed: ${issues.join(' ')}`;
 }
 
+function dedupeIssues(issues: string[]): string[] {
+  const seen = new Set<string>();
+  return issues.filter((issue) => {
+    if (seen.has(issue)) return false;
+    seen.add(issue);
+    return true;
+  });
+}
+
 function debugImage(run: PoseRun): MeasurementDebugImage {
   return {
     originalWidth: run.originalWidth,
@@ -596,10 +610,17 @@ function validateFrontPoseQuality(kf: Keypoint[], heightEst: { topNorm: number; 
     issues.push('Step back so your full body fits comfortably.');
   }
 
-  return issues;
+  return dedupeIssues(issues);
 }
 
-function validateSidePoseQuality(frontKf: Keypoint[], sideKf: Keypoint[], frontShoulderPx: number, sideShoulderPx: number): string[] {
+function validateSidePoseQuality(
+  sideKf: Keypoint[],
+  frontShoulderPx: number,
+  sideShoulderPx: number,
+  sideHeightEst: { topNorm: number; bottomNorm: number } | null,
+  sideHeightSpanFrac: number,
+  sideScale: number,
+): string[] {
   const issues: string[] = [];
   const body = keypointBounds(sideKf, [0, 5, 6, 11, 12, 15, 16]);
 
@@ -607,9 +628,27 @@ function validateSidePoseQuality(frontKf: Keypoint[], sideKf: Keypoint[], frontS
   if (!anyKeypointOk(sideKf, [5, 6], 0.14)) issues.push('In the side photo, keep your shoulder visible.');
   if (!anyKeypointOk(sideKf, [11, 12], 0.14)) issues.push('In the side photo, keep your hip visible.');
   if (!anyKeypointOk(sideKf, [15, 16], 0.16)) issues.push('In the side photo, show your feet.');
+  if (!sideHeightEst) {
+    issues.push('In the side photo, show your full body from head to feet.');
+  }
 
   if (body && (body.centerX < 0.2 || body.centerX > 0.8)) {
     issues.push('In the side photo, move into the center of the frame.');
+  }
+  if (sideHeightEst && sideHeightEst.topNorm < 0.01) {
+    issues.push('In the side photo, leave a little space above your head.');
+  }
+  if (sideHeightEst && sideHeightEst.bottomNorm > 0.99) {
+    issues.push('In the side photo, step back so your feet are not cropped.');
+  }
+  if (sideHeightSpanFrac > 0 && sideHeightSpanFrac < 0.22) {
+    issues.push('In the side photo, step closer so your body fills more of the frame.');
+  }
+  if (sideHeightSpanFrac > 0.92) {
+    issues.push('In the side photo, step back so your full body fits comfortably.');
+  }
+  if (Number.isFinite(sideScale) && sideScale > 0.42) {
+    issues.push('In the side photo, use portrait orientation, full body head-to-toe, and check that your profile height is correct.');
   }
 
   // At a true 90° profile, shoulder-depth is only ~30–45 % of shoulder-width
@@ -622,7 +661,7 @@ function validateSidePoseQuality(frontKf: Keypoint[], sideKf: Keypoint[], frontS
     issues.push('Turn fully sideways for the second photo.');
   }
 
-  return issues;
+  return dedupeIssues(issues);
 }
 
 function shoulderSeparationPx(kf: Keypoint[], fw: number, fh: number): number {
@@ -676,6 +715,61 @@ function resolveDepthPreset(sex?: MeasurementSex): {
 } {
   const key = sex === 'male' ? 'male' : sex === 'female' ? 'female' : 'neutral';
   return { key, ...SEX_DEPTH_CONSTANTS[key] };
+}
+
+export async function validateMeasurementCapture(params: {
+  imageUri: string;
+  phase: 'front' | 'side';
+  heightCm: number;
+  frontImageUri?: string;
+}): Promise<MeasurementCaptureValidation> {
+  const { imageUri, phase, heightCm, frontImageUri } = params;
+
+  if (phase === 'front') {
+    const debug: MeasurementDebug = {};
+    const front = await runPrimaryPose(imageUri, debug, 'front');
+    const { keypoints, originalWidth, originalHeight } = front;
+    const heightEst = estimatePersonHeightPx(keypoints, originalHeight);
+    const personHeightPx = estimateScaleHeightPixels(keypoints, originalWidth, originalHeight);
+    const heightSpanFrac = personHeightPx > 1 ? personHeightPx / Math.max(originalWidth, originalHeight) : 0;
+    const scale = personHeightPx > 1 ? heightCm / personHeightPx : Number.NaN;
+    const issues =
+      personHeightPx <= 1 || !heightEst
+        ? ['Stand farther away so your full body is visible.']
+        : validateFrontPoseQuality(keypoints, heightEst, heightSpanFrac);
+    if (Number.isFinite(scale) && scale > 0.42) {
+      issues.push('Use portrait orientation, full body head-to-toe, and check that your profile height is correct.');
+    }
+    const nextIssues = dedupeIssues(issues);
+    return { ok: nextIssues.length === 0, issues: nextIssues };
+  }
+
+  if (!frontImageUri) {
+    return {
+      ok: false,
+      issues: ['Take the front photo first.'],
+    };
+  }
+
+  const frontDebug: MeasurementDebug = {};
+  const sideDebug: MeasurementDebug = {};
+  const front = await runPrimaryPose(frontImageUri, frontDebug, 'front');
+  const side = await runPrimaryPose(imageUri, sideDebug, 'side');
+  const frontShoulderPx = shoulderSeparationPx(front.keypoints, front.originalWidth, front.originalHeight);
+  const sideShoulderPx = shoulderSeparationPx(side.keypoints, side.originalWidth, side.originalHeight);
+  const sideHeightEst = estimatePersonHeightPx(side.keypoints, side.originalHeight);
+  const sidePersonHeightPx = estimateScaleHeightPixels(side.keypoints, side.originalWidth, side.originalHeight);
+  const sideHeightSpanFrac = sidePersonHeightPx > 1 ? sidePersonHeightPx / Math.max(side.originalWidth, side.originalHeight) : 0;
+  const sideScale = sidePersonHeightPx > 1 ? heightCm / sidePersonHeightPx : Number.NaN;
+  const issues = validateSidePoseQuality(
+    side.keypoints,
+    frontShoulderPx,
+    sideShoulderPx,
+    sideHeightEst,
+    sideHeightSpanFrac,
+    sideScale,
+  );
+  return { ok: issues.length === 0, issues };
 }
 
 async function analyzeMeasurementsInner(params: {
@@ -802,6 +896,10 @@ async function analyzeMeasurementsInner(params: {
   debug.side = debugImage(side);
 
   const sideShoulderPx = shoulderSeparationPx(ks, sw, sh);
+  const sideHeightEst = estimatePersonHeightPx(ks, sh);
+  const sidePersonHeightPx = estimateScaleHeightPixels(ks, sw, sh);
+  const sideHeightSpanFrac = sidePersonHeightPx > 1 ? sidePersonHeightPx / Math.max(sw, sh) : 0;
+  const sideScale = sidePersonHeightPx > 1 ? heightCm / sidePersonHeightPx : Number.NaN;
   const sideBody = keypointBounds(ks, CORE_FEATURE_KEYPOINTS);
   updateFeatureVector(debug, heightCm, {
     sidePoseModel: side.source,
@@ -811,7 +909,14 @@ async function analyzeMeasurementsInner(params: {
     sideShoulderPx: round1(sideShoulderPx),
     sideToFrontShoulderRatio: round2(sideShoulderPx / Math.max(frontShoulderPx, 1)),
   });
-  const sideQualityIssues = validateSidePoseQuality(kf, ks, frontShoulderPx, sideShoulderPx);
+  const sideQualityIssues = validateSidePoseQuality(
+    ks,
+    frontShoulderPx,
+    sideShoulderPx,
+    sideHeightEst,
+    sideHeightSpanFrac,
+    sideScale,
+  );
   if (sideQualityIssues.length) {
     debug.qualityIssues = sideQualityIssues;
     assignFeatureQuality(debug, { confidence: 0, qualityIssues: sideQualityIssues });

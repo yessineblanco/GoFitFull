@@ -27,6 +27,7 @@ import {
   type MeasurementDebugImage,
   type MeasurementFeatureVector,
   type MeasurementResult,
+  validateMeasurementCapture,
 } from '@/services/bodyMeasurementService';
 import { analyzeBodySegmentation, type BodySegmentationDebug, type SegmentationImageDebug } from '@/services/bodySegmentationService';
 import {
@@ -132,6 +133,8 @@ export default function BodyMeasurementScreen() {
   const [phase, setPhase] = useState<Phase>('intro');
   const [frontUri, setFrontUri] = useState<string | null>(null);
   const [sideUri, setSideUri] = useState<string | null>(null);
+  const [captureValidation, setCaptureValidation] = useState<{ phase: 'front' | 'side'; issues: string[] } | null>(null);
+  const [captureCheckPhase, setCaptureCheckPhase] = useState<'front' | 'side' | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   /** Bumps when (re)opening the camera so Android gets a fresh native view after capture. */
   const [cameraSession, setCameraSession] = useState(0);
@@ -253,6 +256,15 @@ export default function BodyMeasurementScreen() {
   const anomalyWarnings = getCaptureAnomalyWarnings(result, heightCm, historyShoulders);
   const scanWarnings = [...segmentationWarnings, ...plausibilityWarnings, ...anomalyWarnings];
   const blockingScanWarnings = scanWarnings.filter((warning) => warning.severity === 'blocking');
+  const captureBannerText =
+    captureCheckPhase === 'front'
+      ? 'Checking front photo...'
+      : captureCheckPhase === 'side'
+        ? 'Checking side photo...'
+        : phase === 'front'
+          ? '1/2 Front photo: fit head and feet inside the guide'
+          : '2/2 Side photo: turn sideways, same distance';
+  const cameraIssues = captureValidation?.phase === phase ? captureValidation.issues : [];
   // Dampen the displayed capture quality score when any anomaly (soft or
   // hard) is raised. Prevents a scan like log entry #11 from showing 0.82
   // "Capture quality" while actually being ~5 cm off on the shoulder.
@@ -262,23 +274,53 @@ export default function BodyMeasurementScreen() {
       : result?.confidence ?? 0;
 
   const capturePhoto = useCallback(async () => {
-    if (!cameraRef.current || !cameraReady || captureInFlight.current) return;
+    if (!cameraRef.current || !cameraReady || captureInFlight.current || heightCm == null) return;
     captureInFlight.current = true;
     try {
+      setCaptureValidation(null);
       await primeAndroidPreview(cameraRef.current);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.92, shutterSound: false });
       if (!photo?.uri) return;
       if (phase === 'front') {
+        setCaptureCheckPhase('front');
+        const validation = await validateMeasurementCapture({
+          imageUri: photo.uri,
+          phase: 'front',
+          heightCm,
+        });
+        setCaptureCheckPhase(null);
+        if (!validation.ok) {
+          setCaptureValidation({ phase: 'front', issues: validation.issues });
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          await primeAndroidPreview(cameraRef.current);
+          return;
+        }
         setMediaPipeDebug(null);
+        setSideUri(null);
         setFrontUri(photo.uri);
         setPhase('side');
         await primeAndroidPreview(cameraRef.current);
       } else if (phase === 'side') {
-        if (heightCm == null || !frontUri) return;
+        if (!frontUri) return;
+        setCaptureCheckPhase('side');
+        const validation = await validateMeasurementCapture({
+          imageUri: photo.uri,
+          phase: 'side',
+          heightCm,
+          frontImageUri: frontUri,
+        });
+        setCaptureCheckPhase(null);
+        if (!validation.ok) {
+          setCaptureValidation({ phase: 'side', issues: validation.issues });
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          await primeAndroidPreview(cameraRef.current);
+          return;
+        }
         setSideUri(photo.uri);
         setPhase('analyze');
         setCameraReady(false);
+        setCaptureValidation(null);
         setSegmentationDebug(null);
         setMediaPipeDebug(null);
         try {
@@ -365,6 +407,7 @@ export default function BodyMeasurementScreen() {
         setCameraSession((s) => s + 1);
       }
     } finally {
+      setCaptureCheckPhase(null);
       captureInFlight.current = false;
     }
   }, [phase, cameraReady, frontUri, heightCm, measurementSex, primeAndroidPreview]);
@@ -435,6 +478,8 @@ export default function BodyMeasurementScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setFrontUri(null);
       setSideUri(null);
+      setCaptureValidation(null);
+      setCaptureCheckPhase(null);
       setResult(null);
       setSegmentationDebug(null);
       setMediaPipeDebug(null);
@@ -511,6 +556,8 @@ export default function BodyMeasurementScreen() {
       }
     }
     setCameraSession((s) => s + 1);
+    setCaptureValidation(null);
+    setCaptureCheckPhase(null);
     setPhase(next);
     setCameraReady(false);
   };
@@ -518,6 +565,8 @@ export default function BodyMeasurementScreen() {
   const resetFlow = () => {
     setFrontUri(null);
     setSideUri(null);
+    setCaptureValidation(null);
+    setCaptureCheckPhase(null);
     setResult(null);
     setSegmentationDebug(null);
     setMediaPipeDebug(null);
@@ -538,6 +587,8 @@ export default function BodyMeasurementScreen() {
               setPhase('intro');
               setFrontUri(null);
               setSideUri(null);
+              setCaptureValidation(null);
+              setCaptureCheckPhase(null);
             } else {
               navigation.goBack();
             }
@@ -645,12 +696,17 @@ export default function BodyMeasurementScreen() {
           />
           <BodyGuideOverlay pose={phase === 'front' ? 'front' : 'side'} />
           <View style={[styles.banner, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
-            <Text style={styles.bannerTxt}>
-              {phase === 'front'
-                ? '1/2 Front photo: fit head and feet inside the guide'
-                : '2/2 Side photo: turn sideways, same distance'}
-            </Text>
+            <Text style={styles.bannerTxt}>{captureBannerText}</Text>
           </View>
+          {cameraIssues.length ? (
+            <View style={styles.cameraWarn}>
+              {cameraIssues.map((issue) => (
+                <Text key={issue} style={styles.cameraWarnTxt}>
+                  {issue}
+                </Text>
+              ))}
+            </View>
+          ) : null}
           {showCameraRetry && !cameraReady ? (
             <TouchableOpacity
               style={styles.retryCam}
@@ -664,9 +720,9 @@ export default function BodyMeasurementScreen() {
             </TouchableOpacity>
           ) : null}
           <TouchableOpacity
-            disabled={!cameraReady}
+            disabled={!cameraReady || captureCheckPhase != null}
             onPress={() => void capturePhoto()}
-            style={[styles.shutter, { opacity: cameraReady ? 1 : 0.5 }]}
+            style={[styles.shutter, { opacity: cameraReady && captureCheckPhase == null ? 1 : 0.5 }]}
           >
             <View style={styles.shutterInner} />
           </TouchableOpacity>
@@ -1303,6 +1359,8 @@ const MIN_CHEST_DEPTH_OVER_SHOULDER = 0.38;
 const MAX_CHEST_DEPTH_OVER_SHOULDER = 0.65;
 const MIN_WAIST_DEPTH_OVER_SHOULDER = 0.28;
 const MAX_WAIST_DEPTH_OVER_SHOULDER = 0.6;
+const TARGET_FRONT_SEGMENTATION_COVERAGE = 0.14;
+const TARGET_SIDE_SEGMENTATION_COVERAGE = 0.12;
 /**
  * Maximum allowed deviation of segmentation depth from the statistical prior,
  * in cm. A healthy mask never disagrees with population-average anthropometry
@@ -1310,6 +1368,33 @@ const MAX_WAIST_DEPTH_OVER_SHOULDER = 0.6;
  * turning a good scan into a bad one.
  */
 const MAX_DEPTH_DELTA_FROM_STATISTICAL_CM = 8;
+
+function scoreAboveThreshold(value: number, min: number, target: number): number {
+  if (value <= min) return 0.55;
+  return Math.min(1, 0.55 + ((value - min) / Math.max(target - min, 0.001)) * 0.45);
+}
+
+function scoreWithinWindow(value: number, min: number, max: number): number {
+  const center = (min + max) / 2;
+  const halfWidth = Math.max((max - min) / 2, 0.001);
+  return Math.max(0.55, 1 - (Math.abs(value - center) / halfWidth) * 0.45);
+}
+
+function segmentationRefineConfidence(
+  baseConfidence: number,
+  frontCoverage: number,
+  sideCoverage: number,
+  chestDepthOverShoulder: number,
+  waistDepthOverShoulder: number,
+): number {
+  const segmentationQuality = Math.min(
+    scoreAboveThreshold(frontCoverage, MIN_FRONT_SEGMENTATION_COVERAGE, TARGET_FRONT_SEGMENTATION_COVERAGE),
+    scoreAboveThreshold(sideCoverage, MIN_SIDE_COVERAGE_FOR_DEPTH_REFINE, TARGET_SIDE_SEGMENTATION_COVERAGE),
+    scoreWithinWindow(chestDepthOverShoulder, MIN_CHEST_DEPTH_OVER_SHOULDER, MAX_CHEST_DEPTH_OVER_SHOULDER),
+    scoreWithinWindow(waistDepthOverShoulder, MIN_WAIST_DEPTH_OVER_SHOULDER, MAX_WAIST_DEPTH_OVER_SHOULDER),
+  );
+  return Math.round(Math.min(baseConfidence, segmentationQuality) * 100) / 100;
+}
 
 /**
  * Refines the measurement result by substituting the statistical depth prior
@@ -1399,11 +1484,20 @@ function refineMeasurementWithSegmentationDepth(
     return null;
   }
 
+  const confidence = segmentationRefineConfidence(
+    base.confidence,
+    frontCov,
+    sideCov,
+    chestOverShoulder,
+    waistOverShoulder,
+  );
+
   return {
     ...base,
     chest_cm: chest,
     waist_cm: waist,
     hip_cm: hip,
+    confidence,
     debug: {
       ...base.debug,
       featureVector: {
@@ -1411,6 +1505,7 @@ function refineMeasurementWithSegmentationDepth(
         estimatedChestDepthCm: roundMeasurement(sideChestDepth),
         estimatedAbdomenDepthCm: roundMeasurement(sideWaistDepth),
         depthSource: 'segmentation',
+        confidence,
       },
     },
   };
@@ -2293,6 +2388,18 @@ const styles = StyleSheet.create({
   cameraWrap: { flex: 1, marginHorizontal: 12, marginBottom: 24, borderRadius: 20, overflow: 'hidden' },
   banner: { position: 'absolute', top: 12, left: 12, right: 12, padding: 12, borderRadius: 12 },
   bannerTxt: { color: '#fff', fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13), textAlign: 'center' },
+  cameraWarn: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 118,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,180,100,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.68)',
+  },
+  cameraWarnTxt: { color: '#ffb74d', fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), lineHeight: 18 },
   shutter: {
     position: 'absolute',
     bottom: 28,

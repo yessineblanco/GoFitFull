@@ -79,8 +79,8 @@ Current task:
 - Return specific retake reasons in the result/debug payload.
 - Keep the gates conservative so usable scans are not rejected too aggressively.
 
-- [ ] Add front-photo validation before capture.
-- [ ] Add side-photo validation before capture.
+- [x] Add front-photo validation before capture.
+- [x] Add side-photo validation before capture.
 - [x] Replace the hard-to-follow thin silhouette with a clearer safe-zone guide.
 - [x] Add front/side specific capture prompts inside the camera view.
 - [x] Require full body visibility:
@@ -128,16 +128,16 @@ Purpose: move from pose estimation to body-outline measurement.
 - [x] Reuse service-returned MediaPipe results in the debug overlay instead of running MediaPipe twice per scan.
 - [ ] Implement iOS MediaPipe Pose Landmarker native bridge.
 - [ ] Test iOS MediaPipe Pose Landmarker on-device after the iOS bridge is implemented.
-- [ ] Extract a clean body silhouette mask from front and side photos.
-- [ ] Use pose keypoints only to locate anatomical levels:
+- [x] Extract a clean body silhouette mask from front and side photos.
+- [x] Use pose keypoints only to locate anatomical levels:
   - shoulder
   - chest
   - waist
   - hip
-- [ ] Measure front widths from the silhouette mask.
-- [ ] Measure side depths from the silhouette mask.
-- [ ] Estimate circumferences using front width and side depth.
-- [ ] Create confidence scoring based on:
+- [x] Measure front widths from the silhouette mask.
+- [x] Measure side depths from the silhouette mask.
+- [x] Estimate circumferences using front width and side depth.
+- [x] Create confidence scoring based on:
   - pose confidence
   - segmentation quality
   - front/side consistency
@@ -145,7 +145,7 @@ Purpose: move from pose estimation to body-outline measurement.
   - height scale stability
 - [ ] Decide whether to retire MoveNet after MediaPipe is validated on Android and iOS.
 - [ ] Decide whether to keep, replace, or remove the current selfie segmentation model after a better body-outline source is proven.
-- [ ] Run a 5-10 scan repeatability baseline after the native Android segmenter rollout before changing formulas again.
+- [x] Run a post-rollout Android validation pass before changing formulas again.
 
 Success criteria:
 
@@ -619,3 +619,121 @@ Operational note:
 - Suggested execution order:
   - first run one clean mirror batch because that is the highest-risk real-user workflow already discussed
   - if that looks stable, repeat the same protocol with direct captures as a second comparison batch
+
+2026-04-23 latest native-segmentation screenshot test:
+
+- User shared a result-screen screenshot after the native MediaPipe Image Segmenter rollout.
+- Visible top-level result:
+  - trust state: `Good scan`
+  - capture quality: about `0.65`
+  - chest: `99.8 cm`
+  - waist: `78.8 cm`
+  - hip: `84.4 cm`
+  - shoulder: `45.8 cm`
+- The debug panel looks materially better than the previous unresolved-op / weak-mask tests:
+  - segmentation masks render for both front and side
+  - front mask visually follows the full body outline
+  - side mask visually follows the profile body outline
+  - torso scan lines appear to land on the intended chest/waist/hip rows instead of obvious background noise
+  - the feature vector appears to show `depth source: segmentation`, meaning the mask likely passed the health gates and affected the final chest/waist depth path
+- Interpretation:
+  - this is the first screenshot that looks convincing enough to continue the mini-baseline rather than change formulas immediately
+  - one scan cannot prove stability, but it does show the new native path is now capable of producing plausible numbers and useful mask geometry
+  - the next decision must come from repeatability spread across 5-10 scans, not from this single good-looking sample
+- Immediate next step:
+  - keep this build and capture setup fixed
+  - run the remaining scans in the same mini-baseline
+  - share the `Scan log -> View` text after the batch so we can compare measurement spread, `depth source`, mask coverage, and depth ratios across scans
+
+2026-04-23 user decision after repeated Android testing:
+
+- User reports they have already tested the new Android native segmentation path enough and want to proceed to the next tasks.
+- Working product decision:
+  - accept the current Android native segmentation path as the new forward path for measurement hardening
+  - do not spend more time on additional Android baseline collection before the next engineering tasks
+  - keep MoveNet fallback and iOS parity work open
+- Follow-up implementation:
+  - tightened result confidence when `depth source = segmentation`
+  - the segmentation-refined result now caps final confidence using:
+    - front mask coverage
+    - side mask coverage
+    - chest depth / shoulder ratio quality
+    - waist depth / shoulder ratio quality
+  - this does not change the circumference formulas; it only makes the trust score more honest when segmentation is the active numeric depth source
+- Next planned engineering focus:
+  - Android provenance and save-path polish
+  - defer iOS MediaPipe bridge parity until iPhone hardware is available for real testing
+
+2026-04-23 device-availability constraint:
+
+- User does not currently have an iPhone available for testing.
+- Decision:
+  - do not continue speculative iOS bridge implementation without a device
+  - keep iOS parity open, but defer it until it can be verified on hardware
+  - spend the next iteration budget on Android-only improvements we can actually validate
+- Android-only provenance follow-up attempted:
+  - the app briefly saved `body_measurements.source` as:
+    - `ai_ondevice_segmentation`
+    - `ai_ondevice_statistical`
+  - the saved-progress history card briefly showed a friendlier source label instead of the old generic `ai_ondevice`
+  - this was rolled back for DB compatibility; see the save-path note below
+
+2026-04-23 save-path compatibility rollback:
+
+- User hit a save failure on Android after the provenance split:
+  - `new row for relation "body_measurements" violates check constraint "body_measurements_source_check"`
+- Root cause:
+  - the app started writing `ai_ondevice_segmentation` / `ai_ondevice_statistical`
+  - the existing database migration still restricts `body_measurements.source` to:
+    - `ai`
+    - `manual`
+    - `ai_ondevice`
+
+2026-04-23 immediate capture hardening:
+
+- Added a reusable `validateMeasurementCapture()` helper in `bodyMeasurementService.ts`.
+- Front-photo capture now runs pose validation immediately after the shutter and blocks early on:
+  - missing head / shoulders / hips / feet
+  - off-center framing
+  - top or bottom crop
+  - body too small or too large in frame
+  - impossible scale from profile height
+- Side-photo capture now runs pose validation immediately after the shutter and blocks early on:
+  - missing head / shoulder / hip / feet
+  - off-center framing
+  - top or bottom crop
+  - body too small or too large in frame
+  - impossible scale from profile height
+  - side profile not turned enough, using side-to-front shoulder ratio
+- `BodyMeasurementScreen` now keeps the user on the same camera step with inline retake reasons instead of advancing to the next phase and failing only after full analysis.
+- Follow-up UI cleanup:
+  - the capture guide briefly showed two overlapping top prompts because `BodyGuideOverlay` still rendered its own top hint while `BodyMeasurementScreen` added the new step banner
+  - fixed by keeping the screen-level banner and removing the overlay-level top hint so the instruction appears only once
+- Next on-device validation:
+  - intentionally take one cropped front photo and confirm it stays on step 1 with an inline retake reason
+  - intentionally take one not-fully-sideways second photo and confirm it stays on step 2 with an inline retake reason
+  - then take one normal scan and confirm the happy path still reaches the result screen
+- Decision:
+  - do not widen the database enum/check constraint during this debugging pass
+  - restore the persisted source to `ai_ondevice` so saves work again immediately
+  - keep segmentation-vs-statistical provenance in the scan/debug feature vector instead of the top-level saved enum for now
+- Why this path:
+  - it is the smallest compatible fix
+  - it unblocks saving without adding a new migration or schema rollout step
+  - it preserves the useful measurement/debug telemetry needed for later formula work
+
+2026-04-23 Progress screen integration:
+
+- User confirmed saves now succeed, but the saved scans were still effectively hidden because `My Progress` did not read from `body_measurements`.
+- Follow-up shipped:
+  - `My Progress` now fetches recent `body_measurements` rows alongside workout stats
+  - the screen refreshes that data on focus, so a newly saved scan appears after switching to the Progress tab
+  - a dedicated body-measurements panel shows:
+    - latest chest / waist / hip / shoulder snapshot
+    - source and confidence
+    - recent saved history entries
+  - the panel was then compacted to better match the rest of the Progress screen:
+    - latest snapshot stays visible by default
+    - older entries are hidden behind an explicit expand/collapse history control
+- Compatibility detail:
+  - the Progress panel reads both the newer `*_cm` columns and the legacy circumference columns so older saved rows can still render if they exist

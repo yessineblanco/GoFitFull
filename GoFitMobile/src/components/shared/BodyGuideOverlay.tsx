@@ -18,7 +18,7 @@ type Props = {
  *     container is letterboxed (`xMidYMid meet`) so proportions never stretch.
  *  3. Shoulder + hip landmark lines anchored to real anatomical y-positions
  *     inside the silhouette.
- *  4. Short hint texts above and below.
+ *  4. A short hint text below the silhouette.
  */
 export function BodyGuideOverlay({ pose, style }: Props) {
   const isFront = pose === 'front';
@@ -37,13 +37,6 @@ export function BodyGuideOverlay({ pose, style }: Props) {
         </Svg>
       </View>
 
-      <View style={styles.topHint}>
-        <Text style={styles.hintText}>
-          {isFront
-            ? 'Face the camera, arms slightly out from body'
-            : 'Turn fully sideways, arms relaxed by your side'}
-        </Text>
-      </View>
       <View style={styles.bottomHint}>
         <Text style={styles.hintText}>Align head, shoulders, hips and feet to the outline</Text>
       </View>
@@ -209,18 +202,6 @@ const styles = StyleSheet.create({
     bottom: '15%',
     left: 0,
     right: 0,
-  },
-  topHint: {
-    position: 'absolute',
-    top: '2.5%',
-    alignSelf: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.62)',
-    borderWidth: 1,
-    borderColor: 'rgba(132,196,65,0.55)',
-    maxWidth: '88%',
   },
   bottomHint: {
     position: 'absolute',

@@ -65,6 +65,24 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Done
 
+- **Part 2B - Advanced BI Stage 3 in-panel threshold alerts (2026-04-23)** - Added `admin-panel/components/analytics/BIThresholdAlertsCard.tsx` and wired it into `admin-panel/app/dashboard/page.tsx` so the existing admin `/dashboard` now surfaces fixed in-panel alert thresholds for inactive clients and low coach utilization without adding a scheduled delivery layer yet. Client alerts use the current client-health snapshot (`14d+` warning, `30d+ / never` critical), while coach alerts use recurring-availability utilization inputs from the selected BI window (`<25%` warning, `<10%` critical). No extra demo seed was needed for this slice because the current BI demo data already produces live alert cases, including inactive clients and low-utilization coaches.
+- **Part 2B - Advanced BI Stage 3 saved views (2026-04-23)** - Added `admin-panel/app/api/bi/saved-views/route.ts`, `admin-panel/lib/bi-saved-views.ts`, and `admin-panel/components/analytics/AdvancedBISavedViews.tsx` so the existing admin `/dashboard` now lets each admin save and reuse BI filter presets without creating a new route or another persistent page block. Saved views are stored per admin user in `admin_settings` under a dedicated key, and they capture only the current range plus the existing truthful coach/package scopes already supported by the dashboard.
+- **Part 2B - Advanced BI Stage 3 CSV export (2026-04-23)** - Added `admin-panel/app/api/bi/export/route.ts` so the existing admin `/dashboard` now exports CSVs for the current advanced BI slices without creating a separate reporting surface. Exports stay aligned to the current semantic layer and current truthful scopes: **finance** honors range + coach + package filters where supported, **coach ops** honors range + coach scope, and **lifecycle / cohorts / client health** stay global so we do not imply coach or package attribution where it does not exist yet. The dashboard header now exposes compact CSV buttons instead of adding another long page section. No extra demo seed was needed for this step because the existing Stage 2 / Stage 3 demo datasets already populate all exportable BI slices.
+- **Part 2B - Advanced BI Stage 3 coach/package filters (2026-04-23)** - Extended `admin-panel/app/dashboard/page.tsx` with a compact advanced-BI filter form so the existing admin `/dashboard` now supports shared coach and package query filters without turning the page into a client route. The current semantic layer only supports these scopes truthfully in specific places, so the UI now makes that explicit: **coach filters** scope finance and coach-ops, while **package filters** scope finance pack-sales only. To support the new package filter with real data instead of empty selects, also seeded a minimal demo package dataset in the connected Supabase project: two active `session_packs` for the approved coaches (`Demo Filter Starter 6`, `Demo Filter Pro 12`) plus four historical `purchased_packs` rows so each package has both a current-window and previous-window finance signal.
+- **Part 2B - Advanced BI Stage 3 global range filter + period comparison (2026-04-23)** - Extended `admin-panel/app/dashboard/page.tsx` so the advanced BI section on the existing admin `/dashboard` now supports shared `7D` / `30D` / `90D` server-side range filters plus previous-period comparison across the executive finance, lifecycle, coach-ops, and client-health cards. The same pass refined the BI framing with range chips, explicit current-vs-previous date labels, clearer selected-window messaging, and new collapsible section wrappers so the dashboard stops reading like one long vertical stack while keeping current-state snapshot cards anchored to today's date. To keep the new finance comparison truthful and non-empty, also seeded a minimal demo finance dataset in the connected Supabase project: four `purchased_packs` rows across `2026-04-20`, `2026-04-12`, `2026-03-18`, and `2026-03-06`, which now produce matching current and previous 30-day gross pack-sales windows in `public.bi_finance_daily`.
+- **Part 2B - Advanced BI Stage 2 client-health trend detail (2026-04-23)** - Added `admin-panel/components/analytics/ClientHealthTrendDetailCard.tsx` and wired it into `admin-panel/app/dashboard/page.tsx` so the existing admin `/dashboard` now shows daily workout, nutrition, and body-measurement trend lines from `getBIClientHealthOverview`. This panel stays within the truthful client-health scope: daily distinct users with each signal rather than speculative body-change or nutrition-adherence scoring. To keep the body-signal line useful in the current workspace, also seeded a minimal demo body-measurement dataset in the connected Supabase project: three recent `body_measurements` rows for non-admin client users, tagged in `manual_overrides.demo_seed`, across `2026-04-17`, `2026-04-20`, and `2026-04-22`.
+- **Part 2B - Advanced BI Stage 2 lifecycle activation + inactivity detail (2026-04-23)** - Added `admin-panel/components/analytics/LifecycleActivationDetailCard.tsx`, extended `admin-panel/lib/bi-user-lifecycle.ts` with current lifecycle snapshots and activation / inactivity bucket counts, and wired the new card into `admin-panel/app/dashboard/page.tsx`. This panel stays within the current lifecycle model: workout activation vs booking-only activation plus last-workout inactivity buckets derived from the canonical lifecycle view. To keep the new panel useful in the current workspace, also seeded a minimal demo lifecycle dataset in the connected Supabase project: four recent completed `workout_sessions` spread across `2d`, `5d`, `10d`, and `21d` ago so the `active 7d`, `8-14d`, and `15-30d` buckets are no longer empty.
+- **Part 2B - Advanced BI Stage 2 coach-ops detail (2026-04-23)** - Added `admin-panel/components/analytics/CoachOpsDetailCard.tsx` and wired it into `admin-panel/app/dashboard/page.tsx` so the existing admin `/dashboard` now shows a coach-operations detail table sourced from `getBICoachOpsOverview`. This panel stays within the truthful coach-ops scope: bookings, completion / cancellation / no-show rates, current relationship clients, and approximate utilization from recurring availability patterns. To keep the new panel useful in the current workspace, also seeded a minimal demo coach-ops dataset in the connected Supabase project: recent booking outcomes for the approved coaches plus recurring availability rows for the approved coach who had none.
+- **Part 2B - Advanced BI Stage 2 finance-by-currency detail (2026-04-23)** - Added `admin-panel/components/analytics/FinanceCurrencyDetailCard.tsx` and wired it into `admin-panel/app/dashboard/page.tsx` so the existing admin `/dashboard` now shows a finance detail table by currency. This panel exposes only the finance metrics the current semantic layer can support truthfully: gross pack sales, orders, AOV, wallet earnings, platform fee rows, refund ledger rows, payout rows, and current payout liability, while keeping net revenue and reconciliation explicitly deferred.
+- **Part 2B - Advanced BI Stage 2 client-health risk queue (2026-04-23)** - Added `admin-panel/components/analytics/ClientHealthRiskQueue.tsx` and extended `admin-panel/lib/bi-client-health.ts` so the existing admin `/dashboard` now shows a current risk queue with client display names, workout inactivity, nutrition log recency, body-measurement recency, pack expiry pressure, and current sessions remaining. The queue also calls out when nutrition signals are currently noisy because the workspace has no recent meal-log activity yet.
+- **Part 2B - Advanced BI Stage 2 retention cohort drilldown (2026-04-23)** - Added `admin-panel/components/analytics/RetentionCohortCard.tsx` and wired `getBIUserWorkoutCohortRetention` into `admin-panel/app/dashboard/page.tsx` so the existing admin `/dashboard` now includes a signup-to-workout cohort retention matrix. The same pass also refined the advanced BI overview UI with clearer badges, section framing, and stronger card hierarchy while keeping the scope inside the current dashboard.
+- **Part 2B - Advanced BI Stage 2 executive overview (2026-04-23)** - Extended `admin-panel/app/dashboard/page.tsx` with a first advanced BI overview section on the existing `/dashboard`, sourced from the canonical helpers `admin-panel/lib/bi-finance.ts`, `admin-panel/lib/bi-user-lifecycle.ts`, `admin-panel/lib/bi-coach-ops.ts`, and `admin-panel/lib/bi-client-health.ts`. This keeps advanced BI inside the current admin surface while exposing truthful finance foundation, lifecycle, coach-ops, and client-health summaries without jumping to separate tabs or speculative drilldowns.
+- **Part 2B - Advanced BI Stage 1 database rollout complete (2026-04-23)** - Confirmed `public.bi_finance_daily`, `public.bi_user_lifecycle_daily`, `public.bi_coach_ops_daily`, and `public.bi_client_health_daily` are now applied and verified in the connected Supabase project, so the full semantic layer is live both repo-side and database-side.
+- **Part 2B - Advanced BI Stage 1 client-health slice (2026-04-23)** - Added the canonical client-health view migration `database/migrations/create_bi_client_health_daily_view.sql` and the admin query module `admin-panel/lib/bi-client-health.ts`. This fourth semantic-layer slice now captures daily workout, nutrition, body-measurement, completed-booking, and pack-purchase signals plus current risk-oriented client snapshots without freezing a final at-risk score or overclaiming historical pack-state semantics.
+- **Part 2B - Advanced BI Stage 1 coach-ops slice (2026-04-23)** - Added the canonical coach-ops view migration `database/migrations/create_bi_coach_ops_daily_view.sql` and the admin query module `admin-panel/lib/bi-coach-ops.ts`. This third semantic-layer slice now captures daily booking outcomes, booking-minute totals, recurring availability-pattern minutes, coach quality snapshots, and current coach relationship snapshots without pretending response-SLA or finalized utilization formulas are fully settled.
+- **Part 2B - Advanced BI Stage 1 lifecycle slice (2026-04-23)** - Added the canonical lifecycle view migration `database/migrations/create_bi_user_lifecycle_daily_view.sql` and the admin query module `admin-panel/lib/bi-user-lifecycle.ts`. This second semantic-layer slice now captures daily per-user signup, first completed workout, first completed booking, workout activity, completed booking activity, pack-purchase activity, rolling DAU / WAU / MAU inputs, and signup-to-workout cohort retention inputs without prematurely freezing churn or reactivation definitions.
+- **Part 2B - Advanced BI Stage 1 finance slice (2026-04-23)** - Added the canonical finance view migration `database/migrations/create_bi_finance_daily_view.sql` and the admin query module `admin-panel/lib/bi-finance.ts`. This first semantic-layer slice now exposes truthful daily pack-sales metrics plus explicit ledger signals for earnings, platform fees, payouts, and refund rows, while keeping net revenue and refund-aware reconciliation deferred until the finance model is stronger.
+- **Part 2B - Advanced BI Stage 0 KPI contract (2026-04-23)** - Added the advanced KPI contract in `docs/admin-panel/ADVANCED_BI_STAGE0_KPI_CONTRACT.md` and the code-side catalog in `admin-panel/lib/bi-kpi-contract.ts`. Each KPI is now marked `supported`, `partial`, or `blocked` against the current schema so Stage 1 can build canonical views without redefining metrics.
 - **Part 2 - Admin BI v1 on existing dashboard (2026-04-23)** - **Product direction:** kept BI inside the current admin **`/dashboard`** instead of creating a separate **`/bi-dashboard`** route. **Data layer:** corrected DAU / WAU / MAU to use **distinct workout users**, fixed user growth cumulative math so the chart keeps the lifetime baseline, and added 30-day session activity + coach performance queries in `admin-panel/lib/analytics.ts`. **UI:** added BI v1 snapshot cards, `SessionActivityChart.tsx`, and `CoachPerformanceTable.tsx` to `admin-panel/app/dashboard/page.tsx`. **Deferred:** finance-heavy BI stays out of v1 because the repo currently treats pack sales (`purchased_packs` + `session_packs.price`) and coach wallet ledger data (`transactions` / `wallets`) as different sources of truth.
 
 - **Part 0 / Part 1A / Part 9** — Completed per todos above (QuickActions + TimerModal, coach wallet/settings, coach UI polish theme + dashboard + skeletons + animations).
@@ -91,7 +109,7 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Next (backlog — body measurements & progress)
 
-- **Part 2B (new):** advanced BI foundation for the admin panel -- define the KPI contract and build canonical finance, lifecycle, coaching-ops, and client-health views before adding advanced tabs.
+- **Part 2B (next):** advanced BI Stage 3 -- define the delivery path for scheduled BI snapshots, then add saved-view-based email or admin-notification digests once the outbound channel is chosen.
 - **Part 1B (new):** on-device body measurement pipeline (capture, inference, validation), mobile service + screen(s), optional local history UI; reuse **`body_measurements`** table and RLS.
 - **Repo/docs:** align root **`docs/IMPLEMENTATION_PLAN.md`**, **`FEATURES.md`**, and **`scripts/generate_features_md.py`** with removal when those files are next edited (they may still mention the old edge function).
 - **Nutrition follow-ups:** optional imperial display; expand `food_items` seed; Storage for meal photos — see Part 1C shipped section.
@@ -162,6 +180,11 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Part 2B: Advanced BI roadmap
 
+**Stage 0 shipped (2026-04-23):**
+
+- KPI contract doc: `docs/admin-panel/ADVANCED_BI_STAGE0_KPI_CONTRACT.md`
+- Code-side KPI catalog: `admin-panel/lib/bi-kpi-contract.ts`
+
 **Assumptions / guardrails:**
 
 - Keep advanced BI inside the admin panel unless a later product decision explicitly changes that.
@@ -181,48 +204,61 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 **Stage 1 -- Semantic layer / data foundation**
 
 1. Build canonical BI query modules or SQL views for:
-   - `bi_finance_daily`
-   - `bi_user_lifecycle_daily`
-   - `bi_coach_ops_daily`
-   - `bi_client_health_daily`
+   - `bi_finance_daily` -- shipped first as the finance foundation in `database/migrations/create_bi_finance_daily_view.sql` and `admin-panel/lib/bi-finance.ts`
+   - `bi_user_lifecycle_daily` -- shipped second in `database/migrations/create_bi_user_lifecycle_daily_view.sql` and `admin-panel/lib/bi-user-lifecycle.ts`
+   - `bi_coach_ops_daily` -- shipped third in `database/migrations/create_bi_coach_ops_daily_view.sql` and `admin-panel/lib/bi-coach-ops.ts`
+   - `bi_client_health_daily` -- shipped fourth in `database/migrations/create_bi_client_health_daily_view.sql` and `admin-panel/lib/bi-client-health.ts`
 2. Normalize finance so pack sales, refunds, wallet transactions, and fees reconcile cleanly.
+   - Current shipped scope: daily gross pack sales, sales count, AOV, wallet earnings, platform fee rows, payout rows, and current payout liability snapshot
+   - Still deferred: canonical refund amount and net revenue reconciliation
 3. Normalize lifecycle so activation, churn, and reactivation are based on one event model.
 4. Add comparison helpers for previous period, rolling 7/30/90 day windows, and cumulative trends.
 
 **Stage 2 -- Advanced BI v2 UI**
 
 1. Executive summary:
+   - first slice shipped on the existing `/dashboard` using the canonical finance, lifecycle, coach-ops, and client-health helpers
    - revenue, active clients, active coaches, completed sessions, churn / retention, at-risk clients
+   - retention cohort drilldown shipped on the same `/dashboard` using `getBIUserWorkoutCohortRetention`
+   - client-health risk queue shipped on the same `/dashboard` using current snapshots from `getBIClientHealthOverview`
 2. Revenue dashboard:
+   - finance-by-currency detail shipped on the existing `/dashboard` using `getBIFinanceOverview`
    - gross vs net revenue, refunds, fees, package mix, coach mix, average order value, period comparison
 3. Retention dashboard:
+   - lifecycle activation + inactivity detail shipped on the existing `/dashboard` using `getBIUserLifecycleOverview`
    - activation funnel, cohort retention, churn / reactivation, DAU / WAU / MAU trend, inactive-user buckets
 4. Coaching ops dashboard:
-   - coach utilization, cancellations, no-shows, response / review load, top / at-risk coaches
+   - coach-ops detail shipped on the existing `/dashboard` using `getBICoachOpsOverview`
+   - next: deepen coach views only if response / review load or coach-risk semantics become strong enough
 5. Client health dashboard:
+   - client-health trend detail shipped on the existing `/dashboard` using `getBIClientHealthOverview`
    - adherence, nutrition logging, streak / inactivity, program-ending soon, at-risk segments
 
 **Stage 3 -- Advanced BI product features**
 
 1. Global filters:
-   - date range, coach, package, acquisition channel, client segment
+   - date range shipped on the existing `/dashboard` with shared `7D` / `30D` / `90D` filters and previous-period comparison across the advanced BI executive cards
+   - coach and package filters shipped where truthful on the existing `/dashboard` (`coach`: finance + coach-ops, `package`: finance pack sales only)
+   - next: acquisition channel, client segment
 2. Drilldowns:
    - click KPI -> table -> entity detail
 3. Operational actions:
-   - export CSV
-   - saved views
+   - export CSV -- shipped on the existing `/dashboard` via `admin-panel/app/api/bi/export/route.ts` and compact header actions for finance, lifecycle, cohort, coach-ops, and client-health slices
+   - saved views -- shipped on the existing `/dashboard` via `admin-panel/app/api/bi/saved-views/route.ts` and a compact per-admin dialog backed by `admin_settings`
    - scheduled email snapshots
-   - threshold alerts for churn spike, refund spike, low utilization, inactive clients
+   - threshold alerts for low utilization and inactive clients -- shipped in-panel on the existing `/dashboard`; churn spike / refund spike remain deferred until the underlying semantics are stronger
 
 **Recommended build order**
 
-1. Finance semantic layer
-2. Retention semantic layer
-3. Coaching ops semantic layer
-4. Executive summary + revenue dashboard
-5. Retention dashboard
-6. Coaching ops dashboard
-7. Alerts / exports / saved views
+1. Finance semantic layer -- first slice shipped
+2. Retention semantic layer -- second slice shipped
+3. Coaching ops semantic layer -- third slice shipped
+4. Client health semantic layer -- fourth slice shipped
+5. Executive summary + revenue dashboard
+6. Retention dashboard
+7. Coaching ops dashboard
+8. Client health dashboard
+9. Alerts / exports / saved views
 
 **Stop / ship gates**
 

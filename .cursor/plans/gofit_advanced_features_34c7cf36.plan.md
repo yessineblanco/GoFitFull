@@ -24,7 +24,10 @@ todos:
     content: "Part 1C: Nutrition Tracking -- DB tables + seed data, meal logging screens, macro rings"
     status: completed
   - id: bi-dashboard
-    content: "Part 2: Admin BI Dashboard -- data layer, 16 chart components, 4-tab page, sidebar/middleware"
+    content: "Part 2: Admin BI v1 inside /dashboard -- fix core metrics, add session activity + coach performance, defer separate /bi-dashboard and finance-heavy BI until data model is ready"
+    status: completed
+  - id: bi-advanced
+    content: "Part 2B: Advanced Admin BI -- canonical finance/retention/coaching-op views, drilldowns, filters, alerts, and role-specific dashboards"
     status: pending
   - id: smart-notifs
     content: "Part 3: Smart Notifications & Streaks -- DB tables, edge functions, streak widget, settings UI"
@@ -52,7 +55,7 @@ isProject: false
 
 # GoFit -- Advanced Features + Fixes Implementation
 
-Full details for each item are in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md), but scope decisions in this file take precedence when they diverge.
 
 **Convention:** Whenever you ship a fix or change scope, append an entry to **Living log → Done** (dated, concrete: files, behavior, deploy version if applicable), add or update a **YAML todo** `status: completed` when the work maps to a trackable item, and adjust the relevant **phase section** so this file stays the single source of truth. No shipped step should exist only in code or chat.
 
@@ -61,6 +64,8 @@ Full details for each item are in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTAT
 ## Living log (done + decided + next)
 
 ### Done
+
+- **Part 2 - Admin BI v1 on existing dashboard (2026-04-23)** - **Product direction:** kept BI inside the current admin **`/dashboard`** instead of creating a separate **`/bi-dashboard`** route. **Data layer:** corrected DAU / WAU / MAU to use **distinct workout users**, fixed user growth cumulative math so the chart keeps the lifetime baseline, and added 30-day session activity + coach performance queries in `admin-panel/lib/analytics.ts`. **UI:** added BI v1 snapshot cards, `SessionActivityChart.tsx`, and `CoachPerformanceTable.tsx` to `admin-panel/app/dashboard/page.tsx`. **Deferred:** finance-heavy BI stays out of v1 because the repo currently treats pack sales (`purchased_packs` + `session_packs.price`) and coach wallet ledger data (`transactions` / `wallets`) as different sources of truth.
 
 - **Part 0 / Part 1A / Part 9** — Completed per todos above (QuickActions + TimerModal, coach wallet/settings, coach UI polish theme + dashboard + skeletons + animations).
 - **Part 1B — Groq / remote AI body measurements removed (2026-04-17)** — **Repo cleanup** so the client can be replaced with an **on-device** implementation without conflicting code paths. **Deleted:** `supabase/functions/body-measurements/` (entire edge function), `GoFitMobile/src/services/bodyMeasurements.ts`, `GoFitMobile/src/screens/progress/BodyMeasurementsScreen.tsx`, `GoFitMobile/src/stores/bodyMeasurementsStore.ts`, `GoFitMobile/src/utils/bodyScanImage.ts`. **Navigation / types:** removed `BodyMeasurements` from `AppNavigator` Progress stack and from `ProgressStackParamList` (`src/types/index.ts`). **UI:** removed Body Measurements quick link from `WorkoutStatisticsScreen.tsx` (Nutrition tile unchanged). **Docs:** `GoFitMobile/PROJECT_ANALYSIS.md` (checklist), `GoFitMobile/docs/guides/NEXT_STEPS.md` (progress bullet). **Database:** `public.body_measurements` and all SQL migrations **left unchanged** for reuse. **Supabase project:** if **`body-measurements`** is still deployed remotely, **undeploy** or delete that function in Dashboard/CLI so it does not stay live as dead API surface.
@@ -78,11 +83,15 @@ Full details for each item are in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTAT
 
 ### Decided / documented
 
+- **BI product direction (2026-04-23)** â€” BI v1 lives in the existing admin **`/dashboard`**. Do **not** create **`/bi-dashboard`** or a 4-tab BI shell until the data model is strong enough to support it cleanly.
+- **BI finance scope (2026-04-23)** â€” Revenue beyond light operational monitoring is **deferred**. `purchased_packs` currently supports gross pack-sales views, while `transactions` / `wallets` describe coach ledger activity, so platform revenue / ARPU / refund-aware finance metrics are not yet a single reliable source.
+
 - **`body-measurements` edge function** — **No longer in repo.** Any deploy/CLI notes for this function are **obsolete**; remove the function from the Supabase project if it is still deployed.
 - **Body measurements product direction** — Next implementation is **on-device**, writing to existing **`body_measurements`** (and related columns/migrations). No Groq vision path in mobile until/unless explicitly reintroduced.
 
 ### Next (backlog — body measurements & progress)
 
+- **Part 2B (new):** advanced BI foundation for the admin panel -- define the KPI contract and build canonical finance, lifecycle, coaching-ops, and client-health views before adding advanced tabs.
 - **Part 1B (new):** on-device body measurement pipeline (capture, inference, validation), mobile service + screen(s), optional local history UI; reuse **`body_measurements`** table and RLS.
 - **Repo/docs:** align root **`docs/IMPLEMENTATION_PLAN.md`**, **`FEATURES.md`**, and **`scripts/generate_features_md.py`** with removal when those files are next edited (they may still mention the old edge function).
 - **Nutrition follow-ups:** optional imperial display; expand `food_items` seed; Storage for meal photos — see Part 1C shipped section.
@@ -134,18 +143,92 @@ Full details for each item are in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTAT
 
 ---
 
-## Phase C: Admin BI Dashboard
+## Phase C: Admin BI (inside existing dashboard)
 
-### Part 2: BI Dashboard (`/bi-dashboard`)
+### Part 2: BI v1 on `/dashboard`
 
-New page with 4 tabs + global date range picker:
+**Shipped BI v1:**
 
-- **Revenue**: KPI cards (total revenue, pack sales, ARPU), AreaChart trend, BarChart by coach, PieChart pack breakdown, transactions table.
-- **Coach Performance**: active coaches, avg rating, bookings trend (multi-line), top coaches ranking table, rating histogram, utilization grid.
-- **User Retention**: true DAU/WAU/MAU (distinct users), retention cohort grid, user funnel, session frequency distribution, growth vs churn chart.
-- **Platform Overview**: demographics (gender/age/activity), content stats, communication stats, export report button.
+- Keep BI inside the existing admin **`/dashboard`** and extend the current analytics page instead of adding a separate route.
+- Fix the existing foundation first: DAU / WAU / MAU now use **distinct users**, and user growth cumulative no longer resets to the visible window.
+- Add the smallest useful BI slice on top of the current dashboard: 30-day workout sessions, workout completion rate, completed coach bookings, active coaches, a session activity trend, and a top-coach performance table.
+- Keep the older dashboard cards (heatmap, workout completion, popular exercises, recent activity, system health) in place as supporting operational analytics.
 
-Data layer: `admin-panel/lib/bi-analytics.ts` (~17 query functions). ~16 new components under `admin-panel/components/bi-dashboard/`. Sidebar + middleware updates.
+**Deferred until the data / model is clearer:**
+
+- Separate **`/bi-dashboard`** route, 4 tabs, and the earlier 16-chart build.
+- Revenue / ARPU / pack-sales finance BI beyond light monitoring, because `purchased_packs` and `transactions` / `wallets` do not yet form one clean finance source of truth.
+- Cohorts, churn, funnels, communication BI, and broader demographic rollups beyond simple current-schema summaries.
+
+### Part 2B: Advanced BI roadmap
+
+**Assumptions / guardrails:**
+
+- Keep advanced BI inside the admin panel unless a later product decision explicitly changes that.
+- Do not build a bigger dashboard shell until the underlying metrics have one reliable definition each.
+- Prefer reusable views / query modules over one-off page queries so KPI definitions stay consistent across cards, charts, exports, and alerts.
+
+**Stage 0 -- KPI contract first (required before more UI)**
+
+1. Define the KPI catalog in code/docs:
+   - finance: gross revenue, net revenue, refunds, fees, payout liability, average order value, coach share, platform share
+   - retention: signup, activated, first workout, first booking, active, churned, reactivated
+   - coaching ops: completed bookings, cancellation rate, no-show rate, utilization, active clients per coach
+   - client health: workout adherence, nutrition adherence, streak / inactivity, program completion
+2. For each KPI, record the source tables, business definition, aggregation grain, and known caveats.
+3. Verify every advanced KPI can be recomputed from the current schema or explicitly mark it blocked.
+
+**Stage 1 -- Semantic layer / data foundation**
+
+1. Build canonical BI query modules or SQL views for:
+   - `bi_finance_daily`
+   - `bi_user_lifecycle_daily`
+   - `bi_coach_ops_daily`
+   - `bi_client_health_daily`
+2. Normalize finance so pack sales, refunds, wallet transactions, and fees reconcile cleanly.
+3. Normalize lifecycle so activation, churn, and reactivation are based on one event model.
+4. Add comparison helpers for previous period, rolling 7/30/90 day windows, and cumulative trends.
+
+**Stage 2 -- Advanced BI v2 UI**
+
+1. Executive summary:
+   - revenue, active clients, active coaches, completed sessions, churn / retention, at-risk clients
+2. Revenue dashboard:
+   - gross vs net revenue, refunds, fees, package mix, coach mix, average order value, period comparison
+3. Retention dashboard:
+   - activation funnel, cohort retention, churn / reactivation, DAU / WAU / MAU trend, inactive-user buckets
+4. Coaching ops dashboard:
+   - coach utilization, cancellations, no-shows, response / review load, top / at-risk coaches
+5. Client health dashboard:
+   - adherence, nutrition logging, streak / inactivity, program-ending soon, at-risk segments
+
+**Stage 3 -- Advanced BI product features**
+
+1. Global filters:
+   - date range, coach, package, acquisition channel, client segment
+2. Drilldowns:
+   - click KPI -> table -> entity detail
+3. Operational actions:
+   - export CSV
+   - saved views
+   - scheduled email snapshots
+   - threshold alerts for churn spike, refund spike, low utilization, inactive clients
+
+**Recommended build order**
+
+1. Finance semantic layer
+2. Retention semantic layer
+3. Coaching ops semantic layer
+4. Executive summary + revenue dashboard
+5. Retention dashboard
+6. Coaching ops dashboard
+7. Alerts / exports / saved views
+
+**Stop / ship gates**
+
+- Gate 1: finance numbers reconcile across pack sales and wallet ledger
+- Gate 2: retention / churn definitions are accepted and stable
+- Gate 3: advanced tabs only ship after KPI definitions are trusted enough for exports and alerts
 
 ---
 

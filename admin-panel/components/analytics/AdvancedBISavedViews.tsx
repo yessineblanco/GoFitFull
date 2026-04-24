@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { Bookmark, BookmarkPlus, Trash2 } from "lucide-react";
+import { BellRing, Bookmark, BookmarkPlus, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   ADVANCED_BI_SAVED_VIEWS_MAX,
+  type AdvancedBIDigestCadence,
   type AdvancedBISavedView,
   type AdvancedBISavedViewRangeKey,
 } from "@/lib/bi-saved-views";
@@ -168,6 +169,44 @@ export default function AdvancedBISavedViews({
     });
   };
 
+  const handleDigestCadenceChange = (
+    id: string,
+    digestCadence: AdvancedBIDigestCadence
+  ) => {
+    setMessage(null);
+
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/bi/saved-views", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id,
+            digestCadence,
+          }),
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          setMessage(payload.error || "Failed to update this BI digest.");
+          return;
+        }
+
+        setSavedViews(payload.savedViews || []);
+        setMessage(
+          digestCadence === "none"
+            ? "Scheduled digest disabled."
+            : "Scheduled digest updated."
+        );
+      } catch (error) {
+        console.error("Failed to update BI digest:", error);
+        setMessage("Failed to update this BI digest.");
+      }
+    });
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -275,6 +314,25 @@ export default function AdvancedBISavedViews({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 rounded-md border bg-background/70 px-2 py-1">
+                      <BellRing className="h-3.5 w-3.5 text-muted-foreground" />
+                      <select
+                        value={view.digestCadence}
+                        onChange={(event) =>
+                          handleDigestCadenceChange(
+                            view.id,
+                            event.target.value as AdvancedBIDigestCadence
+                          )
+                        }
+                        disabled={isPending}
+                        className="h-7 bg-transparent text-xs outline-none"
+                        aria-label={`Scheduled digest for ${view.name}`}
+                      >
+                        <option value="none">Off</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                      </select>
+                    </label>
                     <Button asChild size="sm" variant="outline">
                       <Link href={view.href} scroll={false}>
                         Apply

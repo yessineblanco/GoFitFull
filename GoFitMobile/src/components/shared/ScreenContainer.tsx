@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LAYOUT_CONFIG } from "@/constants";
 import { useUIStore } from "@/store/uiStore";
@@ -49,6 +49,10 @@ export const ScreenContainer = React.forwardRef<any, Props>(
       LAYOUT_CONFIG.TAB_BAR_HEIGHT +
       LAYOUT_CONFIG.TAB_BAR_SPACING +
       insets.bottom;
+
+    useEffect(() => {
+      return () => setTabBarVisible(true);
+    }, [setTabBarVisible]);
 
     if (scrollable) {
       return (

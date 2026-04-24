@@ -11,17 +11,22 @@ import { TopTrainers } from '@/components/home/TopTrainers';
 import { YourPrograms } from '@/components/home/YourPrograms';
 import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
+import { StreakWidget } from '@/components/home/StreakWidget';
+import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
 import { getResponsiveSpacing } from '@/utils/responsive';
 import { theme } from '@/theme';
 import { getBackgroundColor, getSurfaceColor, getGlassBg, getGlassBorder, getShadow } from '@/utils/colorUtils';
 import { useThemeStore } from '@/store/themeStore';
 import { useTabScroll } from '@/hooks/useTabScroll';
+import { useProfileStore } from '@/store/profileStore';
+import { notificationService } from '@/services/notifications';
 
 export const HomeScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { onScroll: handleTabScroll } = useTabScroll();
-  const { fetch } = useSessionsStore();
+  const { fetch, sessions, loading, getStreakMetrics } = useSessionsStore();
+  const { profile } = useProfileStore();
   const { isDark } = useThemeStore();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
@@ -30,6 +35,21 @@ export const HomeScreen: React.FC = () => {
   React.useEffect(() => {
     fetch();
   }, [fetch]);
+
+  React.useEffect(() => {
+    const prefs = profile?.notification_preferences;
+    if (!prefs) return;
+
+    notificationService.updateSmartNotifications({
+      prefs: {
+        notificationTime: prefs.notification_time || '09:00',
+        inactivityNudges: prefs.inactivity_nudges ?? true,
+        inactivityThresholdDays: prefs.inactivity_threshold_days ?? 3,
+        streakAlerts: prefs.streak_alerts ?? true,
+      },
+      streakMetrics: getStreakMetrics(),
+    });
+  }, [sessions, profile?.notification_preferences, getStreakMetrics]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -74,7 +94,13 @@ export const HomeScreen: React.FC = () => {
       >
         <HomeHeader />
 
-        <TopWorkouts key={`workouts-${refreshKey}`} />
+        <StreakWidget />
+
+        {!loading && sessions.length === 0 ? (
+          <RecommendedWorkouts />
+        ) : (
+          <TopWorkouts key={`workouts-${refreshKey}`} />
+        )}
 
         <TopTrainers key={`trainers-${refreshKey}`} />
 

@@ -53,7 +53,11 @@ export const QuickActions: React.FC = () => {
             gradientColors: ['#84c441', '#7db63a'] as const,
             onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                navigation.navigate('Profile', { screen: 'EditBodyMetrics' });
+                navigation.navigate('Profile', {
+                    screen: 'EditWeightHeight',
+                    initial: false,
+                    params: { initialTab: 'weight' },
+                });
             },
         },
         {
@@ -63,7 +67,10 @@ export const QuickActions: React.FC = () => {
             gradientColors: ['#9b59b6', '#8e44ad'] as const,
             onPress: () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                navigation.navigate('Library', { screen: 'WorkoutBuilder' });
+                navigation.navigate('Library', {
+                    screen: 'WorkoutBuilder',
+                    initial: false,
+                });
             },
         },
         {

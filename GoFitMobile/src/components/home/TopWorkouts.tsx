@@ -7,8 +7,6 @@ import { useThemeStore } from '@/store/themeStore';
 import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { LibraryStackParamList } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { SectionHeader } from './SectionHeader';
 import { GlassCalendar } from './GlassCalendar';
@@ -24,11 +22,9 @@ import { getGlassBg, getGlassBorder, getSurfaceColor } from '@/utils/colorUtils'
 const CARD_WIDTH = 263;
 const CARD_HEIGHT = 180;
 
-type NavigationProp = StackNavigationProp<LibraryStackParamList>;
-
 export const TopWorkouts: React.FC = () => {
     const { isDark } = useThemeStore();
-    const navigation = useNavigation<NavigationProp>();
+    const navigation = useNavigation<any>();
 
     // Use sessions store for dynamic history
     const { sessions, loading } = useSessionsStore();
@@ -85,12 +81,16 @@ export const TopWorkouts: React.FC = () => {
     const handleWorkoutPress = (workoutId: string) => {
         if (!workoutId) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        navigation.navigate('WorkoutDetail', { workoutId: workoutId });
+        navigation.navigate('Library', {
+            screen: 'WorkoutDetail',
+            initial: false,
+            params: { workoutId },
+        });
     };
 
     const handleSeeAll = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        navigation.navigate('Library' as any, { screen: 'History' });
+        navigation.navigate('Progress', { screen: 'ProgressMain' });
     };
 
     // Extract workout dates for calendar highlighting

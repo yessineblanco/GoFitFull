@@ -367,11 +367,12 @@ async function getCurrentBIUserLifecycleSnapshots(
 
   return Array.from(snapshotMap.values())
     .map((snapshot) => {
-      const activationType = snapshot.firstCompletedWorkoutDate
-        ? "workout"
-        : snapshot.firstCompletedBookingDate
-          ? "booking"
-          : "none";
+      const activationType: BIUserLifecycleSnapshotRow["activationType"] =
+        snapshot.firstCompletedWorkoutDate
+          ? "workout"
+          : snapshot.firstCompletedBookingDate
+            ? "booking"
+            : "none";
       const daysSinceLastWorkout = diffDays(endDate, snapshot.lastWorkoutDate);
       const daysSinceLastBooking = diffDays(endDate, snapshot.lastBookingDate);
       const daysSinceLastAnyActivity = diffDays(endDate, snapshot.lastAnyActivityDate);

@@ -57,7 +57,7 @@ export function NutritionHomeCard() {
         activeOpacity={0.85}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          navigation.navigate('Progress', { screen: 'Nutrition' });
+          navigation.navigate('Progress', { screen: 'Nutrition', initial: false });
         }}
       >
         <LinearGradient

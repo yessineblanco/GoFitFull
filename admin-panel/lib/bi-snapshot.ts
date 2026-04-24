@@ -27,12 +27,13 @@ export const ADVANCED_BI_SNAPSHOT_RANGE_KEYS = Object.keys(
 export type AdvancedBISnapshotRangeKey =
   (typeof ADVANCED_BI_SNAPSHOT_RANGE_KEYS)[number];
 
-interface AdvancedBISnapshotScope {
+export interface AdvancedBISnapshotScope {
   coachId?: string | null;
   coachName?: string | null;
   packId?: string | null;
   packName?: string | null;
   rangeKey: AdvancedBISnapshotRangeKey;
+  viewName?: string | null;
 }
 
 export interface AdvancedBISnapshotNotificationPayload {
@@ -115,18 +116,23 @@ function buildSnapshotTitle({
   coachName,
   packName,
   rangeKey,
+  viewName,
 }: AdvancedBISnapshotScope) {
   const rangeLabel = ADVANCED_BI_SNAPSHOT_RANGES[rangeKey].label;
 
+  if (viewName) {
+    return `BI Snapshot - ${rangeLabel} - ${viewName}`;
+  }
+
   if (packName) {
-    return `BI Snapshot · ${rangeLabel} · ${packName}`;
+    return `BI Snapshot - ${rangeLabel} - ${packName}`;
   }
 
   if (coachName) {
-    return `BI Snapshot · ${rangeLabel} · ${coachName}`;
+    return `BI Snapshot - ${rangeLabel} - ${coachName}`;
   }
 
-  return `BI Snapshot · ${rangeLabel}`;
+  return `BI Snapshot - ${rangeLabel}`;
 }
 
 function buildScopeNote({ coachId, packId }: AdvancedBISnapshotScope) {

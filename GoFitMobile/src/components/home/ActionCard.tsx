@@ -66,12 +66,16 @@ export const ActionCard: React.FC = () => {
 
     const handlePress = () => {
         if (incompleteSession) {
-            navigation.navigate('WorkoutSession', {
-                sessionId: incompleteSession.id,
-                workoutId: incompleteSession.workout_id
+            navigation.navigate('Library', {
+                screen: 'WorkoutSession',
+                initial: false,
+                params: {
+                    sessionId: incompleteSession.id,
+                    workoutId: incompleteSession.workout_id,
+                },
             });
         } else {
-            navigation.navigate('Library');
+            navigation.navigate('Library', { screen: 'LibraryMain' });
         }
     };
 

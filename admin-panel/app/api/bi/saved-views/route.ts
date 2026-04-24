@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  ADVANCED_BI_DIGEST_CADENCES,
   ADVANCED_BI_SAVED_VIEWS_MAX,
   ADVANCED_BI_SAVED_VIEW_RANGE_KEYS,
   buildAdvancedBISavedViewsSettingKey,
   isMissingAdminSettingsTableError,
   parseAdvancedBISavedViewsValue,
+  type AdvancedBIDigestCadence,
   type AdvancedBISavedView,
   type AdvancedBISavedViewRangeKey,
 } from "@/lib/bi-saved-views";
@@ -152,6 +154,8 @@ export async function POST(request: NextRequest) {
       coachId,
       packId,
       createdAt: new Date().toISOString(),
+      digestCadence: "none",
+      digestLastSentAt: null,
     };
     const nextViews = [nextView, ...existingViews];
 
@@ -177,6 +181,87 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "Failed to save BI view." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const adminUserId = await getAdminUserIdFromRequest(request);
+
+    if (!adminUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const id = normalizeString(body.id);
+    const digestCadence = normalizeString(body.digestCadence);
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "A saved view id is required." },
+        { status: 400 }
+      );
+    }
+
+    if (
+      !digestCadence ||
+      !ADVANCED_BI_DIGEST_CADENCES.includes(
+        digestCadence as AdvancedBIDigestCadence
+      )
+    ) {
+      return NextResponse.json(
+        { error: "Invalid BI digest cadence." },
+        { status: 400 }
+      );
+    }
+
+    const existingViews = await getCurrentSavedViews(adminUserId);
+    let didUpdate = false;
+    const nextViews = existingViews.map((view) => {
+      if (view.id !== id) {
+        return view;
+      }
+
+      didUpdate = true;
+      return {
+        ...view,
+        digestCadence: digestCadence as AdvancedBIDigestCadence,
+        digestLastSentAt:
+          digestCadence === "none" ? null : view.digestLastSentAt,
+      };
+    });
+
+    if (!didUpdate) {
+      return NextResponse.json(
+        { error: "Saved view not found." },
+        { status: 404 }
+      );
+    }
+
+    await persistSavedViews(adminUserId, nextViews);
+
+    return NextResponse.json({ savedViews: nextViews }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating BI saved view digest:", error);
+
+    if (
+      isMissingAdminSettingsTableError(
+        error instanceof Error ? { message: error.message } : undefined
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Saved views are unavailable because admin_settings is not provisioned in this database yet.",
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to update BI saved view." },
       { status: 500 }
     );
   }

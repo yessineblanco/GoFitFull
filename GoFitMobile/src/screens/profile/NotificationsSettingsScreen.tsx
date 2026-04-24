@@ -15,7 +15,7 @@ import { GradientBackground } from '@/components/shared/GradientBackground';
 // Removed BlurView
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfileStore } from '@/store/profileStore';
-import { ArrowLeft, Bell, Save, Clock, TestTube, Dumbbell, TrendingUp, Trophy, Info } from 'lucide-react-native';
+import { ArrowLeft, Bell, Save, Clock, TestTube, Dumbbell, TrendingUp, Trophy, Info, Flame } from 'lucide-react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import type { ProfileStackParamList } from '@/types';
 import { userProfileService } from '@/services/userProfile';
@@ -47,6 +47,9 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
   const [workoutReminders, setWorkoutReminders] = useState(true);
   const [achievementNotifications, setAchievementNotifications] = useState(true);
   const [weeklyProgressReports, setWeeklyProgressReports] = useState(true);
+  const [inactivityNudges, setInactivityNudges] = useState(true);
+  const [streakAlerts, setStreakAlerts] = useState(true);
+  const [inactivityThresholdDays, setInactivityThresholdDays] = useState(3);
   const [notificationTime, setNotificationTime] = useState('09:00'); // Default 9 AM
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -229,12 +232,15 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
       setWorkoutReminders(prefs.workout_reminders ?? true);
       setAchievementNotifications(prefs.achievement_notifications ?? true);
       setWeeklyProgressReports(prefs.weekly_progress_reports ?? true);
+      setInactivityNudges(prefs.inactivity_nudges ?? true);
+      setStreakAlerts(prefs.streak_alerts ?? true);
+      setInactivityThresholdDays(prefs.inactivity_threshold_days ?? 3);
       setNotificationTime(prefs.notification_time || '09:00');
     }
     setHasChanges(false);
   }, [profile]);
 
-  const handleToggle = (type: 'workout' | 'achievement' | 'weekly', value: boolean) => {
+  const handleToggle = (type: 'workout' | 'achievement' | 'weekly' | 'inactivity' | 'streak', value: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setHasChanges(true);
 
@@ -248,7 +254,19 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
       case 'weekly':
         setWeeklyProgressReports(value);
         break;
+      case 'inactivity':
+        setInactivityNudges(value);
+        break;
+      case 'streak':
+        setStreakAlerts(value);
+        break;
     }
+  };
+
+  const updateInactivityThreshold = (days: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setInactivityThresholdDays(days);
+    setHasChanges(true);
   };
 
   const handleTimeChange = () => {
@@ -345,6 +363,9 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
           workout_reminders: workoutReminders,
           achievement_notifications: achievementNotifications,
           weekly_progress_reports: weeklyProgressReports,
+          inactivity_nudges: inactivityNudges,
+          inactivity_threshold_days: inactivityThresholdDays,
+          streak_alerts: streakAlerts,
           notification_time: notificationTime,
         },
       });
@@ -355,6 +376,9 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
           workoutReminders,
           achievementNotifications,
           weeklyProgressReports,
+          inactivityNudges,
+          inactivityThresholdDays,
+          streakAlerts,
           notificationTime,
         });
       } catch (error) {
@@ -502,6 +526,75 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
                 <Switch
                   value={weeklyProgressReports}
                   onValueChange={(value) => handleToggle('weekly', value)}
+                  trackColor={{ false: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(3, 3, 3, 0.2)', true: BRAND_PRIMARY }}
+                  thumbColor={BRAND_WHITE}
+                  ios_backgroundColor={isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(3, 3, 3, 0.2)"}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Smart Notifications Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Flame size={20} color={BRAND_PRIMARY} />
+            <Text style={dynamicStyles.sectionTitle}>Smart notifications</Text>
+          </View>
+
+          <View style={dynamicStyles.glowWrapper}>
+            <View style={styles.card}>
+              <View style={styles.settingRow}>
+                <View style={styles.settingRowLeft}>
+                  <Text style={dynamicStyles.settingTitle}>Inactivity nudges</Text>
+                  <Text style={dynamicStyles.settingDescription}>
+                    Remind me when I have missed workouts for a few days.
+                  </Text>
+                </View>
+                <Switch
+                  value={inactivityNudges}
+                  onValueChange={(value) => handleToggle('inactivity', value)}
+                  trackColor={{ false: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(3, 3, 3, 0.2)', true: BRAND_PRIMARY }}
+                  thumbColor={BRAND_WHITE}
+                  ios_backgroundColor={isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(3, 3, 3, 0.2)"}
+                />
+              </View>
+
+              <View style={styles.thresholdRow}>
+                {[2, 3, 5].map((days) => (
+                  <TouchableOpacity
+                    key={days}
+                    style={[
+                      styles.thresholdChip,
+                      inactivityThresholdDays === days && styles.thresholdChipActive,
+                    ]}
+                    onPress={() => updateInactivityThreshold(days)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.thresholdChipText,
+                        inactivityThresholdDays === days && styles.thresholdChipTextActive,
+                      ]}
+                    >
+                      {days}d
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={[styles.divider, dynamicStyles.divider]} />
+
+              <View style={styles.settingRow}>
+                <View style={styles.settingRowLeft}>
+                  <Text style={dynamicStyles.settingTitle}>Streak alerts</Text>
+                  <Text style={dynamicStyles.settingDescription}>
+                    Warn me when a 3+ day streak is at risk today.
+                  </Text>
+                </View>
+                <Switch
+                  value={streakAlerts}
+                  onValueChange={(value) => handleToggle('streak', value)}
                   trackColor={{ false: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(3, 3, 3, 0.2)', true: BRAND_PRIMARY }}
                   thumbColor={BRAND_WHITE}
                   ios_backgroundColor={isDark ? "rgba(255, 255, 255, 0.2)" : "rgba(3, 3, 3, 0.2)"}
@@ -716,6 +809,34 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginLeft: 16,
+  },
+  thresholdRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  thresholdChip: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingVertical: 10,
+  },
+  thresholdChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  thresholdChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: 'Barlow_600SemiBold',
+  },
+  thresholdChipTextActive: {
+    color: '#030303',
   },
   modalOverlay: {
     flex: 1,

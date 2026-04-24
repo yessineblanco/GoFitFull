@@ -249,20 +249,22 @@ export async function getPopularExercises(
     { name: string; category: string; count: number }
   >();
 
-  (workoutExercises as WorkoutExerciseRow[]).forEach((workoutExercise) => {
-    if (!workoutExercise.exercise) {
-      return;
+  (workoutExercises as unknown as WorkoutExerciseRow[]).forEach(
+    (workoutExercise) => {
+      if (!workoutExercise.exercise) {
+        return;
+      }
+
+      const existing = exerciseUsage.get(workoutExercise.exercise.id) || {
+        name: workoutExercise.exercise.name,
+        category: workoutExercise.exercise.category,
+        count: 0,
+      };
+
+      existing.count += 1;
+      exerciseUsage.set(workoutExercise.exercise.id, existing);
     }
-
-    const existing = exerciseUsage.get(workoutExercise.exercise.id) || {
-      name: workoutExercise.exercise.name,
-      category: workoutExercise.exercise.category,
-      count: 0,
-    };
-
-    existing.count += 1;
-    exerciseUsage.set(workoutExercise.exercise.id, existing);
-  });
+  );
 
   return Array.from(exerciseUsage.entries())
     .map(([id, data]) => ({
@@ -295,7 +297,7 @@ export async function getWorkoutCompletionRates(
     { name: string; total: number; completed: number }
   >();
 
-  (sessions as WorkoutSessionRow[]).forEach((session) => {
+  (sessions as unknown as WorkoutSessionRow[]).forEach((session) => {
     if (!session.workout_id || !session.workouts) {
       return;
     }

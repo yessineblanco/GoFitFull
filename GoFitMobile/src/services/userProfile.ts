@@ -30,6 +30,9 @@ export interface NotificationPreferences {
   achievement_notifications?: boolean;
   weekly_progress_reports?: boolean;
   notification_time?: string; // HH:MM format
+  inactivity_nudges?: boolean;
+  inactivity_threshold_days?: number;
+  streak_alerts?: boolean;
 }
 
 export interface UserProfile {

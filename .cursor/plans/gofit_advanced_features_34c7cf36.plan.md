@@ -27,14 +27,14 @@ todos:
     content: "Part 2: Admin BI v1 inside /dashboard -- fix core metrics, add session activity + coach performance, defer separate /bi-dashboard and finance-heavy BI until data model is ready"
     status: completed
   - id: bi-advanced
-    content: "Part 2B: Advanced Admin BI -- canonical finance/retention/coaching-op views, drilldowns, filters, alerts, and role-specific dashboards"
-    status: pending
+    content: "Part 2B: Advanced Admin BI -- canonical BI views, dashboard drilldowns, filters, exports, saved views, alerts, snapshots, and scheduled digest runner"
+    status: completed
   - id: smart-notifs
-    content: "Part 3: Smart Notifications & Streaks -- DB tables, edge functions, streak widget, settings UI"
-    status: pending
+    content: "Part 3: Smart Notifications & Streaks v1 -- local derived streak metrics, home streak widget, inactivity/streak local reminders, settings UI; server automation deferred pending migration"
+    status: completed
   - id: ai-recommendations
-    content: "Part 4: AI Workout Recommendations -- DB table, Groq edge function, mobile screen + home section"
-    status: pending
+    content: "Part 4: AI Workout Recommendations v1 -- Groq edge function generates a custom workout from user needs and DB exercises; mobile saves it through existing custom-workout tables"
+    status: completed
   - id: progress-photos
     content: "Part 5: Progress Photos -- DB table, storage bucket, timeline screen, comparison screen"
     status: pending
@@ -65,6 +65,14 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Done
 
+- **Mobile navigation audit + tab-bar hardening (2026-04-24)** - Audited the client app's nested tab navigation and tab-bar visibility paths after repeated Home -> nested screen and workout-session regressions. Root causes found: root-tab presses were not explicit about each tab's root screen, Home components were calling Library stack screens directly from the wrong navigator, one Home quick action pointed at a non-existent `EditBodyMetrics` route, and the client `CustomTabBar` appearance depended on a global scroll-driven `tabBarVisible` flag that could remain hidden after leaving a deep screen. Shipped a central fix in `GoFitMobile/src/components/shared/CustomTabBar.tsx`: bottom-tab presses now route to explicit roots and root-tab visibility is derived from navigation state plus keyboard state, not stale scroll state. Added cleanup resets in `GoFitMobile/src/components/shared/ScreenContainer.tsx` and `GoFitMobile/src/hooks/useTabScroll.ts`. Normalized Home entry points through their owning tabs in `GoFitMobile/src/components/home/ActionCard.tsx`, `TopWorkouts.tsx`, `YourPrograms.tsx`, and `QuickActions.tsx` so nested Library/Profile screens are opened through `Library` / `Profile` with real route names and `initial: false` where needed.
+- **Mobile tab-root navigation hardening (2026-04-24)** - Fixed the recurring bottom-tab stale-stack issue in `GoFitMobile/src/components/shared/CustomTabBar.tsx`. Root cause: the custom tab bar emitted `tabPress` and then used plain `navigation.navigate(route.name)`, so React Navigation could restore a previously focused nested route such as `Library -> WorkoutSession` after a paused workout instead of showing the tab's main screen. The tab bar now sends each tab to its explicit root screen (`HomeMain`, `WorkoutsMain`, `LibraryMain`, `ProgressMain`, `ProfileMain`) on press. This keeps paused/incomplete workouts available through the app's resume UI rather than automatically reopening the active session from the bottom bar.
+- **Part 3 - Smart Notifications & Streaks v1 (2026-04-24)** - Audited the existing notification and streak surface and shipped the smallest useful migration-free mobile v1. Existing support: mobile local Expo workout / weekly / booking reminders, `public.notifications` inbox, `push_tokens` + `send-push-notification`, booking/chat/program notification inserts, `user_profiles.notification_preferences`, and workout-session dates for streak derivation. Missing / blocked for server automation: no `user_streaks` or `notification_schedules` tables, no smart-notification cron function, and the current `notifications.type` check constraint does not allow new inbox types like `inactivity_nudge` or `streak_alert`. Implemented `GoFitMobile/src/store/sessionsStore.ts` streak metrics (`currentStreak`, `longestStreak`, last workout, inactivity), `GoFitMobile/src/components/home/StreakWidget.tsx`, `GoFitMobile/src/screens/home/HomeScreen.tsx` smart local scheduling hook, `GoFitMobile/src/services/notifications.ts` scoped notification cancellation plus local inactivity / streak-risk scheduling, and `GoFitMobile/src/screens/profile/NotificationsSettingsScreen.tsx` preferences for inactivity nudges, threshold, and streak alerts. No demo seed was needed because the feature derives from existing `workout_sessions`; local testing can use any existing or newly completed workout session. Verification: `npm run type-check` in `GoFitMobile` is still blocked by pre-existing unrelated TypeScript errors in `AppNavigator`, `CoachAppNavigator`, `CoachDetailScreen`, `EditWeightHeightScreen`, `NotificationInboxScreen`, and `deepLinkStore`; no reported errors were in the Part 3 files.
+- **Part 4 - AI Workout Recommendations v1 audit + implementation (2026-04-24)** - Audited the recommendation surface before building. Existing support: `user_profiles.goal` / `activity_level`, native and custom workouts in `workouts`, workout exercise metadata through `workout_exercises`, recent completed sessions in `workout_sessions`, existing `WorkoutDetail` navigation, and home glass-card patterns. Missing for persistence-heavy v2: no `ai_recommendations` cache table, no dismiss/regenerate model, and no persistent server invalidation after new sessions. Shipped the smallest true-AI v1 without DB migration: `supabase/functions/ai-workout-recommendation/index.ts` verifies the user session, fetches profile + recent sessions + DB exercises, calls Groq (`llama-3.3-70b-versatile`), validates that returned exercises exist in the database catalog, and returns one custom workout proposal; `GoFitMobile/src/services/workoutRecommendations.ts` invokes the function; `GoFitMobile/src/components/home/RecommendedWorkouts.tsx` renders one dark/glass AI workout card and saves the generated workout through the existing `workoutService.createCustomWorkout` path before opening `Library -> WorkoutDetail`; `GoFitMobile/src/screens/home/HomeScreen.tsx` shows the AI card only as the no-recent-activity fallback so Home does not stack AI recommendations, Recent Activity, and Your Training together. No demo seed was needed because the function uses the existing `exercises` catalog. Operational requirement before live use: deploy the `ai-workout-recommendation` Edge Function and set `GROQ_API_KEY` in Supabase function secrets.
+- **Part 3 - Home streak UI + nutrition deep-link follow-up (2026-04-24)** - Restyled `GoFitMobile/src/components/home/StreakWidget.tsx` to match the app's dark/glass visual language with `BlurView`, low-opacity dark glass surface, subtle brand-green wash, glass borders, and compact metric treatment. Fixed the Home -> Nutrition Today navigation edge case in `GoFitMobile/src/components/home/NutritionHomeCard.tsx` by navigating to the nested Progress stack with `initial: false`, so a cold Progress stack keeps `ProgressMain` underneath `Nutrition` and the bottom Progress tab can return correctly.
+- **Part 1B - Body measurement status correction (2026-04-24)** - Confirmed the current repo does include the newer on-device body-measurement implementation, despite older plan wording that still described it as "next." Current mobile files include `GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx`, `GoFitMobile/src/services/bodyMeasurementService.ts`, `GoFitMobile/src/services/bodySegmentationService.ts`, `GoFitMobile/src/services/measurementLogger.ts`, and `GoFitMobile/src/components/shared/BodyGuideOverlay.tsx`. The detailed troubleshooting log in `docs/troubleshooting/BODY_MEASUREMENT_FIX_PLAN.md` is the source of truth for the Android MediaPipe / segmentation rollout, capture gates, save-path compatibility, and Progress-screen integration. Remaining body-measurement work is follow-up hardening, not initial implementation: iOS parity when hardware is available, validation-set accuracy work, and optional estimator improvements.
+- **Part 2B - Advanced BI live completion (2026-04-24)** - Cursor/Supabase MCP applied the existing `database/migrations/create_admin_settings.sql` migration to project `rdozeaacwaisgkpxjycn`; `public.admin_settings` now exists with RLS enabled and columns `id`, `key`, `value`, `created_at`, and `updated_at`. The table is expectedly empty until the first admin saves a BI view. This resolves the last live blocker for advanced BI saved views and scheduled digest settings, so the `bi-advanced` track is complete across repo and database. Optional production ops follow-up: configure a hosted cron or external scheduler to call `/api/bi/scheduled-digests` with `BI_DIGEST_CRON_SECRET` if unattended digest delivery is needed.
+- **Part 2B - Advanced BI scheduled digest runner (2026-04-24)** - Completed the repo-side scheduled BI digest flow on top of the existing admin `/dashboard` and `admin_notifications` system. Extended `admin-panel/lib/bi-saved-views.ts`, `admin-panel/app/api/bi/saved-views/route.ts`, and `admin-panel/components/analytics/AdvancedBISavedViews.tsx` so saved BI views can opt into `daily` or `weekly` digests while older saved views default to `none`. Added `admin-panel/app/api/bi/scheduled-digests/route.ts` so an admin session or cron secret can run due saved-view digests and stamp `digestLastSentAt` after notifications are inserted. Reused `admin-panel/lib/bi-snapshot.ts` so manual snapshots and scheduled digests share the same finance, lifecycle, coach-ops, and client-health summary logic. Final verification also tightened existing TypeScript casts in `admin-panel/lib/analytics.ts` and lifecycle activation typing in `admin-panel/lib/bi-user-lifecycle.ts` so `npx tsc --noEmit` passes.
 - **Part 2B - Advanced BI snapshot delivery path (2026-04-23)** - Chose the smallest real outbound path for BI digests: the existing in-app `admin_notifications` system, not email. Added `admin-panel/lib/bi-snapshot.ts`, `admin-panel/app/api/bi/snapshot/route.ts`, and `admin-panel/components/analytics/AdvancedBISnapshotButton.tsx` so the advanced BI header on the existing `/dashboard` can now send the current BI view into the admin notification center as a compact digest of finance, lifecycle, coach ops, and client health. Also updated `admin-panel/components/notifications/NotificationCenter.tsx` so the bell refreshes immediately after a snapshot is sent. This keeps delivery inside the current admin panel and defines the outbound channel before any scheduled or saved-view automation work.
 
 - **Part 2B - Advanced BI saved-views hardening (2026-04-23)** - Patched `admin-panel/app/dashboard/page.tsx`, `admin-panel/app/api/bi/saved-views/route.ts`, and `admin-panel/lib/bi-saved-views.ts` so the dashboard no longer crashes if `public.admin_settings` is missing in the connected Supabase project. In that case the page now falls back to an empty saved-views list, and save/delete attempts return a clear “saved views unavailable” message instead of taking down `/dashboard`.
@@ -112,8 +120,10 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Next (backlog — body measurements & progress)
 
-- **Part 2B (next):** advanced BI Stage 3 -- add scheduled saved-view-based BI digests on top of the new in-app admin-notification delivery path, then decide whether email is still needed after that.
-- **Part 1B (new):** on-device body measurement pipeline (capture, inference, validation), mobile service + screen(s), optional local history UI; reuse **`body_measurements`** table and RLS.
+- **Part 2B (ops optional):** configure the deployed scheduler or external cron to call `/api/bi/scheduled-digests` with `BI_DIGEST_CRON_SECRET` if unattended scheduled BI digests are needed in production.
+- **Part 3 (next recommendation):** If cross-device / server-driven smart notifications are required, apply a focused DB migration for `notification_schedules`, `user_streaks`, and widened `notifications.type`, then add a scheduled edge route/function. Until then, the shipped v1 is mobile-local and derives streaks from `workout_sessions`.
+- **Part 4 (ops optional):** deploy `supabase/functions/ai-workout-recommendation` and set `GROQ_API_KEY` in Supabase function secrets. Add an `ai_recommendations` cache table later only if cross-device cached recommendations, dismiss/regenerate history, or analytics are needed.
+- **Part 1B (follow-up only):** body-measurement hardening remains open for iOS parity when hardware is available, validation-set accuracy work, and optional estimator improvements; initial Android on-device implementation is already present.
 - **Repo/docs:** align root **`docs/IMPLEMENTATION_PLAN.md`**, **`FEATURES.md`**, and **`scripts/generate_features_md.py`** with removal when those files are next edited (they may still mention the old edge function).
 - **Nutrition follow-ups:** optional imperial display; expand `food_items` seed; Storage for meal photos — see Part 1C shipped section.
 
@@ -138,15 +148,16 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ## Phase B: Missing Features (promised in slides)
 
-### Part 1B: Body measurements (platform TBD — on-device next)
+### Part 1B: Body measurements (Android on-device path implemented; hardening remains)
 
 **Current repo state (keep in sync):**
 
-- **DB (unchanged):** `public.body_measurements` still includes **`height_cm`** and related migrations (`add_body_measurement_height_cm.sql`, optional length columns in `add_body_measurement_lengths.sql`). Intended for **manual rows**, legacy AI rows, and **future on-device** inserts — **no** mobile screen or service currently targets this table from the app after the 2026-04-17 removal.
+- **DB (unchanged):** `public.body_measurements` still includes **`height_cm`** and related migrations (`add_body_measurement_height_cm.sql`, optional length columns in `add_body_measurement_lengths.sql`). The current app save path uses the DB-compatible `source = 'ai_ondevice'` value and stores richer provenance/debug details in the measurement payload/manual overrides rather than widening the DB source constraint.
 - **Edge function:** **Removed.** The former **`supabase/functions/body-measurements/`** Groq vision implementation is deleted from the repo. Historical behavior (v11–v12, `height_mode`, A4 reference path) is summarized under **Living log → Archived**.
-- **Mobile:** **Removed** — `bodyMeasurements.ts`, `BodyMeasurementsScreen.tsx`, `bodyMeasurementsStore.ts`, `bodyScanImage.ts`; no `BodyMeasurements` route on Progress stack; no entry from `WorkoutStatisticsScreen` for body measurements.
+- **Mobile:** On-device implementation is present under `GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx`, `GoFitMobile/src/services/bodyMeasurementService.ts`, `GoFitMobile/src/services/bodySegmentationService.ts`, `GoFitMobile/src/services/measurementLogger.ts`, and `GoFitMobile/src/components/shared/BodyGuideOverlay.tsx`. The old removed files (`bodyMeasurements.ts`, progress-stack `BodyMeasurementsScreen.tsx`, `bodyMeasurementsStore.ts`, `bodyScanImage.ts`) are still gone and should not be reintroduced as the Groq path.
+- **Progress integration:** saved body-measurement rows are surfaced in the Progress screen with latest snapshot and expandable recent history.
 
-**Next:** Implement **Part 1B (new)** on-device flow and new UI; see **Living log → Next**.
+**Next:** Treat body measurements as follow-up hardening only: iOS MediaPipe parity when test hardware exists, validation-set accuracy work, and optional estimator improvements. Do not restart the initial implementation.
 
 #### Reference — old Groq + A4 design (archived)
 
@@ -242,13 +253,13 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 1. Global filters:
    - date range shipped on the existing `/dashboard` with shared `7D` / `30D` / `90D` filters and previous-period comparison across the advanced BI executive cards
    - coach and package filters shipped where truthful on the existing `/dashboard` (`coach`: finance + coach-ops, `package`: finance pack sales only)
-   - next: acquisition channel, client segment
+   - acquisition channel and client-segment filters remain deferred until those source fields exist
 2. Drilldowns:
    - click KPI -> table -> entity detail
 3. Operational actions:
    - export CSV -- shipped on the existing `/dashboard` via `admin-panel/app/api/bi/export/route.ts` and compact header actions for finance, lifecycle, cohort, coach-ops, and client-health slices
    - saved views -- shipped on the existing `/dashboard` via `admin-panel/app/api/bi/saved-views/route.ts` and a compact per-admin dialog backed by `admin_settings`
-   - scheduled email snapshots
+   - scheduled in-app BI digests -- shipped via `admin-panel/app/api/bi/scheduled-digests/route.ts`, reusing saved views, `admin_settings`, and `admin_notifications`; email remains optional and deferred
    - threshold alerts for low utilization and inactive clients -- shipped in-panel on the existing `/dashboard`; churn spike / refund spike remain deferred until the underlying semantics are stronger
 
 **Recommended build order**
@@ -261,7 +272,7 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 6. Retention dashboard
 7. Coaching ops dashboard
 8. Client health dashboard
-9. Alerts / exports / saved views
+9. Alerts / exports / saved views / scheduled in-app digests -- shipped
 
 **Stop / ship gates**
 
@@ -275,15 +286,52 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Part 3: Smart Notifications & Streaks
 
-- New tables: `notification_schedules`, `user_streaks`.
-- Edge functions: `smart-notifications` (cron: reminders, inactivity nudges, streak alerts), `update-streaks` (on session complete).
-- Mobile: `StreakWidget.tsx` on home, notification preferences in settings.
+**Shipped v1 (migration-free):**
+
+- Uses existing `workout_sessions` to derive current streak, longest streak, last workout date, and inactivity age on-device.
+- Adds a compact home `StreakWidget`.
+- Extends existing `user_profiles.notification_preferences` JSON with inactivity nudges, inactivity threshold days, and streak alerts.
+- Schedules local Expo notifications for inactivity nudges and streak-at-risk alerts, alongside the existing local workout / weekly / booking reminders.
+- No demo seed was needed because any existing or newly completed workout session drives the widget and reminder logic.
+
+**Blocked / deferred until migration:**
+
+- Server-side smart-notification automation and cross-device streak consistency need `notification_schedules` and `user_streaks`.
+- In-app notification center entries for smart events need the `public.notifications.type` check constraint widened to allow types such as `inactivity_nudge` and `streak_alert`.
+- Recommended Cursor MCP migration prompt when ready:
+
+```text
+Apply a Supabase migration to project rdozeaacwaisgkpxjycn for GoFit Smart Notifications & Streaks server v2:
+1. Create public.notification_schedules with id uuid primary key default gen_random_uuid(), user_id uuid unique references auth.users(id) on delete cascade, workout_reminder_enabled boolean default true, reminder_time time default '09:00', reminder_days integer[] default '{1,2,3,4,5}', inactivity_nudge_enabled boolean default true, inactivity_threshold_days integer default 3 check between 1 and 30, streak_alerts_enabled boolean default true, last_inactivity_nudge_at timestamptz, last_streak_alert_at timestamptz, created_at timestamptz default now(), updated_at timestamptz default now(); enable RLS; users can select/insert/update/delete only their own row; authenticated gets CRUD grants.
+2. Create public.user_streaks with id uuid primary key default gen_random_uuid(), user_id uuid unique references auth.users(id) on delete cascade, current_streak integer default 0 check >= 0, longest_streak integer default 0 check >= 0, last_workout_date date, streak_updated_at timestamptz default now(), created_at timestamptz default now(), updated_at timestamptz default now(); enable RLS; users can select only their own row; service_role can insert/update; authenticated gets SELECT grant.
+3. Widen public.notifications type constraint to include existing values plus 'workout_reminder', 'inactivity_nudge', and 'streak_alert' without dropping existing data.
+4. Add useful indexes on notification_schedules(user_id), user_streaks(user_id), user_streaks(last_workout_date), and notification_schedules(reminder_time).
+5. Use the existing public.handle_updated_at trigger if available for both new tables.
+```
 
 ### Part 4: AI Workout Recommendations (Groq)
 
-- New table: `ai_recommendations`.
-- Edge function: `ai-recommendations` -- fetches user data, calls Groq (llama-3.3-70b-versatile, free tier), caches 24h.
-- Mobile: `RecommendationsScreen.tsx`, "Recommended for You" section on home, Zustand store + service.
+**Shipped v1 (migration-free):**
+
+- `supabase/functions/ai-workout-recommendation/index.ts` uses Groq to create one custom workout from the user's profile, recent sessions, and the current `exercises` catalog.
+- The Edge Function validates that all returned exercises exist in the database before the mobile app can save the workout.
+- `GoFitMobile/src/services/workoutRecommendations.ts` invokes the Edge Function.
+- `GoFitMobile/src/components/home/RecommendedWorkouts.tsx` adds one compact dark/glass AI workout card on Home, only when there is no recent activity, then saves the generated plan through existing custom-workout tables and opens `Library -> WorkoutDetail`.
+- No demo seed was needed because the function uses existing `exercises` rows.
+- Live-use requirement: deploy the function and set `GROQ_API_KEY` in Supabase function secrets.
+
+**Blocked / deferred until migration:**
+
+- Cross-device cached recommendations, dismiss/regenerate state, analytics, and 24-hour invalidation need a persistent recommendation model.
+- Recommended Cursor MCP migration prompt when ready:
+
+```text
+Apply a Supabase migration to project rdozeaacwaisgkpxjycn for GoFit Workout Recommendations server v2:
+1. Create public.ai_recommendations with id uuid primary key default gen_random_uuid(), user_id uuid references auth.users(id) on delete cascade, recommendations jsonb not null, context jsonb default '{}'::jsonb, dismissed_workout_ids uuid[] default '{}', generated_by text default 'groq', created_at timestamptz default now(), expires_at timestamptz default now() + interval '24 hours', invalidated_at timestamptz.
+2. Enable RLS on public.ai_recommendations; users can select/update/delete only their own rows; service_role can insert/update/delete; authenticated gets SELECT/UPDATE/DELETE grants scoped by RLS.
+3. Add indexes on ai_recommendations(user_id, expires_at desc), ai_recommendations(user_id, created_at desc), and a partial index for active rows where invalidated_at is null.
+4. Add a trigger or documented app-side invalidation rule so completing a workout can mark the user's active recommendation rows invalidated_at = now().
+```
 
 ### Part 5: Progress Photos
 

@@ -11,13 +11,9 @@ import { theme } from '@/theme';
 import { useAuthStore } from '@/store/authStore';
 import { workoutService } from '@/services/workouts';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { LibraryStackParamList } from '@/types';
 import * as Haptics from 'expo-haptics';
 import { SectionHeader } from './SectionHeader';
 import { getTextColor, getTextSecondaryColor, getGlassBg, getGlassBorder, getOverlayColor, getBlurTint } from '@/utils/colorUtils';
-
-type NavigationProp = StackNavigationProp<LibraryStackParamList>;
 
 interface Program {
     id: string;
@@ -32,7 +28,7 @@ interface Program {
 export const YourPrograms: React.FC = () => {
     const { isDark } = useThemeStore();
     const { user } = useAuthStore();
-    const navigation = useNavigation<NavigationProp>();
+    const navigation = useNavigation<any>();
     const [programs, setPrograms] = useState<Program[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -85,18 +81,22 @@ export const YourPrograms: React.FC = () => {
             try {
                 const fullWorkout = await workoutService.getWorkoutById(program.id);
                 if (fullWorkout && fullWorkout.exercises) {
-                    navigation.navigate('WorkoutSession', {
-                        workoutId: fullWorkout.id,
-                        workoutName: fullWorkout.name,
-                        workoutType: fullWorkout.workout_type,
-                        exercises: fullWorkout.exercises.map((ex: any) => ({
-                            id: ex.id,
-                            name: ex.name,
-                            sets: ex.sets?.toString() || '3',
-                            reps: ex.reps || '10',
-                            restTime: ex.restTime?.toString() || ex.rest_time?.toString() || '60',
-                            image: ex.image || ex.image_url,
-                        })),
+                    navigation.navigate('Library', {
+                        screen: 'WorkoutSession',
+                        initial: false,
+                        params: {
+                            workoutId: fullWorkout.id,
+                            workoutName: fullWorkout.name,
+                            workoutType: fullWorkout.workout_type,
+                            exercises: fullWorkout.exercises.map((ex: any) => ({
+                                id: ex.id,
+                                name: ex.name,
+                                sets: ex.sets?.toString() || '3',
+                                reps: ex.reps || '10',
+                                restTime: ex.restTime?.toString() || ex.rest_time?.toString() || '60',
+                                image: ex.image || ex.image_url,
+                            })),
+                        },
                     });
                 }
             } catch (error) {
@@ -105,17 +105,24 @@ export const YourPrograms: React.FC = () => {
         }
         // Other Programs -> View Details
         else {
-            navigation.navigate('WorkoutDetail', { workoutId: program.id });
+            navigation.navigate('Library', {
+                screen: 'WorkoutDetail',
+                initial: false,
+                params: { workoutId: program.id },
+            });
         }
     };
 
     const handleSeeAll = () => {
-        navigation.navigate('LibraryMain');
+        navigation.navigate('Library', { screen: 'LibraryMain' });
     };
 
     const handleCreateProgram = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        (navigation as any).navigate('WorkoutBuilder');
+        navigation.navigate('Library', {
+            screen: 'WorkoutBuilder',
+            initial: false,
+        });
     };
 
     if (loading) {

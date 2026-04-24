@@ -2,12 +2,16 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { supabase } from '@/config/supabase';
 import { logger } from '@/utils/logger';
+import type { StreakMetrics } from '@/store/sessionsStore';
 
 export interface NotificationPreferences {
   workoutReminders: boolean;
   achievementNotifications: boolean;
   weeklyProgressReports: boolean;
   notificationTime: string; // HH:MM format
+  inactivityNudges?: boolean;
+  inactivityThresholdDays?: number;
+  streakAlerts?: boolean;
 }
 
 // Configure notification handler
@@ -83,6 +87,19 @@ export const notificationService = {
     }
   },
 
+  async cancelNotificationsByPrefix(prefixes: string[]): Promise<void> {
+    try {
+      const allNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      for (const notification of allNotifications) {
+        if (prefixes.some((prefix) => notification.identifier.startsWith(prefix))) {
+          await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+        }
+      }
+    } catch (error) {
+      logger.warn('Could not cancel matching notifications:', error);
+    }
+  },
+
   /**
    * Schedule workout reminder notification (local notification)
    * Works in Expo Go - uses device's local notification scheduler
@@ -92,16 +109,7 @@ export const notificationService = {
       const [hours, minutes] = time.split(':').map(Number);
       
       // Cancel existing workout reminders
-      try {
-        const allNotifications = await Notifications.getAllScheduledNotificationsAsync();
-        for (const notification of allNotifications) {
-          if (notification.identifier.startsWith('workout-reminder-')) {
-            await Notifications.cancelScheduledNotificationAsync(notification.identifier);
-          }
-        }
-      } catch (error) {
-        logger.warn('Could not cancel existing notifications:', error);
-      }
+      await this.cancelNotificationsByPrefix(['workout-reminder-']);
 
       // Schedule daily workout reminder (local notification)
       await Notifications.scheduleNotificationAsync({
@@ -137,16 +145,7 @@ export const notificationService = {
       const [hours, minutes] = time.split(':').map(Number);
       
       // Cancel existing weekly reports
-      try {
-        const allNotifications = await Notifications.getAllScheduledNotificationsAsync();
-        for (const notification of allNotifications) {
-          if (notification.identifier.startsWith('weekly-report-')) {
-            await Notifications.cancelScheduledNotificationAsync(notification.identifier);
-          }
-        }
-      } catch (error) {
-        logger.warn('Could not cancel existing notifications:', error);
-      }
+      await this.cancelNotificationsByPrefix(['weekly-report-']);
 
       // Schedule weekly progress report (every Monday) - local notification
       // Android doesn't support weekday in calendar triggers, so we skip it on Android
@@ -219,8 +218,7 @@ export const notificationService = {
         return;
       }
 
-      // Cancel all existing notifications
-      await this.cancelAllNotifications();
+      await this.cancelNotificationsByPrefix(['workout-reminder-', 'weekly-report-']);
 
       // Schedule new notifications based on preferences
       if (prefs.workoutReminders) {
@@ -239,6 +237,75 @@ export const notificationService = {
       // Gracefully handle errors - don't throw so preferences can still be saved
       logger.warn('Error updating scheduled notifications (may not be fully supported in Expo Go):', error);
       // Don't throw - preferences are still saved to database even if scheduling fails
+    }
+  },
+
+  async updateSmartNotifications(params: {
+    prefs: Pick<NotificationPreferences, 'notificationTime' | 'inactivityNudges' | 'inactivityThresholdDays' | 'streakAlerts'>;
+    streakMetrics: StreakMetrics;
+  }): Promise<void> {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') return;
+
+      await this.cancelNotificationsByPrefix(['smart-inactivity-', 'smart-streak-']);
+
+      const { prefs, streakMetrics } = params;
+      const [hours, minutes] = (prefs.notificationTime || '09:00').split(':').map(Number);
+
+      if (prefs.inactivityNudges && streakMetrics.lastWorkoutDate) {
+        const thresholdDays = Math.max(1, prefs.inactivityThresholdDays ?? 3);
+        const daysSinceLastWorkout = streakMetrics.daysSinceLastWorkout ?? 0;
+        const reminderDate = new Date(`${streakMetrics.lastWorkoutDate}T00:00:00`);
+        reminderDate.setDate(reminderDate.getDate() + thresholdDays);
+        reminderDate.setHours(hours, minutes, 0, 0);
+
+        if (reminderDate.getTime() <= Date.now() && daysSinceLastWorkout >= thresholdDays) {
+          const tomorrow = new Date();
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(hours, minutes, 0, 0);
+          reminderDate.setTime(tomorrow.getTime());
+        }
+
+        if (reminderDate.getTime() > Date.now()) {
+          await Notifications.scheduleNotificationAsync({
+            identifier: 'smart-inactivity-next',
+            content: {
+              title: 'Time to get moving',
+              body: `It has been ${Math.max(thresholdDays, daysSinceLastWorkout)} days since your last workout. Start small and keep the habit alive.`,
+              sound: true,
+              data: { type: 'inactivity_nudge' },
+            },
+            trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: reminderDate },
+          });
+        }
+      }
+
+      if (
+        prefs.streakAlerts &&
+        streakMetrics.currentStreak >= 3 &&
+        !streakMetrics.workedOutToday &&
+        streakMetrics.daysSinceLastWorkout === 1
+      ) {
+        const alertDate = new Date();
+        alertDate.setHours(Math.max(hours, 18), minutes, 0, 0);
+        if (alertDate.getTime() <= Date.now()) {
+          alertDate.setTime(Date.now() + 60 * 60 * 1000);
+        }
+
+        await Notifications.scheduleNotificationAsync({
+          identifier: 'smart-streak-risk',
+          content: {
+            title: 'Keep your streak alive',
+            body: `Your ${streakMetrics.currentStreak}-day workout streak is still within reach today.`,
+            sound: true,
+            data: { type: 'streak_alert' },
+          },
+          trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: alertDate },
+        });
+      }
+    } catch (error) {
+      logger.warn('Error updating smart notifications:', error);
     }
   },
 
@@ -355,4 +422,3 @@ export const notificationService = {
     }
   },
 };
-

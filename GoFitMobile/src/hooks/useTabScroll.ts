@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { useUIStore } from '@/store/uiStore';
 
@@ -6,6 +6,10 @@ export const useTabScroll = () => {
     const setTabBarVisible = useUIStore(state => state.setTabBarVisible);
     const lastScrollY = useRef(0);
     const scrollThreshold = 10; // Minimum scroll distance to trigger visibility change
+
+    useEffect(() => {
+        return () => setTabBarVisible(true);
+    }, [setTabBarVisible]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const currentY = event.nativeEvent.contentOffset.y;

@@ -1,9 +1,11 @@
 export const ADVANCED_BI_SAVED_VIEWS_MAX = 6;
 
 export const ADVANCED_BI_SAVED_VIEW_RANGE_KEYS = ["7d", "30d", "90d"] as const;
+export const ADVANCED_BI_DIGEST_CADENCES = ["none", "daily", "weekly"] as const;
 
 export type AdvancedBISavedViewRangeKey =
   (typeof ADVANCED_BI_SAVED_VIEW_RANGE_KEYS)[number];
+export type AdvancedBIDigestCadence = (typeof ADVANCED_BI_DIGEST_CADENCES)[number];
 
 export interface AdvancedBISavedView {
   id: string;
@@ -12,6 +14,8 @@ export interface AdvancedBISavedView {
   coachId: string | null;
   packId: string | null;
   createdAt: string;
+  digestCadence: AdvancedBIDigestCadence;
+  digestLastSentAt: string | null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -36,6 +40,7 @@ function normalizeSavedView(value: unknown): AdvancedBISavedView | null {
   const name = normalizeNullableString(value.name);
   const rangeKey = normalizeNullableString(value.rangeKey);
   const createdAt = normalizeNullableString(value.createdAt);
+  const digestCadence = normalizeNullableString(value.digestCadence);
 
   if (
     !id ||
@@ -56,11 +61,22 @@ function normalizeSavedView(value: unknown): AdvancedBISavedView | null {
     coachId: normalizeNullableString(value.coachId),
     packId: normalizeNullableString(value.packId),
     createdAt,
+    digestCadence: ADVANCED_BI_DIGEST_CADENCES.includes(
+      digestCadence as AdvancedBIDigestCadence
+    )
+      ? (digestCadence as AdvancedBIDigestCadence)
+      : "none",
+    digestLastSentAt: normalizeNullableString(value.digestLastSentAt),
   };
 }
 
 export function buildAdvancedBISavedViewsSettingKey(adminUserId: string) {
   return `advanced_bi_saved_views:${adminUserId}`;
+}
+
+export function getAdminUserIdFromAdvancedBISavedViewsSettingKey(key: string) {
+  const prefix = "advanced_bi_saved_views:";
+  return key.startsWith(prefix) ? key.slice(prefix.length) || null : null;
 }
 
 export function isMissingAdminSettingsTableError(error: {

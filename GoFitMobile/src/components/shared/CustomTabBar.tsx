@@ -45,6 +45,14 @@ const TAB_ICONS: Record<keyof AppTabParamList, typeof LayoutGrid> = {
 // Tab order - 5 tabs: Home, Workouts, Library (Exercises), Progress (Stats), Profile
 const TAB_ORDER: Array<keyof AppTabParamList> = ['Home', 'Workouts', 'Library', 'Progress', 'Profile'];
 
+const TAB_ROOT_SCREENS: Partial<Record<keyof AppTabParamList, string>> = {
+  Home: 'HomeMain',
+  Workouts: 'WorkoutsMain',
+  Library: 'LibraryMain',
+  Progress: 'ProgressMain',
+  Profile: 'ProfileMain',
+};
+
 interface ThemeColors {
   activeButton: string;
   activeIcon: string;
@@ -253,7 +261,7 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(({
   const colors = useThemeColors();
   const { isDark } = useThemeStore();
 
-  const { tabBarVisible, setTabBarVisible } = useUIStore();
+  const setTabBarVisible = useUIStore((store) => store.setTabBarVisible);
   const translateYAnim = useRef(new Animated.Value(0)).current;
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
 
@@ -300,22 +308,6 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(({
     };
   }, []);
 
-  // Animate tab bar visibility
-  useEffect(() => {
-    const shouldBeHidden = !tabBarVisible || keyboardVisible;
-    Animated.spring(translateYAnim, {
-      toValue: shouldBeHidden ? 150 : 0,
-      useNativeDriver: true,
-      tension: 50,
-      friction: 8,
-    }).start();
-  }, [tabBarVisible, keyboardVisible]);
-
-  // Reset tab bar visibility when switching tabs
-  useEffect(() => {
-    setTabBarVisible(true);
-  }, [state.index, setTabBarVisible]);
-
   // Check for deep screens in any stack to hide tab bar
   const isDeepScreen = useMemo(() => {
     const route = state.routes[state.index];
@@ -333,6 +325,26 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(({
     }
     return false;
   }, [state]);
+
+  // Root tab visibility is derived from navigation state. Reset the legacy
+  // scroll flag whenever a root tab is active so stale scroll state cannot
+  // keep the bar hidden after navigating back from a deep screen.
+  useEffect(() => {
+    if (!isDeepScreen) {
+      setTabBarVisible(true);
+    }
+  }, [isDeepScreen, setTabBarVisible]);
+
+  // Animate only for transient UI state. Deep-screen hiding is handled by
+  // returning null below, so it cannot leave behind a stale hidden transform.
+  useEffect(() => {
+    Animated.spring(translateYAnim, {
+      toValue: keyboardVisible ? 150 : 0,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+    }).start();
+  }, [keyboardVisible, translateYAnim]);
 
   // All 5 tabs visible
   const visibleTabs = TAB_ORDER;
@@ -391,7 +403,18 @@ export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(({
               target: route.key,
               canPreventDefault: true,
             });
-            if (!isFocused && !event.defaultPrevented) {
+
+            if (event.defaultPrevented) {
+              return;
+            }
+
+            const rootScreen = TAB_ROOT_SCREENS[routeName];
+            if (rootScreen) {
+              navigation.navigate(route.name as any, { screen: rootScreen } as any);
+              return;
+            }
+
+            if (!isFocused) {
               navigation.navigate(route.name as any);
             }
           };

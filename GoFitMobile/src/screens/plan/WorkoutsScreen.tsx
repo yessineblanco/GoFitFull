@@ -19,7 +19,6 @@ import MyWorkouts from "./MyWorkouts";
 import { useThemeColors } from "@/theme/useThemeColors";
 import { useThemeStore } from "@/store/themeStore";
 import { getBackgroundColor, getOverlayColor } from "@/utils/colorUtils";
-import { useUIStore } from "@/store/uiStore";
 import { useWorkoutPlansStore } from "@/store/workoutPlansStore";
 import { useSessionsStore } from "@/store/sessionsStore";
 import { useFocusEffect } from "@react-navigation/native";
@@ -40,7 +39,6 @@ export const WorkoutsScreen: React.FC = () => {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const setTabBarVisible = useUIStore((state) => state.setTabBarVisible);
   const fetchPlans = useWorkoutPlansStore((s: any) => s.fetch);
   const fetchSessions = useSessionsStore((s: any) => s.fetch);
 

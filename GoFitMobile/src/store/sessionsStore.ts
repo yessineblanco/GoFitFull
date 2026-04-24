@@ -5,6 +5,14 @@ import { useAuthStore } from "./authStore";
 
 type Session = any;
 
+export interface StreakMetrics {
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate: string | null;
+  daysSinceLastWorkout: number | null;
+  workedOutToday: boolean;
+}
+
 interface SessionsState {
   sessions: Session[];
   loading: boolean;
@@ -15,8 +23,43 @@ interface SessionsState {
   getWeeklySessionCount: () => number;
   getTodayCalories: () => number;
   getStreak: () => number;
+  getStreakMetrics: () => StreakMetrics;
   getTotalWorkouts: () => number;
 }
+
+const toLocalDateKey = (value: string | Date): string => {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  const date = typeof value === 'string' ? new Date(value) : value;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getSessionDateKeys = (sessions: Session[]): string[] => {
+  return Array.from(new Set(sessions.map((s: any) => {
+    const d = s.completed_at || s.date || s.started_at || s.created_at;
+    return d ? toLocalDateKey(d) : null;
+  })))
+    .filter((d): d is string => d !== null)
+    .sort((a, b) => b.localeCompare(a));
+};
+
+const countConsecutiveDays = (dates: string[], startDate: string): number => {
+  let streak = 0;
+  let expectedDate = new Date(`${startDate}T00:00:00`);
+  const dateSet = new Set(dates);
+
+  while (dateSet.has(toLocalDateKey(expectedDate))) {
+    streak++;
+    expectedDate.setDate(expectedDate.getDate() - 1);
+  }
+
+  return streak;
+};
 
 export const useSessionsStore = create<SessionsState>((set, get) => ({
   sessions: [],
@@ -134,49 +177,67 @@ export const useSessionsStore = create<SessionsState>((set, get) => ({
   },
 
   getStreak: () => {
+    return get().getStreakMetrics().currentStreak;
+  },
+
+  getStreakMetrics: () => {
     const { sessions } = get();
-    if (!sessions || sessions.length === 0) return 0;
+    const dates = getSessionDateKeys(sessions || []);
 
-    // Get unique dates (YYYY-MM-DD)
-    const dates = Array.from(new Set(sessions.map((s: any) => {
-      const d = s.date || s.started_at || s.created_at;
-      return d ? d.split('T')[0] : null;
-    })))
-      .filter((d): d is string => d !== null)
-      .sort((a, b) => b.localeCompare(a));
-
-    if (dates.length === 0) return 0;
-
-    const today = new Date().toISOString().split('T')[0];
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterday = yesterdayDate.toISOString().split('T')[0];
-
-    // If no workout today or yesterday, streak is broken
-    if (dates[0] !== today && dates[0] !== yesterday) return 0;
-
-    let streak = 0;
-    let currentDate = new Date(dates[0]);
-    currentDate.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < dates.length; i++) {
-      const dateObj = new Date(dates[i]);
-      dateObj.setHours(0, 0, 0, 0);
-
-      const diffTime = Math.abs(currentDate.getTime() - dateObj.getTime());
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays <= 1) {
-        if (diffDays === 1 || i === 0) {
-          streak++;
-        }
-        currentDate = dateObj;
-      } else {
-        break;
-      }
+    if (dates.length === 0) {
+      return {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastWorkoutDate: null,
+        daysSinceLastWorkout: null,
+        workedOutToday: false,
+      };
     }
 
-    return streak;
+    const today = toLocalDateKey(new Date());
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = toLocalDateKey(yesterdayDate);
+    const lastWorkoutDate = dates[0];
+    const workedOutToday = lastWorkoutDate === today;
+    const currentStreak =
+      lastWorkoutDate === today || lastWorkoutDate === yesterday
+        ? countConsecutiveDays(dates, lastWorkoutDate)
+        : 0;
+
+    let longestStreak = 0;
+    let previous: string | null = null;
+    let currentRun = 0;
+
+    dates.slice().reverse().forEach((date) => {
+      if (!previous) {
+        currentRun = 1;
+      } else {
+        const expected = new Date(`${previous}T00:00:00`);
+        expected.setDate(expected.getDate() + 1);
+        if (date === toLocalDateKey(expected)) {
+          currentRun++;
+        } else {
+          longestStreak = Math.max(longestStreak, currentRun);
+          currentRun = 1;
+        }
+      }
+      previous = date;
+    });
+
+    longestStreak = Math.max(longestStreak, currentRun);
+
+    const todayMidnight = new Date(`${today}T00:00:00`).getTime();
+    const lastMidnight = new Date(`${lastWorkoutDate}T00:00:00`).getTime();
+    const daysSinceLastWorkout = Math.max(0, Math.round((todayMidnight - lastMidnight) / 86400000));
+
+    return {
+      currentStreak,
+      longestStreak,
+      lastWorkoutDate,
+      daysSinceLastWorkout,
+      workedOutToday,
+    };
   },
 
   getTotalWorkouts: () => {

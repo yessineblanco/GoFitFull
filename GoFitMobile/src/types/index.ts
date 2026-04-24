@@ -126,6 +126,8 @@ export type ProfileStackParamList = {
     sessionId?: string;
     selectedDay?: number;
     returnTo?: string;
+    /** When set, completing the session marks this calendar plan row completed */
+    planId?: string;
   };
   WorkoutSummary: {
     workoutName: string;
@@ -152,6 +154,7 @@ export type LibraryStackParamList = {
     workoutDifficulty?: string;
     workoutImage?: string;
     returnTo?: string;
+    planId?: string;
   };
   ExerciseSelection: {
     initialSelection?: string[];
@@ -198,6 +201,7 @@ export type LibraryStackParamList = {
     sessionId?: string; // For resuming incomplete sessions
     selectedDay?: number; // Selected day for split workouts (1-7)
     returnTo?: string;
+    planId?: string;
   };
   ExerciseDetail: {
     exerciseId: string;

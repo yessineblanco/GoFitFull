@@ -19,6 +19,7 @@ import { getBackgroundColor, getSurfaceColor, getGlassBg, getGlassBorder, getSha
 import { useThemeStore } from '@/store/themeStore';
 import { useTabScroll } from '@/hooks/useTabScroll';
 import { useProfileStore } from '@/store/profileStore';
+import { useMarketplaceStore } from '@/store/marketplaceStore';
 import { notificationService } from '@/services/notifications';
 
 export const HomeScreen: React.FC = () => {
@@ -51,12 +52,14 @@ export const HomeScreen: React.FC = () => {
     });
   }, [sessions, profile?.notification_preferences, getStreakMetrics]);
 
+  const loadTopCoaches = useMarketplaceStore((s) => s.loadTopCoaches);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetch();
+    await Promise.all([fetch(), loadTopCoaches()]);
     setRefreshKey(prev => prev + 1);
     setRefreshing(false);
-  }, [fetch]);
+  }, [fetch, loadTopCoaches]);
 
   const handleQuickStart = () => {
     navigation.navigate('Library', { screen: 'ExerciseSelection' });

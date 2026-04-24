@@ -28,8 +28,10 @@ import { theme } from '@/theme';
 import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getSurfaceColor, getGlassBg, getGlassBorder, getBlurTint } from '@/utils/colorUtils';
 import type { LibraryStackParamList } from '@/types';
 import { workoutService, type ExerciseConfig } from '@/services/workouts';
+import { updateWorkoutPlanStatus } from '@/services/workoutPlans';
 import { useAuthStore } from '@/store/authStore';
 import { useWorkoutsStore } from '@/store/workoutsStore';
+import { useWorkoutPlansStore } from '@/store/workoutPlansStore';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
@@ -43,6 +45,20 @@ type RouteProp = RNRouteProp<LibraryStackParamList, 'WorkoutSession'>;
 interface WorkoutSessionScreenProps {
   navigation: NavigationProp;
   route: RouteProp;
+}
+
+/** Plan-started sessions live on Library; reset stack then show Workouts tab root. */
+function navigateFromPlanSessionToWorkoutsMain(navigation: NavigationProp) {
+  navigation.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: [{ name: 'LibraryMain' }],
+    })
+  );
+  navigation.getParent()?.navigate('Workouts', {
+    screen: 'WorkoutsMain',
+    initial: false,
+  });
 }
 
 interface ExerciseProgress {
@@ -70,6 +86,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [previousWorkoutData, setPreviousWorkoutData] = useState<Map<string, any>>(new Map());
   const isCompletingWorkoutRef = useRef(false); // Track if we're completing the workout
+  const isLeavingWorkoutRef = useRef(false); // Allow programmatic leave without beforeRemove re-entry
 
   // Grouped session state - related data updated together for better organization
   const [sessionState, setSessionState] = useState<{
@@ -765,6 +782,20 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
               throw new Error('Failed to mark session as completed');
             }
 
+            const planId = route.params?.planId;
+            if (planId) {
+              try {
+                await updateWorkoutPlanStatus(planId, 'completed', sessionId);
+              } catch (planErr) {
+                logger.error('Failed to mark calendar plan completed:', planErr);
+              }
+              try {
+                await useWorkoutPlansStore.getState().fetch();
+              } catch (fetchErr) {
+                logger.error('Failed to refresh workout plans after completion:', fetchErr);
+              }
+            }
+
             // Clear the incomplete session from the store and mark this sessionId as recently completed
             const { setLatestIncompleteSession, loadLatestIncompleteSession } = useWorkoutsStore.getState();
             if (__DEV__) {
@@ -825,8 +856,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
     }
 
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      // Allow navigation if completing workout
-      if (isCompletingWorkoutRef.current) {
+      if (isCompletingWorkoutRef.current || isLeavingWorkoutRef.current) {
         return;
       }
 
@@ -864,16 +894,9 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
                 console.error('Error saving progress:', error);
               }
             }
-            // Navigate away after confirming
+            isLeavingWorkoutRef.current = true;
             if (route.params?.returnTo === 'Plan') {
-              // Reset Library stack to LibraryMain before navigating to Plan
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'LibraryMain' }],
-                })
-              );
-              navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
+              navigateFromPlanSessionToWorkoutsMain(navigation);
             } else {
               navigation.dispatch(e.data.action);
             }
@@ -1327,14 +1350,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
             onPress={() => {
               if (!sessionStarted) {
                 if (route.params?.returnTo === 'Plan') {
-                  // Reset Library stack to LibraryMain before navigating to Plan
-                  navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [{ name: 'LibraryMain' }],
-                    })
-                  );
-                  navigation.getParent()?.navigate('Workouts', { screen: 'WorkoutsMain' });
+                  navigateFromPlanSessionToWorkoutsMain(navigation);
                 } else {
                   navigation.goBack();
                 }

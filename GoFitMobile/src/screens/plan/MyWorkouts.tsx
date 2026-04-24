@@ -125,6 +125,7 @@ const MyWorkouts: React.FC = () => {
           name: "Library",
           params: {
             screen: "WorkoutSession",
+            initial: false,
             params: {
               workoutId: w.id,
               workoutName: w.name,
@@ -468,7 +469,8 @@ const MyWorkouts: React.FC = () => {
                             workoutName: w.name,
                             workoutImage: w.image_url,
                             workoutDifficulty: w.difficulty || 'Intermediate',
-                            returnTo: 'Plan'
+                            returnTo: 'Plan',
+                            ...(isPlan ? { planId: item.id } : {}),
                           }
                         }
                       })
@@ -549,7 +551,8 @@ const MyWorkouts: React.FC = () => {
                                 workoutName: w.name,
                                 workoutImage: w.image_url,
                                 workoutDifficulty: w.difficulty || 'Intermediate',
-                                returnTo: 'Plan'
+                                returnTo: 'Plan',
+                                ...(isPlan ? { planId: item.id } : {}),
                               }
                             }
                           })

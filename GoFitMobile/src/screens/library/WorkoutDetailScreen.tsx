@@ -43,6 +43,7 @@ interface WorkoutDetailScreenProps {
       workoutImage?: string;
       dateToSchedule?: string;
       returnTo?: string;
+      planId?: string;
     };
   };
 }
@@ -99,8 +100,10 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
         restTime: ex.restTime.replace('s', ''), // Remove 's' suffix
         image: ex.image, // Include image URL
       })),
+      returnTo: route.params?.returnTo,
+      planId: route.params?.planId,
     });
-  }, [loading, detectedWorkoutType, workoutId, workoutName, exercisesByDay, navigation]);
+  }, [loading, detectedWorkoutType, workoutId, workoutName, exercisesByDay, navigation, route.params?.returnTo, route.params?.planId]);
 
   // Ensure exercisesByDay always has at least day 1 if exercises exist
   React.useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Animated, StyleSheet, ImageStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,7 +9,7 @@ import { useMarketplaceStore } from '@/store/marketplaceStore';
 import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
 import * as Haptics from 'expo-haptics';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { SectionHeader } from './SectionHeader';
 import { useTranslation } from 'react-i18next';
 
@@ -24,9 +24,18 @@ export const TopTrainers: React.FC = () => {
     const [loading, setLoading] = React.useState(true);
     const scrollX = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        loadTopCoaches().finally(() => setLoading(false));
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            let cancelled = false;
+            setLoading(true);
+            loadTopCoaches().finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+            return () => {
+                cancelled = true;
+            };
+        }, [loadTopCoaches])
+    );
 
     const handleTrainerPress = (coachId: string) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -76,7 +85,15 @@ export const TopTrainers: React.FC = () => {
                         extrapolate: 'clamp',
                     });
 
-                    const imageUri = coach.profile_picture_url || coach.user_profile_picture;
+                    const imageUri =
+                        coach.profile_picture_url?.trim() ||
+                        coach.user_profile_picture?.trim() ||
+                        null;
+                    const displayName = coach.display_name || t('marketplace.unknownCoach');
+                    const hasReviews = (coach.total_reviews ?? 0) > 0;
+                    const ratingLabel = hasReviews
+                        ? coach.average_rating.toFixed(1)
+                        : t('marketplace.noReviewsYet');
 
                     return (
                         <TouchableOpacity
@@ -98,7 +115,7 @@ export const TopTrainers: React.FC = () => {
                                 ) : (
                                     <View style={[StyleSheet.absoluteFill, { backgroundColor: '#1a2a1a', alignItems: 'center', justifyContent: 'center' }]}>
                                         <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 32, color: theme.colors.primary }}>
-                                            {(coach.display_name || '?')[0].toUpperCase()}
+                                            {displayName.charAt(0).toUpperCase()}
                                         </Text>
                                     </View>
                                 )}
@@ -118,14 +135,18 @@ export const TopTrainers: React.FC = () => {
                                             </BlurView>
                                         ) : <View />}
                                         <BlurView intensity={20} tint="dark" style={styles.ratingPill}>
-                                            <Star size={10} color={theme.colors.primary} fill={theme.colors.primary} />
-                                            <Text style={styles.ratingText}>{coach.average_rating.toFixed(1)}</Text>
+                                            {hasReviews ? (
+                                                <Star size={10} color={theme.colors.primary} fill={theme.colors.primary} />
+                                            ) : null}
+                                            <Text style={[styles.ratingText, !hasReviews && styles.ratingTextNew]} numberOfLines={1}>
+                                                {ratingLabel}
+                                            </Text>
                                         </BlurView>
                                     </View>
 
                                     <View style={styles.bottomInfo}>
                                         <View style={styles.nameRow}>
-                                            <Text style={styles.trainerName} numberOfLines={1}>{coach.display_name || '—'}</Text>
+                                            <Text style={styles.trainerName} numberOfLines={1}>{displayName}</Text>
                                         </View>
                                         <View style={styles.specialtyRow}>
                                             <Text style={styles.specialtyText} numberOfLines={1}>
@@ -206,6 +227,11 @@ const styles = StyleSheet.create({
     ratingText: {
         color: '#FFF',
         fontSize: getResponsiveFontSize(10),
+        fontFamily: 'Barlow_600SemiBold',
+        maxWidth: scaleWidth(72),
+    },
+    ratingTextNew: {
+        fontSize: getResponsiveFontSize(9),
         fontFamily: 'Barlow_600SemiBold',
     },
     bottomInfo: {

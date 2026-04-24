@@ -35,10 +35,10 @@ CREATE INDEX IF NOT EXISTS idx_coach_profiles_specialties ON public.coach_profil
 
 ALTER TABLE public.coach_profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view verified coach profiles"
+CREATE POLICY "Public can view approved coach profiles for marketplace"
   ON public.coach_profiles
   FOR SELECT
-  USING (is_verified = true AND status = 'approved');
+  USING (status = 'approved');
 
 CREATE POLICY "Coaches can view own profile"
   ON public.coach_profiles

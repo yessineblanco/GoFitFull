@@ -33,9 +33,16 @@ const MyWorkouts: React.FC = () => {
 
   const scrollRef = useRef<ScrollView>(null);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetch();
+      fetchPlans();
+    }, [fetch, fetchPlans])
+  );
+
   // Combine sessions and plans
   const itemsOfDay = useMemo(() => {
-    const daySessions = sessions.filter((s: any) => s.date?.split("T")[0] === selectedDate);
+    const daySessions = sessions.filter((s: any) => s.completed_at && s.date?.split("T")[0] === selectedDate);
     const dayPlans = plans.filter((p: any) => {
       const planDate = p.planned_date?.split("T")[0];
       if (planDate !== selectedDate) return false;
@@ -73,7 +80,25 @@ const MyWorkouts: React.FC = () => {
   const CARD_WIDTH = SCREEN_WIDTH * 0.75;
   const CARD_HEIGHT = 240; // Reduced from 380
 
+  const getActiveSessionForPlan = useCallback((plan: any) => {
+    const workoutId = plan?.workout?.id;
+    if (!workoutId) return null;
+
+    return sessions.find((session: any) => {
+      if (session.completed_at) return false;
+      const sessionWorkoutId = session.workout_id || session.workout?.id;
+      if (sessionWorkoutId !== workoutId) return false;
+      const sessionDate = (session.date || session.started_at || session.created_at)?.split("T")[0];
+      return sessionDate === selectedDate;
+    }) || null;
+  }, [sessions, selectedDate]);
+
   const handleStartWorkout = async (plan: any) => {
+    const w = plan.workout;
+    if (!w) return;
+
+    const activeSession = getActiveSessionForPlan(plan);
+
     // Check if session is in the future
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -82,7 +107,7 @@ const MyWorkouts: React.FC = () => {
 
     const isFuture = planDate.getTime() > today.getTime();
 
-    if (isFuture) {
+    if (isFuture && !activeSession) {
       dialogManager.show(
         "Session Locked",
         `This session is scheduled for ${format(planDate, 'MMMM do')}. Please wait until the date arrives to start your workout.`,
@@ -93,9 +118,6 @@ const MyWorkouts: React.FC = () => {
     }
 
     try {
-      const w = plan.workout;
-      if (!w) return;
-
       let exercisesToUse = w.exercises;
 
       if (!exercisesToUse || exercisesToUse.length === 0) {
@@ -133,6 +155,7 @@ const MyWorkouts: React.FC = () => {
               exercises: formattedExercises,
               planId: plan.id,
               returnTo: 'Plan',
+              ...(activeSession ? { sessionId: activeSession.id } : {}),
             },
           },
         })
@@ -437,16 +460,19 @@ const MyWorkouts: React.FC = () => {
             const w = item.workout;
             if (!w) return null;
             const isPlan = item.type === 'plan';
+            const activeSession = isPlan ? getActiveSessionForPlan(item) : null;
+            const hasActiveSession = !!activeSession;
             const statusLabel = isPlan
-              ? (item.status === 'skipped' ? 'SKIPPED' : item.status === 'completed'
+              ? (hasActiveSession ? 'IN PROGRESS' : item.status === 'skipped' ? 'SKIPPED' : item.status === 'completed'
                 ? (item.completionInfo ? `DONE ${format(parseISO(item.completionInfo.date), 'MMM d').toUpperCase()}` : 'COMPLETED')
                 : (item.planned_day ? `DAY ${item.planned_day}` : 'SCHEDULED'))
               : 'COMPLETED';
 
-            const statusColor = item.status === 'completed' || !isPlan ? '#4CAF50' :
+            const statusColor = hasActiveSession ? TEMPLATE_COLOR : item.status === 'completed' || !isPlan ? '#4CAF50' :
               item.status === 'skipped' ? '#EF4444' : TEMPLATE_COLOR;
 
             const isFuture = parseISO(selectedDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0);
+            const isLocked = isFuture && !hasActiveSession;
 
             return (
               <Pressable
@@ -523,7 +549,7 @@ const MyWorkouts: React.FC = () => {
                       <View style={styles.statPill}>
                         <AppText variant="small" style={styles.statText}>{w.estimated_duration || 45} MIN</AppText>
                       </View>
-                      {isPlan && item.status === 'planned' && (
+                      {isPlan && item.status === 'planned' && !hasActiveSession && (
                         <TimePickerPill
                           time={item.planned_time}
                           onTimeChange={(time) => updatePlanTime(item.id, time)}
@@ -580,7 +606,7 @@ const MyWorkouts: React.FC = () => {
                       <Pressable
                         style={({ pressed }) => [
                           styles.actionButton,
-                          isFuture && styles.lockedButton,
+                          isLocked && styles.lockedButton,
                           { opacity: pressed ? 0.9 : 1 }
                         ]}
                         onPress={(e) => {
@@ -588,7 +614,7 @@ const MyWorkouts: React.FC = () => {
                           handleStartWorkout(item);
                         }}
                       >
-                        {isFuture ? (
+                        {isLocked ? (
                           <>
                             <Lock size={16} color="rgba(0,0,0,0.4)" />
                             <AppText variant="bodyBold" style={[styles.actionText, { color: 'rgba(0,0,0,0.4)' }]}>LOCKED</AppText>
@@ -596,7 +622,7 @@ const MyWorkouts: React.FC = () => {
                         ) : (
                           <>
                             <Play size={18} color="#fff" fill="#fff" />
-                            <AppText variant="bodyBold" style={[styles.actionText, { color: '#fff' }]}>START</AppText>
+                            <AppText variant="bodyBold" style={[styles.actionText, { color: '#fff' }]}>{hasActiveSession ? 'RESUME' : 'START'}</AppText>
                           </>
                         )}
                       </Pressable>

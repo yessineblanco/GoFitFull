@@ -17,7 +17,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp as RNRouteProp, CommonActions, StackActions } from '@react-navigation/native';
+import { RouteProp as RNRouteProp, CommonActions } from '@react-navigation/native';
 import { ArrowLeft, Check, Clock, Pause, Play, Square, Target, Zap, TrendingUp, Weight, Flame, FileText, Settings, Dumbbell, Layers, ArrowRight, SkipForward } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';

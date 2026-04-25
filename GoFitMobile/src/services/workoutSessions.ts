@@ -52,6 +52,7 @@ export const getSessions = async (
     return {
       id: session.id,
       user_id: session.user_id,
+      workout_id: session.workout_id,
       date: sessionDate,
       started_at: session.started_at,
       completed_at: session.completed_at,

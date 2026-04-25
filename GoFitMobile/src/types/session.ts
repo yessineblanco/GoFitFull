@@ -20,6 +20,7 @@ export interface CompletedExercise {
 export interface WorkoutSession {
   id: string;
   user_id: string;
+  workout_id?: string | null;
   date?: string | null;
   started_at?: string;
   completed_at?: string | null;

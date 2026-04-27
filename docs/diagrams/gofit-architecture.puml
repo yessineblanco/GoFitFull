@@ -1,5 +1,6 @@
-@startuml GoFit_Architecture
-title GoFit — Component / deployment view
+﻿@startuml GoFit_Architecture
+!pragma layout smetana
+title GoFit - Component / deployment view
 
 package "Client devices" {
   [GoFit mobile app\nExpo, React Native, Zustand] as Mobile
@@ -21,8 +22,8 @@ package "Supabase" {
 }
 
 package "Other" {
-  [AWS S3 SDK\n(admin uploads)] as S3
-  [Health / wearables\n(optional)] as Health
+  [Cloudflare R2\nS3-compatible admin uploads] as R2
+  [Android Health Connect\nwearables v1] as Health
 }
 
 Mobile --> Auth : JWT / session
@@ -34,7 +35,7 @@ Mobile ..> Health : optional
 
 Admin --> Auth
 Admin --> PG
-Admin --> S3
+Admin --> R2
 
 note bottom of PG
   Inferred from database/migrations

@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_07_Views
-title Reporting & enriched views (no extra storage — depend on base tables)
+﻿@startuml GoFit_ERD_07_Views
+!pragma layout smetana
+title Reporting and enriched views (no extra storage - depend on base tables)
 
 hide circle
 skinparam linetype ortho
@@ -25,8 +26,8 @@ class "conversations_enriched" as v5 <<VIEW>> {
 }
 
 note bottom
-  create_bi_*.sql, ensure_conversations_enriched_view.sql
-  Views read from public.* base tables; see ERD 04–05.
+  create_bi_*.sql, ensure_conversations_enriched_view.sql.
+  Views read from public.* base tables; see ERD 04-05.
 end note
 
 @enduml

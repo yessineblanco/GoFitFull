@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_05_Messaging
-title ERD — Conversations, messages, in-app notifications (public)
+﻿@startuml GoFit_ERD_05_Messaging
+!pragma layout smetana
+title ERD - Conversations, messages, in-app notifications (public)
 
 hide circle
 skinparam linetype ortho

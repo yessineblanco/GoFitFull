@@ -1,5 +1,6 @@
-@startuml GoFit_ERD
-title GoFit - ERD condensed (one canvas). Full ERD: gofit-erd-00-overview + 01-07.
+﻿@startuml GoFit_ERD
+!pragma layout smetana
+title GoFit - ERD condensed current model. Full ERD: gofit-erd-00-overview + 01-07.
 
 /' Full split ERD: gofit-erd-00-overview.puml and gofit-erd-01 through 07
    (all public tables + reporting views). '/
@@ -100,6 +101,38 @@ class "progress_photos" as pph <<Table>> {
   id : uuid PK
 }
 
+class "health_data" as hd <<Table>> {
+  id : uuid PK
+}
+
+class "push_tokens" as pt <<Table>> {
+  id : uuid PK
+}
+
+class "notifications" as ntf <<Table>> {
+  id : uuid PK
+}
+
+class "admin_settings" as aset <<Table>> {
+  key : text
+}
+
+class "admin_notifications" as ant <<Table>> {
+  id : uuid PK
+}
+
+class "admin_audit_logs" as aal <<Table>> {
+  id : uuid PK
+}
+
+class "bi_*_daily" as biv <<VIEW>> {
+  reporting views
+}
+
+class "conversations_enriched" as cenv <<VIEW>> {
+  enriched messaging view
+}
+
 u ||--o| up
 u ||--o{ w
 e ||--o{ we
@@ -118,17 +151,29 @@ u ||--o{ prg
 cp ||--o| wlt
 wlt ||--o{ trn
 cnv ||--o{ msg
+cp ||--o{ cnv
+u ||--o{ cnv
+u ||--o{ msg : sender
 fi ||--o{ ml
 u ||--o| ng
 u ||--o{ ml
 u ||--o{ bm
 u ||--o{ pph
+u ||--o{ hd
+u ||--o{ pt
+u ||--o{ ntf
+u ||--o{ ant : admin recipient
+u ||--o{ aal : admin actor
+aset .. u : admin-managed settings
+biv .. ws
+biv .. b
+biv .. trn
+cenv .. cnv
 
 note bottom of w
   Unified model: see
   database/migrations/unify_workouts_design.sql
-  Legacy native/custom tables may exist
-  until migration applied.
+  and cleanup_old_workout_tables.sql.
 end note
 
 @enduml

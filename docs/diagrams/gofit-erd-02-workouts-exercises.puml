@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_02_Workouts
-title ERD — Workouts, exercise library, sessions (public)
+﻿@startuml GoFit_ERD_02_Workouts
+!pragma layout smetana
+title ERD - Workouts, exercise library, sessions (public)
 
 hide circle
 skinparam linetype ortho
@@ -8,46 +9,36 @@ class "auth.users" as u <<auth>> {
   id : uuid PK
 }
 
-package "Unified model (target)" as UNIFIED {
-  class "exercises" as e <<Table>> {
-    id : uuid PK
-    name
-    category
-  }
-
-  class "workouts" as w <<Table>> {
-    id : uuid PK
-    user_id : uuid FK? (null = native)
-    workout_type
-  }
-
-  class "workout_exercises" as we <<Table>> {
-    id : uuid PK
-    workout_id : uuid FK
-    exercise_id : uuid FK
-  }
-
-  class "workout_sessions" as ws <<Table>> {
-    id : uuid PK
-    user_id : uuid FK
-    workout_id / unified ref
-    completed_at
-  }
+class "exercises" as e <<Table>> {
+  id : uuid PK
+  name
+  category
+  muscle_group
 }
 
-package "Legacy split tables (if migration not fully applied)" as LEG {
-  class "native_workouts" as nw <<Table>> {
-    ...
-  }
-  class "native_workout_exercises" as nwe <<Table>> {
-    ...
-  }
-  class "custom_workouts" as cw <<Table>> {
-    ...
-  }
-  class "custom_workout_exercises" as cwe <<Table>> {
-    ...
-  }
+class "workouts" as w <<Table>> {
+  id : uuid PK
+  user_id : uuid FK? (null = native)
+  name
+  workout_type
+}
+
+class "workout_exercises" as we <<Table>> {
+  id : uuid PK
+  workout_id : uuid FK
+  exercise_id : uuid FK
+  sets / reps / rest_time
+  exercise_order
+}
+
+class "workout_sessions" as ws <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  workout_id : uuid FK
+  date
+  started_at / completed_at
+  exercises_completed JSONB
+  duration_minutes
 }
 
 u ||--o{ w : custom owner
@@ -56,22 +47,10 @@ e ||--o{ we
 w ||--o{ we
 w ||--o{ ws
 
-nw ||--o{ nwe
-e .. nwe
-cw ||--o{ cwe
-e .. cwe
-u ||--o{ cw
-
-note bottom of UNIFIED
-  unify_workouts_design.sql creates
-  workouts + workout_exercises and migrates
-  from native_* / custom_*.
-end note
-
-note bottom of LEG
-  Superseded by unified model when
-  migrations have run; may still exist
-  in older DBs.
+note bottom of w
+  Current ERD uses the unified model.
+  Legacy native_* / custom_* tables were migration sources
+  and are not part of the current academic model.
 end note
 
 @enduml

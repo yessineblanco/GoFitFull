@@ -1,0 +1,28 @@
+﻿@startuml GoFit_Userflow_Root
+!pragma layout smetana
+title GoFit - User flow: root navigation (from App.tsx)
+
+/' Source: GoFitMobile/App.tsx. Deep links: useDeepLinkStore. '/
+
+start
+:App mounts (fonts, splash, auth init);
+if (Valid session and not in password reset flow?) then (yes)
+  if (userType is coach?) then (yes)
+    if (Coach onboarding completed for this user?) then (yes)
+      :CoachAppNavigator (Dashboard, Clients, Calendar, Chat, Profile);
+    else (no)
+      :CoachOnboardingNavigator;
+    endif
+  else (no - client)
+    if (Client onboarding completed for this user?) then (yes)
+      :AppNavigator (Home, Workouts, Library, Progress, Profile);
+    else (no)
+      :OnboardingNavigator;
+    endif
+  endif
+else (no)
+  :Auth stack (AuthNavigator + CoachAuthNavigator);
+endif
+stop
+
+@enduml

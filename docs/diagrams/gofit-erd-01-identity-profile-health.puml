@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_01_Identity
-title ERD — Identity, profile, progress & device (public)
+﻿@startuml GoFit_ERD_01_Identity
+!pragma layout smetana
+title ERD - Identity, profile, progress and device (public)
 
 hide circle
 skinparam classAttributeIconSize 0
@@ -13,6 +14,7 @@ class "user_profiles" as up <<Table>> {
   id : uuid PK/FK -> u
   user_type
   is_admin
+  notification_preferences
 }
 
 class "progress_photos" as pp <<Table>> {
@@ -20,6 +22,8 @@ class "progress_photos" as pp <<Table>> {
   user_id : uuid FK
   storage_path
   photo_date
+  category
+  note
 }
 
 class "body_measurements" as bm <<Table>> {
@@ -34,12 +38,13 @@ class "health_data" as hd <<Table>> {
   date
   steps / active_calories
   source
+  unique(user_id, date, source)
 }
 
 class "push_tokens" as pt <<Table>> {
   id : uuid PK
   user_id : uuid FK
-  token
+  expo_push_token
 }
 
 u ||--|| up : 1:1

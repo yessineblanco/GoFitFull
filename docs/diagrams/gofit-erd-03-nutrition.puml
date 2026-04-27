@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_03_Nutrition
-title ERD — Nutrition (public)
+﻿@startuml GoFit_ERD_03_Nutrition
+!pragma layout smetana
+title ERD - Nutrition (public)
 
 hide circle
 skinparam linetype ortho

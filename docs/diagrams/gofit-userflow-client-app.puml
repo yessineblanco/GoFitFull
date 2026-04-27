@@ -1,0 +1,50 @@
+﻿@startuml GoFit_Userflow_ClientApp
+!pragma layout smetana
+title GoFit - User flow: client app (AppNavigator, current stacks)
+
+left to right direction
+skinparam linetype ortho
+
+rectangle "Tab: Home stack\nHomeMain\nMarketplace\nCoachDetail\nBookSession\nClientChat\nNotificationInbox\nVideoCall" as TabHome
+rectangle "Tab: Workouts stack\nWorkoutsMain\n(planned workout entry)" as TabWo
+rectangle "Tab: Library stack\nLibraryMain\nWorkoutDetail\nExerciseSelection\nWorkoutBuilder\nWorkoutSession\nExerciseDetail\nWorkoutSummary" as TabLib
+rectangle "Tab: Progress stack\nProgressMain\nRecordDetails\nConsistencyDetails\nProgressPhotos\nProgressPhotoDetail\nNutrition\nAddFood\nNutritionGoals" as TabProg
+rectangle "Tab: Profile stack\nProfileMain\nAccount / Goals / BodyMeasurement\nNotifications / Theme / HealthSync\nPacks / Programs / Bookings\nChat / VideoCall\nWorkoutSession / WorkoutSummary" as TabProf
+
+TabHome -[hidden]right- TabWo
+TabWo -[hidden]right- TabLib
+TabLib -[hidden]right- TabProg
+TabProg -[hidden]right- TabProf
+
+rectangle "Workout start from Library" as S1
+rectangle "Pick workout or build custom" as S2
+rectangle "WorkoutSession\n(tab bar hidden while deep)" as S3
+rectangle "WorkoutSummary" as S4
+
+TabLib --> S1
+S1 --> S2
+S2 --> S3
+S3 --> S4
+
+rectangle "Planned workout from WorkoutsMain" as P1
+rectangle "Navigate through Library stack\nwith returnTo = Plan" as P2
+TabWo --> P1
+P1 --> P2
+P2 --> S3
+
+rectangle "Progress detail flows" as G1
+rectangle "Nutrition / progress photos" as G2
+TabProg --> G1
+G1 --> G2
+
+rectangle "Marketplace booking flow" as M1
+rectangle "Coach chat / video call" as M2
+TabHome --> M1
+M1 --> M2
+
+note bottom of S4
+  Workout session persistence is detailed in
+  gofit-sequence-workout-session.puml.
+end note
+
+@enduml

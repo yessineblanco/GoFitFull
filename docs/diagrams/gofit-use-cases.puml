@@ -1,5 +1,6 @@
-@startuml GoFit_UseCases
-title GoFit — Use case diagram
+﻿@startuml GoFit_UseCases
+!pragma layout smetana
+title GoFit - Use case diagram
 left to right direction
 
 actor Client
@@ -12,8 +13,10 @@ rectangle "GoFit" {
   usecase UC_Workout as "Browse library\nand workouts"
   usecase UC_Session as "Run workout\nsession"
   usecase UC_Prog as "Progress and\nstatistics"
+  usecase UC_Photos as "Progress photos\nprivate journal"
   usecase UC_Nutri as "Nutrition goals\nand meal log"
   usecase UC_Health as "Health data\nsync"
+  usecase UC_Notif as "Notifications\nand preferences"
   usecase UC_Mkt as "Marketplace:\nbook coach"
   usecase UC_Chat as "Messaging"
   usecase UC_Video as "Video session\n(LiveKit)"
@@ -27,8 +30,10 @@ Client --> UC_Onboard
 Client --> UC_Workout
 Client --> UC_Session
 Client --> UC_Prog
+Client --> UC_Photos
 Client --> UC_Nutri
 Client --> UC_Health
+Client --> UC_Notif
 Client --> UC_Mkt
 Client --> UC_Chat
 Client --> UC_Video
@@ -38,6 +43,7 @@ Coach --> UC_Onboard
 Coach --> UC_CoachBiz
 Coach --> UC_CoachOps
 Coach --> UC_Chat
+Coach --> UC_Notif
 Coach --> UC_Video
 
 Admin --> UC_Admin

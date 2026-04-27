@@ -1,0 +1,29 @@
+﻿@startuml GoFit_Userflow_CoachApp
+!pragma layout smetana
+title GoFit - User flow: coach app (after coach auth + coach onboarding)
+
+left to right direction
+skinparam linetype ortho
+
+/' PlantUML 1.2021: do not use bare screen names inside nested rectangles
+   (parser error). One rectangle = one string label. '/
+
+rectangle "Tab: Dashboard\n(CoachDashboard, NotificationInbox)" as D
+rectangle "Tab: Clients\n(ClientsList, ClientDetail, ClientNotes, ClientProgress, ProgramBuilder, ProgramDetail, ChatScreen)" as C
+rectangle "Tab: Calendar\n(CoachCalendar, Availability, VideoCall)" as Cal
+rectangle "Tab: Chat\n(ConversationsList, ChatScreen)" as Ch
+rectangle "Tab: Profile / coach\n(CoachProfileMain, SessionPacks, CreatePack, ProgramsList, ProgramBuilder, CoachWallet, CoachSettings, ThemeSettings)" as P
+
+D -[hidden]right- C
+C -[hidden]right- Cal
+Cal -[hidden]right- Ch
+Ch -[hidden]right- P
+
+D ..> Cal : bookings / day navigation
+C ..> Ch : message client
+
+note bottom
+  Source: GoFitMobile/CoachAppNavigator.tsx
+end note
+
+@enduml

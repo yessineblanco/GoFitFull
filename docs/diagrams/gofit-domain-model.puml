@@ -1,5 +1,6 @@
-@startuml GoFit_ClassDiagram_Domain
-title Class diagram — Domain model (entities / persistence)
+﻿@startuml GoFit_ClassDiagram_Domain
+!pragma layout smetana
+title Class diagram - Domain model (entities / persistence)
 
 hide circle
 skinparam linetype ortho
@@ -35,6 +36,12 @@ class MealLog
 
 class BodyMeasurement
 class ProgressPhoto
+class HealthData
+class PushToken
+class Notification
+class AdminSetting
+class AdminNotification
+class AdminAuditLog
 
 User ||--o| UserProfile : 1:1
 User ||--o{ Workout : custom (user_id)
@@ -60,6 +67,12 @@ User ||--o{ MealLog
 MealLog }o--|| FoodItem
 User ||--o{ BodyMeasurement
 User ||--o{ ProgressPhoto
+User ||--o{ HealthData
+User ||--o{ PushToken
+User ||--o{ Notification
+User ||--o{ AdminNotification : admin recipient
+User ||--o{ AdminAuditLog : admin actor
+AdminSetting .. User : managed by admins
 
 note bottom of User
   Inferred from Supabase schema

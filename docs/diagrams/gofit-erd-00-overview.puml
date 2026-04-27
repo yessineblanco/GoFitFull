@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_Overview
-title GoFit — ERD split map (each file covers one bounded context)
+﻿@startuml GoFit_ERD_Overview
+!pragma layout smetana
+title GoFit - ERD split map (each file covers one bounded context)
 
 hide circle
 left to right direction
@@ -10,11 +11,11 @@ skinparam rectangle {
 rectangle "auth.users\n(Supabase Auth)" as Auth
 
 rectangle "01 gofit-erd-01-identity-profile-health.puml\nuser_profiles, progress_photos, body_measurements,\nhealth_data, push_tokens" as F01
-rectangle "02 gofit-erd-02-workouts-exercises.puml\nexercises, workouts, workout_exercises,\nworkout_sessions, + legacy native/custom" as F02
+rectangle "02 gofit-erd-02-workouts-exercises.puml\nexercises, workouts, workout_exercises,\nworkout_sessions" as F02
 rectangle "03 gofit-erd-03-nutrition.puml\nfood_items, nutrition_goals, meal_logs" as F03
 rectangle "04 gofit-erd-04-marketplace-coach.puml\ncoach_*, session_packs, purchased_packs,\nbookings, programs, wallets, transactions, notes" as F04
 rectangle "05 gofit-erd-05-messaging-notifications.puml\nconversations, messages, notifications" as F05
-rectangle "06 gofit-erd-06-admin-audit.puml\nadmin_settings, admin_notifications,\nadmin_audit_log, admin_audit_logs" as F06
+rectangle "06 gofit-erd-06-admin-audit.puml\nadmin_settings, admin_notifications,\nadmin_audit_logs" as F06
 rectangle "07 gofit-erd-07-views-bi.puml\nbi_* daily views, conversations_enriched" as F07
 
 Auth -down-> F01
@@ -25,7 +26,7 @@ Auth -down-> F05
 Auth -down-> F06
 
 note bottom of F07
-  Views only (no storage); depend on 01–06 base tables.
+  Views only (no storage); depend on 01-06 base tables.
 end note
 
 @enduml

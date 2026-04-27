@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_04_Marketplace
-title ERD — Coach marketplace, commerce, programs (public)
+﻿@startuml GoFit_ERD_04_Marketplace
+!pragma layout smetana
+title ERD - Coach marketplace, commerce, programs (public)
 
 hide circle
 skinparam linetype ortho

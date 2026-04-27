@@ -1,5 +1,6 @@
-@startuml GoFit_ClassDiagram_Application
-title Class diagram — Application layer (GoFit mobile, simplified)
+﻿@startuml GoFit_ClassDiagram_Application
+!pragma layout smetana
+title Class diagram - Application layer (GoFit mobile, simplified)
 
 hide circle
 skinparam packageStyle rectangle
@@ -39,6 +40,21 @@ package "Services (facade to backend)" {
   class "chatService" as ChatSvc {
     send / subscribe
   }
+  class "progressPhotosService" as PhotoSvc {
+    list()
+    upload()
+    delete()
+  }
+  class "healthSync" as HealthSvc {
+    requestPermissions()
+    syncHealthData()
+    getHealthHistory()
+  }
+  class "notificationService" as NotifSvc {
+    register()
+    fetch()
+    markRead()
+  }
   class "Other modules\n(marketplace, bookings,\nnutrition, wallet, ...)" as OtherSvc {
     ...
   }
@@ -53,20 +69,29 @@ class "supabase\n(SupabaseClient)" as SB <<singleton>> {
 Screens --> AuthStore : reads / dispatches
 Screens --> WoSvc : workout flow
 Screens --> ChatSvc : messaging
+Screens --> PhotoSvc : progress photos
+Screens --> HealthSvc : wearables
+Screens --> NotifSvc : notifications
 Nav --> Screens
 
 AuthStore ..> AuthSvc : calls
 Screens ..> WoSvc
 Screens ..> ChatSvc
+Screens ..> PhotoSvc
+Screens ..> HealthSvc
+Screens ..> NotifSvc
 Screens ..> OtherSvc
 
 AuthSvc ..> SB : HTTP / Realtime
 WoSvc ..> SB
 ChatSvc ..> SB
+PhotoSvc ..> SB
+HealthSvc ..> SB
+NotifSvc ..> SB
 OtherSvc ..> SB
 
 note bottom of SB
-  config/supabase.ts — single client;
+  config/supabase.ts - single client;
   Postgres + Auth + Storage + Realtime.
 end note
 

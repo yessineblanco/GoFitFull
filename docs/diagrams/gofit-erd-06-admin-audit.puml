@@ -1,5 +1,6 @@
-@startuml GoFit_ERD_06_Admin
-title ERD — Admin settings, notifications log, audit (public)
+﻿@startuml GoFit_ERD_06_Admin
+!pragma layout smetana
+title ERD - Admin settings, notifications log, audit (public)
 
 hide circle
 skinparam linetype ortho
@@ -18,28 +19,21 @@ class "admin_notifications" as an <<Table>> {
   admin_user_id : uuid FK -> u
 }
 
-class "admin_audit_log" as al1 <<Table>> {
+class "admin_audit_logs" as al <<Table>> {
   id : uuid PK
   admin_user_id : uuid FK -> u
+  action
+  resource_type
+  resource_id
+  details JSONB
 }
 
-class "admin_audit_logs" as al2 <<Table>> {
-  id : uuid PK
-  admin_user_id : uuid FK -> u
-}
-
-u ||--o{ al1
-u ||--o{ al2
+u ||--o{ al
 u ||--o{ an
 
-note bottom of al1
-  add_admin_role.sql — singular name
-end note
-
-note bottom of al2
-  create_admin_audit_logs.sql — plural name
-  Two similar tables from different migrations;
-  consolidate in app / DB if possible.
+note bottom of al
+  create_admin_audit_logs.sql creates the current audit table.
+  remove_old_audit_log_table.sql drops the old singular table.
 end note
 
 note bottom of aset

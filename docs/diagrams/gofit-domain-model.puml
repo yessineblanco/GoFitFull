@@ -1,0 +1,69 @@
+@startuml GoFit_ClassDiagram_Domain
+title Class diagram — Domain model (entities / persistence)
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as User {
+  id : UUID
+}
+
+class UserProfile {
+  id : UUID
+  user_type
+  is_admin
+}
+
+class Exercise
+class Workout
+class WorkoutExercise
+class WorkoutSession
+
+class CoachProfile
+class SessionPack
+class PurchasedPack
+class Booking
+class CustomProgram
+class Conversation
+class Message
+class Wallet
+class Transaction
+
+class FoodItem
+class NutritionGoals
+class MealLog
+
+class BodyMeasurement
+class ProgressPhoto
+
+User ||--o| UserProfile : 1:1
+User ||--o{ Workout : custom (user_id)
+Workout }o--o{ Exercise : WorkoutExercise
+User ||--o{ WorkoutSession
+WorkoutSession }o--|| Workout
+
+User ||--o| CoachProfile
+CoachProfile ||--o{ SessionPack
+User ||--o{ PurchasedPack
+PurchasedPack }o--|| SessionPack
+CoachProfile ||--o{ Booking
+User ||--o{ Booking
+CoachProfile ||--o{ CustomProgram
+User ||--o{ CustomProgram
+CoachProfile ||--|| Wallet
+Wallet ||--o{ Transaction
+Conversation .. User
+Message }o--|| Conversation
+
+User ||--o| NutritionGoals
+User ||--o{ MealLog
+MealLog }o--|| FoodItem
+User ||--o{ BodyMeasurement
+User ||--o{ ProgressPhoto
+
+note bottom of User
+  Inferred from Supabase schema
+  and GoFitMobile / admin-panel code.
+end note
+
+@enduml

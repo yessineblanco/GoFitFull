@@ -1,0 +1,37 @@
+@startuml GoFit_ERD_03_Nutrition
+title ERD — Nutrition (public)
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as u <<auth>> {
+  id : uuid PK
+}
+
+class "food_items" as fi <<Table>> {
+  id : uuid PK
+  name, calories, macros
+}
+
+class "nutrition_goals" as ng <<Table>> {
+  user_id : uuid PK/FK
+  calories_goal, protein_g, ...
+}
+
+class "meal_logs" as ml <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  food_item_id : uuid FK
+  logged_date
+  meal_type
+}
+
+u ||--o| ng
+u ||--o{ ml
+fi ||--o{ ml
+
+note bottom
+  database/migrations/create_nutrition_tracking.sql
+end note
+
+@enduml

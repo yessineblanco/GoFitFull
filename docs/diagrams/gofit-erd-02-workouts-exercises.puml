@@ -1,0 +1,77 @@
+@startuml GoFit_ERD_02_Workouts
+title ERD — Workouts, exercise library, sessions (public)
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as u <<auth>> {
+  id : uuid PK
+}
+
+package "Unified model (target)" as UNIFIED {
+  class "exercises" as e <<Table>> {
+    id : uuid PK
+    name
+    category
+  }
+
+  class "workouts" as w <<Table>> {
+    id : uuid PK
+    user_id : uuid FK? (null = native)
+    workout_type
+  }
+
+  class "workout_exercises" as we <<Table>> {
+    id : uuid PK
+    workout_id : uuid FK
+    exercise_id : uuid FK
+  }
+
+  class "workout_sessions" as ws <<Table>> {
+    id : uuid PK
+    user_id : uuid FK
+    workout_id / unified ref
+    completed_at
+  }
+}
+
+package "Legacy split tables (if migration not fully applied)" as LEG {
+  class "native_workouts" as nw <<Table>> {
+    ...
+  }
+  class "native_workout_exercises" as nwe <<Table>> {
+    ...
+  }
+  class "custom_workouts" as cw <<Table>> {
+    ...
+  }
+  class "custom_workout_exercises" as cwe <<Table>> {
+    ...
+  }
+}
+
+u ||--o{ w : custom owner
+u ||--o{ ws
+e ||--o{ we
+w ||--o{ we
+w ||--o{ ws
+
+nw ||--o{ nwe
+e .. nwe
+cw ||--o{ cwe
+e .. cwe
+u ||--o{ cw
+
+note bottom of UNIFIED
+  unify_workouts_design.sql creates
+  workouts + workout_exercises and migrates
+  from native_* / custom_*.
+end note
+
+note bottom of LEG
+  Superseded by unified model when
+  migrations have run; may still exist
+  in older DBs.
+end note
+
+@enduml

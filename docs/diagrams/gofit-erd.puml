@@ -1,0 +1,134 @@
+@startuml GoFit_ERD
+title GoFit - ERD condensed (one canvas). Full ERD: gofit-erd-00-overview + 01-07.
+
+/' Full split ERD: gofit-erd-00-overview.puml and gofit-erd-01 through 07
+   (all public tables + reporting views). '/
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as u <<Table>> {
+  id : uuid PK
+}
+
+class "user_profiles" as up <<Table>> {
+  id : uuid PK/FK
+  user_type
+  is_admin
+}
+
+class "exercises" as e <<Table>> {
+  id : uuid PK
+}
+
+class "workouts" as w <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  workout_type
+}
+
+class "workout_exercises" as we <<Table>> {
+  id : uuid PK
+  workout_id : uuid FK
+  exercise_id : uuid FK
+}
+
+class "workout_sessions" as ws <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  workout_id : uuid FK
+  completed_at
+}
+
+class "coach_profiles" as cp <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+}
+
+class "bookings" as b <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+  client_id : uuid FK
+  pack_purchase_id : uuid FK
+}
+
+class "session_packs" as sp <<Table>> {
+  id : uuid PK
+}
+
+class "purchased_packs" as pp <<Table>> {
+  id : uuid PK
+}
+
+class "custom_programs" as prg <<Table>> {
+  id : uuid PK
+}
+
+class "conversations" as cnv <<Table>> {
+  id : uuid PK
+}
+
+class "messages" as msg <<Table>> {
+  id : uuid PK
+}
+
+class "wallets" as wlt <<Table>> {
+  id : uuid PK
+}
+
+class "transactions" as trn <<Table>> {
+  id : uuid PK
+}
+
+class "food_items" as fi <<Table>> {
+  id : uuid PK
+}
+
+class "nutrition_goals" as ng <<Table>> {
+  user_id : uuid PK/FK
+}
+
+class "meal_logs" as ml <<Table>> {
+  id : uuid PK
+}
+
+class "body_measurements" as bm <<Table>> {
+  id : uuid PK
+}
+
+class "progress_photos" as pph <<Table>> {
+  id : uuid PK
+}
+
+u ||--o| up
+u ||--o{ w
+e ||--o{ we
+w ||--o{ we
+u ||--o{ ws
+w ||--o{ ws
+u ||--o| cp
+cp ||--o{ sp
+u ||--o{ pp
+sp ||--o{ pp
+cp ||--o{ b
+u ||--o{ b
+pp o--o{ b
+cp ||--o{ prg
+u ||--o{ prg
+cp ||--o| wlt
+wlt ||--o{ trn
+cnv ||--o{ msg
+fi ||--o{ ml
+u ||--o| ng
+u ||--o{ ml
+u ||--o{ bm
+u ||--o{ pph
+
+note bottom of w
+  Unified model: see
+  database/migrations/unify_workouts_design.sql
+  Legacy native/custom tables may exist
+  until migration applied.
+end note
+
+@enduml

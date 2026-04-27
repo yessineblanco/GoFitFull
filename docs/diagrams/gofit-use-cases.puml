@@ -1,0 +1,45 @@
+@startuml GoFit_UseCases
+title GoFit — Use case diagram
+left to right direction
+
+actor Client
+actor Coach
+actor Admin
+
+rectangle "GoFit" {
+  usecase UC_Auth as "Authenticate\n(account / session)"
+  usecase UC_Onboard as "Client / coach\nonboarding"
+  usecase UC_Workout as "Browse library\nand workouts"
+  usecase UC_Session as "Run workout\nsession"
+  usecase UC_Prog as "Progress and\nstatistics"
+  usecase UC_Nutri as "Nutrition goals\nand meal log"
+  usecase UC_Health as "Health data\nsync"
+  usecase UC_Mkt as "Marketplace:\nbook coach"
+  usecase UC_Chat as "Messaging"
+  usecase UC_Video as "Video session\n(LiveKit)"
+  usecase UC_CoachBiz as "Coach: packs,\nprograms, wallet"
+  usecase UC_CoachOps as "Coach: calendar,\nclients, notes"
+  usecase UC_Admin as "Admin panel:\nusers, content,\nfinance"
+}
+
+Client --> UC_Auth
+Client --> UC_Onboard
+Client --> UC_Workout
+Client --> UC_Session
+Client --> UC_Prog
+Client --> UC_Nutri
+Client --> UC_Health
+Client --> UC_Mkt
+Client --> UC_Chat
+Client --> UC_Video
+
+Coach --> UC_Auth
+Coach --> UC_Onboard
+Coach --> UC_CoachBiz
+Coach --> UC_CoachOps
+Coach --> UC_Chat
+Coach --> UC_Video
+
+Admin --> UC_Admin
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml GoFit_ERD_07_Views
+title Reporting & enriched views (no extra storage — depend on base tables)
+
+hide circle
+skinparam linetype ortho
+
+class "bi_finance_daily" as v1 <<VIEW>> {
+  aggregated finance
+}
+
+class "bi_coach_ops_daily" as v2 <<VIEW>> {
+  coach ops metrics
+}
+
+class "bi_client_health_daily" as v3 <<VIEW>> {
+  client health rollups
+}
+
+class "bi_user_lifecycle_daily" as v4 <<VIEW>> {
+  lifecycle stats
+}
+
+class "conversations_enriched" as v5 <<VIEW>> {
+  conv + joined profiles
+}
+
+note bottom
+  create_bi_*.sql, ensure_conversations_enriched_view.sql
+  Views read from public.* base tables; see ERD 04–05.
+end note
+
+@enduml

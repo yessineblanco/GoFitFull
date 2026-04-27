@@ -1,0 +1,60 @@
+@startuml GoFit_ERD_01_Identity
+title ERD — Identity, profile, progress & device (public)
+
+hide circle
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class "auth.users" as u <<auth>> {
+  id : uuid PK
+}
+
+class "user_profiles" as up <<Table>> {
+  id : uuid PK/FK -> u
+  user_type
+  is_admin
+}
+
+class "progress_photos" as pp <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  storage_path
+  photo_date
+}
+
+class "body_measurements" as bm <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  measurement_date
+}
+
+class "health_data" as hd <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  date
+  steps / active_calories
+  source
+}
+
+class "push_tokens" as pt <<Table>> {
+  id : uuid PK
+  user_id : uuid FK
+  token
+}
+
+u ||--|| up : 1:1
+u ||--o{ pp
+u ||--o{ bm
+u ||--o{ hd
+u ||--o{ pt
+
+note bottom of up
+  database/schema/create_user_profiles_table.sql
+  + migrations (columns)
+end note
+
+note bottom of hd
+  database/migrations/create_health_data_wearables_v1.sql
+end note
+
+@enduml

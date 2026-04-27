@@ -1,0 +1,105 @@
+@startuml GoFit_ERD_04_Marketplace
+title ERD — Coach marketplace, commerce, programs (public)
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as u <<auth>> {
+  id : uuid PK
+}
+
+class "coach_profiles" as cp <<Table>> {
+  id : uuid PK
+  user_id : uuid FK unique
+  status, hourly_rate, ...
+}
+
+class "coach_certifications" as ccert <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK -> cp
+}
+
+class "coach_availability" as cav <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+}
+
+class "session_packs" as sp <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+}
+
+class "purchased_packs" as pp <<Table>> {
+  id : uuid PK
+  client_id : uuid FK
+  pack_id : uuid FK -> sp
+  coach_id : uuid FK -> cp
+}
+
+class "bookings" as b <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK -> cp
+  client_id : uuid FK -> u
+  pack_purchase_id : uuid FK?
+  scheduled_at, status
+}
+
+class "coach_reviews" as cr <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+  client_id : uuid FK -> u
+  booking_id : uuid? FK -> b
+}
+
+class "custom_programs" as prg <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+  client_id : uuid FK
+  program_data JSONB
+}
+
+class "wallets" as wlt <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK -> cp unique
+}
+
+class "transactions" as trn <<Table>> {
+  id : uuid PK
+  wallet_id : uuid FK -> wlt
+  booking_id : uuid? FK -> b
+}
+
+class "coach_client_notes" as notes <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK
+  client_id : uuid FK
+}
+
+u ||--o| cp : coach user
+cp ||--o{ ccert
+cp ||--o{ cr
+cp ||--o{ cav
+cp ||--o{ sp
+cp ||--o{ b
+cp ||--o{ prg
+cp ||--o| wlt
+cp ||--o{ notes
+
+u ||--o{ cr : reviewer
+u ||--o{ pp
+u ||--o{ b
+u ||--o{ prg
+u ||--o{ notes
+
+sp ||--o{ pp
+cp ||--o{ pp
+b }o--o| pp : pack_purchase_id
+cr }o--o| b : unique(booking_id)
+wlt ||--o{ trn
+trn }o--o| b
+
+note bottom of cp
+  database/schema/create_coach_marketplace_tables.sql
+end note
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml GoFit_Architecture
+title GoFit — Component / deployment view
+
+package "Client devices" {
+  [GoFit mobile app\nExpo, React Native, Zustand] as Mobile
+}
+
+package "Web" {
+  [Admin panel\nNext.js, Supabase SSR] as Admin
+}
+
+package "Realtime video" {
+  [LiveKit] as LK
+}
+
+package "Supabase" {
+  [Auth] as Auth
+  database "PostgreSQL\n+ RLS" as PG
+  [Storage] as Stor
+  [Realtime] as Realtime
+}
+
+package "Other" {
+  [AWS S3 SDK\n(admin uploads)] as S3
+  [Health / wearables\n(optional)] as Health
+}
+
+Mobile --> Auth : JWT / session
+Mobile --> PG : supabase-js
+Mobile --> Stor
+Mobile --> Realtime
+Mobile --> LK
+Mobile ..> Health : optional
+
+Admin --> Auth
+Admin --> PG
+Admin --> S3
+
+note bottom of PG
+  Inferred from database/migrations
+  and @supabase/supabase-js usage.
+end note
+
+@enduml

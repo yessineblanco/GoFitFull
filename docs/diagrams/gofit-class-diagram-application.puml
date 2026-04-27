@@ -1,0 +1,73 @@
+@startuml GoFit_ClassDiagram_Application
+title Class diagram — Application layer (GoFit mobile, simplified)
+
+hide circle
+skinparam packageStyle rectangle
+
+package "Presentation (React Native)" {
+  class "Screens\n(e.g. WorkoutSessionScreen)" as Screens {
+    UI + local state
+  }
+  class "Navigation\n(AppNavigator, etc.)" as Nav {
+    routing
+  }
+}
+
+package "State (Zustand)" {
+  class "useAuthStore" as AuthStore {
+    user
+    session
+    userType
+    signIn()
+    signOut()
+  }
+  note right of AuthStore
+    src/store/authStore.ts
+  end note
+}
+
+package "Services (facade to backend)" {
+  class "authService" as AuthSvc {
+    signIn()
+    signUp()
+  }
+  class "workoutService" as WoSvc {
+    getExercises()
+    createWorkoutSession()
+    updateWorkoutSession()
+  }
+  class "chatService" as ChatSvc {
+    send / subscribe
+  }
+  class "Other modules\n(marketplace, bookings,\nnutrition, wallet, ...)" as OtherSvc {
+    ...
+  }
+}
+
+class "supabase\n(SupabaseClient)" as SB <<singleton>> {
+  .from()
+  .auth
+  .channel()
+}
+
+Screens --> AuthStore : reads / dispatches
+Screens --> WoSvc : workout flow
+Screens --> ChatSvc : messaging
+Nav --> Screens
+
+AuthStore ..> AuthSvc : calls
+Screens ..> WoSvc
+Screens ..> ChatSvc
+Screens ..> OtherSvc
+
+AuthSvc ..> SB : HTTP / Realtime
+WoSvc ..> SB
+ChatSvc ..> SB
+OtherSvc ..> SB
+
+note bottom of SB
+  config/supabase.ts — single client;
+  Postgres + Auth + Storage + Realtime.
+end note
+
+@enduml

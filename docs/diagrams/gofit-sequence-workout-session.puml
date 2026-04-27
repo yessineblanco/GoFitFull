@@ -1,0 +1,33 @@
+@startuml GoFit_Sequence_WorkoutSession
+title GoFit — Sequence: start → perform → complete workout session
+
+actor User
+participant "GoFit App\n(Expo / RN)" as App
+participant "workoutService" as Svc
+participant "Supabase JS" as SB
+database "Postgres (RLS)" as DB
+
+User -> App: Start workout from library / plan
+App -> Svc: createWorkoutSession(userId, workout)
+Svc -> SB: (optional) complete previous incomplete session
+SB -> DB: UPDATE workout_sessions
+Svc -> SB: INSERT workout_sessions
+SB -> DB: INSERT
+DB --> App: new session_id
+
+loop Exercises and sets
+  User -> App: Complete sets, rest, weights
+  note right of App
+    Mostly local state (timers, progress).
+    Optional mid-session sync if implemented.
+  end note
+end
+
+User -> App: Tap finish
+App -> Svc: updateWorkoutSession(id, completed_at,\nduration, exercises_completed)
+Svc -> SB: UPDATE workout_sessions
+SB -> DB: UPDATE
+DB --> App: saved session
+App -> User: Workout summary screen
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml GoFit_ERD_05_Messaging
+title ERD — Conversations, messages, in-app notifications (public)
+
+hide circle
+skinparam linetype ortho
+
+class "auth.users" as u <<auth>> {
+  id : uuid PK
+}
+
+class "coach_profiles" as cp <<Table>> {
+  id : uuid PK
+}
+
+class "conversations" as cnv <<Table>> {
+  id : uuid PK
+  coach_id : uuid FK -> cp
+  client_id : uuid FK -> u
+}
+
+class "messages" as msg <<Table>> {
+  id : uuid PK
+  conversation_id : uuid FK
+  sender_id : uuid FK -> u
+}
+
+class "notifications" as ntf <<Table>> {
+  id : uuid PK
+  user_id : uuid FK -> u
+  type, title, body
+}
+
+cp ||--o{ cnv
+u ||--o{ cnv
+cnv ||--o{ msg
+u ||--o{ msg : sender
+u ||--o{ ntf
+
+note bottom of cnv
+  database/schema/create_coach_marketplace_tables.sql
+  (conversations, messages, notifications)
+end note
+
+@enduml

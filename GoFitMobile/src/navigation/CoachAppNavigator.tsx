@@ -4,8 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import type { CoachAppTabParamList } from '@/types';
 import { CoachTabBar } from '@/components/shared/CoachTabBar';
 import { RouteErrorBoundary } from '@/components/shared/RouteErrorBoundary';
-import { useThemeStore } from '@/store/themeStore';
-import { getBackgroundColor } from '@/utils/colorUtils';
 
 import { CoachDashboardScreen } from '@/screens/coach-app/CoachDashboardScreen';
 import { ClientsListScreen } from '@/screens/coach-app/ClientsListScreen';
@@ -83,13 +81,10 @@ const ClientsStackNavigator = () => (
 );
 
 export const CoachAppNavigator: React.FC = () => {
-  const { isDark } = useThemeStore();
-
   return (
     <RouteErrorBoundary>
       <Tab.Navigator
         tabBar={(props) => <CoachTabBar {...props} />}
-        sceneContainerStyle={{ backgroundColor: getBackgroundColor(isDark) }}
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,

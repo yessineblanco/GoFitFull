@@ -122,7 +122,8 @@ export const marketplaceService = {
         return [];
       }
 
-      let result = (raw || []).map((row) => normalizeMarketplaceCoachRow(row as Record<string, unknown>));
+      const rows = (raw || []) as Record<string, unknown>[];
+      let result: MarketplaceCoach[] = rows.map((row) => normalizeMarketplaceCoachRow(row));
 
       if (filters?.specialty) {
         result = result.filter((c) => c.specialties.includes(filters.specialty!));
@@ -193,7 +194,7 @@ export const marketplaceService = {
         total_sessions: Number(coach.total_sessions) || 0,
         display_name: identity?.display_name?.trim() || null,
         user_profile_picture: identity?.profile_picture_url?.trim() || null,
-        certifications: (certs || []).map((c) => ({
+        certifications: ((certs || []) as CoachCertificationPublic[]).map((c) => ({
           id: c.id,
           name: c.name,
           issuer: c.issuer,

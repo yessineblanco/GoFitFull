@@ -25,7 +25,7 @@ import { dialogManager } from '@/components/shared/CustomDialog';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getTextColor } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor } from '@/utils/colorUtils';
 import { WeightScale } from '@/components/onboarding';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -65,6 +65,7 @@ export const EditWeightHeightScreen: React.FC<EditWeightHeightScreenProps> = ({ 
   const heightSlideAnim = useRef(new Animated.Value(0)).current;
 
   // Theme colors
+  const BRAND_BLACK = getBackgroundColor(isDark);
   const BRAND_WHITE = getTextColor(isDark);
   const BRAND_PRIMARY = theme.colors.primary;
 

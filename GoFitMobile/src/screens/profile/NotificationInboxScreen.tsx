@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ArrowLeft, Bell, MessageCircle, Calendar, Star, Dumbbell, CheckCircle, XCircle,
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '@/store/authStore';
 import { notificationInboxService, type AppNotification } from '@/services/notificationInbox';
 import { getResponsiveFontSize } from '@/utils/responsive';
@@ -58,11 +58,26 @@ export const NotificationInboxScreen: React.FC = () => {
     }
     const data = item.data as { screen?: string; id?: string };
     if (data?.screen === 'CoachDetail' && data?.id) {
-      navigation.navigate('CoachDetail', { coachId: data.id });
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Home',
+          params: { screen: 'CoachDetail', params: { coachId: data.id } },
+        })
+      );
     } else if (data?.screen === 'Chat' && data?.id) {
-      navigation.navigate('ClientChat', { conversationId: data.id });
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Home',
+          params: { screen: 'ClientChat', params: { conversationId: data.id } },
+        })
+      );
     } else if (data?.screen === 'ProgramDetail' && data?.id) {
-      navigation.navigate('ProgramDetail', { programId: data.id });
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'Profile',
+          params: { screen: 'ProgramDetail', params: { programId: data.id } },
+        })
+      );
     }
   };
 

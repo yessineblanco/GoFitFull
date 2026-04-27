@@ -11,11 +11,11 @@ interface DeepLinkState {
   consumePending: () => PendingDeepLink | null;
 }
 
-export const useDeepLinkStore = create<DeepLinkState>((set) => ({
+export const useDeepLinkStore = create<DeepLinkState>((set, get) => ({
   pending: null,
   setPending: (link) => set({ pending: link }),
   consumePending: () => {
-    const state = useDeepLinkStore.getState();
+    const state = get();
     set({ pending: null });
     return state.pending;
   },

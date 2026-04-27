@@ -104,6 +104,7 @@ export type ProfileStackParamList = {
   MyPacks: undefined;
   MyPrograms: undefined;
   MyBookings: undefined;
+  VideoCall: { bookingId: string; videoRoomId: string };
   ClientConversations: undefined;
   ClientChatScreen: { conversationId: string };
   NotificationInbox: undefined;
@@ -228,8 +229,17 @@ export type ProgressStackParamList = {
   ProgressMain: undefined;
   RecordDetails: undefined;
   ConsistencyDetails: undefined;
+  ProgressPhotos: undefined;
+  ProgressPhotoDetail: {
+    photoId: string;
+    signedUrl?: string | null;
+    storagePath: string;
+    photoDate: string;
+    category: 'front' | 'side' | 'back' | 'other';
+    note?: string | null;
+    createdAt?: string;
+  };
   Nutrition: undefined;
   AddFood: { mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; date?: string };
   NutritionGoals: undefined;
 };
-

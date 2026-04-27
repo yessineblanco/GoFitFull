@@ -39,6 +39,8 @@ import { ProgramDetailScreen } from '@/screens/profile/ProgramDetailScreen';
 import WorkoutStatisticsScreen from '@/screens/progress/WorkoutStatisticsScreen';
 import RecordDetailsScreen from '@/screens/progress/RecordDetailsScreen';
 import ConsistencyScreen from '@/screens/progress/ConsistencyScreen';
+import ProgressPhotosScreen from '@/screens/progress/ProgressPhotosScreen';
+import ProgressPhotoDetailScreen from '@/screens/progress/ProgressPhotoDetailScreen';
 import NutritionScreen from '@/screens/nutrition/NutritionScreen';
 import AddFoodScreen from '@/screens/nutrition/AddFoodScreen';
 import NutritionGoalsScreen from '@/screens/nutrition/NutritionGoalsScreen';
@@ -153,6 +155,8 @@ const ProgressStackNavigator = () => {
       <ProgressStack.Screen name="ProgressMain" component={WorkoutStatisticsScreen} />
       <ProgressStack.Screen name="RecordDetails" component={RecordDetailsScreen} />
       <ProgressStack.Screen name="ConsistencyDetails" component={ConsistencyScreen} />
+      <ProgressStack.Screen name="ProgressPhotos" component={ProgressPhotosScreen} />
+      <ProgressStack.Screen name="ProgressPhotoDetail" component={ProgressPhotoDetailScreen} />
       <ProgressStack.Screen name="Nutrition" component={NutritionScreen} />
       <ProgressStack.Screen name="AddFood" component={AddFoodScreen} />
       <ProgressStack.Screen name="NutritionGoals" component={NutritionGoalsScreen} />

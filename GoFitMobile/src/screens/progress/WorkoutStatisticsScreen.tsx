@@ -29,13 +29,16 @@ import {
   ChevronUp,
   ChevronRight,
   Trophy,
-  Apple
+  Apple,
+  ImagePlus
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { useAuthStore } from '@/store/authStore';
 import { fetchWorkoutStatistics, fetchLifetimePRs } from '@/services/workoutStats';
 import { getSessions } from '@/services/workoutSessions';
 import { workoutService } from '@/services/workouts';
+import { listProgressPhotos, ProgressPhoto } from '@/services/progressPhotos';
 import type { WorkoutStatsData, PersonalRecord, MuscleGroupData, VolumeProgressItem } from '@/services/workoutStats';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -1044,6 +1047,100 @@ const MilestoneCard = ({
   );
 };
 
+const ProgressPhotosQuickCard = ({ userId, navigation }: { userId?: string; navigation: any }) => {
+  const { isDark, text, textMuted, border, glassPanel } = useTC();
+  const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      if (!userId) return undefined;
+
+      listProgressPhotos(userId)
+        .then((rows) => {
+          if (active) setPhotos(rows);
+        })
+        .catch((err) => {
+          console.error('Failed to load progress photos preview:', err);
+          if (active) setPhotos([]);
+        });
+
+      return () => {
+        active = false;
+      };
+    }, [userId])
+  );
+
+  const latest = photos[0];
+  const countLabel = photos.length === 1 ? '1 saved photo' : `${photos.length} saved photos`;
+
+  return (
+    <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+      <TouchableOpacity
+        activeOpacity={0.86}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          navigation.navigate('ProgressPhotos');
+        }}
+      >
+        <LinearGradient
+          colors={isDark ? ['rgba(132,196,64,0.12)', 'rgba(255,255,255,0.025)'] : ['rgba(132,196,64,0.1)', 'rgba(255,255,255,0.76)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            borderRadius: 20,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: isDark ? 'rgba(132,196,64,0.2)' : border,
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 18,
+                overflow: 'hidden',
+                backgroundColor: glassPanel,
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {latest?.signed_url ? (
+                <Image source={{ uri: latest.signed_url }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
+              ) : (
+                <ImagePlus size={24} color={THEME.primary} />
+              )}
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 16, color: text }}>Progress Photos</Text>
+              <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: textMuted, marginTop: 4 }}>
+                {photos.length > 0 ? countLabel : 'Private photo timeline'}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronRight size={16} color={textMuted} />
+            </View>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 // --- Main Screen Component ---
 
 export default function WorkoutStatisticsScreen() {
@@ -1313,6 +1410,9 @@ export default function WorkoutStatisticsScreen() {
 
         {/* 2.4. Body measurements */}
         <BodyMeasurementsSection measurements={bodyMeasurements} />
+
+        {/* 2.45. Progress photos quick link */}
+        <ProgressPhotosQuickCard userId={user?.id} navigation={navigation} />
 
         {/* 2.5. Nutrition quick link */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>

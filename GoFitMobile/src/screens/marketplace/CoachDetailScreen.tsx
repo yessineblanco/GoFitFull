@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -247,7 +247,7 @@ export const CoachDetailScreen: React.FC = () => {
           title={t('marketplace.bookSession')}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            (navigation as any).navigate('BookSession', { coachId: coach.id, coachName: coach.display_name || coach.full_name });
+            (navigation as any).navigate('BookSession', { coachId: coach.id, coachName: coach.display_name || t('marketplace.unknownCoach') });
           }}
           variant="primary"
           style={styles.bookButton}

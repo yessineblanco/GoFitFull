@@ -5,12 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSessionsStore } from '@/store/sessionsStore';
+import { useHealthStore } from '@/store/healthStore';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { TopWorkouts } from '@/components/home/TopWorkouts';
 import { TopTrainers } from '@/components/home/TopTrainers';
 import { YourPrograms } from '@/components/home/YourPrograms';
 import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
+import { HealthWidget } from '@/components/home/HealthWidget';
 import { StreakWidget } from '@/components/home/StreakWidget';
 import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
 import { getResponsiveSpacing } from '@/utils/responsive';
@@ -27,6 +29,7 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { onScroll: handleTabScroll } = useTabScroll();
   const { fetch, sessions, loading, getStreakMetrics } = useSessionsStore();
+  const { status: healthStatus, sync: syncHealth, loadHistory: loadHealthHistory } = useHealthStore();
   const { profile } = useProfileStore();
   const { isDark } = useThemeStore();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -56,10 +59,14 @@ export const HomeScreen: React.FC = () => {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([fetch(), loadTopCoaches()]);
+    await Promise.all([
+      fetch(),
+      loadTopCoaches(),
+      healthStatus === 'connected' ? syncHealth(true) : loadHealthHistory(),
+    ]);
     setRefreshKey(prev => prev + 1);
     setRefreshing(false);
-  }, [fetch, loadTopCoaches]);
+  }, [fetch, healthStatus, loadHealthHistory, loadTopCoaches, syncHealth]);
 
   const handleQuickStart = () => {
     navigation.navigate('Library', { screen: 'ExerciseSelection' });
@@ -98,6 +105,8 @@ export const HomeScreen: React.FC = () => {
         <HomeHeader />
 
         <StreakWidget />
+
+        <HealthWidget />
 
         {!loading && sessions.length === 0 ? (
           <RecommendedWorkouts />

@@ -35,6 +35,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useAuthStore } from '@/store/authStore';
+import { useHealthStore } from '@/store/healthStore';
 import { fetchWorkoutStatistics, fetchLifetimePRs } from '@/services/workoutStats';
 import { getSessions } from '@/services/workoutSessions';
 import { workoutService } from '@/services/workouts';
@@ -1141,6 +1142,104 @@ const ProgressPhotosQuickCard = ({ userId, navigation }: { userId?: string; navi
   );
 };
 
+const HealthProgressCard = ({ userId }: { userId?: string }) => {
+  const { isDark, text, textMuted, border, glassPanel } = useTC();
+  const { history, today, status, loadHistory, sync } = useHealthStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return undefined;
+      void loadHistory();
+      if (status === 'connected') {
+        void sync(false);
+      }
+      return undefined;
+    }, [loadHistory, status, sync, userId])
+  );
+
+  const ordered = [...history].sort((a, b) => a.date.localeCompare(b.date));
+  const maxSteps = Math.max(1, ...ordered.map((row) => row.steps));
+  const weeklySteps = history.reduce((sum, row) => sum + row.steps, 0);
+  const weeklyCalories = history.reduce((sum, row) => sum + row.active_calories, 0);
+
+  return (
+    <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+      <LinearGradient
+        colors={isDark ? ['rgba(132,196,64,0.1)', 'rgba(255,255,255,0.025)'] : ['rgba(132,196,64,0.08)', 'rgba(255,255,255,0.74)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          borderRadius: 20,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(132,196,64,0.2)' : border,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                backgroundColor: glassPanel,
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Activity size={20} color={THEME.primary} />
+            </View>
+            <View>
+              <Text style={{ fontFamily: 'Barlow_700Bold', fontSize: 16, color: text }}>Health activity</Text>
+              <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: textMuted, marginTop: 3 }}>
+                {status === 'connected' ? '7-day Health Connect trend' : 'Connect from Profile settings'}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Barlow_800ExtraBold', color: text, fontSize: 22 }}>
+              {(today?.steps ?? 0).toLocaleString()}
+            </Text>
+            <Text style={{ fontFamily: 'Barlow_600SemiBold', color: textMuted, fontSize: 11, textTransform: 'uppercase' }}>steps today</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Barlow_800ExtraBold', color: text, fontSize: 22 }}>
+              {(today?.active_calories ?? 0).toLocaleString()}
+            </Text>
+            <Text style={{ fontFamily: 'Barlow_600SemiBold', color: textMuted, fontSize: 11, textTransform: 'uppercase' }}>active kcal</Text>
+          </View>
+        </View>
+
+        <View style={{ height: 52, flexDirection: 'row', alignItems: 'flex-end', gap: 7 }}>
+          {ordered.length > 0 ? ordered.map((row) => (
+            <View key={row.date} style={{ flex: 1, alignItems: 'center', gap: 6 }}>
+              <View
+                style={{
+                  width: '100%',
+                  height: Math.max(6, Math.round((row.steps / maxSteps) * 42)),
+                  borderRadius: 999,
+                  backgroundColor: row.date === new Date().toISOString().slice(0, 10) ? THEME.primary : 'rgba(132,196,64,0.34)',
+                }}
+              />
+            </View>
+          )) : (
+            <View style={{ flex: 1, height: 8, borderRadius: 999, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }} />
+          )}
+        </View>
+
+        <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: textMuted, marginTop: 12 }}>
+          7 days: {weeklySteps.toLocaleString()} steps · {weeklyCalories.toLocaleString()} active kcal
+        </Text>
+      </LinearGradient>
+    </View>
+  );
+};
+
 // --- Main Screen Component ---
 
 export default function WorkoutStatisticsScreen() {
@@ -1413,6 +1512,9 @@ export default function WorkoutStatisticsScreen() {
 
         {/* 2.45. Progress photos quick link */}
         <ProgressPhotosQuickCard userId={user?.id} navigation={navigation} />
+
+        {/* 2.48. Health Connect trend */}
+        <HealthProgressCard userId={user?.id} />
 
         {/* 2.5. Nutrition quick link */}
         <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>

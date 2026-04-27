@@ -58,6 +58,7 @@
           }
         }
       ],
+      "expo-health-connect",
       "react-native-fast-tflite",
       [
         "expo-camera",

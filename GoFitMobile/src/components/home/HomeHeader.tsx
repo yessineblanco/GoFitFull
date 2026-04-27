@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { User, Dumbbell, Scale, Bell, Flame, Sun, Cloud, CloudRain } from 'lucide-react-native';
+import { User, Dumbbell, Scale, Bell, Sun, Cloud, CloudRain } from 'lucide-react-native';
 import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useSessionsStore } from '@/store/sessionsStore';
@@ -151,12 +151,15 @@ export const HomeHeader: React.FC = () => {
                         accessibilityHint="View your workout streak and achievements"
                     >
                         <BlurView intensity={isDark ? 20 : 40} tint={getBlurTint(isDark)} style={[styles.iconBlur, { backgroundColor: getSurfaceColor(isDark) }]}>
-                            <Flame size={20} color={getTextColor(isDark)} strokeWidth={2} />
-                            {streak > 0 && (
-                                <View style={styles.streakBadge}>
-                                    <Text style={styles.streakText}>{streak}</Text>
-                                </View>
-                            )}
+                            <Text
+                                style={[
+                                    styles.streakGlyph,
+                                    { color: streak > 0 ? theme.colors.primary : getTextSecondaryColor(isDark) },
+                                ]}
+                                numberOfLines={1}
+                            >
+                                {streak}
+                            </Text>
                         </BlurView>
                     </TouchableOpacity>
                 </View>
@@ -283,21 +286,9 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         backgroundColor: '#ff4757',
     },
-    streakBadge: {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: theme.colors.primary,
-        borderRadius: 8,
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        minWidth: 16,
-        alignItems: 'center',
-    },
-    streakText: {
-        color: '#000',
-        fontSize: theme.typography.small.fontSize,
-        fontFamily: 'Barlow_700Bold',
+    streakGlyph: {
+        fontFamily: 'Barlow_800ExtraBold',
+        fontSize: getResponsiveFontSize(17),
     },
     infoRow: {
         flexDirection: 'row',

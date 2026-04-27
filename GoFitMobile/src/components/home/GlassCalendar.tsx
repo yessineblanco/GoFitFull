@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
-import { getTextColor, getGlassBg, getGlassBorder, getBlurTint, getOverlayColor } from '@/utils/colorUtils';
+import { getTextColor, getGlassBg, getGlassBorder, getBlurTint } from '@/utils/colorUtils';
 import {
     format,
     addDays,
@@ -130,11 +130,8 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
                                             {format(date, 'd')}
                                         </Text>
 
-                                        {/* Completed Workout Checkmark */}
                                         {hasWorkout && !isSelected && (
-                                            <View style={styles.checkIconContainer}>
-                                                <Check size={14} color={theme.colors.primary} strokeWidth={3} />
-                                            </View>
+                                            <View style={styles.workoutLoggedDot} />
                                         )}
                                     </View>
                                 </BlurView>
@@ -149,8 +146,9 @@ export const GlassCalendar: React.FC<GlassCalendarProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginVertical: getResponsiveSpacing(16),
-        marginHorizontal: getResponsiveSpacing(16),
+        marginTop: getResponsiveSpacing(8),
+        marginBottom: getResponsiveSpacing(12),
+        marginHorizontal: getResponsiveSpacing(22),
         borderRadius: getResponsiveSpacing(24),
         overflow: 'hidden',
         borderWidth: 1.5,
@@ -264,9 +262,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Designer',
         fontWeight: 'normal',
     },
-    checkIconContainer: {
+    workoutLoggedDot: {
         position: 'absolute',
-        bottom: -2,
+        bottom: 4,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: theme.colors.primary,
     },
-    // Removed old dot styles
 });

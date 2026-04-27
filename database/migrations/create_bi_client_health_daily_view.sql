@@ -2,7 +2,9 @@
 -- This captures per-user workout, nutrition, body-measurement, booking, and
 -- pack-purchase facts plus rolling inactivity and adherence inputs.
 
-CREATE OR REPLACE VIEW public.bi_client_health_daily AS
+CREATE OR REPLACE VIEW public.bi_client_health_daily
+WITH (security_invoker = true)
+AS
 WITH user_base AS (
   SELECT
     up.id AS user_id,

@@ -1,9 +1,10 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView, Animated, RefreshControl, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { format, parseISO } from 'date-fns';
 import { useSessionsStore } from '@/store/sessionsStore';
 import { useHealthStore } from '@/store/healthStore';
 import { HomeHeader } from '@/components/home/HomeHeader';
@@ -14,6 +15,7 @@ import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
 import { HealthWidget } from '@/components/home/HealthWidget';
 import { StreakWidget } from '@/components/home/StreakWidget';
+import { GlassCalendar } from '@/components/home/GlassCalendar';
 import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
 import { getResponsiveSpacing } from '@/utils/responsive';
 import { theme } from '@/theme';
@@ -29,6 +31,17 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { onScroll: handleTabScroll } = useTabScroll();
   const { fetch, sessions, loading, getStreakMetrics } = useSessionsStore();
+
+  const workoutDays = useMemo(() => {
+    if (!sessions?.length) return [];
+    return sessions
+      .filter((s) => s.date || s.started_at)
+      .map((s) => {
+        const dateStr = s.date || s.started_at;
+        return dateStr ? format(parseISO(dateStr), 'yyyy-MM-dd') : '';
+      })
+      .filter(Boolean);
+  }, [sessions]);
   const { status: healthStatus, sync: syncHealth, loadHistory: loadHealthHistory } = useHealthStore();
   const { profile } = useProfileStore();
   const { isDark } = useThemeStore();
@@ -103,6 +116,8 @@ export const HomeScreen: React.FC = () => {
         }
       >
         <HomeHeader />
+
+        <GlassCalendar workoutDays={workoutDays} />
 
         <StreakWidget />
 

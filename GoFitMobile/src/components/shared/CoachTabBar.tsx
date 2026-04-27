@@ -1,5 +1,20 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Easing, Keyboard, Platform } from 'react-native';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+  Keyboard,
+  Platform,
+} from 'react-native';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -15,10 +30,8 @@ import type { CoachAppTabParamList } from '@/types';
 import { TabBadge } from './TabBadge';
 import { useUIStore } from '@/store/uiStore';
 import { useThemeStore } from '@/store/themeStore';
-import { theme as themeConfig } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 
-const BRAND_PRIMARY = themeConfig.colors.primary;
 const MAX_TAB_BAR_WIDTH = 360;
 const TAB_BAR_HEIGHT = 74;
 const TAB_BAR_BORDER_RADIUS = 37;
@@ -26,6 +39,21 @@ const BUTTON_SIZE = 58;
 const ICON_SIZE = 22;
 const HORIZONTAL_PADDING = 8;
 const ICON_STROKE_WIDTH = 2.5;
+const PILL_SPRING = {
+  stiffness: 200,
+  damping: 24,
+  mass: 0.6,
+  overshootClamping: true,
+  reduceMotion: ReduceMotion.System,
+} as const;
+
+const ICON_SPRING = {
+  stiffness: 190,
+  damping: 22,
+  mass: 0.45,
+  overshootClamping: true,
+  reduceMotion: ReduceMotion.System,
+} as const;
 
 const TAB_ICONS: Record<keyof CoachAppTabParamList, typeof LayoutDashboard> = {
   Dashboard: LayoutDashboard,
@@ -35,7 +63,13 @@ const TAB_ICONS: Record<keyof CoachAppTabParamList, typeof LayoutDashboard> = {
   CoachProfile: User,
 };
 
-const TAB_ORDER: Array<keyof CoachAppTabParamList> = ['Dashboard', 'Clients', 'Calendar', 'Chat', 'CoachProfile'];
+const TAB_ORDER: Array<keyof CoachAppTabParamList> = [
+  'Dashboard',
+  'Clients',
+  'Calendar',
+  'Chat',
+  'CoachProfile',
+];
 
 interface ThemeColors {
   activeButton: string;
@@ -59,154 +93,355 @@ const TabButton: React.FC<{
   badgeCount: number | null;
   accessibilityLabel: string;
   colors: ThemeColors;
-}> = React.memo(({ routeName, isFocused, onPress, onLongPress, buttonPosition, badgeCount, accessibilityLabel, colors }) => {
-  const Icon = TAB_ICONS[routeName];
-  const scaleAnim = useRef(new Animated.Value(isFocused ? 1.1 : 0.95)).current;
-  const opacityAnim = useRef(new Animated.Value(isFocused ? 1 : 0.8)).current;
+}> = React.memo(
+  ({
+    routeName,
+    isFocused,
+    onPress,
+    onLongPress,
+    buttonPosition,
+    badgeCount,
+    accessibilityLabel,
+    colors,
+  }) => {
+    const Icon = TAB_ICONS[routeName];
+    const inactiveOpacity = 0.68;
+    const opacity = useSharedValue(isFocused ? 1 : inactiveOpacity);
+    const scale = useSharedValue(isFocused ? 1 : 0.98);
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: isFocused ? 1.1 : 0.95, useNativeDriver: true, tension: 200, friction: 15 }),
-      Animated.timing(opacityAnim, { toValue: isFocused ? 1 : 0.8, duration: 200, useNativeDriver: true, easing: Easing.out(Easing.ease) }),
-    ]).start();
-  }, [isFocused]);
+    useEffect(() => {
+      opacity.value = withSpring(isFocused ? 1 : inactiveOpacity, ICON_SPRING);
+      scale.value = withSpring(isFocused ? 1 : 0.98, ICON_SPRING);
+    }, [isFocused, inactiveOpacity, opacity, scale]);
 
-  const handlePressIn = useCallback(() => {
-    Animated.spring(scaleAnim, { toValue: 0.9, useNativeDriver: true, tension: 300, friction: 15 }).start();
-  }, [scaleAnim]);
+    const labelStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    }));
 
-  const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, { toValue: isFocused ? 1.1 : 0.95, useNativeDriver: true, tension: 200, friction: 15 }).start();
-  }, [scaleAnim, isFocused]);
-
-  const animStyle = { transform: [{ scale: scaleAnim }], opacity: opacityAnim };
-
-  if (!isFocused) {
-    return (
-      <Animated.View style={[styles.inactiveButtonWrapper, { left: buttonPosition }, animStyle]}>
-        <TouchableOpacity onPress={onPress} onLongPress={onLongPress} onPressIn={handlePressIn} onPressOut={handlePressOut} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={styles.pressable}>
+    const content = (
+      <TouchableOpacity
+        onPress={onPress}
+        onLongPress={onLongPress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityState={isFocused ? { selected: true } : undefined}
+        accessibilityLabel={accessibilityLabel}
+        style={styles.pressable}
+      >
+        <View style={isFocused ? styles.iconContainer : undefined}>
           <View style={styles.iconWrapper}>
-            <Icon size={ICON_SIZE} color={colors.inactiveIcon} strokeWidth={ICON_STROKE_WIDTH} />
-            {badgeCount != null && <TabBadge count={badgeCount} size="small" />}
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
-
-  return (
-    <Animated.View style={[styles.button, styles.activeButton, { left: buttonPosition }, animStyle]}>
-      <TouchableOpacity onPress={onPress} onLongPress={onLongPress} onPressIn={handlePressIn} onPressOut={handlePressOut} activeOpacity={0.8} accessibilityRole="button" accessibilityState={{ selected: true }} accessibilityLabel={accessibilityLabel} style={styles.pressable}>
-        <View style={styles.iconContainer}>
-          <View style={styles.iconWrapper}>
-            <Icon size={ICON_SIZE} color={colors.activeIcon} strokeWidth={ICON_STROKE_WIDTH} />
-            {badgeCount != null && <TabBadge count={badgeCount} size="small" />}
+            <Icon
+              size={ICON_SIZE}
+              color={isFocused ? colors.activeIcon : colors.inactiveIcon}
+              strokeWidth={ICON_STROKE_WIDTH}
+            />
+            {badgeCount != null && (
+              <TabBadge count={badgeCount} size="small" />
+            )}
           </View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
-  );
-});
+    );
 
-export const CoachTabBar: React.FC<CoachTabBarProps> = React.memo(({ state, descriptors, navigation, badgeCounts = {} }) => {
-  const insets = useSafeAreaInsets();
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
-  const colors = useThemeColors();
-  const { isDark } = useThemeStore();
-  const { tabBarVisible, setTabBarVisible } = useUIStore();
-  const translateYAnim = useRef(new Animated.Value(0)).current;
-  const [keyboardVisible, setKeyboardVisible] = React.useState(false);
+    return (
+      <Animated.View
+        style={[
+          isFocused ? styles.button : styles.inactiveButtonWrapper,
+          isFocused && styles.activeButton,
+          { left: buttonPosition },
+          labelStyle,
+        ]}
+      >
+        {content}
+      </Animated.View>
+    );
+  }
+);
 
-  const TAB_BAR_WIDTH = Math.min(MAX_TAB_BAR_WIDTH, SCREEN_WIDTH - 40);
-  const INNER_WIDTH = TAB_BAR_WIDTH - (HORIZONTAL_PADDING * 2);
-  const BUTTON_SPACING = (INNER_WIDTH - BUTTON_SIZE) / (TAB_ORDER.length - 1);
-  const BUTTON_POSITIONS = TAB_ORDER.map((_, i) => (i * BUTTON_SPACING) + HORIZONTAL_PADDING);
+export const CoachTabBar: React.FC<CoachTabBarProps> = React.memo(
+  ({ state, descriptors, navigation, badgeCounts = {} }) => {
+    const insets = useSafeAreaInsets();
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
+    const colors = useThemeColors();
+    const { isDark } = useThemeStore();
+    const { tabBarVisible, setTabBarVisible } = useUIStore();
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  const indicatorAnim = useRef(new Animated.Value(BUTTON_POSITIONS[state.index])).current;
+    const TAB_BAR_WIDTH = Math.min(MAX_TAB_BAR_WIDTH, SCREEN_WIDTH - 40);
+    const BUTTON_POSITIONS = useMemo(() => {
+      const inner = TAB_BAR_WIDTH - HORIZONTAL_PADDING * 2;
+      const spacing = (inner - BUTTON_SIZE) / (TAB_ORDER.length - 1);
+      return TAB_ORDER.map((_, i) => i * spacing + HORIZONTAL_PADDING);
+    }, [TAB_BAR_WIDTH]);
 
-  const themeColors: ThemeColors = useMemo(() => ({
-    activeButton: colors.primary,
-    activeIcon: '#ffffff',
-    inactiveIcon: isDark ? 'rgba(132, 196, 65, 0.6)' : 'rgba(132, 196, 65, 0.8)',
-    bg: isDark ? 'rgba(3, 3, 3, 0.7)' : 'rgba(255, 255, 255, 0.85)',
-    tint: isDark ? 'rgba(132, 196, 65, 0.05)' : 'rgba(132, 196, 65, 0.03)',
-    border: isDark ? 'rgba(132, 196, 65, 0.15)' : 'rgba(132, 196, 65, 0.2)',
-  }), [isDark, colors.primary]);
+    const indicatorTarget = BUTTON_POSITIONS[state.index] ?? 0;
+    const tabBarWidthRef = useRef(TAB_BAR_WIDTH);
 
-  useEffect(() => {
-    Animated.spring(indicatorAnim, { toValue: BUTTON_POSITIONS[state.index], useNativeDriver: true, tension: 100, friction: 12 }).start();
-  }, [state.index]);
+    const translateX = useSharedValue(indicatorTarget);
+    const translateY = useSharedValue(0);
 
-  useEffect(() => {
-    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
-    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKeyboardVisible(false));
-    return () => { show.remove(); hide.remove(); };
-  }, []);
+    const themeColors: ThemeColors = useMemo(
+      () => ({
+        activeButton: colors.primary,
+        activeIcon: '#ffffff',
+        inactiveIcon: isDark
+          ? 'rgba(132, 196, 65, 0.6)'
+          : 'rgba(132, 196, 65, 0.8)',
+        bg: isDark ? 'rgba(3, 3, 3, 0.7)' : 'rgba(255, 255, 255, 0.85)',
+        tint: isDark
+          ? 'rgba(132, 196, 65, 0.05)'
+          : 'rgba(132, 196, 65, 0.03)',
+        border: isDark
+          ? 'rgba(132, 196, 65, 0.15)'
+          : 'rgba(132, 196, 65, 0.2)',
+      }),
+      [isDark, colors.primary]
+    );
 
-  useEffect(() => {
-    Animated.spring(translateYAnim, { toValue: (!tabBarVisible || keyboardVisible) ? 150 : 0, useNativeDriver: true, tension: 50, friction: 8 }).start();
-  }, [tabBarVisible, keyboardVisible]);
+    useLayoutEffect(() => {
+      if (tabBarWidthRef.current !== TAB_BAR_WIDTH) {
+        tabBarWidthRef.current = TAB_BAR_WIDTH;
+        translateX.value = indicatorTarget;
+      }
+    }, [TAB_BAR_WIDTH, indicatorTarget, translateX]);
 
-  useEffect(() => { setTabBarVisible(true); }, [state.index]);
+    useEffect(() => {
+      translateX.value = withSpring(indicatorTarget, PILL_SPRING);
+    }, [state.index, indicatorTarget, translateX]);
 
-  const isDeepScreen = useMemo(() => {
-    const route = state.routes[state.index];
-    if (route.state) {
-      const idx = (route.state as any).index;
-      return typeof idx === 'number' && idx > 0;
-    }
-    return false;
-  }, [state]);
+    const indicatorStyle = useAnimatedStyle(() => ({
+      transform: [{ translateX: translateX.value }],
+    }));
 
-  const tabBarLeft = (SCREEN_WIDTH - TAB_BAR_WIDTH) / 2;
-  const bottomSpacing = Platform.OS === 'ios' ? Math.max(20, insets.bottom) : 20;
+    const shellStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: translateY.value }],
+    }));
 
-  if (isDeepScreen) return null;
+    useEffect(() => {
+      translateY.value = withTiming(
+        !tabBarVisible || keyboardVisible ? 150 : 0,
+        { duration: 320, easing: Easing.bezier(0.4, 0, 0.2, 1) }
+      );
+    }, [tabBarVisible, keyboardVisible, translateY]);
 
-  return (
-    <Animated.View style={[styles.containerWrapper, { left: tabBarLeft, width: TAB_BAR_WIDTH, bottom: bottomSpacing, transform: [{ translateY: translateYAnim }] }]}>
-      <View style={styles.blurWrapper}>
-        <BlurView intensity={isDark ? 50 : 70} tint={isDark ? 'dark' : 'light'} style={styles.blurContainer}>
-          <View style={[styles.greenOverlay, { backgroundColor: themeColors.tint }]} />
-          <View style={[styles.mainContainer, { backgroundColor: themeColors.bg, borderColor: themeColors.border }]} />
-        </BlurView>
-      </View>
-      <View style={styles.buttonsContainer}>
-        <Animated.View style={[styles.slidingIndicator, { transform: [{ translateX: indicatorAnim }], backgroundColor: themeColors.activeButton }]} />
-        {TAB_ORDER.map((routeName, index) => {
-          const route = state.routes.find(r => r.name === routeName);
-          if (!route) return null;
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === state.routes.findIndex(r => r.key === route.key);
-          const onPress = () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name as any);
-          };
-          const onLongPress = () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            navigation.emit({ type: 'tabLongPress', target: route.key });
-          };
-          return (
-            <TabButton key={route.key} routeName={routeName} isFocused={isFocused} onPress={onPress} onLongPress={onLongPress} buttonPosition={BUTTON_POSITIONS[index] ?? 0} badgeCount={badgeCounts[routeName] ?? null} accessibilityLabel={options.tabBarAccessibilityLabel || routeName} colors={themeColors} />
-          );
-        })}
-      </View>
-    </Animated.View>
-  );
-});
+    useEffect(() => {
+      setTabBarVisible(true);
+    }, [state.index, setTabBarVisible]);
+
+    useEffect(() => {
+      const show = Keyboard.addListener(
+        Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+        () => setKeyboardVisible(true)
+      );
+      const hide = Keyboard.addListener(
+        Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+        () => setKeyboardVisible(false)
+      );
+      return () => {
+        show.remove();
+        hide.remove();
+      };
+    }, []);
+
+    const isDeepScreen = useMemo(() => {
+      const route = state.routes[state.index];
+      if (route.state) {
+        const idx = (route.state as { index?: number }).index;
+        return typeof idx === 'number' && idx > 0;
+      }
+      return false;
+    }, [state]);
+
+    const tabBarLeft = (SCREEN_WIDTH - TAB_BAR_WIDTH) / 2;
+    const bottomSpacing =
+      Platform.OS === 'ios' ? Math.max(20, insets.bottom) : 20;
+
+    if (isDeepScreen) return null;
+
+    return (
+      <Animated.View
+        style={[
+          styles.containerWrapper,
+          shellStyle,
+          { left: tabBarLeft, width: TAB_BAR_WIDTH, bottom: bottomSpacing },
+        ]}
+      >
+        <View style={styles.blurWrapper}>
+          {Platform.OS === 'ios' ? (
+            <BlurView
+              intensity={isDark ? 50 : 70}
+              tint={isDark ? 'dark' : 'light'}
+              style={styles.blurContainer}
+            >
+              <View
+                style={[
+                  styles.greenOverlay,
+                  { backgroundColor: themeColors.tint },
+                ]}
+              />
+              <View
+                style={[
+                  styles.mainContainer,
+                  {
+                    backgroundColor: themeColors.bg,
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              />
+            </BlurView>
+          ) : (
+            <View style={styles.blurContainer}>
+              <View
+                style={[
+                  styles.greenOverlay,
+                  { backgroundColor: themeColors.tint },
+                ]}
+              />
+              <View
+                style={[
+                  styles.mainContainer,
+                  {
+                    backgroundColor: themeColors.bg,
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
+        <View style={styles.buttonsContainer} collapsable={false}>
+          <Animated.View
+            style={[
+              styles.slidingIndicator,
+              indicatorStyle,
+              { backgroundColor: themeColors.activeButton },
+            ]}
+          />
+          {TAB_ORDER.map((routeName, index) => {
+            const route = state.routes.find((r) => r.name === routeName);
+            if (!route) return null;
+            const { options } = descriptors[route.key];
+            const isFocused =
+              state.index ===
+              state.routes.findIndex((r) => r.key === route.key);
+            const onPress = () => {
+              queueMicrotask(() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              });
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name as any);
+              }
+            };
+            const onLongPress = () => {
+              queueMicrotask(() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              });
+              navigation.emit({ type: 'tabLongPress', target: route.key });
+            };
+            return (
+              <TabButton
+                key={route.key}
+                routeName={routeName}
+                isFocused={isFocused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                buttonPosition={BUTTON_POSITIONS[index] ?? 0}
+                badgeCount={badgeCounts[routeName] ?? null}
+                accessibilityLabel={
+                  options.tabBarAccessibilityLabel || routeName
+                }
+                colors={themeColors}
+              />
+            );
+          })}
+        </View>
+      </Animated.View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
-  containerWrapper: { position: 'absolute', height: TAB_BAR_HEIGHT, borderRadius: TAB_BAR_BORDER_RADIUS, zIndex: 1000, shadowColor: '#84c441', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 16, elevation: 16 },
-  blurWrapper: { position: 'absolute', width: '100%', height: '100%', borderRadius: TAB_BAR_BORDER_RADIUS, overflow: 'hidden' },
+  containerWrapper: {
+    position: 'absolute',
+    height: TAB_BAR_HEIGHT,
+    borderRadius: TAB_BAR_BORDER_RADIUS,
+    zIndex: 1000,
+    shadowColor: '#84c441',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  blurWrapper: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: TAB_BAR_BORDER_RADIUS,
+    overflow: 'hidden',
+  },
   blurContainer: { width: '100%', height: '100%', borderRadius: TAB_BAR_BORDER_RADIUS },
-  greenOverlay: { position: 'absolute', width: '100%', height: '100%', borderRadius: TAB_BAR_BORDER_RADIUS },
-  mainContainer: { position: 'absolute', width: '100%', height: '100%', borderRadius: TAB_BAR_BORDER_RADIUS, borderWidth: 1.5 },
-  buttonsContainer: { position: 'absolute', width: '100%', height: '100%', flexDirection: 'row', alignItems: 'center', overflow: 'visible', borderRadius: TAB_BAR_BORDER_RADIUS, zIndex: 10 },
-  button: { position: 'absolute', width: BUTTON_SIZE, height: BUTTON_SIZE, borderRadius: BUTTON_SIZE / 2, justifyContent: 'center', alignItems: 'center', top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2, overflow: 'hidden' },
+  greenOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: TAB_BAR_BORDER_RADIUS,
+  },
+  mainContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: TAB_BAR_BORDER_RADIUS,
+    borderWidth: 1.5,
+  },
+  buttonsContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'visible',
+    borderRadius: TAB_BAR_BORDER_RADIUS,
+    zIndex: 10,
+  },
+  button: {
+    position: 'absolute',
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    borderRadius: BUTTON_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
+    overflow: 'hidden',
+  },
   activeButton: { backgroundColor: 'transparent' },
-  slidingIndicator: { position: 'absolute', width: BUTTON_SIZE, height: BUTTON_SIZE, borderRadius: BUTTON_SIZE / 2, top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2, shadowColor: '#84c441', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 },
-  inactiveButtonWrapper: { position: 'absolute', width: BUTTON_SIZE, height: BUTTON_SIZE, justifyContent: 'center', alignItems: 'center', top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2, backgroundColor: 'transparent', borderRadius: 0 },
+  slidingIndicator: {
+    position: 'absolute',
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    borderRadius: BUTTON_SIZE / 2,
+    top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
+    shadowColor: '#84c441',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  inactiveButtonWrapper: {
+    position: 'absolute',
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+  },
   pressable: { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' },
   iconContainer: { justifyContent: 'center', alignItems: 'center', width: ICON_SIZE, height: ICON_SIZE },
   iconWrapper: { position: 'relative', justifyContent: 'center', alignItems: 'center', width: ICON_SIZE, height: ICON_SIZE },

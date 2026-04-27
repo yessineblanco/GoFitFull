@@ -9,14 +9,13 @@ import { theme } from '@/theme';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { SectionHeader } from './SectionHeader';
-import { GlassCalendar } from './GlassCalendar';
 import { useSessionsStore } from '@/store/sessionsStore';
 import { workoutService } from '@/services/workouts';
-import { format, parseISO } from 'date-fns';
 import { AppText } from '@/components/shared/AppText';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Shimmer } from '@/components/shared/Shimmer';
 import { Play } from 'lucide-react-native';
+import { format, parseISO } from 'date-fns';
 import { getGlassBg, getGlassBorder, getSurfaceColor } from '@/utils/colorUtils';
 
 const CARD_WIDTH = 263;
@@ -93,18 +92,6 @@ export const TopWorkouts: React.FC = () => {
         navigation.navigate('Progress', { screen: 'ProgressMain' });
     };
 
-    // Extract workout dates for calendar highlighting
-    const workoutDays = React.useMemo(() => {
-        if (!sessions) return [];
-        return sessions
-            .filter(s => s.date || s.started_at)
-            .map(s => {
-                const dateStr = s.date || s.started_at;
-                return dateStr ? format(parseISO(dateStr), 'yyyy-MM-dd') : '';
-            })
-            .filter(Boolean);
-    }, [sessions]);
-
     // Shimmer effect
     const shimmerAnim = useRef(new Animated.Value(0)).current;
 
@@ -159,11 +146,6 @@ export const TopWorkouts: React.FC = () => {
     // Render logic
     return (
         <View style={styles.container}>
-            <GlassCalendar
-                onDateSelect={(date) => console.log('Selected date:', date)}
-                workoutDays={workoutDays}
-            />
-
             <SectionHeader title="Recent Activity" onSeeAllPress={handleSeeAll} animationDelay={0} />
 
             {enhancedSessions.length === 0 ? (

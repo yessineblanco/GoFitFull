@@ -2,7 +2,9 @@
 -- This captures daily booking outcomes plus recurring availability-pattern
 -- inputs without freezing more speculative metrics like response SLA.
 
-CREATE OR REPLACE VIEW public.bi_coach_ops_daily AS
+CREATE OR REPLACE VIEW public.bi_coach_ops_daily
+WITH (security_invoker = true)
+AS
 WITH coach_base AS (
   SELECT
     cp.id AS coach_id,

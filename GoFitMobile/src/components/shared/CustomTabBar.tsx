@@ -1,49 +1,77 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Easing, Keyboard, Platform } from 'react-native';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+  Keyboard,
+  Platform,
+} from 'react-native';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
-// Import icons from the main package (correct way for Metro bundler)
 import {
   LayoutGrid,
   Calendar,
   Dumbbell,
   BarChart3,
-  Settings
+  Settings,
 } from 'lucide-react-native';
 import type { AppTabParamList } from '@/types';
 import { TabBadge } from './TabBadge';
 import { useUIStore } from '@/store/uiStore';
 import { useThemeStore } from '@/store/themeStore';
-import { theme as themeConfig } from '@/theme';
-
-const BRAND_PRIMARY = themeConfig.colors.primary;
 import { useThemeColors } from '@/theme/useThemeColors';
 
-// Tab bar dimensions - optimized for different screen sizes
 const MAX_TAB_BAR_WIDTH = 360;
-const TAB_BAR_HEIGHT = 74; // Sleeker height
+const TAB_BAR_HEIGHT = 74;
 const TAB_BAR_BORDER_RADIUS = 37;
-
-// Button dimensions
-const BUTTON_SIZE = 58; // More elegant size
+const BUTTON_SIZE = 58;
 const ICON_SIZE = 22;
-const HORIZONTAL_PADDING = 8; // Safety margin for rounded ends
-
+const HORIZONTAL_PADDING = 8;
 const ICON_STROKE_WIDTH = 2.5;
 
-// Tab icon mapping - 5 tabs total
+/** Slightly under-damped feel: long settle, no visible bounce (clamped) */
+const PILL_SPRING = {
+  stiffness: 200,
+  damping: 24,
+  mass: 0.6,
+  overshootClamping: true,
+  reduceMotion: ReduceMotion.System,
+} as const;
+
+const ICON_SPRING = {
+  stiffness: 190,
+  damping: 22,
+  mass: 0.45,
+  overshootClamping: true,
+  reduceMotion: ReduceMotion.System,
+} as const;
+
 const TAB_ICONS: Record<keyof AppTabParamList, typeof LayoutGrid> = {
-  Home: LayoutGrid,        // Grid icon (home)
-  Workouts: Calendar,      // Calendar icon (workouts)
-  Library: Dumbbell,       // Dumbbell icon (exercises/library)
-  Progress: BarChart3,     // Bar chart icon (stats)
-  Profile: Settings,       // Settings/gear icon (profile)
+  Home: LayoutGrid,
+  Workouts: Calendar,
+  Library: Dumbbell,
+  Progress: BarChart3,
+  Profile: Settings,
 };
 
-// Tab order - 5 tabs: Home, Workouts, Library (Exercises), Progress (Stats), Profile
-const TAB_ORDER: Array<keyof AppTabParamList> = ['Home', 'Workouts', 'Library', 'Progress', 'Profile'];
+const TAB_ORDER: Array<keyof AppTabParamList> = [
+  'Home',
+  'Workouts',
+  'Library',
+  'Progress',
+  'Profile',
+];
 
 const TAB_ROOT_SCREENS: Partial<Record<keyof AppTabParamList, string>> = {
   Home: 'HomeMain',
@@ -63,10 +91,6 @@ interface ThemeColors {
 }
 
 interface CustomTabBarProps extends BottomTabBarProps {
-  /**
-   * Optional badge counts for each tab
-   * Key should match route names from AppTabParamList
-   */
   badgeCounts?: Partial<Record<keyof AppTabParamList, number | null>>;
 }
 
@@ -81,393 +105,322 @@ interface TabButtonProps {
   colors: ThemeColors;
 }
 
-const TabButton: React.FC<TabButtonProps> = React.memo(({
-  routeName,
-  isFocused,
-  onPress,
-  onLongPress,
-  buttonPosition,
-  badgeCount,
-  accessibilityLabel,
-  colors,
-}) => {
-  const Icon = TAB_ICONS[routeName];
+/**
+ * Icons: UI-thread spring on opacity + subtle scale for a fluid, non-rigid feel.
+ */
+const TabButton: React.FC<TabButtonProps> = React.memo(
+  ({
+    routeName,
+    isFocused,
+    onPress,
+    onLongPress,
+    buttonPosition,
+    badgeCount,
+    accessibilityLabel,
+    colors,
+  }) => {
+    const Icon = TAB_ICONS[routeName];
+    const inactiveOpacity = 0.68;
+    const opacity = useSharedValue(isFocused ? 1 : inactiveOpacity);
+    const scale = useSharedValue(isFocused ? 1 : 0.98);
 
-  const scaleAnim = useRef(new Animated.Value(isFocused ? 1.1 : 0.95)).current;
-  const opacityAnim = useRef(new Animated.Value(isFocused ? 1 : 0.8)).current;
-  const rotationAnim = useRef(new Animated.Value(0)).current;
+    useEffect(() => {
+      opacity.value = withSpring(isFocused ? 1 : inactiveOpacity, ICON_SPRING);
+      scale.value = withSpring(isFocused ? 1 : 0.98, ICON_SPRING);
+    }, [isFocused, inactiveOpacity, opacity, scale]);
 
-  const iconRotation = rotationAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '15deg'],
-  });
+    const labelStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    }));
 
-  useEffect(() => {
-    const animations: Animated.CompositeAnimation[] = [
-      Animated.spring(scaleAnim, {
-        toValue: isFocused ? 1.1 : 0.95,
-        useNativeDriver: true,
-        tension: 200,
-        friction: 15,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: isFocused ? 1 : 0.8,
-        duration: 200,
-        useNativeDriver: true,
-        easing: Easing.out(Easing.ease),
-      }),
-    ];
-
-    if (routeName === 'Profile') {
-      animations.push(
-        Animated.spring(rotationAnim, {
-          toValue: isFocused ? 1 : 0,
-          useNativeDriver: true,
-          tension: 150,
-          friction: 10,
-        })
-      );
-    }
-
-    Animated.parallel(animations).start();
-  }, [isFocused, routeName, scaleAnim, opacityAnim, rotationAnim]);
-
-  const animatedButtonStyle = {
-    transform: [{ scale: scaleAnim }],
-    opacity: opacityAnim,
-  };
-
-  const animatedIconStyle = useMemo(() => {
-    const transforms: any[] = [];
-    if (routeName === 'Profile') {
-      transforms.push({ rotate: iconRotation });
-    }
-    return transforms.length > 0 ? { transform: transforms } : {};
-  }, [routeName, iconRotation]);
-
-  const handlePressIn = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.9,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 15,
-    }).start();
-  }, [scaleAnim]);
-
-  const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: isFocused ? 1.1 : 0.95,
-      useNativeDriver: true,
-      tension: 200,
-      friction: 15,
-    }).start();
-  }, [scaleAnim, isFocused]);
-
-  if (!isFocused) {
-    return (
-      <Animated.View
-        style={[
-          styles.inactiveButtonWrapper,
-          { left: buttonPosition },
-          animatedButtonStyle,
-        ]}
-      >
-        <TouchableOpacity
-          onPress={onPress}
-          onLongPress={onLongPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel={accessibilityLabel}
-          style={styles.pressable}
-        >
-          <View style={styles.iconWrapper}>
-            <Animated.View style={animatedIconStyle}>
-              <Icon
-                size={ICON_SIZE}
-                color={colors.inactiveIcon}
-                strokeWidth={ICON_STROKE_WIDTH}
-              />
-            </Animated.View>
-            {badgeCount !== null && badgeCount !== undefined && (
-              <TabBadge count={badgeCount} size="small" />
-            )}
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
-
-  return (
-    <Animated.View
-      style={[
-        styles.button,
-        styles.activeButton,
-        { left: buttonPosition },
-        animatedButtonStyle,
-      ]}
-    >
+    const content = (
       <TouchableOpacity
         onPress={onPress}
         onLongPress={onLongPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityState={{ selected: true }}
+        accessibilityState={isFocused ? { selected: true } : undefined}
         accessibilityLabel={accessibilityLabel}
         style={styles.pressable}
       >
-        <View style={styles.iconContainer}>
+        <View style={isFocused ? styles.iconContainer : undefined}>
           <View style={styles.iconWrapper}>
-            <Animated.View style={animatedIconStyle}>
-              <Icon
-                size={ICON_SIZE}
-                color={colors.activeIcon}
-                strokeWidth={ICON_STROKE_WIDTH}
-              />
-            </Animated.View>
+            <Icon
+              size={ICON_SIZE}
+              color={isFocused ? colors.activeIcon : colors.inactiveIcon}
+              strokeWidth={ICON_STROKE_WIDTH}
+            />
             {badgeCount !== null && badgeCount !== undefined && (
               <TabBadge count={badgeCount} size="small" />
             )}
           </View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
-  );
-});
-
-/**
- * Custom tab bar component matching the Figma design
- * 
- * Design specifications:
- * - Rounded pill-shaped container with black background (#030303) and 40px border radius
- * - 5 circular buttons (64x64px) evenly spaced and centered - smaller for better spacing
- * - Active button: Vibrant green background (#84c441) with white icon (#ffffff) - using brand colors
- * - Inactive buttons: Subtle green tint background with lighter green icons - using brand colors
- * - Icons: LayoutGrid (Home), Calendar (Workouts), LibrarySquare (Exercises), BarChart3 (Stats), Settings (Profile)
- * - Buttons are perfectly centered vertically and horizontally within the container
- * - All colors use the brand palette: #84c441, #8dbb5a, #030303, #ffffff
- */
-export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(({
-  state,
-  descriptors,
-  navigation,
-  badgeCounts = {},
-}) => {
-  const insets = useSafeAreaInsets();
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
-  const colors = useThemeColors();
-  const { isDark } = useThemeStore();
-
-  const setTabBarVisible = useUIStore((store) => store.setTabBarVisible);
-  const translateYAnim = useRef(new Animated.Value(0)).current;
-  const [keyboardVisible, setKeyboardVisible] = React.useState(false);
-
-  // Responsive widths with safety padding for rounded ends
-  const TAB_BAR_WIDTH = Math.min(MAX_TAB_BAR_WIDTH, SCREEN_WIDTH - 40);
-  const INNER_WIDTH = TAB_BAR_WIDTH - (HORIZONTAL_PADDING * 2);
-  const BUTTON_SPACING = (INNER_WIDTH - BUTTON_SIZE) / (TAB_ORDER.length - 1);
-  const BUTTON_POSITIONS = TAB_ORDER.map((_, index) => (index * BUTTON_SPACING) + HORIZONTAL_PADDING);
-
-  const indicatorAnim = useRef(new Animated.Value(BUTTON_POSITIONS[state.index])).current;
-
-  const themeColors: ThemeColors = useMemo(() => ({
-    activeButton: colors.primary,
-    activeIcon: '#ffffff',
-    inactiveIcon: isDark ? 'rgba(132, 196, 65, 0.6)' : 'rgba(132, 196, 65, 0.8)',
-    bg: isDark ? 'rgba(3, 3, 3, 0.7)' : 'rgba(255, 255, 255, 0.85)',
-    tint: isDark ? 'rgba(132, 196, 65, 0.05)' : 'rgba(132, 196, 65, 0.03)',
-    border: isDark ? 'rgba(132, 196, 65, 0.15)' : 'rgba(132, 196, 65, 0.2)',
-  }), [isDark, colors.primary]);
-
-  useEffect(() => {
-    Animated.spring(indicatorAnim, {
-      toValue: BUTTON_POSITIONS[state.index],
-      useNativeDriver: true,
-      tension: 100,
-      friction: 12,
-    }).start();
-  }, [state.index, BUTTON_POSITIONS]);
-
-  // Keyboard handling
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => setKeyboardVisible(true)
-    );
-    const hideSubscription = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setKeyboardVisible(false)
     );
 
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+    return (
+      <Animated.View
+        style={[
+          isFocused ? styles.button : styles.inactiveButtonWrapper,
+          isFocused && styles.activeButton,
+          { left: buttonPosition },
+          labelStyle,
+        ]}
+      >
+        {content}
+      </Animated.View>
+    );
+  }
+);
 
-  // Check for deep screens in any stack to hide tab bar
-  const isDeepScreen = useMemo(() => {
-    const route = state.routes[state.index];
-    if (route.state) {
-      // If the stack has more than 1 screen, it's a deep screen
-      const index = (route.state as any).index;
-      const routes = (route.state as any).routes;
-      if (typeof index === 'number' && routes) {
-        // Exception: some stacks might want the tab bar on specific screens
-        // Default: hide for index > 0
-        const currentSubRoute = routes[index].name;
-        if (currentSubRoute === 'WorkoutSession') return true;
-        return index > 0;
+export const CustomTabBar: React.FC<CustomTabBarProps> = React.memo(
+  ({ state, descriptors, navigation, badgeCounts = {} }) => {
+    const insets = useSafeAreaInsets();
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
+    const colors = useThemeColors();
+    const { isDark } = useThemeStore();
+
+    const setTabBarVisible = useUIStore((store) => store.setTabBarVisible);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    const TAB_BAR_WIDTH = Math.min(MAX_TAB_BAR_WIDTH, SCREEN_WIDTH - 40);
+    const BUTTON_POSITIONS = useMemo(() => {
+      const inner = TAB_BAR_WIDTH - HORIZONTAL_PADDING * 2;
+      const spacing = (inner - BUTTON_SIZE) / (TAB_ORDER.length - 1);
+      return TAB_ORDER.map((_, index) => index * spacing + HORIZONTAL_PADDING);
+    }, [TAB_BAR_WIDTH]);
+
+    const indicatorTarget = BUTTON_POSITIONS[state.index] ?? 0;
+    const tabBarWidthRef = useRef(TAB_BAR_WIDTH);
+
+    const translateX = useSharedValue(indicatorTarget);
+    const translateY = useSharedValue(0);
+
+    const themeColors: ThemeColors = useMemo(
+      () => ({
+        activeButton: colors.primary,
+        activeIcon: '#ffffff',
+        inactiveIcon: isDark
+          ? 'rgba(132, 196, 65, 0.6)'
+          : 'rgba(132, 196, 65, 0.8)',
+        bg: isDark ? 'rgba(3, 3, 3, 0.7)' : 'rgba(255, 255, 255, 0.85)',
+        tint: isDark
+          ? 'rgba(132, 196, 65, 0.05)'
+          : 'rgba(132, 196, 65, 0.03)',
+        border: isDark
+          ? 'rgba(132, 196, 65, 0.15)'
+          : 'rgba(132, 196, 65, 0.2)',
+      }),
+      [isDark, colors.primary]
+    );
+
+    useLayoutEffect(() => {
+      if (tabBarWidthRef.current !== TAB_BAR_WIDTH) {
+        tabBarWidthRef.current = TAB_BAR_WIDTH;
+        translateX.value = indicatorTarget;
       }
-    }
-    return false;
-  }, [state]);
+    }, [TAB_BAR_WIDTH, indicatorTarget, translateX]);
 
-  // Root tab visibility is derived from navigation state. Reset the legacy
-  // scroll flag whenever a root tab is active so stale scroll state cannot
-  // keep the bar hidden after navigating back from a deep screen.
-  useEffect(() => {
-    if (!isDeepScreen) {
-      setTabBarVisible(true);
-    }
-  }, [isDeepScreen, setTabBarVisible]);
+    useEffect(() => {
+      translateX.value = withSpring(indicatorTarget, PILL_SPRING);
+    }, [state.index, indicatorTarget, translateX]);
 
-  // Animate only for transient UI state. Deep-screen hiding is handled by
-  // returning null below, so it cannot leave behind a stale hidden transform.
-  useEffect(() => {
-    Animated.spring(translateYAnim, {
-      toValue: keyboardVisible ? 150 : 0,
-      useNativeDriver: true,
-      tension: 50,
-      friction: 8,
-    }).start();
-  }, [keyboardVisible, translateYAnim]);
+    const indicatorStyle = useAnimatedStyle(() => ({
+      transform: [{ translateX: translateX.value }],
+    }));
 
-  // All 5 tabs visible
-  const visibleTabs = TAB_ORDER;
+    const shellStyle = useAnimatedStyle(() => ({
+      transform: [{ translateY: translateY.value }],
+    }));
 
+    useEffect(() => {
+      translateY.value = withTiming(keyboardVisible ? 150 : 0, {
+        duration: 320,
+        easing: Easing.bezier(0.4, 0, 0.2, 1),
+      });
+    }, [keyboardVisible, translateY]);
 
+    useEffect(() => {
+      const showSub = Keyboard.addListener(
+        Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+        () => setKeyboardVisible(true)
+      );
+      const hideSub = Keyboard.addListener(
+        Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+        () => setKeyboardVisible(false)
+      );
+      return () => {
+        showSub.remove();
+        hideSub.remove();
+      };
+    }, []);
 
-  // Center the tab bar horizontally on screen
-  const tabBarLeft = (SCREEN_WIDTH - TAB_BAR_WIDTH) / 2;
-
-  // Bottom spacing with safe area inset
-  const bottomSpacing = Platform.OS === 'ios' ? Math.max(20, insets.bottom) : 20;
-
-  if (isDeepScreen) return null;
-
-  return (
-    <Animated.View
-      style={[
-        styles.containerWrapper,
-        {
-          left: tabBarLeft,
-          width: TAB_BAR_WIDTH,
-          bottom: bottomSpacing,
-          transform: [{ translateY: translateYAnim }]
+    const isDeepScreen = useMemo(() => {
+      const route = state.routes[state.index];
+      if (route.state) {
+        const index = (route.state as { index?: number }).index;
+        const routes = (route.state as { routes?: { name: string }[] }).routes;
+        if (typeof index === 'number' && routes) {
+          const currentSubRoute = routes[index]?.name;
+          if (currentSubRoute === 'WorkoutSession') return true;
+          return index > 0;
         }
-      ]}
-    >
-      {/* Blurred background only - strictly contained */}
-      <View style={styles.blurWrapper}>
-        <BlurView intensity={isDark ? 50 : 70} tint={isDark ? "dark" : "light"} style={styles.blurContainer}>
-          <View style={[styles.greenOverlay, { backgroundColor: themeColors.tint }]} />
-          <View style={[styles.container, { backgroundColor: themeColors.bg, borderColor: themeColors.border }]} />
-        </BlurView>
-      </View>
-      {/* Buttons rendered above blur - remain sharp */}
-      <View style={styles.buttonsContainer}>
-        <Animated.View
-          style={[
-            styles.slidingIndicator,
-            {
-              transform: [{ translateX: indicatorAnim }],
-              backgroundColor: themeColors.activeButton
-            }
-          ]}
-        />
-        {visibleTabs.map((routeName, index) => {
-          const route = state.routes.find(r => r.name === routeName);
-          if (!route) return null;
+      }
+      return false;
+    }, [state]);
 
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === state.routes.findIndex(r => r.key === route.key);
+    useEffect(() => {
+      if (!isDeepScreen) {
+        setTabBarVisible(true);
+      }
+    }, [isDeepScreen, setTabBarVisible]);
 
-          const onPress = () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
+    const tabBarLeft = (SCREEN_WIDTH - TAB_BAR_WIDTH) / 2;
+    const bottomSpacing =
+      Platform.OS === 'ios' ? Math.max(20, insets.bottom) : 20;
 
-            if (event.defaultPrevented) {
-              return;
-            }
+    if (isDeepScreen) return null;
 
-            const rootScreen = TAB_ROOT_SCREENS[routeName];
-            if (rootScreen) {
-              navigation.navigate(route.name as any, { screen: rootScreen } as any);
-              return;
-            }
+    return (
+      <Animated.View
+        style={[
+          styles.containerWrapper,
+          shellStyle,
+          {
+            left: tabBarLeft,
+            width: TAB_BAR_WIDTH,
+            bottom: bottomSpacing,
+          },
+        ]}
+      >
+        <View style={styles.blurWrapper}>
+          {Platform.OS === 'ios' ? (
+            <BlurView
+              intensity={isDark ? 50 : 70}
+              tint={isDark ? 'dark' : 'light'}
+              style={styles.blurContainer}
+            >
+              <View
+                style={[
+                  styles.greenOverlay,
+                  { backgroundColor: themeColors.tint },
+                ]}
+              />
+              <View
+                style={[
+                  styles.container,
+                  {
+                    backgroundColor: themeColors.bg,
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              />
+            </BlurView>
+          ) : (
+            <View style={styles.blurContainer}>
+              <View
+                style={[
+                  styles.greenOverlay,
+                  { backgroundColor: themeColors.tint },
+                ]}
+              />
+              <View
+                style={[
+                  styles.container,
+                  {
+                    backgroundColor: themeColors.bg,
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </View>
 
-            if (!isFocused) {
-              navigation.navigate(route.name as any);
-            }
-          };
+        <View style={styles.buttonsContainer} collapsable={false}>
+          <Animated.View
+            style={[
+              styles.slidingIndicator,
+              indicatorStyle,
+              { backgroundColor: themeColors.activeButton },
+            ]}
+          />
+          {TAB_ORDER.map((routeName, index) => {
+            const route = state.routes.find((r) => r.name === routeName);
+            if (!route) return null;
+            const { options } = descriptors[route.key];
+            const isFocused =
+              state.index ===
+              state.routes.findIndex((r) => r.key === route.key);
 
-          const onLongPress = () => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            navigation.emit({
-              type: 'tabLongPress',
-              target: route.key,
-            });
-          };
+            const onPress = () => {
+              queueMicrotask(() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              });
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (event.defaultPrevented) return;
+              const rootScreen = TAB_ROOT_SCREENS[routeName];
+              if (rootScreen) {
+                navigation.navigate(route.name as any, { screen: rootScreen } as any);
+                return;
+              }
+              if (!isFocused) {
+                navigation.navigate(route.name as any);
+              }
+            };
 
-          return (
-            <TabButton
-              key={route.key}
-              routeName={routeName}
-              isFocused={isFocused}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              buttonPosition={BUTTON_POSITIONS[index] ?? 0}
-              badgeCount={badgeCounts[routeName] ?? null}
-              accessibilityLabel={options.tabBarAccessibilityLabel || routeName}
-              colors={themeColors}
-            />
-          );
-        })}
-      </View>
-    </Animated.View>
-  );
-});
+            const onLongPress = () => {
+              queueMicrotask(() => {
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              });
+              navigation.emit({ type: 'tabLongPress', target: route.key });
+            };
+
+            return (
+              <TabButton
+                key={route.key}
+                routeName={routeName}
+                isFocused={isFocused}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                buttonPosition={BUTTON_POSITIONS[index] ?? 0}
+                badgeCount={badgeCounts[routeName] ?? null}
+                accessibilityLabel={
+                  options.tabBarAccessibilityLabel || routeName
+                }
+                colors={themeColors}
+              />
+            );
+          })}
+        </View>
+      </Animated.View>
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   containerWrapper: {
     position: 'absolute',
     height: TAB_BAR_HEIGHT,
     borderRadius: TAB_BAR_BORDER_RADIUS,
-    zIndex: 1000, // Ensure navbar is always above screen content
-    // Shadow for the entire tab bar
+    zIndex: 1000,
     shadowColor: '#84c441',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 16, // Android shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 10,
   },
   blurWrapper: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     borderRadius: TAB_BAR_BORDER_RADIUS,
-    overflow: 'hidden', // Strictly contain blur - no overflow at all
+    overflow: 'hidden',
   },
   blurContainer: {
     width: '100%',
@@ -493,20 +446,19 @@ const styles = StyleSheet.create({
     height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    overflow: 'visible', // Allow buttons to extend beyond for visual effect
+    overflow: 'visible',
     borderRadius: TAB_BAR_BORDER_RADIUS,
-    zIndex: 10, // Ensure buttons are above blur
+    zIndex: 10,
   },
   button: {
     position: 'absolute',
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
-    borderRadius: BUTTON_SIZE / 2, // Perfect circle
+    borderRadius: BUTTON_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
-    // Perfect vertical centering: (container height - button height) / 2
     top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
-    overflow: 'hidden', // Prevent any overflow
+    overflow: 'hidden',
   },
   activeButton: {
     backgroundColor: 'transparent',
@@ -518,13 +470,10 @@ const styles = StyleSheet.create({
     borderRadius: BUTTON_SIZE / 2,
     top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
     shadowColor: '#84c441',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
   },
   inactiveButtonWrapper: {
     position: 'absolute',
@@ -533,9 +482,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     top: (TAB_BAR_HEIGHT - BUTTON_SIZE) / 2,
-    // No background, no border, no shadow - just the icon
     backgroundColor: 'transparent',
-    borderRadius: 0, // No rounded shape at all
+    borderRadius: 0,
   },
   pressable: {
     width: '100%',
@@ -557,4 +505,3 @@ const styles = StyleSheet.create({
     height: ICON_SIZE,
   },
 });
-

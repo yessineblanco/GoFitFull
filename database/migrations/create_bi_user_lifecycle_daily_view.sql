@@ -2,7 +2,9 @@
 -- The grain is one row per user per UTC date with signup and activity facts
 -- that downstream BI can reuse for activation, cohorts, and churn inputs.
 
-CREATE OR REPLACE VIEW public.bi_user_lifecycle_daily AS
+CREATE OR REPLACE VIEW public.bi_user_lifecycle_daily
+WITH (security_invoker = true)
+AS
 WITH signup_base AS (
   SELECT
     up.id AS user_id,

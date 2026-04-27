@@ -2,7 +2,9 @@
 -- This keeps gross pack sales separate from wallet-ledger signals so BI can
 -- surface partial finance metrics without pretending net revenue is reconciled.
 
-CREATE OR REPLACE VIEW public.bi_finance_daily AS
+CREATE OR REPLACE VIEW public.bi_finance_daily
+WITH (security_invoker = true)
+AS
 WITH pack_sales_daily AS (
   SELECT
     DATE(pp.purchased_at) AS metric_date,

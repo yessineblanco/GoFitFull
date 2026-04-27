@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler'; // Must be imported first for gestures to work
+import 'react-native-reanimated'; // UI-thread animations (tab bar, etc.)
 import './src/i18n'; // Initialize i18n
 import React, { useEffect, useState, useRef } from 'react';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';

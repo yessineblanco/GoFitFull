@@ -45,8 +45,8 @@ todos:
     content: "Part 7: Coach AI & Productivity -- Enhanced Client Progress, Program Templates, and AI Session Notes code shipped; deploy ai-session-notes edge function for live use"
     status: completed
   - id: check-ins
-    content: "Part 8: Automated Check-ins -- DB tables, edge function, client form screen, coach trend charts"
-    status: pending
+    content: "Part 8: Automated Check-ins v1 -- DB tables, client home prompt/form, coach schedule toggle + recent response averages; server reminders deferred"
+    status: completed
   - id: coach-ui-polish
     content: "Part 9: Coach UI Polish -- theme support, blur/glass, animations, charts on dashboard, skeletons, visual parity with client side"
     status: completed
@@ -71,6 +71,7 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 
 ### Done
 
+- **Part 8 Automated Check-ins v1 (2026-04-28)** - Migration `database/migrations/gofit_small_automated_check_ins_v1.sql` was applied to Supabase project `rdozeaacwaisgkpxjycn` via MCP: `check_in_schedules` and `check_in_responses` exist with RLS, grants, unique keys, indexes, and `handle_updated_at()` triggers. Shipped small mobile v1 without an edge reminder worker: `GoFitMobile/src/services/checkIns.ts` derives due schedules from enabled daily/weekly rows, `CheckInHomeCard` surfaces due check-ins on client Home, `CheckInScreen` saves 1-5 mood/energy/soreness/sleep + notes, and `ClientCheckInsScreen` lets coaches enable weekly/daily check-ins and review recent response averages/history from `ClientDetailScreen`. **Deferred:** push reminders / scheduled edge automation, day/time editing, and richer trend charts.
 - **Part 7 audit + Enhanced Client Progress v1 (2026-04-28)** - Audited coach client progress, program/template, workout/session history, and Groq edge-function patterns before implementation. Current support: `get_client_progress` verifies coach/client relationship and returns recent completed `workout_sessions` including `exercises_completed`; `react-native-chart-kit` is already installed; coach `ClientProgressScreen` exists and is wired through `CoachAppNavigator`; Groq edge-function pattern exists in `supabase/functions/ai-workout-recommendation`. Shipped migration-free Enhanced Client Progress v1 in `GoFitMobile/src/screens/coach-app/ClientProgressScreen.tsx` using existing RPC data: training volume chart, 28-day consistency grid, personal records list, and workout split bars. Updated `GoFitMobile/src/services/clientManagement.ts` types for `exercises_completed`. **No database migration needed for this v1.** AI Session Notes and Program Templates were initially blocked until the Coach AI & Productivity migration.
 - **Part 7 database + Program Templates v1 (2026-04-28)** - Migration `database/migrations/gofit_coach_ai_templates_and_ai_session_notes_v1.sql` was applied to Supabase project `rdozeaacwaisgkpxjycn` via MCP: `custom_programs.client_id` is nullable, `is_template` exists, template indexes/RLS were added, and `ai_session_notes` exists with coach-only RLS. Synced greenfield schema in `database/schema/create_coach_marketplace_tables.sql`. Shipped mobile Program Templates v1: `programsService.duplicateAsTemplate`, store action, long-press confirmation on coach program cards, template badge, nullable template editing support in `ProgramBuilderScreen`, and i18n strings. **Next:** AI Session Notes edge function + `ClientDetailScreen` briefing UI.
 - **Part 7 AI Session Notes code v1 (2026-04-28)** - Added `supabase/functions/ai-session-notes/index.ts`, following the existing Groq edge-function pattern with JWT validation, coach profile lookup, coach/client relationship check, 24-hour cache lookup in `ai_session_notes`, recent `workout_sessions` + private `coach_client_notes` context, Groq summary generation, and insert into `ai_session_notes`. Added `GoFitMobile/src/services/aiSessionNotes.ts` and a dark/glass AI Briefing card + modal on `ClientDetailScreen` with cached generation and force-regenerate. Added EN/FR strings. **Deploy:** `ai-session-notes` deployed via Supabase MCP to project `rdozeaacwaisgkpxjycn`; function is ACTIVE with slug/name `ai-session-notes`, version 1, `verify_jwt: true`. **Secret caveat:** MCP/SQL could not directly list Edge Function secret names, and local CLI auth was unavailable; `GROQ_API_KEY` still needs Dashboard confirmation if strict proof is required.
@@ -130,6 +131,8 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 - **A4 UX + profile sanity (2026-04-16)** — Dual scan copy; **20 cm** delta when profile + A4; server `REFERENCE_VS_PROFILE_MAX_DELTA_CM`.
 
 ### Decided / documented
+
+- **n8n automation scope (2026-04-28)** - The main advanced-features todo list is complete. New external automation work is tracked separately in `.cursor/plans/gofit_n8n_automations_v1.plan.md`, starting with AI Session Prep v1 via self-hosted n8n, direct Supabase service-role access inside n8n, Groq generation, and in-app coach notification rows. No database migration or new Edge Function is planned for v1.
 
 - **BI product direction (2026-04-23)** â€” BI v1 lives in the existing admin **`/dashboard`**. Do **not** create **`/bi-dashboard`** or a 4-tab BI shell until the data model is strong enough to support it cleanly.
 - **BI finance scope (2026-04-23)** â€” Revenue beyond light operational monitoring is **deferred**. `purchased_packs` currently supports gross pack-sales views, while `transactions` / `wallets` describe coach ledger activity, so platform revenue / ARPU / refund-aware finance metrics are not yet a single reliable source.
@@ -411,10 +414,17 @@ Apply a Supabase migration to project rdozeaacwaisgkpxjycn for GoFit Coach AI & 
 
 ### Part 8: Automated Check-ins
 
-- New tables: `check_in_schedules`, `check_in_responses` (mood/energy/soreness/sleep 1-5).
-- Add check-in reminders to `smart-notifications` edge function.
-- Client: `CheckInScreen.tsx` with emoji sliders, prompt card on home.
-- Coach: `CheckInHistory.tsx` with trend charts, schedule configuration on `ClientDetailScreen.tsx`.
+**Shipped v1 (small scope):**
+
+- DB: `check_in_schedules`, `check_in_responses` (mood/energy/soreness/sleep 1-5) via `database/migrations/gofit_small_automated_check_ins_v1.sql`.
+- Client: Home prompt card plus `CheckInScreen.tsx` with 1-5 value buttons and optional notes.
+- Coach: `ClientCheckInsScreen.tsx` opened from `ClientDetailScreen.tsx`, with enable/disable, weekly/daily schedule, recent averages, and recent response history.
+
+**Deferred:**
+
+- Add check-in reminders to a scheduled edge function / smart notification runner.
+- Day/time editing beyond v1 defaults (daily or Mondays after 09:00).
+- Richer trend charts and notification analytics.
 
 ---
 

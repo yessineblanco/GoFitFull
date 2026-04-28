@@ -45,6 +45,7 @@ import ProgressPhotoDetailScreen from '@/screens/progress/ProgressPhotoDetailScr
 import NutritionScreen from '@/screens/nutrition/NutritionScreen';
 import AddFoodScreen from '@/screens/nutrition/AddFoodScreen';
 import NutritionGoalsScreen from '@/screens/nutrition/NutritionGoalsScreen';
+import { CheckInScreen } from '@/screens/check-in/CheckInScreen';
 import { WorkoutDetailScreen } from '@/screens/library/WorkoutDetailScreen';
 import { ExerciseSelectionScreen } from '@/screens/library/ExerciseSelectionScreen';
 import { WorkoutBuilderScreen } from '@/screens/library/WorkoutBuilderScreen';
@@ -73,6 +74,7 @@ const HomeStackNavigator = () => {
       <HomeStack.Screen name="ClientChat" component={ChatScreen} />
       <HomeStack.Screen name="NotificationInbox" component={NotificationInboxScreen} />
       <HomeStack.Screen name="VideoCall" component={VideoCallScreen} />
+      <HomeStack.Screen name="CheckIn" component={CheckInScreen} />
     </HomeStack.Navigator>
   );
 };

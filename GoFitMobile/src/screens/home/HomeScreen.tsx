@@ -15,6 +15,7 @@ import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
 import { HealthWidget } from '@/components/home/HealthWidget';
 import { StreakWidget } from '@/components/home/StreakWidget';
+import { CheckInHomeCard } from '@/components/home/CheckInHomeCard';
 import { GlassCalendar } from '@/components/home/GlassCalendar';
 import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
 import { getResponsiveSpacing } from '@/utils/responsive';
@@ -120,6 +121,8 @@ export const HomeScreen: React.FC = () => {
         <GlassCalendar workoutDays={workoutDays} />
 
         <StreakWidget />
+
+        <CheckInHomeCard />
 
         <HealthWidget />
 

@@ -6,7 +6,7 @@ import { SkeletonCoachDetail } from '@/components/shared/Shimmer';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft, MessageCircle, FileText, TrendingUp, Calendar, StickyNote, ChevronRight, Sparkles, X, RefreshCw,
+  ArrowLeft, MessageCircle, FileText, TrendingUp, Calendar, StickyNote, ChevronRight, Sparkles, X, RefreshCw, ClipboardCheck,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -78,6 +78,11 @@ export const ClientDetailScreen: React.FC = () => {
   const handleNotes = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('ClientNotes', { clientId, clientName });
+  };
+
+  const handleCheckIns = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate('ClientCheckIns', { clientId, clientName: selectedClientDetail?.client?.display_name || clientName });
   };
 
   const handleGenerateBriefing = async (force = false) => {
@@ -184,6 +189,17 @@ export const ClientDetailScreen: React.FC = () => {
           <View style={styles.notesCardContent}>
             <Text style={[styles.notesCardTitle, { color: colors.text }]}>{t('clientManagement.aiBriefing')}</Text>
             <Text style={[styles.notesCardSubtitle, { color: colors.textSecondary }]}>{t('clientManagement.aiBriefingSubtitle')}</Text>
+          </View>
+          <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.briefingCard} onPress={handleCheckIns} activeOpacity={0.75}>
+          <View style={styles.briefingIcon}>
+            <ClipboardCheck size={20} color={PRIMARY_GREEN} />
+          </View>
+          <View style={styles.notesCardContent}>
+            <Text style={[styles.notesCardTitle, { color: colors.text }]}>{t('checkIns.coachCardTitle')}</Text>
+            <Text style={[styles.notesCardSubtitle, { color: colors.textSecondary }]}>{t('checkIns.coachCardSubtitle')}</Text>
           </View>
           <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
         </TouchableOpacity>

@@ -10,6 +10,7 @@ import { ClientsListScreen } from '@/screens/coach-app/ClientsListScreen';
 import { ClientDetailScreen } from '@/screens/coach-app/ClientDetailScreen';
 import { ClientNotesScreen } from '@/screens/coach-app/ClientNotesScreen';
 import { ClientProgressScreen } from '@/screens/coach-app/ClientProgressScreen';
+import { ClientCheckInsScreen } from '@/screens/coach-app/ClientCheckInsScreen';
 import { CoachCalendarScreen } from '@/screens/coach-app/CoachCalendarScreen';
 import { ConversationsListScreen } from '@/screens/coach-app/ConversationsListScreen';
 import { ChatScreen } from '@/screens/coach-app/ChatScreen';
@@ -74,6 +75,7 @@ const ClientsStackNavigator = () => (
     <ClientsStack.Screen name="ClientDetail" component={ClientDetailScreen} />
     <ClientsStack.Screen name="ClientNotes" component={ClientNotesScreen} />
     <ClientsStack.Screen name="ClientProgress" component={ClientProgressScreen} />
+    <ClientsStack.Screen name="ClientCheckIns" component={ClientCheckInsScreen} />
     <ClientsStack.Screen name="ProgramBuilder" component={ProgramBuilderScreen} />
     <ClientsStack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
     <ClientsStack.Screen name="ChatScreen" component={ChatScreen} />

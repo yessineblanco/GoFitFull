@@ -1,0 +1,67 @@
+{
+  "name": "GoFit AI Session Prep v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 60
+            }
+          ]
+        }
+      },
+      "id": "7f1f4c32-1ad4-4d0d-9e02-97d6f0a8a100",
+      "name": "Every 60 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const env = typeof $env !== 'undefined' ? $env : {};\nconst supabaseUrl = (env.SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');\nconst serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';\nconst groqApiKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY || '';\n\nif (!supabaseUrl || !serviceRoleKey || !groqApiKey) {\n  throw new Error('Missing SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, or GROQ_API_KEY in n8n environment.');\n}\n\nconst now = new Date();\nconst windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);\nconst nowIso = now.toISOString();\nconst windowEndIso = windowEnd.toISOString();\n\nconst restHeaders = {\n  apikey: serviceRoleKey,\n  Authorization: `Bearer ${serviceRoleKey}`,\n  'Content-Type': 'application/json',\n};\n\nasync function supabaseGet(path) {\n  const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, { headers: restHeaders });\n  if (!response.ok) {\n    throw new Error(`Supabase GET failed ${response.status}: ${await response.text()}`);\n  }\n  return response.json();\n}\n\nasync function supabasePost(path, body) {\n  const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {\n    method: 'POST',\n    headers: { ...restHeaders, Prefer: 'return=representation' },\n    body: JSON.stringify(body),\n  });\n  if (!response.ok) {\n    throw new Error(`Supabase POST failed ${response.status}: ${await response.text()}`);\n  }\n  return response.json();\n}\n\nfunction truncateJson(value, max = 12000) {\n  const raw = JSON.stringify(value || []);\n  return raw.length > max ? `${raw.slice(0, max)}...` : raw;\n}\n\nfunction asText(value, fallback = '') {\n  return typeof value === 'string' && value.trim() ? value.trim() : fallback;\n}\n\nasync function groqSummary(context) {\n  const clientName = asText(context.clientProfile?.display_name, 'Client');\n  const prompt = [\n    'Create a concise pre-session briefing for a fitness coach.',\n    'Use only the data provided. Do not invent injuries, diagnoses, or private facts.',\n    'Write in plain text with short sections:',\n    '1. Recent training',\n    '2. Consistency and load',\n    '3. Wins or possible PRs',\n    '4. Coach attention points',\n    '5. Suggested next-session focus',\n    'Keep it under 220 words.',\n    '',\n    `Booking: ${JSON.stringify(context.booking)}`,\n    `Client profile: ${JSON.stringify(context.clientProfile || {})}`,\n    `Recent completed sessions: ${truncateJson(context.sessions)}`,\n    `Private coach notes: ${truncateJson(context.notes)}`,\n    `Recent check-ins: ${truncateJson(context.checkIns)}`,\n  ].join('\\n');\n\n  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {\n    method: 'POST',\n    headers: {\n      Authorization: `Bearer ${groqApiKey}`,\n      'Content-Type': 'application/json',\n    },\n    body: JSON.stringify({\n      model: 'llama-3.3-70b-versatile',\n      temperature: 0.25,\n      messages: [\n        {\n          role: 'system',\n          content: 'You are a careful coaching assistant. Summarize training context for a coach without medical advice or invented details.',\n        },\n        { role: 'user', content: prompt },\n      ],\n    }),\n  });\n\n  if (!response.ok) {\n    throw new Error(`Groq request failed ${response.status}: ${await response.text()}`);\n  }\n\n  const json = await response.json();\n  const summary = asText(json.choices?.[0]?.message?.content);\n  if (!summary) throw new Error(`Groq returned an empty summary for ${clientName}.`);\n  return summary;\n}\n\nconst bookings = await supabaseGet(\n  `bookings?select=id,coach_id,client_id,scheduled_at,duration_minutes&status=eq.confirmed&scheduled_at=gte.${encodeURIComponent(nowIso)}&scheduled_at=lte.${encodeURIComponent(windowEndIso)}&order=scheduled_at.asc`\n);\n\nconst results = [];\n\nfor (const booking of bookings || []) {\n  try {\n    const existingNotes = await supabaseGet(\n      `ai_session_notes?select=id,created_at,expires_at&coach_id=eq.${booking.coach_id}&client_id=eq.${booking.client_id}&expires_at=gt.${encodeURIComponent(nowIso)}&order=created_at.desc&limit=1`\n    );\n\n    if (existingNotes.length > 0) {\n      results.push({ booking_id: booking.id, status: 'skipped_existing_note', note_id: existingNotes[0].id });\n      continue;\n    }\n\n    const [coachProfiles, clientProfiles, sessions, notes, checkIns] = await Promise.all([\n      supabaseGet(`coach_profiles?select=id,user_id&id=eq.${booking.coach_id}&limit=1`),\n      supabaseGet(`user_profiles?select=display_name,goal,activity_level,age,gender&id=eq.${booking.client_id}&limit=1`),\n      supabaseGet(`workout_sessions?select=id,started_at,completed_at,duration_minutes,exercises_completed,workouts(name,difficulty)&user_id=eq.${booking.client_id}&completed_at=not.is.null&order=completed_at.desc&limit=8`),\n      supabaseGet(`coach_client_notes?select=note,updated_at&coach_id=eq.${booking.coach_id}&client_id=eq.${booking.client_id}&order=updated_at.desc&limit=5`),\n      supabaseGet(`check_in_responses?select=response_date,mood,energy,soreness,sleep_quality,notes,responded_at&coach_id=eq.${booking.coach_id}&client_id=eq.${booking.client_id}&order=responded_at.desc&limit=7`),\n    ]);\n\n    const coachProfile = coachProfiles[0];\n    if (!coachProfile?.user_id) {\n      results.push({ booking_id: booking.id, status: 'skipped_missing_coach_user' });\n      continue;\n    }\n\n    const clientProfile = clientProfiles[0] || {};\n    const summary = await groqSummary({ booking, clientProfile, sessions, notes, checkIns });\n\n    const insertedNotes = await supabasePost('ai_session_notes', {\n      coach_id: booking.coach_id,\n      client_id: booking.client_id,\n      summary,\n      context: {\n        automation: 'n8n_ai_session_prep_v1',\n        booking_id: booking.id,\n        scheduled_at: booking.scheduled_at,\n        session_count: sessions.length,\n        notes_count: notes.length,\n        check_in_count: checkIns.length,\n        generated_at: new Date().toISOString(),\n      },\n      generated_by: 'groq_n8n',\n    });\n\n    const note = insertedNotes[0];\n    const clientName = asText(clientProfile.display_name, 'your client');\n\n    await supabasePost('notifications', {\n      user_id: coachProfile.user_id,\n      type: 'booking_reminder',\n      title: 'AI session briefing ready',\n      body: `A pre-session briefing is ready for ${clientName}.`,\n      data: {\n        kind: 'ai_session_ready',\n        booking_id: booking.id,\n        client_id: booking.client_id,\n        coach_id: booking.coach_id,\n        note_id: note?.id,\n        scheduled_at: booking.scheduled_at,\n      },\n    });\n\n    results.push({ booking_id: booking.id, status: 'generated', note_id: note?.id, coach_user_id: coachProfile.user_id });\n  } catch (error) {\n    results.push({ booking_id: booking.id, status: 'error', error: error instanceof Error ? error.message : String(error) });\n  }\n}\n\nreturn results.map((result) => ({ json: result }));"
+      },
+      "id": "4b77730c-74d0-412a-ad61-d41d0b65b601",
+      "name": "Generate Session Prep Notes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every 60 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Generate Session Prep Notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "gofit"
+    },
+    {
+      "name": "automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-28T00:00:00.000Z",
+  "versionId": "cfe9b44e-a018-448e-af22-2daed35a6d62"
+}

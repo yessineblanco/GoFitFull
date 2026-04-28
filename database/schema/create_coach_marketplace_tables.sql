@@ -420,28 +420,33 @@ GRANT SELECT, INSERT, UPDATE ON public.bookings TO authenticated;
 CREATE TABLE IF NOT EXISTS public.custom_programs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   coach_id UUID NOT NULL REFERENCES public.coach_profiles(id) ON DELETE CASCADE,
-  client_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  client_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
   type TEXT NOT NULL DEFAULT 'workout' CHECK (type IN ('workout', 'meal', 'both')),
   program_data JSONB NOT NULL DEFAULT '[]'::jsonb,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'archived')),
+  is_template BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_custom_programs_coach_id ON public.custom_programs(coach_id);
 CREATE INDEX IF NOT EXISTS idx_custom_programs_client_id ON public.custom_programs(client_id);
+CREATE INDEX IF NOT EXISTS idx_custom_programs_coach_template_created_at ON public.custom_programs(coach_id, is_template, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_custom_programs_created_at ON public.custom_programs(created_at DESC);
 
 ALTER TABLE public.custom_programs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Clients can view programs assigned to them"
+CREATE POLICY "Clients can view assigned programs only"
   ON public.custom_programs
   FOR SELECT
-  USING (auth.uid() = client_id);
+  USING (
+    auth.uid() = client_id
+    AND NOT (is_template AND client_id IS NULL)
+  );
 
-CREATE POLICY "Coaches can view programs they created"
+CREATE POLICY "Coaches can view own programs and templates"
   ON public.custom_programs
   FOR SELECT
   USING (EXISTS (
@@ -450,7 +455,7 @@ CREATE POLICY "Coaches can view programs they created"
     AND coach_profiles.user_id = auth.uid()
   ));
 
-CREATE POLICY "Coaches can create programs"
+CREATE POLICY "Coaches can insert programs and templates"
   ON public.custom_programs
   FOR INSERT
   WITH CHECK (EXISTS (
@@ -459,7 +464,7 @@ CREATE POLICY "Coaches can create programs"
     AND coach_profiles.user_id = auth.uid()
   ));
 
-CREATE POLICY "Coaches can update own programs"
+CREATE POLICY "Coaches can update own programs and templates"
   ON public.custom_programs
   FOR UPDATE
   USING (EXISTS (
@@ -468,7 +473,7 @@ CREATE POLICY "Coaches can update own programs"
     AND coach_profiles.user_id = auth.uid()
   ));
 
-CREATE POLICY "Coaches can delete own programs"
+CREATE POLICY "Coaches can delete own programs and templates"
   ON public.custom_programs
   FOR DELETE
   USING (EXISTS (
@@ -732,6 +737,66 @@ CREATE TRIGGER set_coach_client_notes_updated_at
   EXECUTE FUNCTION public.handle_updated_at();
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.coach_client_notes TO authenticated;
+
+
+-- ============================================
+-- 13B. AI SESSION NOTES
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.ai_session_notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  coach_id UUID NOT NULL REFERENCES public.coach_profiles(id) ON DELETE CASCADE,
+  client_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  summary TEXT NOT NULL,
+  context JSONB DEFAULT '{}'::jsonb,
+  generated_by TEXT DEFAULT 'groq',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT (TIMEZONE('utc'::text, NOW()) + INTERVAL '24 hours') NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_session_notes_coach_client_created_at
+  ON public.ai_session_notes(coach_id, client_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ai_session_notes_expires_at
+  ON public.ai_session_notes(expires_at);
+
+ALTER TABLE public.ai_session_notes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Coaches can select own ai session notes"
+  ON public.ai_session_notes
+  FOR SELECT
+  USING (EXISTS (
+    SELECT 1 FROM public.coach_profiles
+    WHERE coach_profiles.id = ai_session_notes.coach_id
+    AND coach_profiles.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Coaches can insert own ai session notes"
+  ON public.ai_session_notes
+  FOR INSERT
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.coach_profiles
+    WHERE coach_profiles.id = ai_session_notes.coach_id
+    AND coach_profiles.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Coaches can update own ai session notes"
+  ON public.ai_session_notes
+  FOR UPDATE
+  USING (EXISTS (
+    SELECT 1 FROM public.coach_profiles
+    WHERE coach_profiles.id = ai_session_notes.coach_id
+    AND coach_profiles.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Coaches can delete own ai session notes"
+  ON public.ai_session_notes
+  FOR DELETE
+  USING (EXISTS (
+    SELECT 1 FROM public.coach_profiles
+    WHERE coach_profiles.id = ai_session_notes.coach_id
+    AND coach_profiles.user_id = auth.uid()
+  ));
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_session_notes TO authenticated;
 
 
 -- ============================================

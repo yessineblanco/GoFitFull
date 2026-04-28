@@ -31,6 +31,15 @@ export interface ClientProgressData {
     started_at: string;
     completed_at: string | null;
     duration_minutes: number | null;
+    exercises_completed?: Array<{
+      id?: string;
+      name?: string;
+      sets?: number | string;
+      reps?: string;
+      weights?: Array<number | string>;
+      completedSets?: boolean[];
+      completed?: boolean;
+    }>;
   }>;
   total_workouts: number;
   streak: number;

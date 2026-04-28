@@ -1,18 +1,19 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Modal, ActivityIndicator,
 } from 'react-native';
 import { SkeletonCoachDetail } from '@/components/shared/Shimmer';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ArrowLeft, MessageCircle, FileText, TrendingUp, Calendar, StickyNote, ChevronRight,
+  ArrowLeft, MessageCircle, FileText, TrendingUp, Calendar, StickyNote, ChevronRight, Sparkles, X, RefreshCw,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useClientManagementStore } from '@/store/clientManagementStore';
 import { useCoachStore } from '@/store/coachStore';
 import { useChatStore } from '@/store/chatStore';
+import { aiSessionNotesService, type AISessionNote } from '@/services/aiSessionNotes';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/themeStore';
@@ -31,6 +32,10 @@ export const ClientDetailScreen: React.FC = () => {
   const { profile } = useCoachStore();
   const { selectedClientDetail, loadingDetail, loadClientDetail, clearSelectedClient } = useClientManagementStore();
   const { getOrCreateConversation, setActiveConversation } = useChatStore();
+  const [briefingVisible, setBriefingVisible] = useState(false);
+  const [briefing, setBriefing] = useState<AISessionNote | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
+  const [briefingError, setBriefingError] = useState<string | null>(null);
 
   const clientId = route.params?.clientId;
   const clientName = route.params?.clientName || '';
@@ -73,6 +78,22 @@ export const ClientDetailScreen: React.FC = () => {
   const handleNotes = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('ClientNotes', { clientId, clientName });
+  };
+
+  const handleGenerateBriefing = async (force = false) => {
+    if (!clientId) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setBriefingVisible(true);
+    setBriefingLoading(true);
+    setBriefingError(null);
+    try {
+      const note = await aiSessionNotesService.generateBriefing(clientId, force);
+      setBriefing(note);
+    } catch (error) {
+      setBriefingError(error instanceof Error ? error.message : t('clientManagement.aiBriefingFailed'));
+    } finally {
+      setBriefingLoading(false);
+    }
   };
 
   if (loadingDetail && !selectedClientDetail) {
@@ -156,6 +177,17 @@ export const ClientDetailScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity style={styles.briefingCard} onPress={() => handleGenerateBriefing(false)} activeOpacity={0.75}>
+          <View style={styles.briefingIcon}>
+            <Sparkles size={20} color={PRIMARY_GREEN} />
+          </View>
+          <View style={styles.notesCardContent}>
+            <Text style={[styles.notesCardTitle, { color: colors.text }]}>{t('clientManagement.aiBriefing')}</Text>
+            <Text style={[styles.notesCardSubtitle, { color: colors.textSecondary }]}>{t('clientManagement.aiBriefingSubtitle')}</Text>
+          </View>
+          <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
+        </TouchableOpacity>
+
         {/* Active Programs */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.activePrograms')}</Text>
@@ -200,6 +232,45 @@ export const ClientDetailScreen: React.FC = () => {
           <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal visible={briefingVisible} animationType="slide" transparent onRequestClose={() => setBriefingVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.briefingModal, { backgroundColor: isDark ? '#0a0a0a' : colors.background, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
+            <LinearGradient colors={isDark ? ['#0a0a0a', '#0d1a0d', '#0a0a0a'] : [colors.background, '#EAF0EA', colors.background]} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{t('clientManagement.aiBriefing')}</Text>
+                {briefing?.created_at ? (
+                  <Text style={[styles.modalSubtitle, { color: colors.textLight }]}>
+                    {new Date(briefing.created_at).toLocaleString()}
+                  </Text>
+                ) : null}
+              </View>
+              <TouchableOpacity onPress={() => setBriefingVisible(false)} style={styles.modalIconButton}>
+                <X size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.briefingBody} contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+              {briefingLoading ? (
+                <View style={styles.briefingLoading}>
+                  <ActivityIndicator color={PRIMARY_GREEN} />
+                  <Text style={[styles.notesCardSubtitle, { color: colors.textSecondary }]}>{t('clientManagement.aiBriefingLoading')}</Text>
+                </View>
+              ) : briefingError ? (
+                <Text style={[styles.errorText, { color: '#EF5350' }]}>{briefingError}</Text>
+              ) : briefing?.summary ? (
+                <Text style={[styles.briefingText, { color: colors.text }]}>{briefing.summary}</Text>
+              ) : null}
+            </ScrollView>
+
+            <TouchableOpacity style={styles.regenerateButton} onPress={() => handleGenerateBriefing(true)} disabled={briefingLoading}>
+              <RefreshCw size={16} color="#000000" />
+              <Text style={styles.regenerateText}>{t('clientManagement.regenerateBriefing')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -223,6 +294,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  briefingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(180,240,78,0.06)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(180,240,78,0.15)',
+    padding: 16,
+    gap: 12,
+    marginBottom: 24,
+  },
+  briefingIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(180,240,78,0.08)' },
   actionText: {
     fontFamily: 'Barlow_600SemiBold',
     fontSize: getResponsiveFontSize(11),
@@ -266,6 +349,17 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end' },
+  briefingModal: { maxHeight: '82%', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden', paddingHorizontal: 20 },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 16 },
+  modalTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(20), color: '#FFFFFF' },
+  modalSubtitle: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  modalIconButton: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.08)' },
+  briefingBody: { borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.04)', padding: 16 },
+  briefingLoading: { minHeight: 180, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  briefingText: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(14), lineHeight: 22, color: '#FFFFFF' },
+  regenerateButton: { marginTop: 14, height: 48, borderRadius: 14, backgroundColor: PRIMARY_GREEN, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  regenerateText: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(14), color: '#000000' },
   notesCardContent: { flex: 1 },
   notesCardTitle: {
     fontFamily: 'Barlow_600SemiBold',

@@ -42,8 +42,8 @@ todos:
     content: "Part 6: Wearables v1 -- Android Health Connect daily steps/active calories sync, health_data DB/RLS, Home widget, Progress trend, Profile Health Sync screen"
     status: completed
   - id: coach-ai-productivity
-    content: "Part 7: Coach AI & Productivity -- AI session notes, enhanced progress dashboard, program templates"
-    status: pending
+    content: "Part 7: Coach AI & Productivity -- Enhanced Client Progress, Program Templates, and AI Session Notes code shipped; deploy ai-session-notes edge function for live use"
+    status: completed
   - id: check-ins
     content: "Part 8: Automated Check-ins -- DB tables, edge function, client form screen, coach trend charts"
     status: pending
@@ -70,6 +70,10 @@ Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATI
 ## Living log (done + decided + next)
 
 ### Done
+
+- **Part 7 audit + Enhanced Client Progress v1 (2026-04-28)** - Audited coach client progress, program/template, workout/session history, and Groq edge-function patterns before implementation. Current support: `get_client_progress` verifies coach/client relationship and returns recent completed `workout_sessions` including `exercises_completed`; `react-native-chart-kit` is already installed; coach `ClientProgressScreen` exists and is wired through `CoachAppNavigator`; Groq edge-function pattern exists in `supabase/functions/ai-workout-recommendation`. Shipped migration-free Enhanced Client Progress v1 in `GoFitMobile/src/screens/coach-app/ClientProgressScreen.tsx` using existing RPC data: training volume chart, 28-day consistency grid, personal records list, and workout split bars. Updated `GoFitMobile/src/services/clientManagement.ts` types for `exercises_completed`. **No database migration needed for this v1.** AI Session Notes and Program Templates were initially blocked until the Coach AI & Productivity migration.
+- **Part 7 database + Program Templates v1 (2026-04-28)** - Migration `database/migrations/gofit_coach_ai_templates_and_ai_session_notes_v1.sql` was applied to Supabase project `rdozeaacwaisgkpxjycn` via MCP: `custom_programs.client_id` is nullable, `is_template` exists, template indexes/RLS were added, and `ai_session_notes` exists with coach-only RLS. Synced greenfield schema in `database/schema/create_coach_marketplace_tables.sql`. Shipped mobile Program Templates v1: `programsService.duplicateAsTemplate`, store action, long-press confirmation on coach program cards, template badge, nullable template editing support in `ProgramBuilderScreen`, and i18n strings. **Next:** AI Session Notes edge function + `ClientDetailScreen` briefing UI.
+- **Part 7 AI Session Notes code v1 (2026-04-28)** - Added `supabase/functions/ai-session-notes/index.ts`, following the existing Groq edge-function pattern with JWT validation, coach profile lookup, coach/client relationship check, 24-hour cache lookup in `ai_session_notes`, recent `workout_sessions` + private `coach_client_notes` context, Groq summary generation, and insert into `ai_session_notes`. Added `GoFitMobile/src/services/aiSessionNotes.ts` and a dark/glass AI Briefing card + modal on `ClientDetailScreen` with cached generation and force-regenerate. Added EN/FR strings. **Deploy:** `ai-session-notes` deployed via Supabase MCP to project `rdozeaacwaisgkpxjycn`; function is ACTIVE with slug/name `ai-session-notes`, version 1, `verify_jwt: true`. **Secret caveat:** MCP/SQL could not directly list Edge Function secret names, and local CLI auth was unavailable; `GROQ_API_KEY` still needs Dashboard confirmation if strict proof is required.
 
 - **Part 5 - Progress Photos database v1 (2026-04-24)** - Shipped migration `database/migrations/create_progress_photos_v1.sql`: `public.progress_photos` (id, user_id → auth.users, storage_path, photo_date, category check front/side/back/other, note, timestamps), RLS CRUD own rows only, indexes on `(user_id, photo_date desc)` and `(user_id, created_at desc)`, trigger `set_progress_photos_updated_at` → `public.handle_updated_at()`, private bucket `progress-photos` (`INSERT ... ON CONFLICT DO NOTHING`), storage policies on `storage.objects` for SELECT/INSERT/UPDATE/DELETE where `bucket_id = 'progress-photos'` and `(storage.foldername(name))[1] = auth.uid()::text`. **Applied to Supabase project `rdozeaacwaisgkpxjycn` via MCP** (`apply_migration`, name `create_progress_photos_v1`). **Next:** mobile upload (object path `{userId}/...`), signed URLs, `ProgressPhotosScreen` / `PhotoCompareScreen`.
 - **Part 5 - Progress Photos mobile v1 (2026-04-27)** - Shipped private mobile photo journal on top of the applied `progress_photos` table and private `progress-photos` bucket. Added `GoFitMobile/src/services/progressPhotos.ts` for signed URL listing, JPEG upload under `{userId}/...`, DB insert, and delete with best-effort storage cleanup. Added `ProgressPhotosScreen` and `ProgressPhotoDetailScreen` to the Progress stack, including dark/glass timeline grid, category filters, camera/library picker, date/category/note metadata, detail view, and delete confirmation. Added a compact dark/glass Progress Photos entry card on `WorkoutStatisticsScreen` with latest signed thumbnail and saved-photo count. No seed data needed; users create private photos through the UI. Verification: `npm run type-check` and `git diff --check` pass.
@@ -380,9 +384,30 @@ Apply a Supabase migration to project rdozeaacwaisgkpxjycn for GoFit Workout Rec
 
 ### Part 7: Coach AI & Productivity
 
-- **AI Session Notes** -- edge function `ai-session-notes` calls Groq to summarize client's recent sessions. New `ai_session_notes` table. "Generate Briefing" button on `ClientDetailScreen.tsx`.
-- **Enhanced Client Progress** -- upgrade `ClientProgressScreen.tsx` with volume chart, consistency calendar heatmap, PR table, muscle group distribution. New chart components.
-- **Program Templates** -- add `duplicateProgram()` to programs service, long-press menu on program cards, `is_template` column on `custom_programs`.
+**Audit result (2026-04-28):**
+
+- **Enhanced Client Progress v1 shipped without migration.** Existing `get_client_progress` already verifies coach/client relationship and returns recent completed sessions with `exercises_completed`; the coach screen now derives training volume, consistency, PRs, and workout split from that payload.
+- **Program Templates v1 shipped after migration.** `custom_programs.client_id` is nullable and `is_template` exists; coaches can long-press an existing program to duplicate it as a reusable template, and template rows can be edited without assigning a client.
+- **AI Session Notes code v1 shipped and deployed.** `ai_session_notes` exists with coach-only RLS, and `supabase/functions/ai-session-notes` plus the mobile briefing UI are present. The edge function is ACTIVE in Supabase; `GROQ_API_KEY` likely already exists because other Groq functions are active, but Dashboard confirmation is still the only strict verification available from the current tooling.
+
+**Recommended smallest useful Coach AI & Productivity v1:**
+
+1. Ship Enhanced Client Progress first (done).
+2. Add Program Templates after migration (done).
+3. Add AI Session Notes using the existing `ai_session_notes` table and a new Groq edge function (code done; deploy done; Dashboard secret confirmation optional).
+
+**Applied Cursor MCP migration prompt:**
+
+```text
+Apply a Supabase migration to project rdozeaacwaisgkpxjycn for GoFit Coach AI & Productivity v1:
+1. Alter public.custom_programs so client_id can be NULL, representing a reusable coach-owned template.
+2. Add public.custom_programs.is_template boolean NOT NULL default false.
+3. Add indexes on custom_programs(coach_id, is_template, created_at desc) and custom_programs(client_id) if missing.
+4. Update custom_programs RLS so coaches can select/insert/update/delete their own programs and templates through their coach_profiles.user_id, clients can only select programs where client_id = auth.uid(), and client rows do not expose templates unless assigned.
+5. Create public.ai_session_notes with id uuid primary key default gen_random_uuid(), coach_id uuid not null references public.coach_profiles(id) on delete cascade, client_id uuid not null references auth.users(id) on delete cascade, summary text not null, context jsonb default '{}'::jsonb, generated_by text default 'groq', created_at timestamptz default now(), expires_at timestamptz default now() + interval '24 hours'.
+6. Enable RLS on public.ai_session_notes; coaches can select/insert/update/delete notes where coach_id belongs to their coach_profiles row; clients cannot read coach AI notes; authenticated gets grants scoped by RLS.
+7. Add indexes on ai_session_notes(coach_id, client_id, created_at desc) and ai_session_notes(expires_at).
+```
 
 ### Part 8: Automated Check-ins
 

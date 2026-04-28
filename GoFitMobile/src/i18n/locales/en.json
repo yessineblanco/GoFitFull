@@ -727,6 +727,11 @@
     "myPrograms": "My Programs",
     "programCreated": "Program created successfully",
     "programUpdated": "Program updated",
+    "template": "Template",
+    "createTemplate": "Create Template",
+    "duplicateAsTemplate": "Duplicate as Template",
+    "duplicateAsTemplateConfirm": "Create a reusable template from \"{{title}}\"?",
+    "templateCreated": "Template created successfully",
     "day": "Day",
     "addDay": "Add Day",
     "addExercise": "Add Exercise",
@@ -757,7 +762,8 @@
     "carbsShort": "C",
     "fatShort": "F",
     "failedToCreateProgram": "Failed to create program",
-    "failedToUpdateProgram": "Failed to update program"
+    "failedToUpdateProgram": "Failed to update program",
+    "failedToCreateTemplate": "Failed to create template"
   },
   "booking": {
     "calendar": "Calendar",
@@ -828,6 +834,11 @@
     "privateNotes": "Private Notes",
     "addNote": "Add Note",
     "editNote": "Edit Note",
+    "aiBriefing": "AI Briefing",
+    "aiBriefingSubtitle": "Generate a concise pre-session client summary",
+    "aiBriefingLoading": "Generating briefing...",
+    "aiBriefingFailed": "Failed to generate briefing",
+    "regenerateBriefing": "Regenerate Briefing",
     "noNotes": "No notes yet",
     "noNotesDesc": "Add private notes about this client",
     "notesPlaceholder": "Add a note about this client...",

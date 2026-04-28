@@ -13,6 +13,7 @@ import { useCoachStore } from '@/store/coachStore';
 import type { CustomProgram } from '@/services/programs';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
+import { dialogManager } from '@/components/shared/CustomDialog';
 import { useThemeStore } from '@/store/themeStore';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
@@ -38,7 +39,7 @@ export const ProgramsListScreen: React.FC = () => {
   const { isDark } = useThemeStore();
   const colors = useThemeColors();
   const { profile } = useCoachStore();
-  const { coachPrograms, loading, loadCoachPrograms } = useProgramsStore();
+  const { coachPrograms, loading, loadCoachPrograms, duplicateAsTemplate } = useProgramsStore();
   const fadeAnims = useRef([...Array(30)].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
@@ -58,6 +59,28 @@ export const ProgramsListScreen: React.FC = () => {
     if (profile?.id) loadCoachPrograms(profile.id);
   }, [profile?.id]);
 
+  const handleDuplicateTemplate = useCallback((program: CustomProgram) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    dialogManager.show(
+      t('programs.duplicateAsTemplate'),
+      t('programs.duplicateAsTemplateConfirm', { title: program.title }),
+      'info',
+      {
+        showCancel: true,
+        cancelText: t('common.cancel'),
+        confirmText: t('programs.createTemplate'),
+        onConfirm: async () => {
+          try {
+            await duplicateAsTemplate(program.id);
+            dialogManager.success(t('common.success'), t('programs.templateCreated'));
+          } catch {
+            dialogManager.error(t('common.error'), t('programs.failedToCreateTemplate'));
+          }
+        },
+      }
+    );
+  }, [duplicateAsTemplate, t]);
+
   const renderProgram = ({ item, index }: { item: CustomProgram; index: number }) => {
     const TypeIcon = typeIcons[item.type] || FileText;
     const days = Array.isArray(item.program_data) ? item.program_data.length : 0;
@@ -66,7 +89,12 @@ export const ProgramsListScreen: React.FC = () => {
 
     return (
       <Animated.View style={{ opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }}>
-        <TouchableOpacity style={[styles.programCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]} activeOpacity={0.7} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigation.navigate('ProgramBuilder', { programId: item.id }); }}>
+        <TouchableOpacity
+          style={[styles.programCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}
+          activeOpacity={0.7}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigation.navigate('ProgramBuilder', { programId: item.id }); }}
+          onLongPress={() => handleDuplicateTemplate(item)}
+        >
           <View style={styles.programHeader}>
             <View style={[styles.typeIcon, { backgroundColor: isDark ? 'rgba(180,240,78,0.08)' : 'rgba(132,196,65,0.1)' }]}>
               <TypeIcon size={18} color={PRIMARY_GREEN} />
@@ -77,9 +105,9 @@ export const ProgramsListScreen: React.FC = () => {
                 {days} {t('programs.day')}{days !== 1 ? 's' : ''} · {t(`programs.${item.type}`)}
               </Text>
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: `${statusColorsMap[item.status] || (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)')}15` }]}>
-              <Text style={[styles.statusText, { color: statusColorsMap[item.status] || (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)') }]}>
-                {t(`programs.${item.status}`)}
+            <View style={[styles.statusBadge, { backgroundColor: `${item.is_template ? PRIMARY_GREEN : statusColorsMap[item.status] || (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)')}15` }]}>
+              <Text style={[styles.statusText, { color: item.is_template ? PRIMARY_GREEN : statusColorsMap[item.status] || (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)') }]}>
+                {item.is_template ? t('programs.template') : t(`programs.${item.status}`)}
               </Text>
             </View>
           </View>

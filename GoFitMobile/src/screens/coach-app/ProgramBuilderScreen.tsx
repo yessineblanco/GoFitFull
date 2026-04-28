@@ -44,6 +44,7 @@ export const ProgramBuilderScreen: React.FC = () => {
   const [description, setDescription] = useState('');
   const [type, setType] = useState<ProgramType>('workout');
   const [clientId, setClientId] = useState(preselectedClientId || '');
+  const [isTemplate, setIsTemplate] = useState(false);
   const [clients, setClients] = useState<Array<{ client_id: string; display_name: string }>>([]);
   const [clientPickerVisible, setClientPickerVisible] = useState(false);
   const [days, setDays] = useState<ProgramDay[]>([{ day_number: 1, exercises: [], meals: [] }]);
@@ -90,7 +91,8 @@ export const ProgramBuilderScreen: React.FC = () => {
           setTitle(program.title);
           setDescription(program.description || '');
           setType(program.type);
-          setClientId(program.client_id);
+          setClientId(program.client_id || '');
+          setIsTemplate(program.is_template || false);
           if (Array.isArray(program.program_data) && program.program_data.length > 0) {
             setDays(program.program_data);
           }
@@ -124,7 +126,7 @@ export const ProgramBuilderScreen: React.FC = () => {
     return result;
   }, [allExercises, selectedMuscleGroup, searchQuery]);
 
-  const isValid = title.trim().length > 0 && clientId.trim().length > 0;
+  const isValid = title.trim().length > 0 && (isTemplate || clientId.trim().length > 0);
 
   const addDay = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -209,6 +211,8 @@ export const ProgramBuilderScreen: React.FC = () => {
         await updateProgram(editProgramId, {
           title: title.trim(),
           description: description.trim() || undefined,
+          client_id: isTemplate ? null : clientId.trim(),
+          is_template: isTemplate,
           program_data: days,
         });
         dialogManager.success(t('common.success'), t('programs.programSaved'));

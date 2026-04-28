@@ -16,7 +16,8 @@ interface ProgramsStore {
   loadClientPrograms: (clientId: string) => Promise<void>;
   loadProgram: (programId: string) => Promise<void>;
   createProgram: (input: CreateProgramInput) => Promise<CustomProgram | null>;
-  updateProgram: (programId: string, updates: Partial<Pick<CustomProgram, 'title' | 'description' | 'program_data' | 'status'>>) => Promise<void>;
+  duplicateAsTemplate: (programId: string) => Promise<CustomProgram | null>;
+  updateProgram: (programId: string, updates: Partial<Pick<CustomProgram, 'title' | 'description' | 'client_id' | 'program_data' | 'status' | 'is_template'>>) => Promise<void>;
   clearSelected: () => void;
 }
 
@@ -68,6 +69,19 @@ export const useProgramsStore = create<ProgramsStore>((set, get) => ({
       return program;
     } catch (error) {
       logger.error('Failed to create program:', error);
+      throw error;
+    }
+  },
+
+  duplicateAsTemplate: async (programId) => {
+    try {
+      const template = await programsService.duplicateAsTemplate(programId);
+      if (template) {
+        set({ coachPrograms: [template, ...get().coachPrograms] });
+      }
+      return template;
+    } catch (error) {
+      logger.error('Failed to duplicate program as template:', error);
       throw error;
     }
   },

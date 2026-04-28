@@ -19,6 +19,19 @@ import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUti
 
 const PRIMARY_GREEN = '#B4F04E';
 
+const getMuscleGroups = (name = '') => {
+  const normalized = name.toLowerCase();
+  if (normalized.includes('squat') || normalized.includes('lunge') || normalized.includes('leg') || normalized.includes('calf')) return ['Legs'];
+  if (normalized.includes('row') || normalized.includes('pull') || normalized.includes('lat') || normalized.includes('deadlift')) return ['Back'];
+  if (normalized.includes('shoulder') || normalized.includes('overhead') || normalized.includes('lateral') || normalized.includes('raise')) return ['Shoulders'];
+  if (normalized.includes('curl') || normalized.includes('tricep') || normalized.includes('chin')) return ['Arms'];
+  if (normalized.includes('plank') || normalized.includes('crunch') || normalized.includes('sit up') || normalized.includes('twist')) return ['Core'];
+  if (normalized.includes('press') || normalized.includes('fly') || normalized.includes('push')) return ['Chest'];
+  return ['Other'];
+};
+
+const parseReps = (reps?: string) => (reps || '').split(',').map((value) => Number.parseInt(value.trim(), 10) || 0);
+
 export const ClientProgressScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<any>();
@@ -73,6 +86,74 @@ export const ClientProgressScreen: React.FC = () => {
     return {
       labels: entries.map(([d]) => new Date(d).toLocaleDateString(undefined, { weekday: 'short' })),
       datasets: [{ data: entries.map(([, count]) => count) }],
+    };
+  }, [data?.sessions]);
+
+  const enhancedStats = useMemo(() => {
+    const sessions = data?.sessions || [];
+    const volumeByDate: Record<string, number> = {};
+    const trainedDates = new Set<string>();
+    const prs: Record<string, { exercise: string; weight: number; reps: number; date: string }> = {};
+    const muscleCounts: Record<string, number> = {};
+
+    sessions.forEach((session) => {
+      const dateKey = new Date(session.completed_at || session.started_at).toISOString().split('T')[0];
+      trainedDates.add(dateKey);
+
+      (session.exercises_completed || []).forEach((exercise) => {
+        const weights = exercise.weights || [];
+        const reps = parseReps(exercise.reps);
+        const completedSets = exercise.completedSets || [];
+        const exerciseName = exercise.name || 'Exercise';
+        let exerciseVolume = 0;
+        let bestWeight = 0;
+        let bestReps = 0;
+
+        weights.forEach((rawWeight, index) => {
+          if (completedSets.length > 0 && !completedSets[index]) return;
+          const weight = Number.parseFloat(String(rawWeight)) || 0;
+          const repCount = reps[index] || 0;
+          exerciseVolume += weight * repCount;
+          if (weight > bestWeight) {
+            bestWeight = weight;
+            bestReps = repCount;
+          }
+        });
+
+        volumeByDate[dateKey] = (volumeByDate[dateKey] || 0) + exerciseVolume;
+        getMuscleGroups(exerciseName).forEach((group) => {
+          muscleCounts[group] = (muscleCounts[group] || 0) + 1;
+        });
+
+        if (bestWeight > 0 && (!prs[exerciseName] || bestWeight > prs[exerciseName].weight)) {
+          prs[exerciseName] = { exercise: exerciseName, weight: bestWeight, reps: bestReps, date: dateKey };
+        }
+      });
+    });
+
+    const recentDays = Array.from({ length: 28 }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (27 - index));
+      const key = date.toISOString().split('T')[0];
+      return { key, label: date.getDate(), trained: trainedDates.has(key), volume: volumeByDate[key] || 0 };
+    });
+
+    const volumeEntries = Object.entries(volumeByDate)
+      .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+      .slice(-7);
+
+    const totalMuscleHits = Object.values(muscleCounts).reduce((sum, count) => sum + count, 0);
+
+    return {
+      recentDays,
+      volumeChart: volumeEntries.length ? {
+        labels: volumeEntries.map(([date]) => new Date(date).toLocaleDateString(undefined, { weekday: 'short' })),
+        datasets: [{ data: volumeEntries.map(([, volume]) => Math.max(0, Math.round(volume))) }],
+      } : null,
+      prs: Object.values(prs).sort((a, b) => b.weight - a.weight).slice(0, 6),
+      muscleGroups: Object.entries(muscleCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => ({ name, count, percentage: totalMuscleHits > 0 ? Math.round((count / totalMuscleHits) * 100) : 0 })),
     };
   }, [data?.sessions]);
 
@@ -171,6 +252,74 @@ export const ClientProgressScreen: React.FC = () => {
               </View>
             )}
 
+            {enhancedStats.volumeChart && (
+              <View style={styles.chartSection}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Training volume</Text>
+                <View style={[styles.chartContainer, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+                  <BarChart
+                    data={enhancedStats.volumeChart}
+                    width={Dimensions.get('window').width - 64}
+                    height={180}
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                    chartConfig={chartConfig}
+                    style={styles.chart}
+                    withInnerLines={false}
+                    fromZero
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Consistency</Text>
+              <View style={[styles.consistencyCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+                {enhancedStats.recentDays.map((day) => (
+                  <View
+                    key={day.key}
+                    style={[
+                      styles.dayCell,
+                      { backgroundColor: day.trained ? PRIMARY_GREEN : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)') },
+                    ]}
+                  >
+                    <Text style={[styles.dayCellText, { color: day.trained ? '#000000' : colors.textLight }]}>{day.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {enhancedStats.prs.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Personal records</Text>
+                {enhancedStats.prs.map((pr) => (
+                  <View key={`${pr.exercise}-${pr.date}`} style={[styles.prRow, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+                    <View style={styles.sessionInfo}>
+                      <Text style={[styles.sessionName, { color: colors.text }]} numberOfLines={1}>{pr.exercise}</Text>
+                      <Text style={[styles.sessionDate, { color: colors.textLight }]}>{new Date(pr.date).toLocaleDateString()}</Text>
+                    </View>
+                    <Text style={styles.sessionDuration}>{pr.weight} x {pr.reps || 1}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {enhancedStats.muscleGroups.length > 0 && (
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>Workout split</Text>
+                <View style={[styles.splitCard, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+                  {enhancedStats.muscleGroups.map((group) => (
+                    <View key={group.name} style={styles.splitRow}>
+                      <Text style={[styles.splitLabel, { color: colors.textSecondary }]}>{group.name}</Text>
+                      <View style={styles.splitTrack}>
+                        <View style={[styles.splitFill, { width: `${group.percentage}%` }]} />
+                      </View>
+                      <Text style={styles.splitValue}>{group.percentage}%</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
             {/* Sessions List */}
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.workoutHistory')}</Text>
@@ -225,9 +374,29 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 12,
   },
-  chartContainer: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, padding: 12 },
+  chartContainer: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', padding: 12 },
   chart: { borderRadius: 12 },
   section: { marginBottom: 24 },
+  consistencyCard: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', padding: 12 },
+  dayCell: { width: 28, height: 28, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  dayCellText: { fontFamily: 'Barlow_600SemiBold', fontSize: 10 },
+  prRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    padding: 12,
+    marginBottom: 6,
+  },
+  splitCard: { backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', padding: 14, gap: 12 },
+  splitRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  splitLabel: { width: 76, fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(12), color: 'rgba(255,255,255,0.6)' },
+  splitTrack: { flex: 1, height: 7, borderRadius: 7, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.08)' },
+  splitFill: { height: 7, borderRadius: 7, backgroundColor: PRIMARY_GREEN },
+  splitValue: { width: 36, textAlign: 'right', fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(12), color: PRIMARY_GREEN },
   sessionRow: {
     flexDirection: 'row',
     alignItems: 'center',

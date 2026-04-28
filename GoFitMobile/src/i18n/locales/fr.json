@@ -720,6 +720,11 @@
     "myPrograms": "Mes programmes",
     "programCreated": "Programme créé avec succès",
     "programUpdated": "Programme mis à jour",
+    "template": "Modèle",
+    "createTemplate": "Créer un modèle",
+    "duplicateAsTemplate": "Dupliquer comme modèle",
+    "duplicateAsTemplateConfirm": "Créer un modèle réutilisable à partir de \"{{title}}\" ?",
+    "templateCreated": "Modèle créé avec succès",
     "day": "Jour",
     "addDay": "Ajouter un jour",
     "addExercise": "Ajouter un exercice",
@@ -750,7 +755,8 @@
     "carbsShort": "G",
     "fatShort": "L",
     "failedToCreateProgram": "Échec de la création du programme",
-    "failedToUpdateProgram": "Échec de la mise à jour du programme"
+    "failedToUpdateProgram": "Échec de la mise à jour du programme",
+    "failedToCreateTemplate": "Échec de la création du modèle"
   },
   "booking": {
     "calendar": "Calendrier",
@@ -821,6 +827,11 @@
     "privateNotes": "Notes privées",
     "addNote": "Ajouter une note",
     "editNote": "Modifier la note",
+    "aiBriefing": "Briefing IA",
+    "aiBriefingSubtitle": "Générer un résumé client concis avant la séance",
+    "aiBriefingLoading": "Génération du briefing...",
+    "aiBriefingFailed": "Échec de la génération du briefing",
+    "regenerateBriefing": "Régénérer le briefing",
     "noNotes": "Aucune note",
     "noNotesDesc": "Ajoutez des notes privées sur ce client",
     "notesPlaceholder": "Ajouter une note sur ce client...",

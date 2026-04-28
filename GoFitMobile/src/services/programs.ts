@@ -28,12 +28,13 @@ export interface ProgramDay {
 export interface CustomProgram {
   id: string;
   coach_id: string;
-  client_id: string;
+  client_id: string | null;
   title: string;
   description: string | null;
   type: 'workout' | 'meal' | 'both';
   program_data: ProgramDay[];
   status: 'active' | 'completed' | 'archived';
+  is_template: boolean;
   created_at: string;
   updated_at: string;
   coach_name?: string;
@@ -42,11 +43,12 @@ export interface CustomProgram {
 
 export interface CreateProgramInput {
   coach_id: string;
-  client_id: string;
+  client_id: string | null;
   title: string;
   description?: string;
   type: 'workout' | 'meal' | 'both';
   program_data: ProgramDay[];
+  is_template?: boolean;
 }
 
 export const programsService = {
@@ -109,25 +111,28 @@ export const programsService = {
           description: input.description || null,
           type: input.type,
           program_data: input.program_data,
+          is_template: input.is_template ?? false,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      await notificationInboxService.createNotification({
-        user_id: input.client_id,
-        type: 'program_received',
-        title: 'New program',
-        body: `Your coach created a program: ${input.title}`,
-        data: { screen: 'ProgramDetail', id: data.id },
-      });
-      pushNotificationService.send({
-        user_id: input.client_id,
-        title: 'New program',
-        body: `Your coach created a program: ${input.title}`,
-        data: { screen: 'ProgramDetail', id: data.id },
-      });
+      if (input.client_id) {
+        await notificationInboxService.createNotification({
+          user_id: input.client_id,
+          type: 'program_received',
+          title: 'New program',
+          body: `Your coach created a program: ${input.title}`,
+          data: { screen: 'ProgramDetail', id: data.id },
+        });
+        pushNotificationService.send({
+          user_id: input.client_id,
+          title: 'New program',
+          body: `Your coach created a program: ${input.title}`,
+          data: { screen: 'ProgramDetail', id: data.id },
+        });
+      }
 
       return data;
     } catch (error) {
@@ -136,7 +141,35 @@ export const programsService = {
     }
   },
 
-  async update(programId: string, updates: Partial<Pick<CustomProgram, 'title' | 'description' | 'program_data' | 'status'>>): Promise<CustomProgram | null> {
+  async duplicateAsTemplate(programId: string): Promise<CustomProgram | null> {
+    try {
+      const original = await this.getById(programId);
+      if (!original) return null;
+
+      const { data, error } = await supabase
+        .from('custom_programs')
+        .insert({
+          coach_id: original.coach_id,
+          client_id: null,
+          title: `${original.title} Template`,
+          description: original.description,
+          type: original.type,
+          program_data: JSON.parse(JSON.stringify(original.program_data || [])),
+          status: 'active',
+          is_template: true,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      logger.error('Failed to duplicate program as template:', error);
+      throw error;
+    }
+  },
+
+  async update(programId: string, updates: Partial<Pick<CustomProgram, 'title' | 'description' | 'client_id' | 'program_data' | 'status' | 'is_template'>>): Promise<CustomProgram | null> {
     try {
       const { data, error } = await supabase
         .from('custom_programs')

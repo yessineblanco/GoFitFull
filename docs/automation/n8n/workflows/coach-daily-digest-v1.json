@@ -1,0 +1,164 @@
+{
+  "id": "GoFitCoachDailyDigestV1",
+  "name": "GoFit Coach Daily Digest v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1440
+            }
+          ]
+        }
+      },
+      "id": "coach-digest-schedule-trigger-v1",
+      "name": "Daily Coach Digest",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const env = typeof $env !== 'undefined' ? $env : {};\nconst supabaseUrl = (env.SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');\nconst serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';\n\nif (!supabaseUrl || !serviceRoleKey) {\n  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in n8n environment.');\n}\n\nconst restHeaders = {\n  apikey: serviceRoleKey,\n  Authorization: `Bearer ${serviceRoleKey}`,\n  'Content-Type': 'application/json',\n};\n\nasync function httpRequest(options) {\n  return this.helpers.httpRequest({ json: true, ...options });\n}\n\nasync function supabaseGet(path) {\n  return httpRequest.call(this, { method: 'GET', url: `${supabaseUrl}/rest/v1/${path}`, headers: restHeaders });\n}\n\nasync function supabasePost(path, body) {\n  return httpRequest.call(this, {\n    method: 'POST',\n    url: `${supabaseUrl}/rest/v1/${path}`,\n    headers: { ...restHeaders, Prefer: 'return=representation' },\n    body,\n  });\n}\n\nfunction enc(value) {\n  return encodeURIComponent(String(value));\n}\n\nfunction utcDate(date = new Date()) {\n  return date.toISOString().slice(0, 10);\n}\n\nfunction timeToMinutes(value) {\n  const [hours = '0', minutes = '0'] = String(value || '00:00').split(':');\n  return Number(hours) * 60 + Number(minutes);\n}\n\nfunction compactIds(rows, key = 'id', max = 20) {\n  return (rows || []).map((row) => row[key]).filter(Boolean).slice(0, max);\n}\n\nconst now = new Date();\nconst today = utcDate(now);\nconst sevenDaysAgoIso = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();\nconst tomorrowIso = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();\nconst currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();\nconst currentDow = now.getUTCDay();\nconst runStartedAt = now.toISOString();\n\nconst coaches = (await supabaseGet('coach_profiles?select=id,user_id,status&user_id=not.is.null&limit=1000')).filter((coach) => coach.user_id);\nconst schedules = await supabaseGet('check_in_schedules?select=id,coach_id,client_id,frequency,check_in_days,check_in_time&enabled=eq.true&limit=1000');\nconst recentResponses = await supabaseGet(`check_in_responses?select=id,coach_id,client_id,response_date,mood,energy,sleep_quality,responded_at&responded_at=gte.${enc(sevenDaysAgoIso)}&limit=2000`);\nconst upcomingBookings = await supabaseGet(`bookings?select=id,coach_id,client_id,scheduled_at,status&status=eq.confirmed&scheduled_at=gte.${enc(now.toISOString())}&scheduled_at=lte.${enc(tomorrowIso)}&limit=2000`);\nconst activePacks = await supabaseGet('purchased_packs?select=id,coach_id,client_id,status&status=eq.active&limit=2000');\nconst coachBookings = await supabaseGet('bookings?select=id,coach_id,client_id,status,scheduled_at&limit=3000');\nconst clientHealthToday = await supabaseGet(`bi_client_health_daily?select=user_id,metric_date,days_since_last_completed_workout,days_since_last_completed_booking,completed_workout_days_last_7d,nutrition_log_days_last_7d&metric_date=eq.${today}&limit=3000`);\n\nconst results = [];\nconst stats = {\n  run_started_at: runStartedAt,\n  digest_date: today,\n  coaches_found: coaches.length,\n  created_count: 0,\n  skipped_no_signal_count: 0,\n  skipped_existing_digest_count: 0,\n  error_count: 0,\n};\n\nfunction scheduleIsDue(schedule) {\n  const days = Array.isArray(schedule.check_in_days) ? schedule.check_in_days.map(Number) : [];\n  const dayMatches = schedule.frequency === 'daily' || days.includes(currentDow);\n  return dayMatches && currentMinutes >= timeToMinutes(schedule.check_in_time);\n}\n\nfunction lowWellness(response) {\n  return Number(response.mood) <= 2 || Number(response.energy) <= 2 || Number(response.sleep_quality) <= 2;\n}\n\nfunction isInactive(health) {\n  const workoutDays = Number(health.completed_workout_days_last_7d || 0);\n  const nutritionDays = Number(health.nutrition_log_days_last_7d || 0);\n  const daysSinceWorkout = health.days_since_last_completed_workout == null ? 999 : Number(health.days_since_last_completed_workout);\n  const daysSinceBooking = health.days_since_last_completed_booking == null ? 999 : Number(health.days_since_last_completed_booking);\n  return workoutDays === 0 && nutritionDays === 0 && daysSinceWorkout >= 7 && daysSinceBooking >= 7;\n}\n\nfor (const coach of coaches) {\n  try {\n    const coachSchedules = (schedules || []).filter((schedule) => schedule.coach_id === coach.id && scheduleIsDue(schedule));\n    const missedCheckIns = [];\n    for (const schedule of coachSchedules) {\n      const hasResponse = (recentResponses || []).some((response) => response.coach_id === coach.id && response.client_id === schedule.client_id && response.response_date === today);\n      if (!hasResponse) missedCheckIns.push(schedule);\n    }\n\n    const lowWellnessResponses = (recentResponses || []).filter((response) => response.coach_id === coach.id && lowWellness(response));\n    const upcoming = (upcomingBookings || []).filter((booking) => booking.coach_id === coach.id);\n    const activeClientIds = new Set([\n      ...(activePacks || []).filter((pack) => pack.coach_id === coach.id).map((pack) => pack.client_id),\n      ...(coachBookings || []).filter((booking) => booking.coach_id === coach.id).map((booking) => booking.client_id),\n    ].filter(Boolean));\n    const inactiveClients = (clientHealthToday || []).filter((health) => activeClientIds.has(health.user_id) && isInactive(health));\n\n    const signalCount = missedCheckIns.length + lowWellnessResponses.length + upcoming.length + inactiveClients.length;\n    if (signalCount === 0) {\n      stats.skipped_no_signal_count += 1;\n      results.push({ coach_id: coach.id, coach_user_id: coach.user_id, status: 'skipped_no_signal' });\n      continue;\n    }\n\n    const existing = await supabaseGet(`notifications?select=id&user_id=eq.${coach.user_id}&data->>kind=eq.coach_daily_digest&data->>digest_date=eq.${today}&limit=1`);\n    if (existing[0]?.id) {\n      stats.skipped_existing_digest_count += 1;\n      results.push({ coach_id: coach.id, coach_user_id: coach.user_id, status: 'skipped_existing_digest', notification_id: existing[0].id });\n      continue;\n    }\n\n    const body = `${missedCheckIns.length} missed check-ins, ${lowWellnessResponses.length} low wellness signals, ${upcoming.length} upcoming sessions, ${inactiveClients.length} inactive clients.`;\n    const inserted = await supabasePost('notifications', {\n      user_id: coach.user_id,\n      type: 'booking_reminder',\n      title: 'Daily client digest',\n      body,\n      data: {\n        kind: 'coach_daily_digest',\n        digest_date: today,\n        coach_id: coach.id,\n        missed_check_in_count: missedCheckIns.length,\n        low_wellness_count: lowWellnessResponses.length,\n        upcoming_booking_count: upcoming.length,\n        inactive_client_count: inactiveClients.length,\n        missed_check_in_schedule_ids: compactIds(missedCheckIns),\n        low_wellness_response_ids: compactIds(lowWellnessResponses),\n        upcoming_booking_ids: compactIds(upcoming),\n        inactive_client_ids: compactIds(inactiveClients, 'user_id'),\n        generated_at: new Date().toISOString(),\n      },\n    });\n\n    const notification = inserted[0];\n    if (!notification?.id) throw new Error('Supabase did not return inserted notification id.');\n    stats.created_count += 1;\n    results.push({ coach_id: coach.id, coach_user_id: coach.user_id, status: 'created', notification_id: notification.id, signal_count: signalCount });\n  } catch (error) {\n    stats.error_count += 1;\n    results.push({ coach_id: coach.id, coach_user_id: coach.user_id, status: 'error', error: error instanceof Error ? error.message : String(error) });\n  }\n}\n\nreturn [\n  { json: { type: 'summary', status: stats.error_count > 0 ? 'completed_with_errors' : 'completed', finished_at: new Date().toISOString(), ...stats } },\n  ...results.map((result) => ({ json: { type: 'coach_result', ...result } })),\n];"
+      },
+      "id": "coach-digest-code-node-v1",
+      "name": "Create Coach Daily Digest Notifications",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "id": "coach-digest-note-schedule",
+      "name": "Visual: Schedule",
+      "position": [
+        -40,
+        80
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 300,
+        "height": 220,
+        "content": "## 1. Schedule\nRuns daily and prepares one digest per coach using UTC dates."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "coach-digest-note-signals",
+      "name": "Visual: Signals",
+      "position": [
+        300,
+        80
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 300,
+        "height": 220,
+        "content": "## 2. Signals\nCounts missed check-ins, low wellness responses, upcoming confirmed bookings, and inactive clients."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "coach-digest-note-dedupe",
+      "name": "Visual: Duplicate Guard",
+      "position": [
+        640,
+        80
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 300,
+        "height": 220,
+        "content": "## 3. Duplicate guard\nSkips if today already has a coach_daily_digest notification for the coach user."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "coach-digest-note-notify",
+      "name": "Visual: Notify Coach",
+      "position": [
+        980,
+        80
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 300,
+        "height": 220,
+        "content": "## 4. Notify coach\nCreates one in-app notification only when there is something useful to report."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "coach-digest-note-summary",
+      "name": "Visual: Summary",
+      "position": [
+        1320,
+        80
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 300,
+        "height": 220,
+        "content": "## 5. Run summary\nReturns coach counts, created/skipped counts, and per-coach result rows."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "coach-digest-note-engine",
+      "name": "Visual: Engine Note",
+      "position": [
+        480,
+        640
+      ],
+      "parameters": {
+        "color": 2,
+        "width": 520,
+        "height": 160,
+        "content": "### Implementation note\nNo AI call in v1. The digest is deterministic counts from current Supabase tables and BI views."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Daily Coach Digest": {
+      "main": [
+        [
+          {
+            "node": "Create Coach Daily Digest Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "gofit"
+    },
+    {
+      "name": "automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-30T00:00:00.000Z",
+  "versionId": "d2af29b7-59fb-4074-8fa7-84729e8a2f21"
+}

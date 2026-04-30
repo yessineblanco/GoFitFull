@@ -1,0 +1,164 @@
+{
+  "id": "GoFitAdminOpsDigestV1",
+  "name": "GoFit Admin Ops Digest v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1440
+            }
+          ]
+        }
+      },
+      "id": "admin-ops-schedule-trigger-v1",
+      "name": "Daily Admin Ops Digest",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const env = typeof $env !== 'undefined' ? $env : {};\nconst supabaseUrl = (env.SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');\nconst serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';\n\nif (!supabaseUrl || !serviceRoleKey) {\n  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in n8n environment.');\n}\n\nconst restHeaders = {\n  apikey: serviceRoleKey,\n  Authorization: `Bearer ${serviceRoleKey}`,\n  'Content-Type': 'application/json',\n};\n\nasync function httpRequest(options) {\n  return this.helpers.httpRequest({ json: true, ...options });\n}\n\nasync function supabaseGet(path) {\n  return httpRequest.call(this, { method: 'GET', url: `${supabaseUrl}/rest/v1/${path}`, headers: restHeaders });\n}\n\nasync function supabasePost(path, body) {\n  return httpRequest.call(this, {\n    method: 'POST',\n    url: `${supabaseUrl}/rest/v1/${path}`,\n    headers: { ...restHeaders, Prefer: 'return=representation' },\n    body,\n  });\n}\n\nfunction enc(value) {\n  return encodeURIComponent(String(value));\n}\n\nfunction utcDate(date = new Date()) {\n  return date.toISOString().slice(0, 10);\n}\n\nfunction timeToMinutes(value) {\n  const [hours = '0', minutes = '0'] = String(value || '00:00').split(':');\n  return Number(hours) * 60 + Number(minutes);\n}\n\nfunction compactIds(rows, key = 'id', max = 20) {\n  return (rows || []).map((row) => row[key]).filter(Boolean).slice(0, max);\n}\n\nconst now = new Date();\nconst digestDate = utcDate(now);\nconst windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();\nconst windowEnd = now.toISOString();\nconst href = `/admin/automation/admin-ops-digest?date=${digestDate}`;\nconst runStartedAt = windowEnd;\n\nconst admins = await supabaseGet('user_profiles?select=id,is_admin&is_admin=eq.true&limit=1000');\nconst newUsers = await supabaseGet(`user_profiles?select=id,created_at&created_at=gte.${enc(windowStart)}&created_at=lte.${enc(windowEnd)}&limit=2000`);\nconst pendingCoaches = await supabaseGet('coach_profiles?select=id,status&status=eq.pending&limit=2000');\nconst bookings = await supabaseGet(`bookings?select=id,status,scheduled_at&scheduled_at=gte.${enc(windowStart)}&scheduled_at=lte.${enc(windowEnd)}&limit=3000`);\nconst packPurchases = await supabaseGet(`purchased_packs?select=id,status,purchased_at&created_at=gte.${enc(windowStart)}&created_at=lte.${enc(windowEnd)}&limit=3000`);\n\nconst completedBookings = (bookings || []).filter((booking) => booking.status === 'completed');\nconst cancelledBookings = (bookings || []).filter((booking) => booking.status === 'cancelled');\nconst noShowBookings = (bookings || []).filter((booking) => booking.status === 'no_show');\nconst automationFailures = 0;\nconst message = [\n  `New users: ${newUsers.length}`,\n  `Pending coaches: ${pendingCoaches.length}`,\n  `Completed bookings: ${completedBookings.length}`,\n  `Cancelled bookings: ${cancelledBookings.length}`,\n  `No-shows: ${noShowBookings.length}`,\n  `Pack purchases: ${packPurchases.length}`,\n  `Tracked automation failures: ${automationFailures}`,\n].join(' | ');\n\nconst results = [];\nconst stats = {\n  run_started_at: runStartedAt,\n  window_start: windowStart,\n  window_end: windowEnd,\n  digest_date: digestDate,\n  admins_found: (admins || []).length,\n  new_users_count: newUsers.length,\n  pending_coaches_count: pendingCoaches.length,\n  completed_bookings_count: completedBookings.length,\n  cancelled_bookings_count: cancelledBookings.length,\n  no_show_bookings_count: noShowBookings.length,\n  pack_purchases_count: packPurchases.length,\n  automation_failures_count: automationFailures,\n  created_count: 0,\n  skipped_existing_digest_count: 0,\n  error_count: 0,\n};\n\nfor (const admin of admins || []) {\n  try {\n    const existing = await supabaseGet(`admin_notifications?select=id&admin_user_id=eq.${admin.id}&title=eq.${enc('Daily ops digest')}&href=eq.${enc(href)}&limit=1`);\n    if (existing[0]?.id) {\n      stats.skipped_existing_digest_count += 1;\n      results.push({ admin_user_id: admin.id, status: 'skipped_existing_digest', admin_notification_id: existing[0].id });\n      continue;\n    }\n\n    const inserted = await supabasePost('admin_notifications', {\n      admin_user_id: admin.id,\n      type: 'info',\n      title: 'Daily ops digest',\n      message,\n      href,\n    });\n\n    const notification = inserted[0];\n    if (!notification?.id) throw new Error('Supabase did not return inserted admin notification id.');\n    stats.created_count += 1;\n    results.push({ admin_user_id: admin.id, status: 'created', admin_notification_id: notification.id });\n  } catch (error) {\n    stats.error_count += 1;\n    results.push({ admin_user_id: admin.id, status: 'error', error: error instanceof Error ? error.message : String(error) });\n  }\n}\n\nreturn [\n  { json: { type: 'summary', status: stats.error_count > 0 ? 'completed_with_errors' : 'completed', finished_at: new Date().toISOString(), ...stats } },\n  ...results.map((result) => ({ json: { type: 'admin_result', ...result } })),\n];"
+      },
+      "id": "admin-ops-code-node-v1",
+      "name": "Create Admin Ops Digest Notifications",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "id": "admin-ops-note-schedule",
+      "name": "Visual: Schedule",
+      "position": [
+        -40,
+        80
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 300,
+        "height": 220,
+        "content": "## 1. Schedule\nRuns daily and summarizes the last 24 hours of UTC operational activity."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "admin-ops-note-admins",
+      "name": "Visual: Admins",
+      "position": [
+        300,
+        80
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 300,
+        "height": 220,
+        "content": "## 2. Admin users\nFinds admin recipients from user_profiles.is_admin = true."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "admin-ops-note-counts",
+      "name": "Visual: Ops Counts",
+      "position": [
+        640,
+        80
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 300,
+        "height": 220,
+        "content": "## 3. Ops counts\nSummarizes new users, pending coaches, booking outcomes, pack purchases, and tracked automation failures."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "admin-ops-note-dedupe",
+      "name": "Visual: Duplicate Guard",
+      "position": [
+        980,
+        80
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 300,
+        "height": 220,
+        "content": "## 4. Duplicate guard\nUses a deterministic admin digest href per date because admin_notifications has no JSON data column."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "admin-ops-note-summary",
+      "name": "Visual: Summary",
+      "position": [
+        1320,
+        80
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 300,
+        "height": 220,
+        "content": "## 5. Run summary\nReturns admin counts, digest counts, created/skipped counts, and errors."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "admin-ops-note-engine",
+      "name": "Visual: Engine Note",
+      "position": [
+        480,
+        640
+      ],
+      "parameters": {
+        "color": 2,
+        "width": 520,
+        "height": 160,
+        "content": "### Implementation note\nWrites to admin_notifications only. No migration, no email, and no external analytics system in v1."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Daily Admin Ops Digest": {
+      "main": [
+        [
+          {
+            "node": "Create Admin Ops Digest Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "gofit"
+    },
+    {
+      "name": "automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-30T00:00:00.000Z",
+  "versionId": "2a9ba7a9-0f25-4d9c-8f03-77d5d61d2079"
+}

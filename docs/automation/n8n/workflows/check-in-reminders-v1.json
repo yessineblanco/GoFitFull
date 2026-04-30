@@ -1,0 +1,164 @@
+{
+  "id": "GoFitCheckInRemindersV1",
+  "name": "GoFit Check-in Reminders v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 240
+            }
+          ]
+        }
+      },
+      "id": "checkin-schedule-trigger-v1",
+      "name": "Every 4 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const env = typeof $env !== 'undefined' ? $env : {};\nconst supabaseUrl = (env.SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');\nconst serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';\n\nif (!supabaseUrl || !serviceRoleKey) {\n  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in n8n environment.');\n}\n\nconst restHeaders = {\n  apikey: serviceRoleKey,\n  Authorization: `Bearer ${serviceRoleKey}`,\n  'Content-Type': 'application/json',\n};\n\nasync function httpRequest(options) {\n  return this.helpers.httpRequest({ json: true, ...options });\n}\n\nasync function supabaseGet(path) {\n  return httpRequest.call(this, { method: 'GET', url: `${supabaseUrl}/rest/v1/${path}`, headers: restHeaders });\n}\n\nasync function supabasePost(path, body) {\n  return httpRequest.call(this, {\n    method: 'POST',\n    url: `${supabaseUrl}/rest/v1/${path}`,\n    headers: { ...restHeaders, Prefer: 'return=representation' },\n    body,\n  });\n}\n\nfunction enc(value) {\n  return encodeURIComponent(String(value));\n}\n\nfunction utcDate(date = new Date()) {\n  return date.toISOString().slice(0, 10);\n}\n\nfunction timeToMinutes(value) {\n  const [hours = '0', minutes = '0'] = String(value || '00:00').split(':');\n  return Number(hours) * 60 + Number(minutes);\n}\n\nfunction compactIds(rows, key = 'id', max = 20) {\n  return (rows || []).map((row) => row[key]).filter(Boolean).slice(0, max);\n}\n\nconst now = new Date();\nconst today = utcDate(now);\nconst currentMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();\nconst currentDow = now.getUTCDay();\nconst runStartedAt = now.toISOString();\n\nconst schedules = await supabaseGet('check_in_schedules?select=id,coach_id,client_id,frequency,check_in_days,check_in_time&enabled=eq.true&limit=1000');\nconst results = [];\nconst stats = {\n  run_started_at: runStartedAt,\n  response_date: today,\n  schedules_found: (schedules || []).length,\n  due_count: 0,\n  created_count: 0,\n  skipped_not_due_count: 0,\n  skipped_existing_response_count: 0,\n  skipped_existing_notification_count: 0,\n  error_count: 0,\n};\n\nfunction scheduleIsDue(schedule) {\n  const days = Array.isArray(schedule.check_in_days) ? schedule.check_in_days.map(Number) : [];\n  const dayMatches = schedule.frequency === 'daily' || days.includes(currentDow);\n  return dayMatches && currentMinutes >= timeToMinutes(schedule.check_in_time);\n}\n\nasync function existingNotification(schedule) {\n  const path = `notifications?select=id&user_id=eq.${schedule.client_id}&data->>kind=eq.check_in_due&data->>schedule_id=eq.${schedule.id}&data->>response_date=eq.${today}&limit=1`;\n  const rows = await supabaseGet(path);\n  return rows[0];\n}\n\nfor (const schedule of schedules || []) {\n  try {\n    if (!scheduleIsDue(schedule)) {\n      stats.skipped_not_due_count += 1;\n      results.push({ schedule_id: schedule.id, client_id: schedule.client_id, status: 'skipped_not_due' });\n      continue;\n    }\n    stats.due_count += 1;\n\n    const responses = await supabaseGet(`check_in_responses?select=id&coach_id=eq.${schedule.coach_id}&client_id=eq.${schedule.client_id}&response_date=eq.${today}&limit=1`);\n    if (responses.length > 0) {\n      stats.skipped_existing_response_count += 1;\n      results.push({ schedule_id: schedule.id, client_id: schedule.client_id, status: 'skipped_existing_response', response_id: responses[0].id });\n      continue;\n    }\n\n    const duplicate = await existingNotification(schedule);\n    if (duplicate?.id) {\n      stats.skipped_existing_notification_count += 1;\n      results.push({ schedule_id: schedule.id, client_id: schedule.client_id, status: 'skipped_existing_notification', notification_id: duplicate.id });\n      continue;\n    }\n\n    const inserted = await supabasePost('notifications', {\n      user_id: schedule.client_id,\n      type: 'booking_reminder',\n      title: 'Check-in due',\n      body: 'Your coach is waiting for today\\'s check-in.',\n      data: {\n        kind: 'check_in_due',\n        schedule_id: schedule.id,\n        coach_id: schedule.coach_id,\n        client_id: schedule.client_id,\n        response_date: today,\n        check_in_time: schedule.check_in_time,\n      },\n    });\n\n    const notification = inserted[0];\n    if (!notification?.id) throw new Error('Supabase did not return inserted notification id.');\n    stats.created_count += 1;\n    results.push({ schedule_id: schedule.id, client_id: schedule.client_id, status: 'created', notification_id: notification.id });\n  } catch (error) {\n    stats.error_count += 1;\n    results.push({ schedule_id: schedule.id, client_id: schedule.client_id, status: 'error', error: error instanceof Error ? error.message : String(error) });\n  }\n}\n\nreturn [\n  { json: { type: 'summary', status: stats.error_count > 0 ? 'completed_with_errors' : 'completed', finished_at: new Date().toISOString(), ...stats } },\n  ...results.map((result) => ({ json: { type: 'schedule_result', ...result } })),\n];"
+      },
+      "id": "checkin-code-node-v1",
+      "name": "Create Check-in Reminder Notifications",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "id": "checkin-note-schedule",
+      "name": "Visual: Schedule",
+      "position": [
+        -40,
+        80
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 300,
+        "height": 220,
+        "content": "## 1. Schedule\nRuns every 4 hours and evaluates enabled check-in schedules using UTC date/time."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "checkin-note-due",
+      "name": "Visual: Due Check",
+      "position": [
+        300,
+        80
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 300,
+        "height": 220,
+        "content": "## 2. Due check\nDaily schedules are due every day. Weekly schedules are due when the UTC weekday is in check_in_days and check_in_time has passed."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "checkin-note-skip",
+      "name": "Visual: Skip Rules",
+      "position": [
+        640,
+        80
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 300,
+        "height": 220,
+        "content": "## 3. Skip rules\nSkips clients who already submitted today and skips duplicate check-in reminder notifications."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "checkin-note-notify",
+      "name": "Visual: Notify Client",
+      "position": [
+        980,
+        80
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 300,
+        "height": 220,
+        "content": "## 4. Notify client\nCreates one notifications row with type = booking_reminder and data.kind = check_in_due."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "checkin-note-summary",
+      "name": "Visual: Summary",
+      "position": [
+        1320,
+        80
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 300,
+        "height": 220,
+        "content": "## 5. Run summary\nReturns created, skipped, due, and error counts plus one result item per schedule."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "checkin-note-engine",
+      "name": "Visual: Engine Note",
+      "position": [
+        480,
+        640
+      ],
+      "parameters": {
+        "color": 2,
+        "width": 520,
+        "height": 160,
+        "content": "### Implementation note\nUses existing tables only: check_in_schedules, check_in_responses, and notifications. No migration or push delivery in v1."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Every 4 Hours": {
+      "main": [
+        [
+          {
+            "node": "Create Check-in Reminder Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "gofit"
+    },
+    {
+      "name": "automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-30T00:00:00.000Z",
+  "versionId": "bfb4dd70-48a9-470d-8a1f-01a2d4261d01"
+}

@@ -1,0 +1,164 @@
+{
+  "id": "GoFitBookingRemindersV1",
+  "name": "GoFit Booking Reminders v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "booking-reminders-schedule-trigger-v1",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const env = typeof $env !== 'undefined' ? $env : {};\nconst supabaseUrl = (env.SUPABASE_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');\nconst serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';\n\nif (!supabaseUrl || !serviceRoleKey) {\n  throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in n8n environment.');\n}\n\nconst restHeaders = {\n  apikey: serviceRoleKey,\n  Authorization: `Bearer ${serviceRoleKey}`,\n  'Content-Type': 'application/json',\n};\n\nasync function httpRequest(options) {\n  return this.helpers.httpRequest({ json: true, ...options });\n}\n\nasync function supabaseGet(path) {\n  return httpRequest.call(this, { method: 'GET', url: `${supabaseUrl}/rest/v1/${path}`, headers: restHeaders });\n}\n\nasync function supabasePost(path, body) {\n  return httpRequest.call(this, {\n    method: 'POST',\n    url: `${supabaseUrl}/rest/v1/${path}`,\n    headers: { ...restHeaders, Prefer: 'return=representation' },\n    body,\n  });\n}\n\nfunction enc(value) {\n  return encodeURIComponent(String(value));\n}\n\nfunction utcDate(date = new Date()) {\n  return date.toISOString().slice(0, 10);\n}\n\nfunction timeToMinutes(value) {\n  const [hours = '0', minutes = '0'] = String(value || '00:00').split(':');\n  return Number(hours) * 60 + Number(minutes);\n}\n\nfunction compactIds(rows, key = 'id', max = 20) {\n  return (rows || []).map((row) => row[key]).filter(Boolean).slice(0, max);\n}\n\nconst now = new Date();\nconst windowMinutes = 60;\nconst windowEnd = new Date(now.getTime() + windowMinutes * 60 * 1000);\nconst nowIso = now.toISOString();\nconst windowEndIso = windowEnd.toISOString();\nconst runStartedAt = nowIso;\n\nconst bookings = await supabaseGet(`bookings?select=id,coach_id,client_id,scheduled_at,duration_minutes,status&status=eq.confirmed&scheduled_at=gte.${enc(nowIso)}&scheduled_at=lte.${enc(windowEndIso)}&order=scheduled_at.asc&limit=1000`);\nconst coachProfiles = await supabaseGet('coach_profiles?select=id,user_id&user_id=not.is.null&limit=1000');\nconst coachUserByCoachId = new Map((coachProfiles || []).map((coach) => [coach.id, coach.user_id]));\nconst results = [];\nconst stats = {\n  run_started_at: runStartedAt,\n  window_start: nowIso,\n  window_end: windowEndIso,\n  window_minutes: windowMinutes,\n  bookings_found: (bookings || []).length,\n  created_count: 0,\n  skipped_existing_notification_count: 0,\n  skipped_missing_coach_user_count: 0,\n  error_count: 0,\n};\n\nasync function ensureReminder({ booking, userId, recipientRole }) {\n  const existing = await supabaseGet(`notifications?select=id&user_id=eq.${userId}&data->>kind=eq.booking_starting_soon&data->>booking_id=eq.${booking.id}&data->>recipient_role=eq.${recipientRole}&data->>window_minutes=eq.${windowMinutes}&limit=1`);\n  if (existing[0]?.id) return { id: existing[0].id, created: false };\n\n  const body = recipientRole === 'coach'\n    ? 'You have a confirmed coaching session starting soon.'\n    : 'Your confirmed coaching session starts soon.';\n  const inserted = await supabasePost('notifications', {\n    user_id: userId,\n    type: 'booking_reminder',\n    title: 'Upcoming session',\n    body,\n    data: {\n      kind: 'booking_starting_soon',\n      booking_id: booking.id,\n      recipient_role: recipientRole,\n      coach_id: booking.coach_id,\n      client_id: booking.client_id,\n      scheduled_at: booking.scheduled_at,\n      window_minutes: windowMinutes,\n    },\n  });\n\n  const notification = inserted[0];\n  if (!notification?.id) throw new Error('Supabase did not return inserted notification id.');\n  return { id: notification.id, created: true };\n}\n\nfor (const booking of bookings || []) {\n  try {\n    const coachUserId = coachUserByCoachId.get(booking.coach_id);\n    if (!coachUserId) {\n      stats.skipped_missing_coach_user_count += 1;\n      results.push({ booking_id: booking.id, status: 'skipped_missing_coach_user' });\n      continue;\n    }\n\n    for (const recipient of [\n      { role: 'client', userId: booking.client_id },\n      { role: 'coach', userId: coachUserId },\n    ]) {\n      const reminder = await ensureReminder({ booking, userId: recipient.userId, recipientRole: recipient.role });\n      if (reminder.created) stats.created_count += 1;\n      else stats.skipped_existing_notification_count += 1;\n      results.push({ booking_id: booking.id, recipient_role: recipient.role, user_id: recipient.userId, status: reminder.created ? 'created' : 'skipped_existing_notification', notification_id: reminder.id });\n    }\n  } catch (error) {\n    stats.error_count += 1;\n    results.push({ booking_id: booking.id, status: 'error', error: error instanceof Error ? error.message : String(error) });\n  }\n}\n\nreturn [\n  { json: { type: 'summary', status: stats.error_count > 0 ? 'completed_with_errors' : 'completed', finished_at: new Date().toISOString(), ...stats } },\n  ...results.map((result) => ({ json: { type: 'booking_result', ...result } })),\n];"
+      },
+      "id": "booking-reminders-code-node-v1",
+      "name": "Create Booking Reminder Notifications",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        420
+      ]
+    },
+    {
+      "id": "booking-reminders-note-schedule",
+      "name": "Visual: Schedule",
+      "position": [
+        -40,
+        80
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 300,
+        "height": 220,
+        "content": "## 1. Schedule\nRuns every 15 minutes and looks for confirmed bookings starting in the next 60 minutes."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "booking-reminders-note-recipients",
+      "name": "Visual: Recipients",
+      "position": [
+        300,
+        80
+      ],
+      "parameters": {
+        "color": 6,
+        "width": 300,
+        "height": 220,
+        "content": "## 2. Recipients\nCreates reminders for both the client user and the coach profile user."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "booking-reminders-note-dedupe",
+      "name": "Visual: Duplicate Guard",
+      "position": [
+        640,
+        80
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 300,
+        "height": 220,
+        "content": "## 3. Duplicate guard\nDedupes by booking_id, recipient_role, data.kind, and the 60-minute reminder window."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "booking-reminders-note-notify",
+      "name": "Visual: Notify",
+      "position": [
+        980,
+        80
+      ],
+      "parameters": {
+        "color": 3,
+        "width": 300,
+        "height": 220,
+        "content": "## 4. Notify\nUses notifications.type = booking_reminder and data.kind = booking_starting_soon."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "booking-reminders-note-summary",
+      "name": "Visual: Summary",
+      "position": [
+        1320,
+        80
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 300,
+        "height": 220,
+        "content": "## 5. Run summary\nReturns booking count, created/skipped notifications, missing coach users, and errors."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    },
+    {
+      "id": "booking-reminders-note-engine",
+      "name": "Visual: Engine Note",
+      "position": [
+        480,
+        640
+      ],
+      "parameters": {
+        "color": 2,
+        "width": 520,
+        "height": 160,
+        "content": "### Implementation note\nThis does not replace booking confirmation/cancellation behavior. It adds a separate soon-starting reminder kind."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Create Booking Reminder Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "gofit"
+    },
+    {
+      "name": "automation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-30T00:00:00.000Z",
+  "versionId": "f8d9610f-0e9b-4d36-bc42-c3019f1a742a"
+}

@@ -75,6 +75,7 @@ Verification:
 Manual verification completed on 2026-04-30:
 
 - Imported `GoFit AI Session Prep v1` into local n8n as workflow id `GoFitAISessionPrepV1`.
+- Published the real workflow in the n8n UI via browser MCP.
 - Patched the export to use n8n Code node `this.helpers.httpRequest` instead of global `fetch`.
 - Created one confirmed Supabase test booking for an existing coach/client pair.
 - First run generated one `ai_session_notes` row and one `notifications` row.
@@ -107,6 +108,7 @@ File:
 Manual verification on 2026-04-30:
 
 - Imported `GoFit Check-in Reminders v1` into local n8n as workflow id `GoFitCheckInRemindersV1`.
+- Published the real workflow in the n8n UI via browser MCP.
 - Created a temporary manual-test copy in n8n as `GoFitCheckInRemindersV1Manual`.
 - Manual run completed successfully with `schedules_found = 0` and `error_count = 0`.
 - Supabase currently has no `check_in_schedules` rows, so the notification insert and duplicate-skip path were not exercised.
@@ -135,6 +137,7 @@ File:
 Manual verification on 2026-04-30:
 
 - Imported `GoFit Coach Daily Digest v1` into local n8n as workflow id `GoFitCoachDailyDigestV1`.
+- Published the real workflow in the n8n UI via browser MCP.
 - Created a temporary manual-test copy in n8n as `GoFitCoachDailyDigestV1Manual`.
 - First manual run created 3 coach digest `notifications` rows.
 - Rerun returned `skipped_existing_digest_count = 3` and `created_count = 0`.
@@ -164,6 +167,7 @@ File:
 Manual verification on 2026-04-30:
 
 - Imported `GoFit Admin Ops Digest v1` into local n8n as workflow id `GoFitAdminOpsDigestV1`.
+- Published the real workflow in the n8n UI via browser MCP.
 - Created a temporary manual-test copy in n8n as `GoFitAdminOpsDigestV1Manual`.
 - First manual run created 1 `admin_notifications` row.
 - Rerun returned `skipped_existing_digest_count = 1` and `created_count = 0`.
@@ -192,6 +196,7 @@ File:
 Manual verification on 2026-04-30:
 
 - Imported `GoFit Booking Reminders v1` into local n8n as workflow id `GoFitBookingRemindersV1`.
+- Published the real workflow in the n8n UI via browser MCP.
 - Created a temporary manual-test copy in n8n as `GoFitBookingRemindersV1Manual`.
 - First manual run found 1 confirmed booking inside the 60-minute window and created 2 `notifications` rows, one for the client and one for the coach.
 - Rerun returned `skipped_existing_notification_count = 2` and `created_count = 0`.

@@ -60,6 +60,10 @@ export function MacroRings({ totals, goals, isDark = true }: Props) {
     { label: 'Carbs', cur: totals.carbs_g, goal: Math.max(0.1, goals.carbs_g), color: CARB },
     { label: 'Fat', cur: totals.fat_g, goal: Math.max(0.1, goals.fat_g), color: FAT },
   ];
+  const extras = [
+    { label: 'Fiber', cur: totals.fiber_g, goal: Math.max(0.1, goals.fiber_g), unit: 'g' },
+    { label: 'Water', cur: totals.water_ml, goal: Math.max(1, goals.water_ml_goal), unit: 'ml' },
+  ];
 
   return (
     <View style={styles.wrap}>
@@ -83,6 +87,16 @@ export function MacroRings({ totals, goals, isDark = true }: Props) {
           </View>
         ))}
       </View>
+      <View style={styles.extraRow}>
+        {extras.map((item) => (
+          <View key={item.label} style={styles.extraItem}>
+            <Text style={[styles.extraLabel, { color: label }]}>{item.label}</Text>
+            <Text style={[styles.extraValue, { color: dim }]}>
+              {Math.round(item.cur)} / {Math.round(item.goal)} {item.unit}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -98,4 +112,8 @@ const styles = StyleSheet.create({
   macro: { alignItems: 'center', flex: 1 },
   macroLbl: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(11), marginTop: 6 },
   macroSub: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(10), marginTop: 2 },
+  extraRow: { flexDirection: 'row', gap: 10, width: '100%', marginTop: 16, paddingHorizontal: 8 },
+  extraItem: { flex: 1, alignItems: 'center' },
+  extraLabel: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(11) },
+  extraValue: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(10), marginTop: 2 },
 });

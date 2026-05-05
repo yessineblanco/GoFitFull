@@ -15,7 +15,7 @@ export function NutritionHomeCard() {
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
   const { isDark } = useThemeStore();
-  const [goal, setGoal] = useState<number | null>(null);
+  const [goals, setGoals] = useState<{ calories: number; waterMl: number } | null>(null);
   const [totals, setTotals] = useState<DayTotals | null>(null);
 
   useEffect(() => {
@@ -27,12 +27,12 @@ export function NutritionHomeCard() {
         const goals = await nutritionService.getOrCreateGoals();
         const t = await nutritionService.getDayTotals(today);
         if (!cancelled) {
-          setGoal(goals.calories_goal);
+          setGoals({ calories: goals.calories_goal, waterMl: goals.water_ml_goal });
           setTotals(t);
         }
       } catch {
         if (!cancelled) {
-          setGoal(null);
+          setGoals(null);
           setTotals(null);
         }
       }
@@ -48,8 +48,9 @@ export function NutritionHomeCard() {
   const border = getGlassBorder(isDark);
 
   const cal = totals ? Math.round(totals.calories) : 0;
-  const g = goal ?? 2000;
+  const g = goals?.calories ?? 2000;
   const pct = Math.min(100, Math.round((cal / Math.max(1, g)) * 100));
+  const waterPct = totals && goals ? Math.min(100, Math.round((totals.water_ml / Math.max(1, goals.waterMl)) * 100)) : 0;
 
   return (
     <View style={{ paddingHorizontal: 20, marginBottom: 20 }}>
@@ -79,7 +80,7 @@ export function NutritionHomeCard() {
               <View>
                 <Text style={[styles.title, { color: text }]}>Nutrition today</Text>
                 <Text style={[styles.sub, { color: muted }]}>
-                  {cal} / {g} kcal · {pct}% of goal
+                  {cal} / {g} kcal - {pct}% food - {waterPct}% water
                 </Text>
               </View>
             </View>

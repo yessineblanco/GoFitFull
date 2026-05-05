@@ -19,6 +19,7 @@ import { CheckInHomeCard } from '@/components/home/CheckInHomeCard';
 import { DailyCoachLoopCard } from '@/components/home/DailyCoachLoopCard';
 import { GlassCalendar } from '@/components/home/GlassCalendar';
 import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
+import { MilestonesCard } from '@/components/home/MilestonesCard';
 import { getResponsiveSpacing } from '@/utils/responsive';
 import { theme } from '@/theme';
 import { getBackgroundColor, getSurfaceColor, getGlassBg, getGlassBorder, getShadow } from '@/utils/colorUtils';
@@ -124,6 +125,8 @@ export const HomeScreen: React.FC = () => {
         <GlassCalendar workoutDays={workoutDays} />
 
         <StreakWidget />
+
+        <MilestonesCard />
 
         <CheckInHomeCard />
 

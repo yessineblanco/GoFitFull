@@ -22,6 +22,8 @@ export default function NutritionGoalsScreen() {
   const [p, setP] = useState('');
   const [c, setC] = useState('');
   const [f, setF] = useState('');
+  const [fiber, setFiber] = useState('');
+  const [water, setWater] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +36,8 @@ export default function NutritionGoalsScreen() {
         setP(String(g.protein_g));
         setC(String(g.carbs_g));
         setF(String(g.fat_g));
+        setFiber(String(g.fiber_g));
+        setWater(String(g.water_ml_goal));
       }
       if (!cancelled) setLoading(false);
     })();
@@ -53,6 +57,8 @@ export default function NutritionGoalsScreen() {
     const protein_g = parseFloat(p.replace(',', '.'));
     const carbs_g = parseFloat(c.replace(',', '.'));
     const fat_g = parseFloat(f.replace(',', '.'));
+    const fiber_g = parseFloat(fiber.replace(',', '.'));
+    const water_ml_goal = Math.round(parseFloat(water.replace(',', '.')));
     if (
       !Number.isFinite(calories_goal) ||
       calories_goal < 800 ||
@@ -65,13 +71,19 @@ export default function NutritionGoalsScreen() {
       carbs_g > 800 ||
       !Number.isFinite(fat_g) ||
       fat_g < 0 ||
-      fat_g > 300
+      fat_g > 300 ||
+      !Number.isFinite(fiber_g) ||
+      fiber_g < 0 ||
+      fiber_g > 150 ||
+      !Number.isFinite(water_ml_goal) ||
+      water_ml_goal < 0 ||
+      water_ml_goal > 10000
     ) {
       return;
     }
     setSaving(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const res = await saveGoals({ calories_goal, protein_g, carbs_g, fat_g });
+    const res = await saveGoals({ calories_goal, protein_g, carbs_g, fat_g, fiber_g, water_ml_goal });
     setSaving(false);
     if (res) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -123,6 +135,8 @@ export default function NutritionGoalsScreen() {
           { label: 'Protein (g)', val: p, set: setP, keyboard: 'decimal-pad' as const },
           { label: 'Carbs (g)', val: c, set: setC, keyboard: 'decimal-pad' as const },
           { label: 'Fat (g)', val: f, set: setF, keyboard: 'decimal-pad' as const },
+          { label: 'Fiber (g)', val: fiber, set: setFiber, keyboard: 'decimal-pad' as const },
+          { label: 'Water (ml)', val: water, set: setWater, keyboard: 'number-pad' as const },
         ].map((field) => (
           <View key={field.label} style={{ marginBottom: 14 }}>
             <Text style={[styles.lbl, { color: text }]}>{field.label}</Text>

@@ -25,6 +25,12 @@ export interface AIWorkoutRecommendation {
     readinessScore?: number | null;
     daysSinceLastWorkout?: number | null;
     rationale?: string;
+    coachContext?: {
+      hasAssignedProgram: boolean;
+      hasActivePack: boolean;
+      programTitle?: string | null;
+      guidance?: string;
+    };
   };
   exercises: AIWorkoutExercise[];
 }

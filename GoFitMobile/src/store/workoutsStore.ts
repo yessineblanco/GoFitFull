@@ -6,6 +6,7 @@ interface WorkoutListItem {
   id: string;
   name: string;
   difficulty: string;
+  wellness_category?: string;
   image: string;
   type: 'native' | 'custom';
 }
@@ -87,6 +88,7 @@ export const useWorkoutsStore = create<WorkoutsStore>((set, get) => ({
         id: workout.id,
         name: workout.name,
         difficulty: workout.difficulty,
+        wellness_category: workout.wellness_category,
         image: workout.image_url || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
         type: 'native' as const,
       }));
@@ -96,6 +98,7 @@ export const useWorkoutsStore = create<WorkoutsStore>((set, get) => ({
         id: workout.id,
         name: workout.name,
         difficulty: workout.difficulty,
+        wellness_category: workout.wellness_category,
         image: workout.image_url || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
         type: 'custom' as const,
       }));

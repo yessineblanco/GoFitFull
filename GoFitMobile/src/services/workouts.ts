@@ -36,6 +36,7 @@ export interface Workout {
   name: string;
   difficulty: string;
   workout_type: 'native' | 'custom';
+  wellness_category?: string;
   image_url?: string;
   exercises?: ExerciseConfig[];
   created_at: string;
@@ -47,6 +48,7 @@ export interface CustomWorkout {
   user_id: string;
   name: string;
   difficulty: string;
+  wellness_category?: string;
   image_url?: string;
   exercises: ExerciseConfig[];
   created_at: string;
@@ -185,10 +187,11 @@ export const workoutService = {
       const { data, error } = await supabase
         .from('workouts')
         .select(`
-            id,
-            name,
+          id,
+          name,
           difficulty,
           workout_type,
+          wellness_category,
           image_url,
           created_at,
           updated_at
@@ -224,6 +227,7 @@ export const workoutService = {
           name,
           difficulty,
           workout_type,
+          wellness_category,
           image_url,
           created_at,
           updated_at
@@ -316,6 +320,7 @@ export const workoutService = {
           name,
           difficulty,
           workout_type,
+          wellness_category,
           image_url,
           created_at,
           updated_at
@@ -333,6 +338,7 @@ export const workoutService = {
         user_id: workout.user_id || userId,
         name: workout.name,
         difficulty: workout.difficulty,
+        wellness_category: workout.wellness_category,
         image_url: workout.image_url,
         exercises: [], // Empty array - exercises loaded on demand
         created_at: workout.created_at,
@@ -352,6 +358,7 @@ export const workoutService = {
     workout: {
       name: string;
       difficulty?: string;
+      wellness_category?: string;
       image_url?: string;
       exercises: ExerciseConfig[];
     }
@@ -365,6 +372,7 @@ export const workoutService = {
           name: workout.name,
           difficulty: workout.difficulty || 'Custom',
           workout_type: 'custom',
+          wellness_category: workout.wellness_category || 'strength',
           image_url: workout.image_url,
         })
         .select()
@@ -407,6 +415,7 @@ export const workoutService = {
         user_id: workoutData.user_id || userId,
         name: workoutData.name,
         difficulty: workoutData.difficulty,
+        wellness_category: workoutData.wellness_category,
         image_url: workoutData.image_url,
         exercises,
         created_at: workoutData.created_at,
@@ -427,6 +436,7 @@ export const workoutService = {
     updates: {
       name?: string;
       difficulty?: string;
+      wellness_category?: string;
       image_url?: string;
       exercises?: ExerciseConfig[];
     }
@@ -436,6 +446,7 @@ export const workoutService = {
       const workoutUpdates: any = {};
       if (updates.name !== undefined) workoutUpdates.name = updates.name;
       if (updates.difficulty !== undefined) workoutUpdates.difficulty = updates.difficulty;
+      if (updates.wellness_category !== undefined) workoutUpdates.wellness_category = updates.wellness_category;
       if (updates.image_url !== undefined) workoutUpdates.image_url = updates.image_url;
 
       if (Object.keys(workoutUpdates).length > 0) {
@@ -491,6 +502,7 @@ export const workoutService = {
         user_id: workout.user_id || userId,
         name: workout.name,
         difficulty: workout.difficulty,
+        wellness_category: workout.wellness_category,
         image_url: workout.image_url,
         exercises,
         created_at: workout.created_at,

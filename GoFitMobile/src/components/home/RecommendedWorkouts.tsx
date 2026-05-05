@@ -85,6 +85,10 @@ export const RecommendedWorkouts: React.FC = () => {
 
   const adaptationLabel = recommendation?.adaptation
     ? [
+        recommendation.adaptation.coachContext?.hasAssignedProgram ||
+        recommendation.adaptation.coachContext?.hasActivePack
+          ? 'coach companion'
+          : null,
         recommendation.adaptation.readinessLevel !== 'unknown'
           ? `${recommendation.adaptation.readinessLevel} readiness`
           : null,

@@ -17,7 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { useNutritionStore } from '@/stores/nutritionStore';
 import { MacroRings } from '@/components/nutrition/MacroRings';
 import { MealSection } from '@/components/nutrition/MealSection';
-import type { MealType } from '@/services/nutrition';
+import type { MealLogWithFood, MealType } from '@/services/nutrition';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
@@ -45,11 +45,14 @@ export default function NutritionScreen() {
     goals,
     logs,
     totals,
+    weeklySummary,
     isLoading,
     error,
     refresh,
     removeLog,
     loadGoals,
+    addWater,
+    saveMeal,
   } = useNutritionStore();
 
   useFocusEffect(
@@ -73,6 +76,22 @@ export default function NutritionScreen() {
         onPress: async () => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           await removeLog(id);
+        },
+      },
+    ]);
+  };
+
+  const onSaveMeal = (mealType: MealType, mealLogs: MealLogWithFood[]) => {
+    if (mealLogs.length === 0) return;
+    const title = mealType === 'snack' ? 'Snack' : mealType.charAt(0).toUpperCase() + mealType.slice(1);
+    const name = `${title} - ${fmtHeader(selectedDate)}`;
+    Alert.alert('Save meal', `Save ${mealLogs.length} items as "${name}"?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Save',
+        onPress: async () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          await saveMeal(name, mealLogs);
         },
       },
     ]);
@@ -164,10 +183,62 @@ export default function NutritionScreen() {
           <ActivityIndicator color={BRAND} style={{ marginVertical: 24 }} />
         ) : null}
 
-        <MealSection title="Breakfast" mealType="breakfast" logs={byMeal('breakfast')} onAdd={onAdd} onDelete={onDelete} isDark={isDark} />
-        <MealSection title="Lunch" mealType="lunch" logs={byMeal('lunch')} onAdd={onAdd} onDelete={onDelete} isDark={isDark} />
-        <MealSection title="Dinner" mealType="dinner" logs={byMeal('dinner')} onAdd={onAdd} onDelete={onDelete} isDark={isDark} />
-        <MealSection title="Snacks" mealType="snack" logs={byMeal('snack')} onAdd={onAdd} onDelete={onDelete} isDark={isDark} />
+        {goals && weeklySummary ? (
+          <View style={[styles.trendCard, { borderColor: border, backgroundColor: glass }]}>
+            <Text style={[styles.trendTitle, { color: text }]}>7-day trend</Text>
+            <View style={styles.trendGrid}>
+              <View style={styles.trendItem}>
+                <Text style={[styles.trendValue, { color: text }]}>{weeklySummary.average_calories}</Text>
+                <Text style={[styles.trendLabel, { color: sub }]}>avg kcal</Text>
+              </View>
+              <View style={styles.trendItem}>
+                <Text style={[styles.trendValue, { color: text }]}>{weeklySummary.protein_days_hit}/7</Text>
+                <Text style={[styles.trendLabel, { color: sub }]}>protein</Text>
+              </View>
+              <View style={styles.trendItem}>
+                <Text style={[styles.trendValue, { color: text }]}>{weeklySummary.water_days_hit}/7</Text>
+                <Text style={[styles.trendLabel, { color: sub }]}>water</Text>
+              </View>
+              <View style={styles.trendItem}>
+                <Text style={[styles.trendValue, { color: text }]}>{weeklySummary.fiber_days_hit}/7</Text>
+                <Text style={[styles.trendLabel, { color: sub }]}>fiber</Text>
+              </View>
+            </View>
+            <Text style={[styles.trendNote, { color: sub }]}>
+              {weeklySummary.tracked_days}/7 days tracked. Use the trend, not one noisy day.
+            </Text>
+          </View>
+        ) : null}
+
+        <MealSection title="Breakfast" mealType="breakfast" logs={byMeal('breakfast')} onAdd={onAdd} onDelete={onDelete} onSave={onSaveMeal} isDark={isDark} />
+        <MealSection title="Lunch" mealType="lunch" logs={byMeal('lunch')} onAdd={onAdd} onDelete={onDelete} onSave={onSaveMeal} isDark={isDark} />
+        <MealSection title="Dinner" mealType="dinner" logs={byMeal('dinner')} onAdd={onAdd} onDelete={onDelete} onSave={onSaveMeal} isDark={isDark} />
+        <MealSection title="Snacks" mealType="snack" logs={byMeal('snack')} onAdd={onAdd} onDelete={onDelete} onSave={onSaveMeal} isDark={isDark} />
+
+        {goals ? (
+          <View style={[styles.waterCard, { borderColor: border, backgroundColor: glass }]}>
+            <View>
+              <Text style={[styles.waterTitle, { color: text }]}>Water</Text>
+              <Text style={[styles.waterMeta, { color: sub }]}>
+                {Math.round(totals.water_ml)} / {goals.water_ml_goal} ml
+              </Text>
+            </View>
+            <View style={styles.waterActions}>
+              {[250, 500].map((amount) => (
+                <TouchableOpacity
+                  key={amount}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    void addWater(amount, selectedDate);
+                  }}
+                  style={styles.waterBtn}
+                >
+                  <Text style={styles.waterBtnText}>+{amount}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         <Text style={[styles.foot, { color: sub }]}>
           Search the food catalog to log meals. Goals are editable from the gear icon.
@@ -204,4 +275,33 @@ const styles = StyleSheet.create({
   err: { padding: 12, borderRadius: 14, borderWidth: 1, marginBottom: 12 },
   errTxt: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), color: '#ff8a80' },
   foot: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), lineHeight: 16, marginTop: 8 },
+  trendCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
+  trendTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15), marginBottom: 12 },
+  trendGrid: { flexDirection: 'row', gap: 8 },
+  trendItem: { flex: 1, alignItems: 'center' },
+  trendValue: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15) },
+  trendLabel: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(10), marginTop: 2, textTransform: 'uppercase' },
+  trendNote: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), marginTop: 12, textAlign: 'center' },
+  waterCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  waterTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15) },
+  waterMeta: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), marginTop: 3 },
+  waterActions: { flexDirection: 'row', gap: 8 },
+  waterBtn: {
+    minWidth: 58,
+    minHeight: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: BRAND,
+  },
+  waterBtnText: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(12), color: '#0a0a0a' },
 });

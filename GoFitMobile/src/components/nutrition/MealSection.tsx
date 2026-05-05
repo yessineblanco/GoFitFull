@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Plus, Trash2 } from 'lucide-react-native';
+import { BookmarkPlus, Plus, Trash2 } from 'lucide-react-native';
 import type { MealLogWithFood, MealType } from '@/services/nutrition';
 import { getResponsiveFontSize } from '@/utils/responsive';
 
@@ -12,10 +12,11 @@ type Props = {
   logs: MealLogWithFood[];
   onAdd: (mealType: MealType) => void;
   onDelete: (id: string) => void;
+  onSave?: (mealType: MealType, logs: MealLogWithFood[]) => void;
   isDark?: boolean;
 };
 
-export function MealSection({ title, mealType, logs, onAdd, onDelete, isDark = true }: Props) {
+export function MealSection({ title, mealType, logs, onAdd, onDelete, onSave, isDark = true }: Props) {
   const titleC = isDark ? '#fff' : '#1A1D21';
   const sub = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
   const glass = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.7)';
@@ -25,9 +26,16 @@ export function MealSection({ title, mealType, logs, onAdd, onDelete, isDark = t
     <View style={[styles.card, { backgroundColor: glass, borderColor: border }]}>
       <View style={styles.head}>
         <Text style={[styles.h, { color: titleC }]}>{title}</Text>
-        <TouchableOpacity onPress={() => onAdd(mealType)} hitSlop={10} style={styles.addBtn}>
-          <Plus size={20} color={BRAND} />
-        </TouchableOpacity>
+        <View style={styles.actions}>
+          {logs.length > 0 && onSave ? (
+            <TouchableOpacity onPress={() => onSave(mealType, logs)} hitSlop={10} style={styles.addBtn}>
+              <BookmarkPlus size={19} color={BRAND} />
+            </TouchableOpacity>
+          ) : null}
+          <TouchableOpacity onPress={() => onAdd(mealType)} hitSlop={10} style={styles.addBtn}>
+            <Plus size={20} color={BRAND} />
+          </TouchableOpacity>
+        </View>
       </View>
       {logs.length === 0 ? (
         <Text style={[styles.empty, { color: sub }]}>Nothing logged yet.</Text>
@@ -41,7 +49,7 @@ export function MealSection({ title, mealType, logs, onAdd, onDelete, isDark = t
                   {log.food_item.name}
                 </Text>
                 <Text style={[styles.itemMeta, { color: sub }]}>
-                  {log.servings}× {log.food_item.serving_label} · {kcal} kcal
+                  {log.servings}x {log.food_item.serving_label} - {kcal} kcal
                 </Text>
               </View>
               <TouchableOpacity onPress={() => onDelete(log.id)} hitSlop={12} style={{ padding: 6 }}>
@@ -59,6 +67,7 @@ const styles = StyleSheet.create({
   card: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   h: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15) },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addBtn: { padding: 4 },
   empty: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), paddingVertical: 6 },
   item: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1 },

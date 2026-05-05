@@ -49,6 +49,20 @@ interface LibraryScreenProps {
   navigation: NavigationProp;
 }
 
+type WellnessCategory = 'all' | 'strength' | 'mobility' | 'balance_core' | 'beginner_strength' | 'older_adult' | 'functional_fitness' | 'recovery' | 'stress_reduction';
+
+const WELLNESS_CATEGORIES: Array<{ key: WellnessCategory; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'strength', label: 'Strength' },
+  { key: 'beginner_strength', label: 'Beginner' },
+  { key: 'functional_fitness', label: 'Functional' },
+  { key: 'mobility', label: 'Mobility' },
+  { key: 'balance_core', label: 'Balance/Core' },
+  { key: 'older_adult', label: 'Older Adult' },
+  { key: 'recovery', label: 'Recovery' },
+  { key: 'stress_reduction', label: 'Stress' },
+];
+
 export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ navigation, route }) => {
   const dateToSchedule = route.params?.date;
   const insets = useSafeAreaInsets();
@@ -67,6 +81,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
   );
 
   const [selectedTab, setSelectedTab] = useState<'native' | 'custom'>('native');
+  const [selectedCategory, setSelectedCategory] = useState<WellnessCategory>('all');
   const [peekingWorkout, setPeekingWorkout] = useState<any | null>(null);
 
   // Tab indicator animation
@@ -104,12 +119,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
 
   // Filter workouts based on selected tab (must be declared before use)
   const filteredWorkouts = React.useMemo(() => {
-    if (selectedTab === 'native') {
-      return nativeWorkouts;
-    } else {
-      return customWorkouts;
+    const workouts = selectedTab === 'native' ? nativeWorkouts : customWorkouts;
+    if (selectedCategory === 'all') {
+      return workouts;
     }
-  }, [selectedTab, nativeWorkouts, customWorkouts]);
+    return workouts.filter(workout => (workout.wellness_category || 'strength') === selectedCategory);
+  }, [selectedTab, selectedCategory, nativeWorkouts, customWorkouts]);
 
   // Initialize card animations when workouts change
   useEffect(() => {
@@ -170,12 +185,12 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
     if (animations.length > 0) {
       Animated.stagger(80, animations).start();
     }
-  }, [filteredWorkouts.length, selectedTab]);
+  }, [filteredWorkouts.length, selectedTab, selectedCategory]);
 
   // Reset scroll position when switching tabs
   useEffect(() => {
     scrollViewRef.current?.scrollTo({ x: 0, y: 0, animated: true });
-  }, [selectedTab]);
+  }, [selectedTab, selectedCategory]);
 
   // Prefetch workouts and images for visible items on scroll
   const handleScroll = (event: any) => {
@@ -307,10 +322,11 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
   const screenHeight = Dimensions.get('window').height;
   const headerHeight = insets.top + getResponsiveSpacing(8) + getResponsiveSpacing(12) + getResponsiveSpacing(20); // Header + title
   const tabHeight = getResponsiveSpacing(60); // Tab selector
+  const categoryHeight = getResponsiveSpacing(54); // Wellness category chips
   const bottomBarHeight = insets.bottom + getResponsiveSpacing(100); // Bottom navigation bar (adjusted for floating bar)
   const gapBetweenTabAndCards = getResponsiveSpacing(24); // Gap between tab selector and cards (for card height calculation)
   const bottomPadding = getResponsiveSpacing(24); // Bottom padding to respect bottom bar
-  const availableHeight = screenHeight - headerHeight - tabHeight - gapBetweenTabAndCards - bottomBarHeight - bottomPadding;
+  const availableHeight = screenHeight - headerHeight - tabHeight - categoryHeight - gapBetweenTabAndCards - bottomBarHeight - bottomPadding;
   const cardHeight = Math.min(availableHeight * 0.9, scaleHeight(650)); // Use 90% of available space, max 650px
 
   // Theme colors
@@ -413,7 +429,39 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
     },
     horizontalScroll: {
       flex: 1,
-      marginTop: getResponsiveSpacing(24), // Spacing between tabs and cards
+      marginTop: getResponsiveSpacing(16), // Spacing between filters and cards
+    },
+    categoryScroll: {
+      marginTop: getResponsiveSpacing(12),
+      maxHeight: scaleHeight(42),
+    },
+    categoryContent: {
+      paddingHorizontal: getResponsiveSpacing(16),
+      gap: getResponsiveSpacing(8),
+      alignItems: 'center' as const,
+    },
+    categoryChip: {
+      minHeight: scaleHeight(36),
+      paddingHorizontal: getResponsiveSpacing(14),
+      borderRadius: getResponsiveSpacing(18),
+      borderWidth: 1,
+      borderColor: getTextColorWithOpacity(isDark, 0.16),
+      backgroundColor: getSurfaceColor(isDark),
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    },
+    categoryChipActive: {
+      borderColor: BRAND_PRIMARY,
+      backgroundColor: getPrimaryWithOpacity(0.16),
+    },
+    categoryText: {
+      fontSize: getScaledFontSize(12),
+      fontWeight: '600' as const,
+      color: getTextLightColor(isDark),
+      fontFamily: 'Barlow_600SemiBold',
+    },
+    categoryTextActive: {
+      color: BRAND_PRIMARY,
     },
     scrollContent: {
       paddingLeft: (Dimensions.get('window').width - scaleWidth(299)) / 2, // Center first card
@@ -762,6 +810,34 @@ export const LibraryScreen: React.FC<LibraryScreenProps & { route: any }> = ({ n
         </View>
       </View>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={dynamicStyles.categoryScroll}
+        contentContainerStyle={dynamicStyles.categoryContent}
+      >
+        {WELLNESS_CATEGORIES.map((category) => {
+          const isActive = selectedCategory === category.key;
+          return (
+            <Pressable
+              key={category.key}
+              style={[
+                dynamicStyles.categoryChip,
+                isActive && dynamicStyles.categoryChipActive,
+              ]}
+              onPress={() => setSelectedCategory(category.key)}
+            >
+              <Text style={[
+                dynamicStyles.categoryText,
+                isActive && dynamicStyles.categoryTextActive,
+              ]}>
+                {category.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       {/* Horizontal ScrollView for Workout Cards */}
       <ScrollView
         ref={scrollViewRef}
@@ -889,6 +965,7 @@ interface WorkoutCardProps {
     id: string;
     name: string;
     difficulty: string;
+    wellness_category?: string;
     image: string;
   };
   isDark: boolean;

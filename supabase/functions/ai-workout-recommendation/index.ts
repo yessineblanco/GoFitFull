@@ -52,6 +52,21 @@ type WorkoutSessionRow = {
   workouts: { name: string | null; difficulty: string | null } | null;
 };
 
+type CustomProgramRow = {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  updated_at: string;
+};
+
+type ActivePackRow = {
+  id: string;
+  coach_id: string;
+  sessions_remaining: number;
+  expires_at: string | null;
+};
+
 type AdaptiveContext = {
   readinessLevel: 'unknown' | 'low' | 'moderate' | 'high';
   readinessScore: number | null;
@@ -64,6 +79,12 @@ type AdaptiveContext = {
     sleepMinutes: number | null;
     restingHeartRate: number | null;
     hrvRmssdMs: number | null;
+  };
+  coachContext: {
+    hasAssignedProgram: boolean;
+    hasActivePack: boolean;
+    programTitle: string | null;
+    guidance: string;
   };
 };
 
@@ -97,7 +118,9 @@ const getDaysSinceLastWorkout = (sessions: WorkoutSessionRow[] | null | undefine
 const computeAdaptiveContext = (
   readiness: ReadinessRow | null | undefined,
   health: HealthRow | null | undefined,
-  sessions: WorkoutSessionRow[] | null | undefined
+  sessions: WorkoutSessionRow[] | null | undefined,
+  assignedProgram: CustomProgramRow | null | undefined,
+  activePack: ActivePackRow | null | undefined
 ): AdaptiveContext => {
   const readinessLevel = readiness?.level || 'unknown';
   const daysSinceLastWorkout = getDaysSinceLastWorkout(sessions);
@@ -132,6 +155,12 @@ const computeAdaptiveContext = (
     constraints.push('Keep rest periods generous');
   }
 
+  const hasAssignedProgram = Boolean(assignedProgram?.id);
+  const hasActivePack = Boolean(activePack?.id);
+  if (hasAssignedProgram || hasActivePack) {
+    constraints.push('Do not override coach programming', 'Frame this as optional companion work');
+  }
+
   return {
     readinessLevel,
     readinessScore: readiness?.score ?? null,
@@ -144,6 +173,15 @@ const computeAdaptiveContext = (
       sleepMinutes: health?.sleep_minutes ?? null,
       restingHeartRate: health?.resting_heart_rate ?? null,
       hrvRmssdMs: health?.hrv_rmssd_ms ?? null,
+    },
+    coachContext: {
+      hasAssignedProgram,
+      hasActivePack,
+      programTitle: assignedProgram?.title ?? null,
+      guidance:
+        hasAssignedProgram || hasActivePack
+          ? 'Treat this workout as an optional companion suggestion. Do not replace coach-assigned programming.'
+          : 'No active coach programming was found for this user.',
     },
   };
 };
@@ -184,40 +222,59 @@ Deno.serve(async (req) => {
       { data: sessions },
       { data: readiness },
       { data: health },
+      { data: assignedProgram },
+      { data: activePack },
       { data: exercises, error: exercisesError },
     ] = await Promise.all([
-        supabase
-          .from('user_profiles')
-          .select('goal, activity_level, age, gender')
-          .eq('id', userId)
-          .maybeSingle(),
-        supabase
-          .from('workout_sessions')
-          .select('date, started_at, completed_at, exercises_completed, workouts(name, difficulty)')
-          .eq('user_id', userId)
-          .not('completed_at', 'is', null)
-          .order('completed_at', { ascending: false })
-          .limit(8),
-        supabase
-          .from('daily_readiness')
-          .select('date, score, level, recommendation, inputs')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('health_data')
-          .select('date, steps, active_calories, sleep_minutes, resting_heart_rate, hrv_rmssd_ms')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('exercises')
-          .select('id, name, category, muscle_groups, equipment, difficulty, default_sets, default_reps, default_rest_time, image_url')
-          .order('name', { ascending: true })
-          .limit(120),
-      ]);
+      supabase
+        .from('user_profiles')
+        .select('goal, activity_level, age, gender')
+        .eq('id', userId)
+        .maybeSingle(),
+      supabase
+        .from('workout_sessions')
+        .select('date, started_at, completed_at, exercises_completed, workouts(name, difficulty)')
+        .eq('user_id', userId)
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false })
+        .limit(8),
+      supabase
+        .from('daily_readiness')
+        .select('date, score, level, recommendation, inputs')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('health_data')
+        .select('date, steps, active_calories, sleep_minutes, resting_heart_rate, hrv_rmssd_ms')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('custom_programs')
+        .select('id, title, type, status, updated_at')
+        .eq('client_id', userId)
+        .eq('is_template', false)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('purchased_packs')
+        .select('id, coach_id, sessions_remaining, expires_at')
+        .eq('client_id', userId)
+        .eq('status', 'active')
+        .gt('sessions_remaining', 0)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('exercises')
+        .select('id, name, category, muscle_groups, equipment, difficulty, default_sets, default_reps, default_rest_time, image_url')
+        .order('name', { ascending: true })
+        .limit(120),
+    ]);
 
     if (exercisesError) throw exercisesError;
     if (!exercises || exercises.length < 3) {
@@ -240,7 +297,9 @@ Deno.serve(async (req) => {
     const adaptiveContext = computeAdaptiveContext(
       readiness as ReadinessRow | null,
       health as HealthRow | null,
-      sessions as WorkoutSessionRow[] | null
+      sessions as WorkoutSessionRow[] | null,
+      assignedProgram as CustomProgramRow | null,
+      activePack as ActivePackRow | null
     );
 
     const prompt = [
@@ -249,6 +308,7 @@ Deno.serve(async (req) => {
       'Make it practical for one session and follow the adaptive guidance over generic volume.',
       'If volumeAdjustment is reduce, use 3 to 5 exercises, fewer hard sets, and longer rests.',
       'If the user missed several days, create a moderate catch-up session, not a punishment workout.',
+      'If coachContext has an assigned program or active pack, this must be an optional companion workout and must not replace coach instructions.',
       'Return JSON only with this exact shape:',
       '{"name":"string","focus":"string","reason":"string","exercises":[{"id":"uuid from catalog","sets":"string number","reps":"string such as 10 or 12,10,8","restTime":"seconds as string"}],"adaptation":{"rationale":"string"}}',
       '',
@@ -332,6 +392,7 @@ Deno.serve(async (req) => {
         readinessScore: adaptiveContext.readinessScore,
         daysSinceLastWorkout: adaptiveContext.daysSinceLastWorkout,
         rationale: String(generated.adaptation?.rationale || adaptiveContext.rationale).slice(0, 180),
+        coachContext: adaptiveContext.coachContext,
       },
     });
   } catch (error) {

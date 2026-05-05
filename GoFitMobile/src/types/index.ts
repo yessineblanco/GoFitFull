@@ -101,6 +101,7 @@ export type ProfileStackParamList = {
   LanguageSettings: undefined;
   ThemeSettings: undefined;
   HealthSync: undefined;
+  HabitSettings: undefined;
   TermsOfService: undefined;
   PrivacyPolicy: undefined;
   MyPacks: undefined;

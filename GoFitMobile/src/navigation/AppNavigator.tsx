@@ -31,6 +31,7 @@ import { TextSizeSettingsScreen } from '@/screens/profile/TextSizeSettingsScreen
 import { LanguageSettingsScreen } from '@/screens/profile/LanguageSettingsScreen';
 import { ThemeSettingsScreen } from '@/screens/profile/ThemeSettingsScreen';
 import { HealthSyncScreen } from '@/screens/profile/HealthSyncScreen';
+import { HabitSettingsScreen } from '@/screens/profile/HabitSettingsScreen';
 import { EditProfileScreen } from '@/screens/profile/EditProfileScreen';
 import { TermsOfServiceScreen } from '@/screens/profile/TermsOfServiceScreen';
 import { PrivacyPolicyScreen } from '@/screens/profile/PrivacyPolicyScreen';
@@ -101,6 +102,7 @@ const ProfileStackNavigator = () => {
       <ProfileStack.Screen name="LanguageSettings" component={LanguageSettingsScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="ThemeSettings" component={ThemeSettingsScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="HealthSync" component={HealthSyncScreen} options={{ headerShown: false }} />
+      <ProfileStack.Screen name="HabitSettings" component={HabitSettingsScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }} />
       <ProfileStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }} />

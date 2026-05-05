@@ -19,6 +19,17 @@ function statusLabel(status: string) {
   return 'Disconnected';
 }
 
+function formatSleep(minutes: number | null | undefined) {
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function formatNullableNumber(value: number | null | undefined) {
+  return value ? value.toLocaleString() : '--';
+}
+
 export function HealthSyncScreen() {
   const { isDark } = useThemeStore();
   const { status, today, history, error, lastSyncedAt, checkConnection, loadHistory, connect, sync, disconnectLocal } = useHealthStore();
@@ -72,6 +83,19 @@ export function HealthSyncScreen() {
               <Text style={[styles.metricLabel, { color: muted }]}>active kcal</Text>
             </View>
           </View>
+          <View style={styles.metricsRow}>
+            <View style={[styles.metricBox, { backgroundColor: glass, borderColor: border }]}>
+              <Text style={[styles.metricValue, { color: text }]}>{formatSleep(today?.sleep_minutes)}</Text>
+              <Text style={[styles.metricLabel, { color: muted }]}>sleep</Text>
+            </View>
+            <View style={[styles.metricBox, { backgroundColor: glass, borderColor: border }]}>
+              <Text style={[styles.metricValue, { color: text }]}>{formatNullableNumber(today?.resting_heart_rate)}</Text>
+              <Text style={[styles.metricLabel, { color: muted }]}>rest HR</Text>
+            </View>
+          </View>
+          <Text style={[styles.helper, { color: muted }]}>
+            HRV: {formatNullableNumber(today?.hrv_rmssd_ms)} ms
+          </Text>
 
           <Text style={[styles.helper, { color: muted }]}>
             7 days: {weeklySteps.toLocaleString()} steps · {weeklyCalories.toLocaleString()} active kcal

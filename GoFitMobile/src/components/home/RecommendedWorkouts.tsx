@@ -83,9 +83,24 @@ export const RecommendedWorkouts: React.FC = () => {
     generateWorkout();
   };
 
+  const adaptationLabel = recommendation?.adaptation
+    ? [
+        recommendation.adaptation.readinessLevel !== 'unknown'
+          ? `${recommendation.adaptation.readinessLevel} readiness`
+          : null,
+        recommendation.adaptation.daysSinceLastWorkout !== null &&
+        recommendation.adaptation.daysSinceLastWorkout !== undefined
+          ? `${recommendation.adaptation.daysSinceLastWorkout}d since workout`
+          : null,
+        `${recommendation.adaptation.volumeAdjustment} volume`,
+      ]
+        .filter(Boolean)
+        .join(' / ')
+    : null;
+
   return (
     <View style={styles.container}>
-      <SectionHeader title="AI workout" showSeeAll={false} />
+      <SectionHeader title="Adaptive workout" showSeeAll={false} />
       <TouchableOpacity activeOpacity={0.9} onPress={handlePrimaryPress} disabled={loading || saving}>
         <BlurView
           intensity={isDark ? 34 : 42}
@@ -121,7 +136,7 @@ export const RecommendedWorkouts: React.FC = () => {
             <View style={styles.headerRow}>
               <View style={styles.tag}>
                 <Sparkles size={13} color={theme.colors.primary} />
-                <Text style={styles.tagText}>Groq AI</Text>
+                <Text style={styles.tagText}>Adaptive AI</Text>
               </View>
               {(loading || saving) ? (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -141,6 +156,11 @@ export const RecommendedWorkouts: React.FC = () => {
                   error ||
                   'AI builds one workout from your goal, recent sessions, and exercises in the database.'}
               </Text>
+              {adaptationLabel ? (
+                <Text style={styles.adaptationText} numberOfLines={1}>
+                  {adaptationLabel}
+                </Text>
+              ) : null}
 
               <View style={styles.footer}>
                 <Text style={styles.focus} numberOfLines={1}>
@@ -222,6 +242,13 @@ const styles = StyleSheet.create({
     fontSize: getResponsiveFontSize(12),
     lineHeight: getResponsiveFontSize(16),
     marginTop: getResponsiveSpacing(6),
+  },
+  adaptationText: {
+    marginTop: getResponsiveSpacing(8),
+    fontFamily: 'Barlow_700Bold',
+    fontSize: getResponsiveFontSize(10),
+    color: theme.colors.primary,
+    textTransform: 'uppercase',
   },
   footer: {
     marginTop: getResponsiveSpacing(12),

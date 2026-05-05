@@ -137,6 +137,17 @@ function formatMeasurementConfidence(value: number | null) {
   return `${Math.round(value * 100)}%`;
 }
 
+function formatSleepMinutes(minutes: number | null | undefined) {
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function formatOptionalMetric(value: number | null | undefined) {
+  return value ? value.toLocaleString() : '--';
+}
+
 // --- Helper Components ---
 
 const GlassPanel = ({ children, style, intensity = 1, isDark = true }: { children: React.ReactNode, style?: any, intensity?: number, isDark?: boolean }) => (
@@ -1214,6 +1225,20 @@ const HealthProgressCard = ({ userId }: { userId?: string }) => {
             <Text style={{ fontFamily: 'Barlow_600SemiBold', color: textMuted, fontSize: 11, textTransform: 'uppercase' }}>active kcal</Text>
           </View>
         </View>
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Barlow_800ExtraBold', color: text, fontSize: 22 }}>
+              {formatSleepMinutes(today?.sleep_minutes)}
+            </Text>
+            <Text style={{ fontFamily: 'Barlow_600SemiBold', color: textMuted, fontSize: 11, textTransform: 'uppercase' }}>sleep</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'Barlow_800ExtraBold', color: text, fontSize: 22 }}>
+              {formatOptionalMetric(today?.resting_heart_rate)}
+            </Text>
+            <Text style={{ fontFamily: 'Barlow_600SemiBold', color: textMuted, fontSize: 11, textTransform: 'uppercase' }}>rest HR</Text>
+          </View>
+        </View>
 
         <View style={{ height: 52, flexDirection: 'row', alignItems: 'flex-end', gap: 7 }}>
           {ordered.length > 0 ? ordered.map((row) => (
@@ -1234,6 +1259,9 @@ const HealthProgressCard = ({ userId }: { userId?: string }) => {
 
         <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: textMuted, marginTop: 12 }}>
           7 days: {weeklySteps.toLocaleString()} steps · {weeklyCalories.toLocaleString()} active kcal
+        </Text>
+        <Text style={{ fontFamily: 'Barlow_400Regular', fontSize: 12, color: textMuted, marginTop: 4 }}>
+          HRV today: {formatOptionalMetric(today?.hrv_rmssd_ms)} ms
         </Text>
       </LinearGradient>
     </View>

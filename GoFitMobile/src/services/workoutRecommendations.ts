@@ -19,6 +19,13 @@ export interface AIWorkoutRecommendation {
   focus: string;
   reason: string;
   image_url?: string | null;
+  adaptation?: {
+    volumeAdjustment: 'reduce' | 'maintain' | 'increase';
+    readinessLevel: 'unknown' | 'low' | 'moderate' | 'high';
+    readinessScore?: number | null;
+    daysSinceLastWorkout?: number | null;
+    rationale?: string;
+  };
   exercises: AIWorkoutExercise[];
 }
 

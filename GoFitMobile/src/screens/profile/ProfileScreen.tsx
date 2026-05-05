@@ -688,6 +688,21 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
             <TouchableOpacity
               style={[styles.settingsItem, dynamicStyles.settingsItem]}
+              onPress={() => navigation.navigate('HabitSettings')}
+            >
+              <View style={styles.settingsItemLeft}>
+                <View style={[styles.iconContainer, dynamicStyles.iconContainer]}>
+                  <Target size={20} color={theme.colors.primary} />
+                </View>
+                <Text style={dynamicStyles.settingsItemText}>Daily Habits</Text>
+              </View>
+              <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} />
+            </TouchableOpacity>
+
+            <View style={[styles.divider, dynamicStyles.divider]} />
+
+            <TouchableOpacity
+              style={[styles.settingsItem, dynamicStyles.settingsItem]}
               onPress={() => navigation.navigate('UnitPreferences')}
             >
               <View style={styles.settingsItemLeft}>

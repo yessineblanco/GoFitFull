@@ -27,6 +27,46 @@ type GeneratedExercise = {
   difficulty?: string;
 };
 
+type ReadinessRow = {
+  date: string;
+  score: number;
+  level: 'low' | 'moderate' | 'high';
+  recommendation: string | null;
+  inputs: Record<string, unknown> | null;
+};
+
+type HealthRow = {
+  date: string;
+  steps: number | null;
+  active_calories: number | null;
+  sleep_minutes: number | null;
+  resting_heart_rate: number | null;
+  hrv_rmssd_ms: number | null;
+};
+
+type WorkoutSessionRow = {
+  date: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  exercises_completed: number | null;
+  workouts: { name: string | null; difficulty: string | null } | null;
+};
+
+type AdaptiveContext = {
+  readinessLevel: 'unknown' | 'low' | 'moderate' | 'high';
+  readinessScore: number | null;
+  daysSinceLastWorkout: number | null;
+  volumeAdjustment: 'reduce' | 'maintain' | 'increase';
+  intensityGuidance: string;
+  rationale: string;
+  constraints: string[];
+  recovery: {
+    sleepMinutes: number | null;
+    restingHeartRate: number | null;
+    hrvRmssdMs: number | null;
+  };
+};
+
 const jsonResponse = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -40,6 +80,72 @@ const extractJson = (text: string) => {
   const match = trimmed.match(/\{[\s\S]*\}/);
   if (!match) throw new Error('AI response did not include JSON');
   return JSON.parse(match[0]);
+};
+
+const getDaysSinceLastWorkout = (sessions: WorkoutSessionRow[] | null | undefined) => {
+  const lastSession = sessions?.find((session) => session.completed_at || session.date);
+  const lastDate = lastSession?.completed_at || lastSession?.date;
+  if (!lastDate) return null;
+
+  const parsed = new Date(lastDate);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  const diffMs = Date.now() - parsed.getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+};
+
+const computeAdaptiveContext = (
+  readiness: ReadinessRow | null | undefined,
+  health: HealthRow | null | undefined,
+  sessions: WorkoutSessionRow[] | null | undefined
+): AdaptiveContext => {
+  const readinessLevel = readiness?.level || 'unknown';
+  const daysSinceLastWorkout = getDaysSinceLastWorkout(sessions);
+  const constraints: string[] = [];
+  let volumeAdjustment: AdaptiveContext['volumeAdjustment'] = 'maintain';
+  let intensityGuidance = 'Use moderate working sets and leave 1 to 2 reps in reserve.';
+  let rationale = 'Balanced session based on recent training history.';
+
+  if (readinessLevel === 'low') {
+    volumeAdjustment = 'reduce';
+    intensityGuidance = 'Lower intensity and volume. Prefer technique, mobility, and longer rests.';
+    rationale = readiness?.recommendation || 'Readiness is low today, so the session should protect recovery.';
+    constraints.push('Use 3 to 5 exercises', 'Avoid maximal sets', 'Prefer lower skill or lower load options');
+  } else if (readinessLevel === 'high' && daysSinceLastWorkout !== null && daysSinceLastWorkout <= 2) {
+    volumeAdjustment = 'increase';
+    intensityGuidance = 'Slightly higher volume is acceptable while keeping form quality high.';
+    rationale = 'Readiness is high and training rhythm is current.';
+    constraints.push('Use 5 to 7 exercises', 'Progress volume conservatively');
+  }
+
+  if (daysSinceLastWorkout !== null && daysSinceLastWorkout >= 4 && volumeAdjustment !== 'reduce') {
+    volumeAdjustment = 'maintain';
+    intensityGuidance = 'Build a moderate catch-up workout instead of a punishing session.';
+    rationale = `It has been ${daysSinceLastWorkout} days since the last completed workout, so restart momentum gradually.`;
+    constraints.push('Prefer full-body basics', 'Avoid making up missed volume all at once');
+  }
+
+  if (health?.sleep_minutes !== null && health?.sleep_minutes !== undefined && health.sleep_minutes < 360) {
+    volumeAdjustment = 'reduce';
+    intensityGuidance = 'Reduce intensity because recent sleep is short.';
+    rationale = 'Recent sleep is below 6 hours, so the workout should be recovery-aware.';
+    constraints.push('Keep rest periods generous');
+  }
+
+  return {
+    readinessLevel,
+    readinessScore: readiness?.score ?? null,
+    daysSinceLastWorkout,
+    volumeAdjustment,
+    intensityGuidance,
+    rationale,
+    constraints: Array.from(new Set(constraints)),
+    recovery: {
+      sleepMinutes: health?.sleep_minutes ?? null,
+      restingHeartRate: health?.resting_heart_rate ?? null,
+      hrvRmssdMs: health?.hrv_rmssd_ms ?? null,
+    },
+  };
 };
 
 Deno.serve(async (req) => {
@@ -73,8 +179,13 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const [{ data: profile }, { data: sessions }, { data: exercises, error: exercisesError }] =
-      await Promise.all([
+    const [
+      { data: profile },
+      { data: sessions },
+      { data: readiness },
+      { data: health },
+      { data: exercises, error: exercisesError },
+    ] = await Promise.all([
         supabase
           .from('user_profiles')
           .select('goal, activity_level, age, gender')
@@ -87,6 +198,20 @@ Deno.serve(async (req) => {
           .not('completed_at', 'is', null)
           .order('completed_at', { ascending: false })
           .limit(8),
+        supabase
+          .from('daily_readiness')
+          .select('date, score, level, recommendation, inputs')
+          .eq('user_id', userId)
+          .order('date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('health_data')
+          .select('date, steps, active_calories, sleep_minutes, resting_heart_rate, hrv_rmssd_ms')
+          .eq('user_id', userId)
+          .order('date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
         supabase
           .from('exercises')
           .select('id, name, category, muscle_groups, equipment, difficulty, default_sets, default_reps, default_rest_time, image_url')
@@ -112,16 +237,24 @@ Deno.serve(async (req) => {
         restTime: exercise.default_rest_time || 60,
       },
     }));
+    const adaptiveContext = computeAdaptiveContext(
+      readiness as ReadinessRow | null,
+      health as HealthRow | null,
+      sessions as WorkoutSessionRow[] | null
+    );
 
     const prompt = [
       'Create one personalized custom workout for a GoFit mobile user.',
       'Use ONLY exercises from the provided exercise catalog. Do not invent exercise IDs.',
-      'Prefer 5 to 7 exercises. Make it practical for one session.',
+      'Make it practical for one session and follow the adaptive guidance over generic volume.',
+      'If volumeAdjustment is reduce, use 3 to 5 exercises, fewer hard sets, and longer rests.',
+      'If the user missed several days, create a moderate catch-up session, not a punishment workout.',
       'Return JSON only with this exact shape:',
-      '{"name":"string","focus":"string","reason":"string","exercises":[{"id":"uuid from catalog","sets":"string number","reps":"string such as 10 or 12,10,8","restTime":"seconds as string"}]}',
+      '{"name":"string","focus":"string","reason":"string","exercises":[{"id":"uuid from catalog","sets":"string number","reps":"string such as 10 or 12,10,8","restTime":"seconds as string"}],"adaptation":{"rationale":"string"}}',
       '',
       `User profile: ${JSON.stringify(profile || {})}`,
       `Recent completed sessions: ${JSON.stringify(sessions || [])}`,
+      `Adaptive guidance: ${JSON.stringify(adaptiveContext)}`,
       `Exercise catalog: ${JSON.stringify(exerciseCatalog)}`,
     ].join('\n');
 
@@ -160,6 +293,7 @@ Deno.serve(async (req) => {
     const generated = extractJson(content);
     const exerciseMap = new Map((exercises as ExerciseRow[]).map((exercise) => [exercise.id, exercise]));
     const generatedExercises = Array.isArray(generated.exercises) ? generated.exercises : [];
+    const maxExercises = adaptiveContext.volumeAdjustment === 'reduce' ? 5 : 8;
     const validExercises = generatedExercises
       .map((item: any) => {
         const source = exerciseMap.get(String(item.id));
@@ -179,7 +313,7 @@ Deno.serve(async (req) => {
         };
       })
       .filter((exercise: GeneratedExercise | null): exercise is GeneratedExercise => exercise !== null)
-      .slice(0, 8);
+      .slice(0, maxExercises);
 
     if (validExercises.length < 3) {
       return jsonResponse({ error: 'AI response did not include enough valid catalog exercises' }, 502);
@@ -192,6 +326,13 @@ Deno.serve(async (req) => {
       reason: String(generated.reason || 'Built from your profile, recent workouts, and the exercise library.'),
       image_url: validExercises[0]?.image || null,
       exercises: validExercises,
+      adaptation: {
+        volumeAdjustment: adaptiveContext.volumeAdjustment,
+        readinessLevel: adaptiveContext.readinessLevel,
+        readinessScore: adaptiveContext.readinessScore,
+        daysSinceLastWorkout: adaptiveContext.daysSinceLastWorkout,
+        rationale: String(generated.adaptation?.rationale || adaptiveContext.rationale).slice(0, 180),
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';

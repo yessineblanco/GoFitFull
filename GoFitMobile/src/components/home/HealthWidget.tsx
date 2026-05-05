@@ -14,6 +14,17 @@ function formatNumber(value: number) {
   return value.toLocaleString();
 }
 
+function formatSleep(minutes: number | null | undefined) {
+  if (!minutes) return '--';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function formatNullableNumber(value: number | null | undefined) {
+  return value ? value.toLocaleString() : '--';
+}
+
 export function HealthWidget() {
   const { user } = useAuthStore();
   const { isDark } = useThemeStore();
@@ -98,6 +109,19 @@ export function HealthWidget() {
           <View style={styles.metric}>
             <Text style={[styles.metricValue, { color: text }]}>{formatNumber(calories)}</Text>
             <Text style={[styles.metricLabel, { color: muted }]}>Active kcal</Text>
+          </View>
+        </View>
+        <View style={styles.metricRow}>
+          <View style={styles.metric}>
+            <Text style={[styles.metricValue, { color: text }]}>{formatSleep(today?.sleep_minutes)}</Text>
+            <Text style={[styles.metricLabel, { color: muted }]}>Sleep</Text>
+          </View>
+          <View style={[styles.metricDivider, { backgroundColor: border }]} />
+          <View style={styles.metric}>
+            <Text style={[styles.metricValue, { color: text }]}>
+              {formatNullableNumber(today?.resting_heart_rate)}
+            </Text>
+            <Text style={[styles.metricLabel, { color: muted }]}>Rest HR</Text>
           </View>
         </View>
       </BlurView>

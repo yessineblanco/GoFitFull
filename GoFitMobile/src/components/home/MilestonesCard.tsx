@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Award, CheckCircle2, Send } from 'lucide-react-native';
-import { SectionHeader } from '@/components/home/SectionHeader';
 import { useDailyCoachStore } from '@/stores/dailyCoachStore';
 import { useSessionsStore } from '@/store/sessionsStore';
 import { buildMilestones, type Milestone } from '@/services/milestones';
 import { nutritionService, type WeeklyNutritionSummary } from '@/services/nutrition';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getGlassBg, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
+import { getBlurTint, getGlassBg, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 import { getResponsiveFontSize, getResponsiveSpacing } from '@/utils/responsive';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -55,13 +56,23 @@ export function MilestonesCard() {
   const border = getGlassBorder(isDark);
 
   return (
-    <View style={styles.container}>
-      <SectionHeader title="Milestones" showSeeAll={false} />
-      <View style={styles.grid}>
-        {milestones.map((milestone) => (
-          <MilestoneItem key={milestone.id} milestone={milestone} text={text} muted={muted} glass={glass} border={border} />
-        ))}
-      </View>
+    <View style={[styles.outer, { borderColor: border }]}>
+      <BlurView
+        intensity={isDark ? 80 : 60}
+        tint={getBlurTint(isDark)}
+        style={[styles.glass, { backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)' }]}
+      >
+        <LinearGradient
+          colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)']}
+          style={StyleSheet.absoluteFill}
+        />
+        <Text style={[styles.heading, { color: text }]}>Milestones</Text>
+        <View style={styles.grid}>
+          {milestones.map((milestone) => (
+            <MilestoneItem key={milestone.id} milestone={milestone} text={text} muted={muted} glass={glass} border={border} />
+          ))}
+        </View>
+      </BlurView>
     </View>
   );
 }
@@ -89,7 +100,11 @@ function MilestoneItem({
   return (
     <View style={[styles.item, { backgroundColor: glass, borderColor: milestone.achieved ? 'rgba(132,196,65,0.5)' : border }]}>
       <View style={styles.itemHeader}>
-        {milestone.achieved ? <CheckCircle2 size={17} color={theme.colors.primary} /> : <Award size={17} color={theme.colors.primary} />}
+        {milestone.achieved ? (
+          <CheckCircle2 size={16} color={theme.colors.primary} strokeWidth={2.2} />
+        ) : (
+          <Award size={16} color={theme.colors.primary} strokeWidth={2.2} />
+        )}
         <Text style={[styles.percent, { color: theme.colors.primary }]}>{Math.min(100, pct)}%</Text>
       </View>
       <Text style={[styles.title, { color: text }]} numberOfLines={1}>
@@ -103,7 +118,7 @@ function MilestoneItem({
       </View>
       {milestone.achieved ? (
         <TouchableOpacity onPress={onShare} activeOpacity={0.8} style={styles.shareButton}>
-          <Send size={13} color="#0a0a0a" />
+          <Send size={12} color="#0a0a0a" strokeWidth={2.2} />
           <Text style={styles.shareText}>Share</Text>
         </TouchableOpacity>
       ) : null}
@@ -112,11 +127,32 @@ function MilestoneItem({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outer: {
+    marginHorizontal: getResponsiveSpacing(22),
     marginBottom: getResponsiveSpacing(24),
+    borderRadius: getResponsiveSpacing(24),
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  glass: {
+    padding: getResponsiveSpacing(20),
+  },
+  heading: {
+    fontSize: getResponsiveFontSize(17),
+    fontFamily: 'Designer',
+    fontWeight: 'normal',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+    marginBottom: getResponsiveSpacing(16),
   },
   grid: {
-    paddingHorizontal: getResponsiveSpacing(20),
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: getResponsiveSpacing(10),
@@ -135,17 +171,17 @@ const styles = StyleSheet.create({
     marginBottom: getResponsiveSpacing(10),
   },
   percent: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(11),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
   },
   title: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(13),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(11),
   },
   detail: {
-    fontFamily: 'Barlow_400Regular',
-    fontSize: getResponsiveFontSize(11),
-    lineHeight: getResponsiveFontSize(15),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
+    lineHeight: getResponsiveFontSize(14),
     marginTop: getResponsiveSpacing(4),
     minHeight: getResponsiveFontSize(30),
   },
@@ -172,8 +208,8 @@ const styles = StyleSheet.create({
   },
   shareText: {
     color: '#0a0a0a',
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(11),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
     textTransform: 'uppercase',
   },
 });

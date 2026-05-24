@@ -136,7 +136,172 @@ Title: Work Plan and Sprint Roadmap
 - Phase 4 (Sprint 10-13): Admin panel development, end-to-end testing, performance optimization, bug fixing, and store/release preparation.
 
 
-SLIDE 9 — THANK YOU
+================================================================================
+TECHNICAL RESTITUTION (from RESTITUTION_1_DIAGRAMS_REQUIREMENTS_GOFIT_EN.md)
+Insert these slides AFTER planning and BEFORE Thank You.
+Use diagram images from docs/ folder where noted.
+================================================================================
+
+
+SLIDE 9 — FUNCTIONAL REQUIREMENTS
+----------------------------------
+Title: Functional Requirements
+
+Client (High priority):
+- FR01: Account creation, login, logout, password reset
+- FR02: Profile management (goals, preferences, units, language)
+- FR03–FR04: Exercise library with search/filter by category, muscle, equipment, level
+- FR05–FR07: Custom workouts, sets/reps/rest config, live session tracking with rest timer
+- FR08–FR09: Calendar scheduling, progress history, weight and body measurements
+
+Coach & Marketplace (Medium priority):
+- FR11–FR12: Coach profile (specialties, certifications, availability), client booking
+- FR16–FR17: AI adaptive workout recommendations; AI coach briefings from session data
+
+Administration (High priority):
+- FR13–FR14: Manage users, coaches, exercises, workouts; approve/suspend coaches
+- FR15: Role-based data access (client, coach, administrator) via RLS
+- FR18: BI dashboards and exports (growth, engagement, finance, retention)
+
+Advanced:
+- FR19: Body measurement analysis via photos, pose detection, and progress history
+
+
+SLIDE 10 — NON-FUNCTIONAL REQUIREMENTS
+---------------------------------------
+Title: Non-Functional Requirements
+
+- NFR01 Security: Supabase Auth, secure sessions, Row Level Security on all data
+- NFR02 Privacy: Users access only their own sessions, measurements, and programs
+- NFR03 Performance: Fast loading on exercise library, workouts, and active sessions
+- NFR04 Reliability: Error handling on workout creation and session save — no data loss
+- NFR05 Maintainability: Modular code — screens, services, Zustand stores, UI components, types
+- NFR06 Compatibility: Cross-platform mobile (Expo/React Native) + modern browser admin panel
+- NFR07 Usability: Readable UI during training — clear navigation, loading states, error messages
+- NFR08 Scalability: Architecture ready for coaches, bookings, notifications, and AI features
+- NFR09 Internationalization: English and French support (i18next)
+- NFR10 Traceability: Admin actions and workout data remain identifiable over time
+
+
+SLIDE 11 — USE CASE DIAGRAM
+----------------------------
+Title: Use Case Diagram — Actors and Main Flows
+
+Actors: Client | Coach | Administrator | Supabase (Auth + DB + Storage)
+
+Client use cases:
+- Manage profile, browse exercise library, create/follow workouts, schedule sessions
+- View progress, receive reminders, request AI workout recommendations, analyze body measurements
+
+Coach use cases:
+- Create coach profile, manage availability and programs, communicate with clients
+- Generate AI client briefings (only when a coaching relationship exists)
+
+Administrator use cases:
+- Manage users, exercises, workouts; approve/suspend coaches; view statistics and BI dashboards
+
+All data flows through Supabase (authentication, database, storage, Edge Functions, security).
+
+[DIAGRAM: Use Mermaid use case diagram from RESTITUTION doc, or export as PNG]
+
+
+SLIDE 12 — PHYSICAL ARCHITECTURE
+---------------------------------
+Title: Physical Architecture and Deployment
+
+Three execution environments:
+- Mobile Device: GoFitMobile (Expo/React Native, iOS + Android) + Expo SecureStore
+- Admin Workstation: Web Browser → Admin Panel (Next.js)
+- Supabase Cloud: Auth, PostgreSQL (RLS), Storage, Edge Functions
+
+External services:
+- Expo Push Service (FCM/APNs) for workout reminders
+- LiveKit for video calls between coaches and clients
+- Groq API for AI workout generation and coach briefings
+- Cloudflare R2 (optional) for media storage
+
+Why this architecture:
+- Keeps the mobile app lightweight; centralizes sensitive data in Supabase
+- Protects access through Auth + RLS; scales by adding services without redesigning the whole system
+
+[IMAGE: docs/gofit_physical_architecture_slide.png]
+
+
+SLIDE 13 — FEATURE-BASED ARCHITECTURE
+----------------------------------------
+Title: Feature-Based Architecture
+
+Entry points: Client Mobile App | Coach Mobile Flow | Admin Web Panel
+
+Feature modules:
+- Auth & Profile | Exercise Library | Workout Planner | Session Tracking
+- Progress & Body Measurement | Notifications | Coach Marketplace
+- AI Recommendations + Coach Briefings | Admin BI & Analytics | Admin Management
+
+Shared application layer (used by all modules):
+- Navigation | Zustand Stores | Supabase Services/API | UI Components + Theme + i18n
+
+Backend resources: Supabase Auth | PostgreSQL + RLS | Storage | Edge Functions
+
+Benefit: each feature has its own responsibility while reusing shared infrastructure — easier to maintain and extend.
+
+[IMAGE: docs/gofit_feature_based_architecture_slide.png]
+
+
+SLIDE 14 — CLASS DIAGRAM: CLIENT CORE
+--------------------------------------
+Title: Class Diagram — Client Core (Workouts and Progress)
+
+Main entities:
+- User → UserProfile (1:1)
+- User → Workout (1:N) → WorkoutExercise (N) ← Exercise
+- User → WorkoutPlan (1:N) — scheduled sessions
+- User → WorkoutSession (1:N) — completed sessions with exercisesCompleted JSON
+- User → ProgressMeasurement (1:N) — weight, chest, waist, hips
+- User → Goal (1:N) | NotificationPreference (1:N)
+
+Key design choice:
+- Workout history is saved without duplicating exercise data unnecessarily (snapshots in WorkoutExercise).
+
+[DIAGRAM: Mermaid class diagram — Client Core from RESTITUTION doc]
+
+
+SLIDE 15 — CLASS DIAGRAM: COACH AND ADMIN
+------------------------------------------
+Title: Class Diagram — Coach, Bookings, and Administration
+
+Platform extension entities:
+- User → CoachProfile (0..1) → CoachCertification, CoachAvailability, SessionPack, Program
+- User → Booking (as client) | Review | Conversation → Message
+- User → AdminAction (admin operations log)
+
+Covers: coach marketplace, session packs, programs, messaging, and admin traceability.
+
+[DIAGRAM: Mermaid class diagram — Coach/Admin from RESTITUTION doc]
+
+
+SLIDE 16 — IMPLEMENTATION STATUS AND TECHNICAL HIGHLIGHTS
+----------------------------------------------------------
+Title: Current Implementation and Technical Highlights
+
+Already implemented:
+- Adaptive AI workout recommendations (Groq + Edge Function, user context + exercise DB)
+- AI coach briefing from recent sessions and private notes (coach-client relationship required)
+- Admin BI dashboard: finance, lifecycle, retention, coach operations, CSV exports
+- Body measurement screen with MediaPipe pose/segmentation (Android; iOS parity in progress)
+- Core modules: auth, exercise library, workout planner, session tracking, coach marketplace foundations
+
+Technical highlights for the expert:
+- Three-part architecture: Expo mobile + Next.js admin + Supabase backend
+- Normalized data model: Exercise / Workout / WorkoutExercise / WorkoutSession separation
+- RLS-enforced role-based access; modular code (screens, services, stores, types)
+
+Remaining work:
+- Polish AI and computer vision flows; strengthen BI filters and alerts
+- Real-device testing, performance optimization, security review, store release preparation
+
+
+SLIDE 17 — THANK YOU
 ---------------------
 Title: Thank You
 Subtitle: Questions?

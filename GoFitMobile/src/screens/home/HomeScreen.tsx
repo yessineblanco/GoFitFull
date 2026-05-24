@@ -14,7 +14,6 @@ import { YourPrograms } from '@/components/home/YourPrograms';
 import { ArticlesFeed } from '@/components/home/ArticlesFeed';
 import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
 import { HealthWidget } from '@/components/home/HealthWidget';
-import { StreakWidget } from '@/components/home/StreakWidget';
 import { CheckInHomeCard } from '@/components/home/CheckInHomeCard';
 import { DailyCoachLoopCard } from '@/components/home/DailyCoachLoopCard';
 import { GlassCalendar } from '@/components/home/GlassCalendar';
@@ -120,11 +119,9 @@ export const HomeScreen: React.FC = () => {
       >
         <HomeHeader />
 
-        <DailyCoachLoopCard />
-
         <GlassCalendar workoutDays={workoutDays} />
 
-        <StreakWidget />
+        <DailyCoachLoopCard />
 
         <MilestonesCard />
 

@@ -8,14 +8,13 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image as ExpoImage } from 'expo-image';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Users,
   Calendar,
-  TrendingUp,
-  Star,
-  MessageCircle,
   Bell,
   Clock,
   Sparkles,
@@ -25,7 +24,6 @@ import {
   Sun,
   Cloud,
   CloudRain,
-  CalendarCheck,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
@@ -36,7 +34,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useThemeColors } from '@/theme/useThemeColors';
-import { getBackgroundColor } from '@/utils/colorUtils';
+import { getBackgroundColor, getGlassBorder } from '@/utils/colorUtils';
 import { resolvePublicAvatarUrl } from '@/utils/avatarUrl';
 import { supabase } from '@/config/supabase';
 import { getResponsiveFontSize, getResponsiveSpacing } from '@/utils/responsive';
@@ -60,11 +58,12 @@ const REF = {
   primaryTintBg: 'rgba(163, 230, 53, 0.1)',
 } as const;
 
-const GRID_GAP = 26;
-const H_PAD = 26;
-const CARD_RADIUS = 18;
+const GRID_GAP = 14;
+const H_PAD = 22;
+const CARD_RADIUS = 24;
 const CONTENT_INNER = SCREEN_WIDTH - H_PAD * 2;
-const CARD_W = Math.floor(((CONTENT_INNER - GRID_GAP) / 2) * 0.78);
+const CARD_W = Math.floor((CONTENT_INNER - GRID_GAP) / 2);
+type MaterialIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 interface Stats {
   total: number;
@@ -81,15 +80,44 @@ interface Stats {
   retention: number;
 }
 
-type TileIcon = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+const GlassPanel: React.FC<{
+  children: React.ReactNode;
+  isDark: boolean;
+  style?: any;
+  activeOpacity?: number;
+  onPress?: () => void;
+  accessibilityRole?: 'button';
+  accessibilityLabel?: string;
+}> = ({ children, isDark, style, activeOpacity = 0.88, onPress, accessibilityRole, accessibilityLabel }) => {
+  const Shell: any = onPress ? TouchableOpacity : View;
 
-interface KpiTile {
-  Icon: TileIcon;
-  val: React.ReactNode;
-  label: string;
-  iconBg: string;
-  iconColor: string;
-}
+  return (
+    <Shell
+      style={[
+        s.glassShell,
+        {
+          backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)',
+          borderColor: getGlassBorder(isDark),
+        },
+        style,
+      ]}
+      activeOpacity={onPress ? activeOpacity : undefined}
+      onPress={onPress}
+      accessibilityRole={accessibilityRole}
+      accessibilityLabel={accessibilityLabel}
+    >
+      <LinearGradient
+        colors={
+          isDark
+            ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']
+            : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)']
+        }
+        style={StyleSheet.absoluteFill}
+      />
+      {children}
+    </Shell>
+  );
+};
 
 const DashboardSkeleton: React.FC<{ cardH: number }> = ({ cardH }) => (
   <View style={{ gap: 16, paddingHorizontal: H_PAD }}>
@@ -369,62 +397,51 @@ export const CoachDashboardScreen: React.FC = () => {
 
   const ratingStr = stats.rating > 0 ? stats.rating.toFixed(1) : 'N/A';
 
-  const kpiTiles: KpiTile[] = useMemo(
-    () => [
-      {
-        Icon: Users,
-        val: String(stats.clients),
-        label: t('coachApp.kpiActiveClients', { defaultValue: 'Active Clients' }),
-        iconBg: REF.primaryTintBg,
-        iconColor: REF.primary,
-      },
-      {
-        Icon: Calendar,
-        val: String(stats.weekSessions),
-        label: t('coachApp.kpiSessionsWeekly', { defaultValue: 'Sessions Weekly' }),
-        iconBg: REF.primaryTintBg,
-        iconColor: REF.primary,
-      },
-      {
-        Icon: TrendingUp,
-        val: revStr,
-        label: t('coachApp.kpiMonthlyRev', { defaultValue: 'Monthly Rev' }),
-        iconBg: REF.amberBg,
-        iconColor: REF.amber,
-      },
-      {
-        Icon: Star,
-        val: ratingStr,
-        label: t('coachApp.kpiAvgRating', { defaultValue: 'Avg Rating' }),
-        iconBg: REF.amberBg,
-        iconColor: REF.amber,
-      },
-      {
-        Icon: CalendarCheck,
-        val: String(stats.upcoming),
-        label: t('coachApp.kpiUpcoming', { defaultValue: 'Upcoming' }),
-        iconBg: REF.primaryTintBg,
-        iconColor: REF.primary,
-      },
-      {
-        Icon: MessageCircle,
-        val: String(stats.reviews),
-        label: t('coachApp.kpiTotalReviews', { defaultValue: 'Total Reviews' }),
-        iconBg: REF.purpleBg,
-        iconColor: REF.purple,
-      },
-    ],
-    [stats, revStr, ratingStr, t],
-  );
-
   const aEnter = {
     opacity: enterAnim,
     transform: [{ translateY: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
   };
 
   const avatarLetter = firstName.charAt(0).toUpperCase() || 'C';
-  const statCardMinH = 148;
+  const statCardMinH = 128;
   const earnings = useWalletStore((s) => s.earningsSummary);
+  const commandStats = [
+    {
+      icon: 'calendar-week' as MaterialIconName,
+      label: t('coachApp.kpiSessionsWeekly', { defaultValue: 'Sessions Weekly' }),
+      value: String(stats.weekSessions),
+      color: REF.primary,
+      bg: REF.primaryTintBg,
+    },
+    {
+      icon: 'account-group-outline' as MaterialIconName,
+      label: t('coachApp.kpiActiveClients', { defaultValue: 'Active Clients' }),
+      value: String(stats.clients),
+      color: REF.primary,
+      bg: REF.primaryTintBg,
+    },
+    {
+      icon: 'chart-line-variant' as MaterialIconName,
+      label: t('coachApp.kpiMonthlyRev', { defaultValue: 'Monthly Rev' }),
+      value: revStr,
+      color: REF.amber,
+      bg: REF.amberBg,
+    },
+  ];
+  const commandSignals = [
+    {
+      label: t('coachApp.kpiUpcoming', { defaultValue: 'Upcoming' }),
+      value: String(stats.upcoming),
+    },
+    {
+      label: t('coachApp.kpiAvgRating', { defaultValue: 'Avg Rating' }),
+      value: ratingStr,
+    },
+    {
+      label: t('coachApp.kpiTotalReviews', { defaultValue: 'Total Reviews' }),
+      value: String(stats.reviews),
+    },
+  ];
 
   return (
     <View style={[s.root, { backgroundColor: dashBg }]}>
@@ -443,7 +460,7 @@ export const CoachDashboardScreen: React.FC = () => {
           <DashboardSkeleton cardH={statCardMinH} />
         ) : (
           <>
-            {/* Header — client-style: avatar + greeting + bell */}
+            {/* Header: client-style avatar, greeting, and bell */}
             <Animated.View style={[s.headerRow, { paddingHorizontal: H_PAD }, aEnter]}>
               <TouchableOpacity
                 onPress={() => nav.getParent()?.navigate('CoachProfile')}
@@ -492,23 +509,23 @@ export const CoachDashboardScreen: React.FC = () => {
             <Animated.View style={[{ paddingHorizontal: H_PAD }, aEnter]}>
               <Text style={[s.dateText, { color: neon }]}>{currentDate}</Text>
               <View style={s.chipRow}>
-                <View style={[s.chip, { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border }]}>
+                <View style={[s.chip, { backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)', borderColor: getGlassBorder(isDark) }]}>
                   <Calendar size={13} color={neon} strokeWidth={2.2} />
                   <Text style={[s.chipText, { color: textMuted }]}>
                     {stats.weekSessions} {t('coachApp.sessions', { defaultValue: 'Sessions' })}
                   </Text>
                 </View>
-                <View style={[s.chip, { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border }]}>
+                <View style={[s.chip, { backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)', borderColor: getGlassBorder(isDark) }]}>
                   <Users size={13} color={neon} strokeWidth={2.2} />
                   <Text style={[s.chipText, { color: textMuted }]}>
                     {stats.clients} {t('coachApp.clients', { defaultValue: 'Clients' })}
                   </Text>
                 </View>
                 {weather && (
-                  <View style={[s.chip, { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border }]}>
+                  <View style={[s.chip, { backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)', borderColor: getGlassBorder(isDark) }]}>
                     {getWeatherIcon(weather.code)}
                     <Text style={[s.chipText, { color: textMuted }]} numberOfLines={1}>
-                      {weather.temp}° · {weather.location}
+                      {weather.temp} C {weather.location}
                     </Text>
                   </View>
                 )}
@@ -516,40 +533,58 @@ export const CoachDashboardScreen: React.FC = () => {
             </Animated.View>
 
             <Animated.View style={[{ paddingHorizontal: H_PAD, gap: 24 }, aEnter]}>
-              {/* Stat grid */}
-              <View style={s.grid}>
-                {kpiTiles.map((tile, i) => {
-                  const Icon = tile.Icon;
-                  return (
-                    <View
-                      key={i}
-                      style={[
-                        s.statCard,
-                        {
-                          backgroundColor: dashCard,
-                          borderColor: u ? REF.borderGlow : colors.border,
-                          minHeight: statCardMinH,
-                        },
-                        u && s.cardGlow,
-                      ]}
-                    >
-                      <View style={[s.iconWell, { backgroundColor: tile.iconBg }]}>
-                        <Icon size={18} color={tile.iconColor} strokeWidth={2.2} />
+              <GlassPanel isDark={isDark} style={s.commandCard}>
+                <View style={s.commandHeader}>
+                  <View style={s.commandTitleBlock}>
+                    <Text style={[s.commandEyebrow, { color: textMuted }]}>
+                      {t('coachApp.dashboard', { defaultValue: 'Dashboard' }).toUpperCase()}
+                    </Text>
+                    <Text style={[s.commandTitle, { color: textPri }]}>
+                      {t('coachApp.todayOverview', { defaultValue: 'Today overview' })}
+                    </Text>
+                  </View>
+                  <View style={[s.commandBadge, { borderColor: getGlassBorder(isDark), backgroundColor: REF.primaryTintBg }]}>
+                    <MaterialCommunityIcons name="calendar-check-outline" size={15} color={neon} />
+                    <Text style={[s.commandBadgeText, { color: neon }]}>
+                      {todaySessions.length}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={s.commandStatsRow}>
+                  {commandStats.map(({ icon, label, value, color, bg }) => (
+                    <View key={label} style={s.commandStat}>
+                      <View style={[s.commandIconWell, { backgroundColor: bg }]}>
+                        <MaterialCommunityIcons name={icon} size={18} color={color} />
                       </View>
-                      <Text style={[s.statValMain, { color: textPri }]}>{tile.val}</Text>
-                      <Text style={[s.statLabel, { color: textMuted }]}>{tile.label.toUpperCase()}</Text>
+                      <Text style={[s.commandStatValue, { color: textPri }]} numberOfLines={1} adjustsFontSizeToFit>
+                        {value}
+                      </Text>
+                      <Text style={[s.commandStatLabel, { color: textMuted }]} numberOfLines={1}>
+                        {label.toUpperCase()}
+                      </Text>
                     </View>
-                  );
-                })}
-              </View>
+                  ))}
+                </View>
+
+                <View style={[s.commandDivider, { backgroundColor: getGlassBorder(isDark) }]} />
+
+                <View style={s.commandSignalsRow}>
+                  {commandSignals.map((signal) => (
+                    <View key={signal.label} style={s.commandSignal}>
+                      <Text style={[s.commandSignalValue, { color: textPri }]}>{signal.value}</Text>
+                      <Text style={[s.commandSignalLabel, { color: textMuted }]} numberOfLines={1}>
+                        {signal.label.toUpperCase()}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </GlassPanel>
 
               {/* Next session */}
-              <TouchableOpacity
-                style={[
-                  s.insightCard,
-                  { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                ]}
-                activeOpacity={0.88}
+              <GlassPanel
+                isDark={isDark}
+                style={s.insightCard}
                 onPress={() => nav.getParent()?.navigate('Calendar', { screen: 'CalendarMain' })}
                 accessibilityRole="button"
                 accessibilityLabel={t('coachApp.nextSession', { defaultValue: 'Next session' })}
@@ -576,7 +611,7 @@ export const CoachDashboardScreen: React.FC = () => {
                           minute: '2-digit',
                         })}
                         {nextSessionBooking.duration_minutes
-                          ? ` · ${nextSessionBooking.duration_minutes} min`
+                          ? ` ${nextSessionBooking.duration_minutes} min`
                           : ''}
                       </Text>
                     </>
@@ -587,16 +622,13 @@ export const CoachDashboardScreen: React.FC = () => {
                   )}
                 </View>
                 <ChevronRight size={22} color={textMuted} strokeWidth={2} />
-              </TouchableOpacity>
+              </GlassPanel>
 
-              {/* Client spotlight — longest since last completed session */}
+              {/* Client spotlight: longest since last completed session */}
               {clientSpotlight ? (
-                <TouchableOpacity
-                  style={[
-                    s.insightCard,
-                    { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                  ]}
-                  activeOpacity={0.88}
+                <GlassPanel
+                  isDark={isDark}
+                  style={s.insightCard}
                   onPress={() =>
                     nav.getParent()?.navigate('Clients', {
                       screen: 'ClientDetail',
@@ -622,25 +654,20 @@ export const CoachDashboardScreen: React.FC = () => {
                     <Text style={[s.insightMeta, { color: textMuted }]} numberOfLines={1}>
                       {clientSpotlight.daysSince === 0
                         ? t('coachApp.spotlightLastSessionToday', {
-                            defaultValue: 'Last session today — check in',
+                            defaultValue: 'Last session today. Check in',
                           })
                         : t('coachApp.spotlightLastSessionDays', {
-                            defaultValue: 'Last session {{days}} days ago — check in',
+                            defaultValue: 'Last session {{days}} days ago. Check in',
                             days: clientSpotlight.daysSince,
                           })}
                     </Text>
                   </View>
                   <ChevronRight size={22} color={textMuted} strokeWidth={2} />
-                </TouchableOpacity>
+                </GlassPanel>
               ) : null}
 
               {/* Today's Schedule */}
-              <View
-                style={[
-                  s.sectionCard,
-                  { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                ]}
-              >
+              <GlassPanel isDark={isDark} style={s.sectionCard}>
                 <View style={s.sectionTitleRow}>
                   <View style={[s.titlePill, { backgroundColor: neon }]} />
                   <Text style={[s.sectionTitle, { color: textPri }]}>
@@ -655,7 +682,7 @@ export const CoachDashboardScreen: React.FC = () => {
                     <Calendar size={18} color={textMuted} strokeWidth={2} />
                     <Text style={[s.emptyText, { color: textMuted }]}>
                       {t('coachApp.noSessionsToday', {
-                        defaultValue: 'No sessions today — update your availability?',
+                        defaultValue: 'No sessions today. Update availability?',
                       })}
                     </Text>
                   </View>
@@ -716,16 +743,13 @@ export const CoachDashboardScreen: React.FC = () => {
                     );
                   })
                 )}
-              </View>
+              </GlassPanel>
 
               {/* Pending Requests */}
               {pendingBookings.length > 0 && (
-                <TouchableOpacity
-                  style={[
-                    s.insightCard,
-                    { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                  ]}
-                  activeOpacity={0.88}
+                <GlassPanel
+                  isDark={isDark}
+                  style={s.insightCard}
                   onPress={() =>
                     nav.getParent()?.navigate('Calendar', { screen: 'CalendarMain' })
                   }
@@ -752,16 +776,11 @@ export const CoachDashboardScreen: React.FC = () => {
                     </Text>
                   </View>
                   <ChevronRight size={22} color={REF.amber} strokeWidth={2} />
-                </TouchableOpacity>
+                </GlassPanel>
               )}
 
               {/* Earnings Snapshot */}
-              <View
-                style={[
-                  s.earningsCard,
-                  { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                ]}
-              >
+              <GlassPanel isDark={isDark} style={s.earningsCard}>
                 <View style={s.sectionTitleRow}>
                   <View style={[s.titlePill, { backgroundColor: REF.amber }]} />
                   <Text style={[s.sectionTitle, { color: textPri }]}>
@@ -796,16 +815,13 @@ export const CoachDashboardScreen: React.FC = () => {
                     </Text>
                   </View>
                 </View>
-              </View>
+              </GlassPanel>
 
-              {/* At-Risk Clients — packs running low */}
+              {/* At-Risk Clients: packs running low */}
               {atRiskPacks.length > 0 && (
-                <TouchableOpacity
-                  style={[
-                    s.insightCard,
-                    { backgroundColor: dashCard, borderColor: u ? REF.borderGlow : colors.border },
-                  ]}
-                  activeOpacity={0.88}
+                <GlassPanel
+                  isDark={isDark}
+                  style={s.insightCard}
                   onPress={() => nav.getParent()?.navigate('Clients', { screen: 'ClientsList' })}
                   accessibilityRole="button"
                 >
@@ -834,7 +850,7 @@ export const CoachDashboardScreen: React.FC = () => {
                     </Text>
                   </View>
                   <ChevronRight size={22} color="#ef4444" strokeWidth={2} />
-                </TouchableOpacity>
+                </GlassPanel>
               )}
             </Animated.View>
           </>
@@ -846,6 +862,15 @@ export const CoachDashboardScreen: React.FC = () => {
 
 const s = StyleSheet.create({
   root: { flex: 1 },
+  glassShell: {
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 12,
+  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -916,10 +941,10 @@ const s = StyleSheet.create({
     backgroundColor: '#ff4757',
   },
   dateText: {
-    fontFamily: 'Barlow_500Medium',
+    fontFamily: 'Designer',
     fontSize: getResponsiveFontSize(12),
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     marginBottom: 10,
   },
   chipRow: {
@@ -934,34 +959,113 @@ const s = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 8,
     paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    overflow: 'hidden',
   },
   chipText: {
-    fontFamily: 'Barlow_500Medium',
+    fontFamily: 'Designer',
     fontSize: getResponsiveFontSize(11),
   },
 
-  grid: {
+  commandCard: {
+    borderRadius: CARD_RADIUS,
+    padding: getResponsiveSpacing(20),
+    gap: getResponsiveSpacing(18),
+  },
+  commandHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    columnGap: GRID_GAP,
-    rowGap: 20,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
   },
-  cardGlow: {
-    shadowColor: REF.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+  commandTitleBlock: {
+    flex: 1,
+    minWidth: 0,
   },
+  commandEyebrow: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
+    letterSpacing: 0.5,
+  },
+  commandTitle: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(19),
+    letterSpacing: 0.5,
+    marginTop: 6,
+  },
+  commandBadge: {
+    minWidth: 56,
+    minHeight: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  commandBadgeText: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(13),
+  },
+  commandStatsRow: {
+    flexDirection: 'row',
+    gap: getResponsiveSpacing(10),
+  },
+  commandStat: {
+    flex: 1,
+    minWidth: 0,
+    gap: 7,
+  },
+  commandIconWell: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  commandStatValue: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(21),
+    lineHeight: getResponsiveFontSize(25),
+    letterSpacing: 0,
+  },
+  commandStatLabel: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(9),
+    letterSpacing: 0.5,
+  },
+  commandDivider: {
+    height: 1,
+    opacity: 0.8,
+  },
+  commandSignalsRow: {
+    flexDirection: 'row',
+    gap: getResponsiveSpacing(10),
+  },
+  commandSignal: {
+    flex: 1,
+    minWidth: 0,
+  },
+  commandSignalValue: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(14),
+    letterSpacing: 0,
+  },
+  commandSignalLabel: {
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(9),
+    letterSpacing: 0.5,
+    marginTop: 5,
+  },
+
   insightCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
     gap: 14,
   },
   insightIconWell: {
@@ -972,38 +1076,12 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   insightBody: { flex: 1, minWidth: 0, gap: 4 },
-  insightKicker: { fontFamily: 'Barlow_600SemiBold', fontSize: 9, letterSpacing: 1.6 },
-  insightTitle: { fontFamily: 'Barlow_800ExtraBold', fontSize: 17, letterSpacing: -0.3 },
-  insightMeta: { fontFamily: 'Barlow_500Medium', fontSize: 13 },
-  statCard: {
-    width: CARD_W,
-    borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    gap: 8,
-    justifyContent: 'flex-start',
-  },
-  iconWell: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statValMain: {
-    fontFamily: 'Barlow_800ExtraBold',
-    fontSize: 52,
-    color: '#ffffff',
-    lineHeight: 54,
-    letterSpacing: -1.8,
-  },
-  statLabel: { fontFamily: 'Barlow_600SemiBold', fontSize: 9, letterSpacing: 2, marginTop: 4 },
-
+  insightKicker: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(10), letterSpacing: 0.5 },
+  insightTitle: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(14), letterSpacing: 0 },
+  insightMeta: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(11) },
   sectionCard: {
     borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    padding: 20,
+    padding: getResponsiveSpacing(20),
   },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -1012,10 +1090,10 @@ const s = StyleSheet.create({
     marginBottom: 16,
   },
   titlePill: { width: 3, height: 20, borderRadius: 99 },
-  sectionTitle: { fontFamily: 'Barlow_800ExtraBold', fontSize: getResponsiveFontSize(16), flex: 1 },
+  sectionTitle: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(17), flex: 1, letterSpacing: 0.5 },
   sectionCount: {
-    fontFamily: 'Barlow_800ExtraBold',
-    fontSize: 14,
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(12),
     backgroundColor: 'rgba(255,255,255,0.06)',
     width: 28,
     height: 28,
@@ -1026,7 +1104,7 @@ const s = StyleSheet.create({
   },
 
   emptyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  emptyText: { fontFamily: 'Barlow_500Medium', fontSize: 13, flex: 1 },
+  emptyText: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(11), flex: 1 },
 
   scheduleRow: {
     flexDirection: 'row',
@@ -1035,25 +1113,24 @@ const s = StyleSheet.create({
     gap: 14,
   },
   scheduleTime: {
-    fontFamily: 'Barlow_800ExtraBold',
-    fontSize: 14,
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(12),
     width: 64,
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   scheduleInfo: { flex: 1, minWidth: 0, gap: 2 },
-  scheduleName: { fontFamily: 'Barlow_700Bold', fontSize: 15 },
-  scheduleDur: { fontFamily: 'Barlow_500Medium', fontSize: 12 },
+  scheduleName: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(12) },
+  scheduleDur: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(10) },
   statusPill: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 99,
   },
-  statusPillText: { fontFamily: 'Barlow_700Bold', fontSize: 10, letterSpacing: 0.3 },
+  statusPillText: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(9), letterSpacing: 0.3 },
 
   earningsCard: {
     borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    padding: 20,
+    padding: getResponsiveSpacing(20),
   },
   earningsRow: {
     flexDirection: 'row',
@@ -1061,6 +1138,6 @@ const s = StyleSheet.create({
   },
   earningsCol: { flex: 1, alignItems: 'center', gap: 6 },
   earningsDivider: { width: 1, height: 40, borderRadius: 1 },
-  earningsLabel: { fontFamily: 'Barlow_600SemiBold', fontSize: 9, letterSpacing: 1.6 },
-  earningsValue: { fontFamily: 'Barlow_800ExtraBold', fontSize: 24, letterSpacing: -0.8 },
+  earningsLabel: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(9), letterSpacing: 0.5 },
+  earningsValue: { fontFamily: 'Designer', fontSize: getResponsiveFontSize(18), letterSpacing: 0 },
 });

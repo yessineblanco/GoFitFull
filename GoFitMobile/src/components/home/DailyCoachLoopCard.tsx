@@ -13,7 +13,7 @@ import { useHealthStore } from '@/store/healthStore';
 import { useSessionsStore } from '@/store/sessionsStore';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getBlurTint, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
+import { getBlurTint, getGlassBg, getGlassBorder, getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 import { getResponsiveFontSize, getResponsiveSpacing } from '@/utils/responsive';
 
 const BRAND = '#84c441';
@@ -100,43 +100,39 @@ export function DailyCoachLoopCard() {
       <BlurView
         intensity={isDark ? 84 : 62}
         tint={getBlurTint(isDark)}
-        style={[styles.glass, { backgroundColor: isDark ? 'rgba(8, 10, 8, 0.46)' : 'rgba(255, 255, 255, 0.72)' }]}
+        style={[styles.glass, { backgroundColor: isDark ? 'rgba(10, 10, 10, 0.4)' : 'rgba(255, 255, 255, 0.7)' }]}
       >
         <LinearGradient
-          colors={isDark ? ['rgba(132,196,65,0.16)', 'rgba(255,255,255,0.02)'] : ['rgba(132,196,65,0.14)', 'rgba(255,255,255,0.24)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)'] : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)']}
           style={StyleSheet.absoluteFill}
         />
 
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
-            <Sparkles size={18} color={BRAND} />
+            <Sparkles size={17} color={BRAND} strokeWidth={2.2} />
             <Text style={[styles.eyebrow, { color: muted }]}>Today's coach</Text>
           </View>
-          <View style={[styles.scorePill, { borderColor: border, backgroundColor: isDark ? 'rgba(132,196,65,0.12)' : 'rgba(132,196,65,0.18)' }]}>
+          <View style={[styles.scorePill, { borderColor: border, backgroundColor: getGlassBg(isDark) }]}>
             <Text style={[styles.scoreText, { color: BRAND }]}>{readiness.score}</Text>
             <Text style={[styles.scoreLabel, { color: muted }]}>{readiness.level}</Text>
           </View>
         </View>
 
-        <Text style={[styles.title, { color: text }]}>{readiness.recommendation}</Text>
-
         <View style={styles.metricsRow}>
           <View style={styles.metricItem}>
-            <Dumbbell size={16} color={BRAND} />
+            <Dumbbell size={15} color={BRAND} strokeWidth={2.2} />
             <Text style={[styles.metricValue, { color: text }]}>{streakMetrics.workedOutToday ? 'Done' : 'Plan'}</Text>
             <Text style={[styles.metricLabel, { color: muted }]}>Workout</Text>
           </View>
           <View style={[styles.metricDivider, { backgroundColor: border }]} />
           <View style={styles.metricItem}>
-            <Apple size={16} color={BRAND} />
+            <Apple size={15} color={BRAND} strokeWidth={2.2} />
             <Text style={[styles.metricValue, { color: text }]}>{nutritionPct}%</Text>
             <Text style={[styles.metricLabel, { color: muted }]}>Nutrition</Text>
           </View>
           <View style={[styles.metricDivider, { backgroundColor: border }]} />
           <View style={styles.metricItem}>
-            <Footprints size={16} color={BRAND} />
+            <Footprints size={15} color={BRAND} strokeWidth={2.2} />
             <Text style={[styles.metricValue, { color: text }]}>{formatSteps(healthToday?.steps ?? 0)}</Text>
             <Text style={[styles.metricLabel, { color: muted }]}>Steps</Text>
           </View>
@@ -176,7 +172,7 @@ export function DailyCoachLoopCard() {
                   },
                 ]}
               >
-                {habit.completed ? <CheckCircle2 size={14} color={BRAND} /> : <Circle size={14} color={muted} />}
+                {habit.completed ? <CheckCircle2 size={14} color={BRAND} strokeWidth={2.2} /> : <Circle size={14} color={muted} strokeWidth={2.2} />}
                 <Text style={[styles.habitText, { color: habit.completed ? text : muted }]} numberOfLines={1}>
                   {habit.title}
                 </Text>
@@ -208,7 +204,7 @@ const styles = StyleSheet.create({
   outer: {
     marginHorizontal: getResponsiveSpacing(22),
     marginBottom: getResponsiveSpacing(20),
-    borderRadius: getResponsiveSpacing(26),
+    borderRadius: getResponsiveSpacing(24),
     overflow: 'hidden',
     borderWidth: 1.5,
     shadowColor: '#000',
@@ -232,10 +228,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   eyebrow: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(12),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(11),
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.5,
   },
   scorePill: {
     flexDirection: 'row',
@@ -248,23 +244,17 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontFamily: 'Designer',
-    fontSize: getResponsiveFontSize(18),
+    fontSize: getResponsiveFontSize(16),
   },
   scoreLabel: {
-    fontFamily: 'Barlow_600SemiBold',
-    fontSize: getResponsiveFontSize(10),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(9),
     textTransform: 'uppercase',
-  },
-  title: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(18),
-    lineHeight: 24,
-    marginTop: 14,
   },
   metricsRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    marginTop: 18,
+    marginTop: 16,
   },
   metricItem: {
     flex: 1,
@@ -272,12 +262,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metricValue: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(14),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(12),
   },
   metricLabel: {
-    fontFamily: 'Barlow_500Medium',
-    fontSize: getResponsiveFontSize(10),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(9),
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -292,12 +282,12 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   sectionLabel: {
-    fontFamily: 'Barlow_700Bold',
-    fontSize: getResponsiveFontSize(13),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(11),
   },
   habitCount: {
-    fontFamily: 'Barlow_500Medium',
-    fontSize: getResponsiveFontSize(11),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
   },
   habitsRow: {
     flexDirection: 'row',
@@ -319,8 +309,8 @@ const styles = StyleSheet.create({
   },
   habitText: {
     flexShrink: 1,
-    fontFamily: 'Barlow_600SemiBold',
-    fontSize: getResponsiveFontSize(11),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(10),
   },
   cta: {
     marginTop: 16,
@@ -332,8 +322,8 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     color: '#071006',
-    fontFamily: 'Barlow_800ExtraBold',
-    fontSize: getResponsiveFontSize(13),
+    fontFamily: 'Designer',
+    fontSize: getResponsiveFontSize(11),
     textTransform: 'uppercase',
     letterSpacing: 0.7,
   },

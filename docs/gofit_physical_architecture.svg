@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">GoFit Physical Architecture</title>
+  <desc id="desc">Deployment architecture showing mobile app, admin panel, Supabase cloud, and external services.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 44px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 21px Arial, sans-serif; fill: #475569; }
+      .group-title { font: 700 24px Arial, sans-serif; fill: #0f172a; }
+      .box-title { font: 700 20px Arial, sans-serif; fill: #111827; }
+      .box-text { font: 400 16px Arial, sans-serif; fill: #475569; }
+      .label { font: 700 15px Arial, sans-serif; fill: #1e40af; }
+      .label-green { font: 700 15px Arial, sans-serif; fill: #047857; }
+      .small { font: 400 14px Arial, sans-serif; fill: #64748b; }
+      .group { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 28; filter: url(#shadow); }
+      .node { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; rx: 18; }
+      .node-blue { fill: #eff6ff; stroke: #60a5fa; stroke-width: 2; rx: 18; }
+      .node-green { fill: #ecfdf5; stroke: #34d399; stroke-width: 2; rx: 18; }
+      .node-purple { fill: #f5f3ff; stroke: #a78bfa; stroke-width: 2; rx: 18; }
+      .node-orange { fill: #fff7ed; stroke: #fb923c; stroke-width: 2; rx: 18; }
+      .arrow { stroke: #2563eb; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-green { stroke: #059669; stroke-width: 3; fill: none; marker-end: url(#arrowGreen); }
+      .arrow-dashed { stroke: #2563eb; stroke-width: 3; fill: none; stroke-dasharray: 9 7; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="1000"/>
+  <text class="title" x="80" y="80">GoFit Physical Architecture</text>
+  <text class="subtitle" x="80" y="118">Mobile app, admin panel, Supabase backend, and external services at runtime</text>
+
+  <!-- Left: client environments -->
+  <rect class="group" x="70" y="170" width="370" height="325"/>
+  <text class="group-title" x="105" y="215">Mobile Device</text>
+  <rect class="node-blue" x="105" y="245" width="300" height="105"/>
+  <text class="box-title" x="132" y="282">GoFitMobile</text>
+  <text class="box-text" x="132" y="309">Expo / React Native</text>
+  <text class="box-text" x="132" y="333">iOS + Android</text>
+  <rect class="node" x="105" y="370" width="300" height="80"/>
+  <text class="box-title" x="132" y="405">Secure Local Storage</text>
+  <text class="box-text" x="132" y="431">Expo SecureStore sessions</text>
+
+  <rect class="group" x="70" y="560" width="370" height="270"/>
+  <text class="group-title" x="105" y="605">Admin Workstation</text>
+  <rect class="node-purple" x="105" y="635" width="300" height="75"/>
+  <text class="box-title" x="132" y="670">Web Browser</text>
+  <text class="box-text" x="132" y="694">Admin access</text>
+  <rect class="node" x="105" y="730" width="300" height="75"/>
+  <text class="box-title" x="132" y="765">Admin Panel</text>
+  <text class="box-text" x="132" y="789">Next.js + Supabase clients</text>
+
+  <!-- Center: Supabase -->
+  <rect class="group" x="600" y="170" width="430" height="660"/>
+  <text class="group-title" x="635" y="215">Supabase Cloud</text>
+  <rect class="node-green" x="650" y="250" width="330" height="82"/>
+  <text class="box-title" x="680" y="284">Supabase Auth</text>
+  <text class="box-text" x="680" y="309">Login, signup, sessions</text>
+  <rect class="node-green" x="650" y="365" width="330" height="105"/>
+  <text class="box-title" x="680" y="399">PostgreSQL Database</text>
+  <text class="box-text" x="680" y="424">Users, workouts, sessions</text>
+  <text class="box-text" x="680" y="448">Row Level Security policies</text>
+  <rect class="node-green" x="650" y="505" width="330" height="92"/>
+  <text class="box-title" x="680" y="539">Supabase Storage</text>
+  <text class="box-text" x="680" y="564">Exercise media, profile files</text>
+  <rect class="node-green" x="650" y="635" width="330" height="105"/>
+  <text class="box-title" x="680" y="669">Edge Functions</text>
+  <text class="box-text" x="680" y="694">Push notifications</text>
+  <text class="box-text" x="680" y="718">Video call token generation</text>
+
+  <!-- Right: external services -->
+  <rect class="group" x="1190" y="170" width="340" height="660"/>
+  <text class="group-title" x="1225" y="215">External Services</text>
+  <rect class="node-orange" x="1230" y="255" width="260" height="100"/>
+  <text class="box-title" x="1256" y="290">Expo Push Service</text>
+  <text class="box-text" x="1256" y="315">FCM / APNs delivery</text>
+  <rect class="node-orange" x="1230" y="405" width="260" height="100"/>
+  <text class="box-title" x="1256" y="440">LiveKit</text>
+  <text class="box-text" x="1256" y="465">Video calls</text>
+  <rect class="node-orange" x="1230" y="555" width="260" height="100"/>
+  <text class="box-title" x="1256" y="590">Cloudflare R2</text>
+  <text class="box-text" x="1256" y="615">Optional media storage</text>
+
+  <!-- Arrows from mobile/admin to Supabase -->
+  <path class="arrow" d="M405 295 C500 295 540 291 650 291"/>
+  <text class="label" x="455" y="274">HTTPS / Supabase JS</text>
+  <path class="arrow" d="M405 317 C505 350 540 405 650 417"/>
+  <text class="label" x="455" y="374">database access</text>
+  <path class="arrow" d="M405 335 C500 410 530 535 650 550"/>
+  <text class="label" x="455" y="509">media upload/download</text>
+  <path class="arrow-green" d="M255 350 L255 370"/>
+  <text class="label-green" x="275" y="365">secure session</text>
+
+  <path class="arrow" d="M405 672 C510 650 540 305 650 291"/>
+  <text class="label" x="453" y="635">admin auth</text>
+  <path class="arrow" d="M405 767 C500 770 540 430 650 417"/>
+  <text class="label" x="452" y="746">admin CRUD</text>
+  <path class="arrow" d="M405 789 C515 815 545 575 650 551"/>
+  <text class="label" x="455" y="825">media management</text>
+
+  <!-- External service arrows -->
+  <path class="arrow" d="M980 688 C1090 688 1130 305 1230 305"/>
+  <text class="label" x="1048" y="487">send push</text>
+  <path class="arrow-dashed" d="M1230 320 C1030 130 530 130 310 245"/>
+  <text class="label" x="716" y="153">workout reminders</text>
+
+  <path class="arrow" d="M980 705 C1100 705 1120 455 1230 455"/>
+  <text class="label" x="1052" y="597">video token</text>
+  <path class="arrow-dashed" d="M405 285 C690 70 1080 110 1230 435"/>
+  <text class="label" x="790" y="95">join video call</text>
+
+  <path class="arrow-dashed" d="M405 768 C700 905 1030 655 1230 605"/>
+  <text class="label" x="760" y="890">optional uploads</text>
+
+  <!-- Footer legend -->
+  <rect x="80" y="895" width="1440" height="58" rx="18" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="small" x="115" y="929">Legend: solid arrows = backend/API communication, dashed arrows = external service flow, green arrow = local secure session storage.</text>
+</svg>

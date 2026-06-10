@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 40px Inter, Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .brand { font: 700 22px Inter, Arial, sans-serif; fill: #16a34a; }
+      .head { font: 700 26px Inter, Arial, sans-serif; }
+      .small { font: 500 16px Inter, Arial, sans-serif; fill: #111827; }
+      .note { font: 400 16px Inter, Arial, sans-serif; fill: #64748b; }
+      .card { fill: #ffffff; stroke-width: 2; }
+      .pill { stroke-width: 1.4; }
+      .line { stroke: #94a3b8; stroke-width: 3; marker-end: url(#arrow); fill: none; }
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+  <text class="title" x="72" y="76">Physical Architecture</text>
+  <text class="subtitle" x="72" y="112">Deployment view: devices, web workstation, Supabase backend and external services</text>
+  <text class="brand" x="1465" y="74">GoFit</text>
+
+  <g transform="translate(78 190)">
+    <rect class="card" x="0" y="0" width="310" height="500" rx="26" stroke="#22c55e"/>
+    <text class="head" x="155" y="66" text-anchor="middle" fill="#16a34a">Mobile Device</text>
+    <rect class="pill" x="38" y="112" width="234" height="54" rx="27" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="155" y="146" text-anchor="middle">Expo React Native app</text>
+    <rect class="pill" x="38" y="186" width="234" height="54" rx="27" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="155" y="220" text-anchor="middle">Client and coach screens</text>
+    <rect class="pill" x="38" y="260" width="234" height="54" rx="27" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="155" y="294" text-anchor="middle">Local camera / MediaPipe</text>
+    <rect class="pill" x="38" y="334" width="234" height="54" rx="27" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="155" y="368" text-anchor="middle">Push notification client</text>
+  </g>
+
+  <g transform="translate(445 190)">
+    <rect class="card" x="0" y="0" width="310" height="500" rx="26" stroke="#3b82f6"/>
+    <text class="head" x="155" y="66" text-anchor="middle" fill="#2563eb">Admin Workstation</text>
+    <rect class="pill" x="38" y="112" width="234" height="54" rx="27" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="155" y="146" text-anchor="middle">Next.js admin panel</text>
+    <rect class="pill" x="38" y="186" width="234" height="54" rx="27" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="155" y="220" text-anchor="middle">BI dashboards</text>
+    <rect class="pill" x="38" y="260" width="234" height="54" rx="27" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="155" y="294" text-anchor="middle">CSV exports</text>
+    <rect class="pill" x="38" y="334" width="234" height="54" rx="27" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="155" y="368" text-anchor="middle">Saved analytics views</text>
+  </g>
+
+  <g transform="translate(812 190)">
+    <rect class="card" x="0" y="0" width="310" height="500" rx="26" stroke="#8b5cf6"/>
+    <text class="head" x="155" y="66" text-anchor="middle" fill="#7c3aed">Supabase Cloud</text>
+    <rect class="pill" x="38" y="112" width="234" height="54" rx="27" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="155" y="146" text-anchor="middle">Postgres database</text>
+    <rect class="pill" x="38" y="186" width="234" height="54" rx="27" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="155" y="220" text-anchor="middle">Auth and RLS policies</text>
+    <rect class="pill" x="38" y="260" width="234" height="54" rx="27" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="155" y="294" text-anchor="middle">Storage buckets</text>
+    <rect class="pill" x="38" y="334" width="234" height="54" rx="27" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="155" y="368" text-anchor="middle">Edge Functions for AI</text>
+  </g>
+
+  <g transform="translate(1179 190)">
+    <rect class="card" x="0" y="0" width="310" height="500" rx="26" stroke="#fb923c"/>
+    <text class="head" x="155" y="66" text-anchor="middle" fill="#f97316">External Services</text>
+    <rect class="pill" x="38" y="112" width="234" height="54" rx="27" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="155" y="146" text-anchor="middle">Groq LLM API</text>
+    <rect class="pill" x="38" y="186" width="234" height="54" rx="27" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="155" y="220" text-anchor="middle">Stripe payments</text>
+    <rect class="pill" x="38" y="260" width="234" height="54" rx="27" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="155" y="294" text-anchor="middle">Expo push service</text>
+    <rect class="pill" x="38" y="334" width="234" height="54" rx="27" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="155" y="368" text-anchor="middle">LiveKit / Cloudflare R2</text>
+  </g>
+
+  <path class="line" d="M388 440 H445"/>
+  <path class="line" d="M755 440 H812"/>
+  <path class="line" d="M1122 440 H1179"/>
+  <text class="note" x="800" y="740" text-anchor="middle">Flow: mobile app and admin panel use Supabase APIs; Edge Functions call AI, payment, notification and media providers.</text>
+
+  <text class="note" x="800" y="838" text-anchor="middle">Speaker line: AI and BI already exist; remaining work is reliability, scope extension and production hardening.</text>
+</svg>

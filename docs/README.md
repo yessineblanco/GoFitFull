@@ -1,71 +1,22 @@
-# GoFit Documentation Index
+# GoFit Documentation
 
-This folder contains project documentation for the GoFit platform. Use this
-index as the starting point instead of treating every historical note as live
-project status.
+This directory contains the active project documentation. Use the documents below as the current source of truth.
 
-## Source Of Truth
+## Current Project References
 
-For current implementation status, check the code first:
+- [ROADMAP.md](ROADMAP.md) - remaining work and delivery priorities
+- [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) - architecture, applications, and current capabilities
+- [architecture/QUICK_START.md](architecture/QUICK_START.md) - architecture entry point
+- [security/DOCUMENTATION_SECURITY_REVIEW.md](security/DOCUMENTATION_SECURITY_REVIEW.md) - documentation and credential review
+- [admin-panel/ADVANCED_BI_STAGE0_KPI_CONTRACT.md](admin-panel/ADVANCED_BI_STAGE0_KPI_CONTRACT.md) - analytics and KPI definitions
+- [../GoFitMobile/docs/README.md](../GoFitMobile/docs/README.md) - mobile documentation index
+- [../admin-panel/README.md](../admin-panel/README.md) - admin panel guide
+- [../database/README.md](../database/README.md) - database and migration guide
 
-- `GoFitMobile/src/navigation/AppNavigator.tsx` - client mobile routes.
-- `GoFitMobile/src/navigation/CoachAppNavigator.tsx` - coach mobile routes.
-- `admin-panel/app/` - admin panel pages and API route groups.
-- `supabase/functions/` - deployed Edge Function source.
-- `database/migrations/` - database change history.
+## Academic Deliverables
 
-## Canonical Project Docs
+Final English and French reports, the complete project form, final periodic review, internship logbook, Scrum sprint breakdown, restitution material, and diagram documentation remain active. Overlapping drafts are retained under [archive/academic-drafts/](archive/academic-drafts/).
 
-- `../README.md` - repository overview and setup.
-- `PROJECT_CONTEXT.md` - project background.
-- `IMPLEMENTATION_PLAN.md` - broad product roadmap; verify against code before using as live status.
-- `architecture/` - shared architecture references.
-- `admin-panel/ADVANCED_BI_STAGE0_KPI_CONTRACT.md` - BI dashboard KPI contract.
-- `automation/n8n/README.md` - n8n automation setup.
+## Historical Documents
 
-## Active Feature References
-
-- `troubleshooting/BODY_MEASUREMENT_FIX_PLAN.md`
-- `troubleshooting/BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md`
-- `troubleshooting/BODY_MEASUREMENT_STATISTICAL_MODEL_PLAN.md`
-- `troubleshooting/BODY_MEASUREMENT_VALIDATION_PROTOCOL.md`
-
-These remain active because body measurement is a complex feature with both
-implementation and validation work.
-
-## Database References
-
-Use the root `database/` folder for database truth:
-
-- `../database/README.md`
-- `../database/migrations/`
-- `../database/schema/`
-- `../database/policies/`
-- `../database/functions/`
-
-Migration and production readiness checks should be verified against the
-deployed Supabase project, not only against Markdown files.
-
-## Historical / Archive-Only Docs
-
-The following groups are useful for history but should not be used as live
-task status without checking the code:
-
-- `GoFitMobile/docs/audit/`
-- `GoFitMobile/docs/implementation/REMAINING_TASKS.md`
-- `GoFitMobile/docs/implementation/AUDIT_REMAINING.md`
-- generated deployment payloads at the repo root
-- old progress reports, internship reports, Gantt notes, and forms
-
-Many items in those docs have already been implemented in the app.
-
-## Notion Workspace
-
-The live project operating system is in Notion:
-
-- `GoFit Workboard` - current work and QA.
-- `GoFit Feature Map` - app-truth feature status.
-- `GoFit Backend Map` - backend/API/database/function surfaces.
-- `GoFit Documentation Health` - doc cleanup state.
-
-When docs and Notion disagree, verify the actual app code first.
+Obsolete status reports and superseded drafts are preserved under [archive/](archive/). They are historical records, not implementation instructions. Verify any archived claim against the code, migrations, and the live roadmap before using it.

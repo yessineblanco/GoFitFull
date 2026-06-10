@@ -280,10 +280,10 @@ try {
 
 ## 📚 Related Documentation
 
-- [Security Audit Report](./SECURITY_AUDIT_REPORT.md)
-- [Action Plan](./AUDIT_ACTION_PLAN.md)
-- [Constants File](./src/constants/index.ts)
-- [API Client](./src/api/client.ts)
+- [Security Audit Report](../../../docs/archive/obsolete-status/mobile/audit/SECURITY_AUDIT_REPORT.md)
+- [Action Plan](../../../docs/archive/obsolete-status/mobile/audit/AUDIT_ACTION_PLAN.md)
+- [Constants File](../../src/constants/index.ts)
+- [API Client](../../src/api/client.ts)
 
 ---
 

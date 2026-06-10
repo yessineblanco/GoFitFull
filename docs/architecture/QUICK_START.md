@@ -109,8 +109,8 @@ npm run dev
 
 ## Need Help?
 
-- See `IMPLEMENTATION_SUMMARY.md` for complete overview
-- Check `admin-panel/README.md` for detailed docs
+- See [`../PROJECT_CONTEXT.md`](../PROJECT_CONTEXT.md) for the current overview
+- Check [`../../admin-panel/README.md`](../../admin-panel/README.md) for admin-panel details
 - Review `database/ADMIN_ROLE_SETUP.md` for database help
 
 ---

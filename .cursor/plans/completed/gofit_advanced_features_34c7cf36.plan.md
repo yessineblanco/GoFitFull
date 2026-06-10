@@ -61,7 +61,7 @@ isProject: false
 
 # GoFit -- Advanced Features + Fixes Implementation
 
-Original detail backlog lives in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md), but scope decisions in this file take precedence when they diverge.
+Original detail backlog is archived at [IMPLEMENTATION_PLAN.md](../../../docs/archive/obsolete-status/shared/IMPLEMENTATION_PLAN.md), but scope decisions in this file take precedence when they diverge.
 
 **Convention:** Whenever you ship a fix or change scope, append an entry to **Living log → Done** (dated, concrete: files, behavior, deploy version if applicable), add or update a **YAML todo** `status: completed` when the work maps to a trackable item, and adjust the relevant **phase section** so this file stays the single source of truth. No shipped step should exist only in code or chat.
 

@@ -1,0 +1,52 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, Arial", "primaryTextColor": "#111827", "lineColor": "#64748b"}}}%%
+flowchart LR
+  subgraph mobile["Mobile Device"]
+    app["Expo React Native App"]
+    camera["Camera + MediaPipe"]
+    secureStore["SecureStore"]
+  end
+
+  subgraph web["Web Workstation"]
+    browser["Browser"]
+    adminPanel["Next.js Admin Panel"]
+    browser --> adminPanel
+  end
+
+  subgraph supabase["Supabase Cloud"]
+    auth["Auth"]
+    db["PostgreSQL + RLS"]
+    storage["Storage"]
+    edge["Edge Functions"]
+  end
+
+  subgraph external["External Services"]
+    groq["Groq LLM API"]
+    stripe["Stripe"]
+    push["Expo Push"]
+    livekit["LiveKit"]
+    r2["Cloudflare R2"]
+  end
+
+  app -->|"HTTPS / Supabase JS"| auth
+  app -->|"read/write data"| db
+  app -->|"media upload"| storage
+  app -->|"AI requests"| edge
+  adminPanel -->|"admin CRUD + BI"| db
+  adminPanel -->|"media management"| storage
+  edge -->|"LLM prompts"| groq
+  edge -->|"payments"| stripe
+  edge -->|"notifications"| push
+  edge -->|"video token"| livekit
+  storage -->|"optional media"| r2
+  camera --> app
+  secureStore --> app
+
+  classDef mobile fill:#ecfdf5,stroke:#22c55e,stroke-width:2px,color:#111827
+  classDef web fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#111827
+  classDef supabase fill:#f3e8ff,stroke:#8b5cf6,stroke-width:2px,color:#111827
+  classDef external fill:#fff7ed,stroke:#f97316,stroke-width:2px,color:#111827
+
+  class app,camera,secureStore mobile
+  class browser,adminPanel web
+  class auth,db,storage,edge supabase
+  class groq,stripe,push,livekit,r2 external

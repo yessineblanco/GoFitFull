@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 40px Inter, Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .brand { font: 700 22px Inter, Arial, sans-serif; fill: #16a34a; }
+      .class-name { font: 700 21px Inter, Arial, sans-serif; fill: #ffffff; }
+      .table-name { font: 500 14px Inter, Arial, sans-serif; fill: rgba(255,255,255,0.82); }
+      .field { font: 500 15px Inter, Arial, sans-serif; fill: #111827; }
+      .assoc-title { font: 700 18px Inter, Arial, sans-serif; fill: #334155; }
+      .assoc { font: 500 15px Inter, Arial, sans-serif; fill: #334155; }
+      .note { font: 400 16px Inter, Arial, sans-serif; fill: #64748b; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.6; }
+      .assoc-box { fill: #ffffff; stroke: #d8dee8; stroke-width: 1.4; }
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+  <text class="title" x="72" y="76">Class Diagram - Coach, AI and Admin</text>
+  <text class="subtitle" x="72" y="112">Current coaching, marketplace, AI briefing and BI models checked against the codebase</text>
+  <text class="brand" x="1465" y="74">GoFit</text>
+
+  <g transform="translate(62 164)">
+    <g>
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#2563eb"/>
+      <rect x="0" y="44" width="338" height="20" fill="#2563eb"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">CoachProfile</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">coach_profiles</text>
+      <text class="field" x="24" y="92">id, user_id, bio</text>
+      <text class="field" x="24" y="124">specialties, hourly_rate</text>
+      <text class="field" x="24" y="156">status, is_verified</text>
+      <text class="field" x="24" y="188">average_rating, total_sessions</text>
+    </g>
+    <g transform="translate(390 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#2563eb"/>
+      <rect x="0" y="44" width="338" height="20" fill="#2563eb"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">CustomProgram</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">custom_programs</text>
+      <text class="field" x="24" y="92">coach_id, client_id</text>
+      <text class="field" x="24" y="124">title, description, type</text>
+      <text class="field" x="24" y="156">program_data: ProgramDay[]</text>
+      <text class="field" x="24" y="188">status, is_template</text>
+    </g>
+    <g transform="translate(780 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#16a34a"/>
+      <rect x="0" y="44" width="338" height="20" fill="#16a34a"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">SessionPack</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">session_packs</text>
+      <text class="field" x="24" y="92">coach_id, name</text>
+      <text class="field" x="24" y="124">session_count, price</text>
+      <text class="field" x="24" y="156">currency, description</text>
+      <text class="field" x="24" y="188">is_active</text>
+    </g>
+    <g transform="translate(1170 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#16a34a"/>
+      <rect x="0" y="44" width="338" height="20" fill="#16a34a"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">PurchasedPack</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">purchased_packs</text>
+      <text class="field" x="24" y="92">client_id, pack_id, coach_id</text>
+      <text class="field" x="24" y="124">sessions_remaining</text>
+      <text class="field" x="24" y="156">sessions_total, purchased_at</text>
+      <text class="field" x="24" y="188">expires_at, status</text>
+    </g>
+  </g>
+
+  <g transform="translate(62 416)">
+    <g>
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#0891b2"/>
+      <rect x="0" y="44" width="338" height="20" fill="#0891b2"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">Booking</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">bookings</text>
+      <text class="field" x="24" y="92">coach_id, client_id</text>
+      <text class="field" x="24" y="124">pack_purchase_id</text>
+      <text class="field" x="24" y="156">scheduled_at, duration_minutes</text>
+      <text class="field" x="24" y="188">status, video_room_id, notes</text>
+    </g>
+    <g transform="translate(390 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#7c3aed"/>
+      <rect x="0" y="44" width="338" height="20" fill="#7c3aed"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">AISessionNote</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">ai-session-notes response</text>
+      <text class="field" x="24" y="92">id, summary</text>
+      <text class="field" x="24" y="124">context</text>
+      <text class="field" x="24" y="156">generated_by</text>
+      <text class="field" x="24" y="188">cached, expires_at</text>
+    </g>
+    <g transform="translate(780 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#f97316"/>
+      <rect x="0" y="44" width="338" height="20" fill="#f97316"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">BIFinanceOverview</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">admin BI DTO</text>
+      <text class="field" x="24" y="92">dailyRows</text>
+      <text class="field" x="24" y="124">summaryByCurrency</text>
+      <text class="field" x="24" y="156">currentLiability</text>
+      <text class="field" x="24" y="188">filters: coachId, packId, range</text>
+    </g>
+    <g transform="translate(1170 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#f97316"/>
+      <rect x="0" y="44" width="338" height="20" fill="#f97316"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">AdvancedBISavedView</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">admin_settings value</text>
+      <text class="field" x="24" y="92">id, name</text>
+      <text class="field" x="24" y="124">rangeKey: 7d | 30d | 90d</text>
+      <text class="field" x="24" y="156">coachId, packId</text>
+      <text class="field" x="24" y="188">digestCadence, digestLastSentAt</text>
+    </g>
+  </g>
+
+  <g transform="translate(128 686)">
+    <rect class="assoc-box" x="0" y="0" width="1344" height="96" rx="18"/>
+    <text class="assoc-title" x="34" y="32">Associations:</text>
+    <text class="assoc" x="170" y="32">CoachProfile 1-* CustomProgram, SessionPack, Booking, certifications and availability slots</text>
+    <text class="assoc" x="170" y="60">SessionPack 1-* PurchasedPack; PurchasedPack 0-* Booking through pack_purchase_id</text>
+    <text class="assoc" x="170" y="84">AISessionNote is generated for a client; BI DTOs aggregate purchased_packs, session_packs, bookings and health data</text>
+  </g>
+  <text class="note" x="800" y="838" text-anchor="middle">Checked against: coachProfile, programs, bookings, sessionPacks, aiSessionNotes, BI finance and BI saved-view code.</text>
+</svg>

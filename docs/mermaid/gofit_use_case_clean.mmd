@@ -1,0 +1,52 @@
+%%{init: {"theme": "base", "flowchart": {"curve": "basis"}, "themeVariables": {"fontFamily": "Inter, Arial", "primaryTextColor": "#111827", "lineColor": "#94a3b8"}}}%%
+flowchart LR
+  subgraph client["Client"]
+    direction TB
+    c0["Client"]:::actor
+    c1(("Create account / log in")):::auth
+    c2(("Manage profile & preferences")):::auth
+    c3(("Browse exercise library")):::workout
+    c4(("Follow workout session")):::workout
+    c5(("Generate adaptive workout")):::ai
+    c6(("Analyze body measurements")):::ai
+    c0 --> c1
+    c0 --> c2
+    c0 --> c3
+    c0 --> c4
+    c0 --> c5
+    c0 --> c6
+  end
+
+  subgraph coach["Coach"]
+    direction TB
+    h0["Coach"]:::actor
+    h1(("Create coach profile")):::auth
+    h2(("Manage availability / programs")):::workout
+    h3(("Create workout")):::workout
+    h4(("Schedule workout session")):::workout
+    h5(("Generate AI client briefing")):::ai
+    h0 --> h1
+    h0 --> h2
+    h0 --> h3
+    h0 --> h4
+    h0 --> h5
+  end
+
+  subgraph admin["Administrator"]
+    direction TB
+    a0["Administrator"]:::actor
+    a1(("Approve / suspend coaches")):::auth
+    a2(("Manage workouts & exercises")):::workout
+    a3(("View statistics & progress")):::analytics
+    a4(("View BI dashboard / exports")):::analytics
+    a0 --> a1
+    a0 --> a2
+    a0 --> a3
+    a0 --> a4
+  end
+
+  classDef actor fill:#ffffff,stroke:#111827,stroke-width:2px,color:#111827
+  classDef auth fill:#e0f2fe,stroke:#38bdf8,stroke-width:2px,color:#111827
+  classDef workout fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#111827
+  classDef ai fill:#f3e8ff,stroke:#a78bfa,stroke-width:2px,color:#111827
+  classDef analytics fill:#fef9c3,stroke:#eab308,stroke-width:2px,color:#111827

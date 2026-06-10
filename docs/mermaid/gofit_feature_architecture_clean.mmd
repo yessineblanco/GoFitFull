@@ -1,0 +1,13 @@
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "curve": "linear", "nodeSpacing": 46, "rankSpacing": 80}, "themeVariables": {"fontFamily": "Inter, Arial", "fontSize": "18px", "primaryTextColor": "#2f3348", "lineColor": "#6b7280"}}}%%
+flowchart LR
+  %% Feature-Based Architecture - GoFit
+
+  ProductExperience["<b>Product Experience</b><hr/><b>Entry Points</b><br/>Client Mobile App<br/>Coach Mobile Flow<br/>Admin Web Panel<br/><br/><b>Feature Modules</b><hr/>Auth &amp; Profile<br/>Training: exercises, workouts, sessions<br/>Progress &amp; Nutrition<br/>Coaching: marketplace, packs, bookings<br/>AI: LLM recommendations, coach briefings<br/>Admin BI &amp; Management"]
+  SharedLayer["<b>Shared Application Layer</b><hr/>Navigation<br/>Zustand stores<br/>Supabase services / API<br/>UI components<br/>Theme + i18n"]
+  PlatformResources["<b>Platform Resources</b><hr/>Supabase Auth<br/>PostgreSQL + RLS<br/>Storage<br/>Edge Functions<br/><br/><b>External Integrations</b><hr/>Groq LLM<br/>LiveKit video<br/>Push notifications<br/>Cloudflare R2"]
+
+  ProductExperience --> SharedLayer
+  SharedLayer --> PlatformResources
+
+  classDef card fill:#ffffff,stroke:#2f3348,stroke-width:1.7px,color:#2f3348
+  class ProductExperience,SharedLayer,PlatformResources card

@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 40px Inter, Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .brand { font: 700 22px Inter, Arial, sans-serif; fill: #16a34a; }
+      .class-name { font: 700 21px Inter, Arial, sans-serif; fill: #ffffff; }
+      .table-name { font: 500 14px Inter, Arial, sans-serif; fill: rgba(255,255,255,0.82); }
+      .field { font: 500 15px Inter, Arial, sans-serif; fill: #111827; }
+      .assoc-title { font: 700 18px Inter, Arial, sans-serif; fill: #334155; }
+      .assoc { font: 500 15px Inter, Arial, sans-serif; fill: #334155; }
+      .note { font: 400 16px Inter, Arial, sans-serif; fill: #64748b; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.6; }
+      .assoc-box { fill: #ffffff; stroke: #d8dee8; stroke-width: 1.4; }
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+  <text class="title" x="72" y="76">Class Diagram - Client Core</text>
+  <text class="subtitle" x="72" y="112">Current GoFit client-side models checked against services, types and Supabase tables</text>
+  <text class="brand" x="1465" y="74">GoFit</text>
+
+  <g transform="translate(62 164)">
+    <g>
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#111827"/>
+      <rect x="0" y="44" width="338" height="20" fill="#111827"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">UserProfile</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">user_profiles</text>
+      <text class="field" x="24" y="92">id, display_name, profile_picture_url</text>
+      <text class="field" x="24" y="124">weight, height, goal</text>
+      <text class="field" x="24" y="156">age, gender, activity_level</text>
+      <text class="field" x="24" y="188">notification_preferences, is_admin</text>
+    </g>
+    <g transform="translate(390 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#2563eb"/>
+      <rect x="0" y="44" width="338" height="20" fill="#2563eb"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">Exercise</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">exercises</text>
+      <text class="field" x="24" y="92">id, name, category</text>
+      <text class="field" x="24" y="124">muscle_groups, equipment</text>
+      <text class="field" x="24" y="156">difficulty, instructions</text>
+      <text class="field" x="24" y="188">image_url, video_url</text>
+    </g>
+    <g transform="translate(780 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#2563eb"/>
+      <rect x="0" y="44" width="338" height="20" fill="#2563eb"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">Workout</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">workouts</text>
+      <text class="field" x="24" y="92">id, user_id, name</text>
+      <text class="field" x="24" y="124">difficulty, workout_type</text>
+      <text class="field" x="24" y="156">wellness_category</text>
+      <text class="field" x="24" y="188">image_url, created_at, updated_at</text>
+    </g>
+    <g transform="translate(1170 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#2563eb"/>
+      <rect x="0" y="44" width="338" height="20" fill="#2563eb"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">WorkoutExercise</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">workout_exercises</text>
+      <text class="field" x="24" y="92">workout_id, exercise_id</text>
+      <text class="field" x="24" y="124">sets, reps, rest_time</text>
+      <text class="field" x="24" y="156">exercise_order, day</text>
+      <text class="field" x="24" y="188">exercise snapshots</text>
+    </g>
+  </g>
+
+  <g transform="translate(62 416)">
+    <g>
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#16a34a"/>
+      <rect x="0" y="44" width="338" height="20" fill="#16a34a"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">WorkoutPlan</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">workout_plans</text>
+      <text class="field" x="24" y="92">id, user_id, workout</text>
+      <text class="field" x="24" y="124">planned_date, planned_time</text>
+      <text class="field" x="24" y="156">planned_day, status</text>
+      <text class="field" x="24" y="188">session_id, created_at</text>
+    </g>
+    <g transform="translate(390 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#0891b2"/>
+      <rect x="0" y="44" width="338" height="20" fill="#0891b2"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">WorkoutSession</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">workout_sessions</text>
+      <text class="field" x="24" y="92">id, user_id, workout_id</text>
+      <text class="field" x="24" y="124">date, started_at, completed_at</text>
+      <text class="field" x="24" y="156">duration_minutes, calories</text>
+      <text class="field" x="24" y="188">exercises_completed, notes</text>
+    </g>
+    <g transform="translate(780 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#f97316"/>
+      <rect x="0" y="44" width="338" height="20" fill="#f97316"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">FoodItem / MealLog</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">food_items, meal_logs</text>
+      <text class="field" x="24" y="92">food: name, serving_label</text>
+      <text class="field" x="24" y="124">calories, protein_g, carbs_g</text>
+      <text class="field" x="24" y="156">meal: user_id, meal_type</text>
+      <text class="field" x="24" y="188">logged_date, servings</text>
+    </g>
+    <g transform="translate(1170 0)">
+      <rect class="box" x="0" y="0" width="338" height="210" rx="16"/>
+      <rect x="0" y="0" width="338" height="64" rx="16" fill="#7c3aed"/>
+      <rect x="0" y="44" width="338" height="20" fill="#7c3aed"/>
+      <text class="class-name" x="169" y="29" text-anchor="middle">BodyMeasurement</text>
+      <text class="table-name" x="169" y="50" text-anchor="middle">body_measurements</text>
+      <text class="field" x="24" y="92">user_id, measurement_date</text>
+      <text class="field" x="24" y="124">chest_cm, waist_cm, hip_cm</text>
+      <text class="field" x="24" y="156">shoulder_cm, confidence</text>
+      <text class="field" x="24" y="188">source, debug payload</text>
+    </g>
+  </g>
+
+  <g transform="translate(128 686)">
+    <rect class="assoc-box" x="0" y="0" width="1344" height="96" rx="18"/>
+    <text class="assoc-title" x="34" y="32">Associations:</text>
+    <text class="assoc" x="170" y="32">UserProfile 1-* Workout, WorkoutPlan, WorkoutSession, MealLog, BodyMeasurement</text>
+    <text class="assoc" x="170" y="60">Workout *-* Exercise through WorkoutExercise; WorkoutPlan and WorkoutSession both reference Workout</text>
+    <text class="assoc" x="170" y="84">FoodItem 1-* MealLog; BodyMeasurement stores the corrected AI-assisted body scan result</text>
+  </g>
+  <text class="note" x="800" y="838" text-anchor="middle">Checked against: userProfile, workouts, workoutPlans, workoutSessions, nutrition, BodyMeasurementScreen and admin database types.</text>
+</svg>

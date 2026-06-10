@@ -11,17 +11,17 @@ GoFit - Plateforme de Fitness Complète
 
 **Version courte (environ 250 caractères) :**
 ```
-GoFit est une plateforme de fitness complète avec application mobile React Native (entraînements, suivi progression avec IA), marketplace de coaches (vidéo calls, programmes personnalisés, paiements), et panel d'administration web Next.js. Stack: React Native, TypeScript, Next.js, Supabase.
+GoFit est une plateforme de fitness avec application mobile React Native (entraînements, nutrition, suivi de progression et fonctions IA), marketplace de coaches (profils, réservation, communication et programmes personnalisés), et panel d'administration web Next.js. Stack : React Native, TypeScript, Next.js, Supabase.
 ```
 
 **Version moyenne (environ 400 caractères) :**
 ```
-GoFit est une plateforme de fitness complète composée de trois composants : application mobile React Native pour suivi d'entraînements et progression avec IA, marketplace connectant coaches et clients avec vidéo calls et paiements intégrés, et panel d'administration web Next.js pour gestion du contenu. Technologies : React Native, TypeScript, Next.js, Supabase.
+GoFit est une plateforme de fitness composée de trois composants : application mobile React Native pour le suivi d'entraînements, de nutrition et de progression avec IA, marketplace connectant coaches et clients avec réservation et communication, et panel d'administration web Next.js pour la gestion opérationnelle. Technologies : React Native, TypeScript, Next.js, Supabase.
 ```
 
 **Version optimale (environ 480 caractères) :**
 ```
-GoFit est une plateforme de fitness complète avec application mobile React Native (entraînements, suivi progression avec IA pour analyse de mensurations), marketplace de coaches (vidéo calls 1-à-1, programmes personnalisés, système de paiements), et panel d'administration web Next.js pour gestion utilisateurs, exercices et workouts. Stack technique : React Native, TypeScript, Next.js 15, Supabase (PostgreSQL, Auth, Storage).
+GoFit est une plateforme de fitness avec application mobile React Native (entraînements, nutrition et suivi de progression assisté par IA), marketplace de coaches (réservation, communication et programmes personnalisés), et panel d'administration web Next.js pour la gestion des utilisateurs, coaches et contenus. Stack technique : Expo SDK 54, React Native 0.81, TypeScript, Next.js 16, Supabase (PostgreSQL, Auth, Storage).
 ```
 
 ### 3. Problématique Projet (*)
@@ -38,7 +38,7 @@ Les solutions de fitness actuelles présentent de nombreuses limitations :
 
 5. Absence de système de paiement intégré et de suivi de progression complet : les coaches gèrent manuellement les revenus et les packs de sessions, tandis que les utilisateurs manquent d'outils d'analyse automatique avec graphiques détaillés et historique complet de leurs performances.
 
-GoFit résout ces problèmes en proposant une plateforme unifiée intégrant entraînement et suivi de progression avec IA pour analyse de mensurations, marketplace de coaches avec communication en temps réel et paiements intégrés, et outils d'administration complets, créant une expérience utilisateur cohérente et complète.
+GoFit répond à ces problèmes avec une plateforme unifiée intégrant entraînement, nutrition, suivi de progression assisté par IA, marketplace de coaches, communication, réservation et outils d'administration. Le paiement intégré et les fonctions avancées d'analyse corporelle restent des travaux de finalisation.
 ```
 
 ---
@@ -73,7 +73,7 @@ Ajoutez chaque fonctionnalité une par une dans le formulaire (MAX 10 fonctionna
 
 **Fonctionnalité 7 :**
 - **Libellé :** Marketplace de Coaches
-- **Description :** Écosystème complet connectant coaches et clients : onboarding des coaches (profil, compétences, CV, certifications), marketplace avec filtrage par compétences et notes, système de packs de sessions (achat et suivi), portail pour programmes personnalisés, visioconférence 1-à-1, gestion calendrier avec rappels, wallet et paiements sécurisés, messagerie instantanée.
+- **Description :** Écosystème connectant coaches et clients : onboarding des coaches (profil, compétences, CV, certifications), marketplace avec filtrage, packs de sessions, programmes personnalisés, réservation, calendrier et messagerie. La finalisation du paiement et de certains parcours temps réel reste planifiée.
 
 **Fonctionnalité 8 :**
 - **Libellé :** Notifications & Rappels
@@ -110,9 +110,9 @@ Ajoutez chaque fonctionnalité une par une dans le formulaire (MAX 10 fonctionna
 ### Technologies pour Fonctionnalités Futures (Optionnelles - seulement si le formulaire le permet) :
 
 11. **MediaPipe** ou **TensorFlow.js** ou **OpenCV** - Pour analyse de mensurations corporelles à partir de photos (recommandé: MediaPipe)
-12. **Système de Paiement** (Stripe) - Pour marketplace de coaches
+12. **Système de Paiement** (Stripe, à finaliser) - Pour la marketplace de coaches
 13. **WebRTC** - Pour vidéo calls
-14. **Socket.io** - Pour chat en temps réel
+14. **Supabase Realtime** - Pour la messagerie et les mises à jour en temps réel
 15. **Figma** - Pour design UI/UX (outil de design, pas une technologie de développement)
 
 **Recommandation :** Incluez au minimum les 7 technologies essentielles. Si le formulaire permet plus d'entrées, ajoutez les technologies importantes (8-10). Les technologies futures (11-15) ne sont nécessaires que si vous avez de la place et que vous voulez montrer la vision complète du projet.

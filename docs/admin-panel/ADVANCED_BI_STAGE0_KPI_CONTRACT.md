@@ -58,8 +58,8 @@ Status meanings:
 | Client health | Nutrition goal adherence | partial | `meal_logs`, `food_items`, `nutrition_goals` | user, day | Daily logged calories/macros versus goal | Good source exists, but only for users who actively log nutrition |
 | Client health | Workout adherence | blocked | none canonical | user, coach | Completed assigned workouts divided by assigned workouts | No explicit assigned-vs-completed workout model today |
 | Client health | Program completion | blocked | `custom_programs` | user, coach | Completed programs divided by assigned programs | `custom_programs` has status, but not canonical completion progress |
-| Client health | Body progress trend | partial | `body_measurements` | user, period | Change in body measurements over time | Table exists, but production on-device measurement flow is not shipped yet |
-| Client health | Health sync activity | blocked | none current | user, period | Steps / calories / wearable-based activity | `health_data` feature is still pending |
+| Client health | Body progress trend | supported | `body_measurements` | user, period | Change in body measurements over time | Measurement capture and trends exist; camera-derived accuracy calibration remains |
+| Client health | Health sync activity | partial | `health_data` | user, period | Steps / calories / wearable-based activity | Persistence and sync services exist; device coverage and production validation remain |
 | Client health | At-risk client score | partial | `workout_sessions`, `meal_logs`, `purchased_packs`, `bookings` | user, coach | Composite risk score for inactivity / adherence / expiring relationship | Inputs exist for a basic score, but scoring model is not defined |
 
 ## Stage 1 view targets

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 40px Inter, Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .brand { font: 700 22px Inter, Arial, sans-serif; fill: #16a34a; }
+      .section { font: 700 24px Inter, Arial, sans-serif; fill: #111827; }
+      .label { font: 600 18px Inter, Arial, sans-serif; fill: #111827; }
+      .small { font: 500 16px Inter, Arial, sans-serif; fill: #334155; }
+      .note { font: 400 16px Inter, Arial, sans-serif; fill: #64748b; }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.6; }
+      .green { fill: #16a34a; }
+      .blue { fill: #2563eb; }
+      .orange { fill: #f97316; }
+      .green-soft { fill: #e8f8ee; stroke: #8bd3a4; stroke-width: 1.4; }
+      .blue-soft { fill: #eaf3ff; stroke: #9bbcf2; stroke-width: 1.4; }
+      .orange-soft { fill: #fff1e4; stroke: #f5b37a; stroke-width: 1.4; }
+      .white { fill: #ffffff; }
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+  <text class="title" x="72" y="76">Use Case Diagram</text>
+  <text class="subtitle" x="72" y="112">Main GoFit actors and the high-level actions presented during the first restitution</text>
+  <text class="brand" x="1465" y="74">GoFit</text>
+
+  <g transform="translate(80 168)">
+    <rect class="card" x="0" y="0" width="260" height="150" rx="22"/>
+    <circle class="green" cx="56" cy="55" r="20"/>
+    <rect class="green" x="32" y="86" width="48" height="10" rx="5"/>
+    <text class="section" x="104" y="68">Client</text>
+    <text class="note" x="32" y="118">Mobile application user</text>
+
+    <rect class="green" x="330" y="0" width="270" height="52" rx="26"/>
+    <text class="label white" x="465" y="33" text-anchor="middle">Client actions</text>
+    <rect class="green-soft" x="330" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="455" y="112" text-anchor="middle">Sign up / log in</text>
+    <rect class="green-soft" x="610" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="735" y="112" text-anchor="middle">Track workouts</text>
+    <rect class="green-soft" x="890" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="1015" y="112" text-anchor="middle">Log nutrition</text>
+    <rect class="green-soft" x="1170" y="78" width="280" height="54" rx="27"/>
+    <text class="small" x="1310" y="112" text-anchor="middle">Receive AI recommendations</text>
+  </g>
+
+  <g transform="translate(80 382)">
+    <rect class="card" x="0" y="0" width="260" height="150" rx="22"/>
+    <circle class="blue" cx="56" cy="55" r="20"/>
+    <rect class="blue" x="32" y="86" width="48" height="10" rx="5"/>
+    <text class="section" x="104" y="68">Coach</text>
+    <text class="note" x="32" y="118">Professional follow-up role</text>
+
+    <rect class="blue" x="330" y="0" width="270" height="52" rx="26"/>
+    <text class="label white" x="465" y="33" text-anchor="middle">Coach actions</text>
+    <rect class="blue-soft" x="330" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="455" y="112" text-anchor="middle">Manage clients</text>
+    <rect class="blue-soft" x="610" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="735" y="112" text-anchor="middle">Create programs</text>
+    <rect class="blue-soft" x="890" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="1015" y="112" text-anchor="middle">Book sessions</text>
+    <rect class="blue-soft" x="1170" y="78" width="280" height="54" rx="27"/>
+    <text class="small" x="1310" y="112" text-anchor="middle">Generate AI briefing</text>
+  </g>
+
+  <g transform="translate(80 596)">
+    <rect class="card" x="0" y="0" width="260" height="150" rx="22"/>
+    <circle class="orange" cx="56" cy="55" r="20"/>
+    <rect class="orange" x="32" y="86" width="48" height="10" rx="5"/>
+    <text class="section" x="104" y="68">Admin</text>
+    <text class="note" x="32" y="118">Operations and supervision</text>
+
+    <rect class="orange" x="330" y="0" width="270" height="52" rx="26"/>
+    <text class="label white" x="465" y="33" text-anchor="middle">Admin actions</text>
+    <rect class="orange-soft" x="330" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="455" y="112" text-anchor="middle">Manage users</text>
+    <rect class="orange-soft" x="610" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="735" y="112" text-anchor="middle">Moderate content</text>
+    <rect class="orange-soft" x="890" y="78" width="250" height="54" rx="27"/>
+    <text class="small" x="1015" y="112" text-anchor="middle">Analyze BI dashboard</text>
+    <rect class="orange-soft" x="1170" y="78" width="280" height="54" rx="27"/>
+    <text class="small" x="1310" y="112" text-anchor="middle">Export reports</text>
+  </g>
+
+  <text class="note" x="800" y="838" text-anchor="middle">Speaker line: this slide defines the project scope without showing every minor screen.</text>
+</svg>

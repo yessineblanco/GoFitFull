@@ -1,0 +1,34 @@
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "curve": "linear", "nodeSpacing": 28, "rankSpacing": 72}, "themeVariables": {"fontFamily": "Inter, Arial", "fontSize": "17px", "primaryTextColor": "#2f3348", "lineColor": "#6b7280"}}}%%
+flowchart LR
+  %% Class Diagram - Coach, AI and Admin
+
+  CoachProfile["<b>CoachProfile</b><hr/><i>coach_profiles</i><br/>specialties, hourly_rate<br/>status, rating"]
+  CoachAvailability["<b>CoachAvailability</b><hr/><i>coach_availability</i><br/>day_of_week<br/>start_time, end_time"]
+  CoachCertification["<b>CoachCertification</b><hr/><i>coach_certifications</i><br/>name, issuer<br/>document_url, status"]
+  CustomProgram["<b>CustomProgram</b><hr/><i>custom_programs</i><br/>client_id, title<br/>type, program_data"]
+  CoachClient["<b>CoachClient</b><hr/><i>get_coach_clients</i><br/>client_id, display_name<br/>active_pack, last_session"]
+  SessionPack["<b>SessionPack</b><hr/><i>session_packs</i><br/>session_count<br/>price, currency"]
+  PurchasedPack["<b>PurchasedPack</b><hr/><i>purchased_packs</i><br/>sessions_remaining<br/>status, expires_at"]
+  Booking["<b>Booking</b><hr/><i>bookings</i><br/>scheduled_at, status<br/>video_room_id"]
+  Conversation["<b>Conversation</b><hr/><i>conversations</i><br/>coach_id, client_id<br/>last_message_at"]
+  Message["<b>Message</b><hr/><i>messages</i><br/>sender_id, content<br/>type, read_at"]
+  AISessionNote["<b>AISessionNote</b><hr/><i>ai-session-notes</i><br/>summary, context<br/>cached, expires_at"]
+  AdvancedBISavedView["<b>AdvancedBISavedView</b><hr/><i>admin_settings</i><br/>rangeKey, coachId<br/>packId, digestCadence"]
+
+  CoachProfile --> CoachAvailability
+  CoachProfile --> CoachCertification
+  CoachProfile --> CustomProgram
+  CustomProgram --> CoachClient
+  CoachProfile --> SessionPack
+  SessionPack --> PurchasedPack
+  PurchasedPack --> Booking
+  CoachProfile --> Booking
+  CoachProfile --> Conversation
+  Conversation --> Message
+  CoachClient -.-> AISessionNote
+  Booking -.-> AdvancedBISavedView
+  PurchasedPack -.-> AdvancedBISavedView
+
+  classDef entity fill:#ffffff,stroke:#2f3348,stroke-width:1.6px,color:#2f3348
+
+  class CoachProfile,CoachAvailability,CoachCertification,CustomProgram,CoachClient,SessionPack,PurchasedPack,Booking,Conversation,Message,AISessionNote,AdvancedBISavedView entity

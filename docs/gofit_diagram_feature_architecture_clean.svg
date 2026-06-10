@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 40px Inter, Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #64748b; }
+      .brand { font: 700 22px Inter, Arial, sans-serif; fill: #16a34a; }
+      .row-label { font: 700 18px Inter, Arial, sans-serif; fill: #ffffff; }
+      .small { font: 500 16px Inter, Arial, sans-serif; fill: #111827; }
+      .note { font: 400 16px Inter, Arial, sans-serif; fill: #64748b; }
+      .label { stroke-width: 0; }
+      .pill { stroke-width: 1.4; }
+    </style>
+  </defs>
+  <rect class="bg" width="1600" height="900"/>
+  <text class="title" x="72" y="76">Feature-Based Architecture</text>
+  <text class="subtitle" x="72" y="112">Code organization explained by product capabilities instead of technical folders</text>
+  <text class="brand" x="1465" y="74">GoFit</text>
+
+  <g transform="translate(86 172)">
+    <rect class="label" x="0" y="0" width="270" height="52" rx="26" fill="#111827"/>
+    <text class="row-label" x="135" y="33" text-anchor="middle">Entry points</text>
+    <rect class="pill" x="325" y="0" width="260" height="52" rx="26" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="455" y="33" text-anchor="middle">Mobile app</text>
+    <rect class="pill" x="620" y="0" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="750" y="33" text-anchor="middle">Coach experience</text>
+    <rect class="pill" x="915" y="0" width="260" height="52" rx="26" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="1045" y="33" text-anchor="middle">Admin panel</text>
+    <rect class="pill" x="1210" y="0" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="1340" y="33" text-anchor="middle">Edge Functions</text>
+  </g>
+
+  <g transform="translate(86 306)">
+    <rect class="label" x="0" y="0" width="270" height="52" rx="26" fill="#16a34a"/>
+    <text class="row-label" x="135" y="33" text-anchor="middle">Feature modules</text>
+    <rect class="pill" x="325" y="0" width="260" height="52" rx="26" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="455" y="33" text-anchor="middle">Auth and Profiles</text>
+    <rect class="pill" x="620" y="0" width="260" height="52" rx="26" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="750" y="33" text-anchor="middle">Workout Tracking</text>
+    <rect class="pill" x="915" y="0" width="260" height="52" rx="26" fill="#e8f8ee" stroke="#8bd3a4"/>
+    <text class="small" x="1045" y="33" text-anchor="middle">Nutrition</text>
+    <rect class="pill" x="1210" y="0" width="260" height="52" rx="26" fill="#ecfeff" stroke="#67c8d8"/>
+    <text class="small" x="1340" y="33" text-anchor="middle">Progress Measurements</text>
+    <rect class="pill" x="325" y="86" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="455" y="119" text-anchor="middle">Coach CRM</text>
+    <rect class="pill" x="620" y="86" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="750" y="119" text-anchor="middle">Bookings and Packs</text>
+    <rect class="pill" x="915" y="86" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="1045" y="119" text-anchor="middle">AI Recommendations</text>
+    <rect class="pill" x="1210" y="86" width="260" height="52" rx="26" fill="#fff1e4" stroke="#f5b37a"/>
+    <text class="small" x="1340" y="119" text-anchor="middle">Admin BI and Reports</text>
+  </g>
+
+  <g transform="translate(86 550)">
+    <rect class="label" x="0" y="0" width="270" height="52" rx="26" fill="#2563eb"/>
+    <text class="row-label" x="135" y="33" text-anchor="middle">Shared layer</text>
+    <rect class="pill" x="325" y="0" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="455" y="33" text-anchor="middle">Supabase client</text>
+    <rect class="pill" x="620" y="0" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="750" y="33" text-anchor="middle">Typed models</text>
+    <rect class="pill" x="915" y="0" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="1045" y="33" text-anchor="middle">Reusable UI</text>
+    <rect class="pill" x="1210" y="0" width="260" height="52" rx="26" fill="#eaf3ff" stroke="#9bbcf2"/>
+    <text class="small" x="1340" y="33" text-anchor="middle">Role-based access</text>
+  </g>
+
+  <g transform="translate(86 690)">
+    <rect class="label" x="0" y="0" width="270" height="52" rx="26" fill="#7c3aed"/>
+    <text class="row-label" x="135" y="33" text-anchor="middle">Backend layer</text>
+    <rect class="pill" x="325" y="0" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="455" y="33" text-anchor="middle">Postgres schema</text>
+    <rect class="pill" x="620" y="0" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="750" y="33" text-anchor="middle">RLS policies</text>
+    <rect class="pill" x="915" y="0" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="1045" y="33" text-anchor="middle">Storage</text>
+    <rect class="pill" x="1210" y="0" width="260" height="52" rx="26" fill="#f3e8ff" stroke="#c4a5f5"/>
+    <text class="small" x="1340" y="33" text-anchor="middle">AI and BI functions</text>
+  </g>
+
+  <text class="note" x="800" y="838" text-anchor="middle">Speaker line: the application is feature-driven, with shared services and Supabase supporting every module.</text>
+</svg>

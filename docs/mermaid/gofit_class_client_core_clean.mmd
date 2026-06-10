@@ -1,0 +1,29 @@
+%%{init: {"theme": "base", "flowchart": {"htmlLabels": true, "curve": "linear", "nodeSpacing": 28, "rankSpacing": 72}, "themeVariables": {"fontFamily": "Inter, Arial", "fontSize": "17px", "primaryTextColor": "#2f3348", "lineColor": "#6b7280"}}}%%
+flowchart LR
+  %% Class Diagram - Client Core
+
+  UserProfile["<b>UserProfile</b><hr/><i>user_profiles</i><br/>id, display_name<br/>weight, height, goal"]
+  WorkoutPlan["<b>WorkoutPlan</b><hr/><i>workout_plans</i><br/>planned_date, planned_time<br/>planned_day, status"]
+  Workout["<b>Workout</b><hr/><i>workouts</i><br/>name, difficulty<br/>workout_type"]
+  WorkoutExercise["<b>WorkoutExercise</b><hr/><i>workout_exercises</i><br/>sets, reps, rest_time<br/>exercise_order, day"]
+  Exercise["<b>Exercise</b><hr/><i>exercises</i><br/>name, category<br/>muscle_groups, equipment"]
+  WorkoutSession["<b>WorkoutSession</b><hr/><i>workout_sessions</i><br/>started_at, completed_at<br/>calories, notes"]
+  BodyMeasurement["<b>BodyMeasurement</b><hr/><i>body_measurements</i><br/>chest_cm, waist_cm, hip_cm<br/>confidence, source"]
+  MealLog["<b>MealLog</b><hr/><i>meal_logs</i><br/>logged_date, meal_type<br/>servings"]
+  FoodItem["<b>FoodItem</b><hr/><i>food_items</i><br/>serving_label<br/>calories, macros"]
+  AIWorkoutRecommendation["<b>AIWorkoutRecommendation</b><hr/><i>ai-workout-recommendation</i><br/>focus, reason<br/>adaptation, exercises[]"]
+
+  UserProfile --> WorkoutPlan
+  WorkoutPlan --> Workout
+  Workout --> WorkoutExercise
+  WorkoutExercise --> Exercise
+  UserProfile --> WorkoutSession
+  WorkoutSession --> Workout
+  UserProfile --> BodyMeasurement
+  UserProfile --> MealLog
+  MealLog --> FoodItem
+  AIWorkoutRecommendation -.-> Workout
+
+  classDef entity fill:#ffffff,stroke:#2f3348,stroke-width:1.6px,color:#2f3348
+
+  class UserProfile,WorkoutPlan,Workout,WorkoutExercise,Exercise,WorkoutSession,BodyMeasurement,MealLog,FoodItem,AIWorkoutRecommendation entity

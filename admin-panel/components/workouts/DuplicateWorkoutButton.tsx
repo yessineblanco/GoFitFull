@@ -48,10 +48,10 @@ export default function DuplicateWorkoutButton({
         description: `"${workoutName}" has been copied successfully.`,
       });
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error duplicating workout:", error);
       toast.error("Failed to duplicate workout", {
-        description: error.message || "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -70,8 +70,8 @@ export default function DuplicateWorkoutButton({
           <AlertDialogTitle>Duplicate Workout</AlertDialogTitle>
           <AlertDialogDescription>
             This will create a copy of <strong>{workoutName}</strong> with all its
-            exercises, sets, reps, and day splits. The new workout will be named "
-            {workoutName} (Copy)" and can be edited afterwards.
+            exercises, sets, reps, and day splits. The new workout will be named{` "${workoutName} (Copy)" `}
+            and can be edited afterwards.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

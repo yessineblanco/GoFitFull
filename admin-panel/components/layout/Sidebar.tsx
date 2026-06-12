@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -33,9 +34,11 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center justify-center border-b border-border px-6">
         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <img
+          <Image
             src="/logo.png"
             alt="GoFit Logo"
+            width={153}
+            height={40}
             className="h-10 w-auto dark:brightness-0 dark:invert"
           />
           <div className="hidden xl:block">

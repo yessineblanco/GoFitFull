@@ -10,6 +10,7 @@ The GoFit administration panel is a Next.js 16 and React 19 application for oper
 - Workout, exercise, recipe, and content management
 - Nutrition and operational analytics
 - Role-aware server-side access using Supabase
+- Central Next.js proxy protection for all admin pages and API routes
 
 ## Stack
 
@@ -36,4 +37,15 @@ npm run dev
 
 ## Verification
 
-Use the scripts declared in `package.json`. Existing lint and test debt is tracked in [../docs/ROADMAP.md](../docs/ROADMAP.md); historical completion reports are archived under [../docs/archive/obsolete-status/admin-panel/](../docs/archive/obsolete-status/admin-panel/).
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+The built-in Node test suite covers admin-route access classification, import
+parsing, validation boundaries, shared API errors, and the BI KPI contract
+without requiring live Supabase access. Lint is clean; remaining quality work
+is tracked in [../docs/ROADMAP.md](../docs/ROADMAP.md). Historical completion
+reports are archived under
+[../docs/archive/obsolete-status/admin-panel/](../docs/archive/obsolete-status/admin-panel/).

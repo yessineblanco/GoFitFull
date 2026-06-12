@@ -3,7 +3,7 @@
  */
 
 export interface ExportableData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -87,7 +87,7 @@ function escapeCSVValue(value: string | number | boolean | null | undefined): st
 /**
  * Format value for CSV (handle arrays, objects, dates)
  */
-function formatValueForCSV(value: any): string {
+function formatValueForCSV(value: unknown): string {
   if (value === null || value === undefined) {
     return "";
   }

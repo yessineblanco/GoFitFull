@@ -14,6 +14,20 @@ The mobile application uses Expo SDK 54, React Native 0.81, Expo Router, TypeScr
 - [Security features](security/SECURITY_FEATURES_EXPLANATION.md)
 - [Project roadmap](../../docs/ROADMAP.md)
 
+## Verification
+
+Run the mobile checks from `GoFitMobile/`:
+
+```powershell
+npm test
+npm run type-check
+npm run test:coverage
+```
+
+The Jest suite currently covers password scoring, workout-date eligibility,
+recursive input sanitization, and auth, booking, and session-pack store
+behavior. Keep unit tests beside the relevant module in `src/**/__tests__/`.
+
 ## Documentation Rule
 
 The application code and Supabase migrations take precedence over documentation. Superseded mobile status reports are preserved in [../../docs/archive/obsolete-status/mobile/](../../docs/archive/obsolete-status/mobile/) and must be verified before use.

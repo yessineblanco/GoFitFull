@@ -203,11 +203,11 @@ Toggle admin status for a user.
 ### Admin Operations
 All admin operations use the service role key (`createAdminClient()`):
 - Bypasses Row Level Security (RLS)
-- Only accessible to authenticated admin users (via middleware)
-- Protected routes: `/users/*`, `/api/users/*`
+- Only accessible to authenticated admin users through the Next.js proxy
+- Protected routes include `/users/*` and all `/api/*` endpoints
 
-### Middleware Protection
-The Next.js middleware checks:
+### Proxy Protection
+The Next.js proxy checks:
 1. User is authenticated
 2. User has `is_admin = true` in their profile
 3. Redirects non-admin users to `/login`

@@ -7,6 +7,7 @@ import {
   getUserAgent,
   getAdminUserIdFromRequest,
 } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -47,10 +48,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, deletedCount: ids.length }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }
@@ -118,8 +119,8 @@ export async function POST(request: NextRequest) {
         } else {
           successCount++;
         }
-      } catch (error: any) {
-        errors.push(`Row ${i + 1}: ${error.message || "Unknown error"}`);
+      } catch (error: unknown) {
+        errors.push(`Row ${i + 1}: ${getErrorMessage(error, "Unknown error")}`);
         failedCount++;
       }
     }
@@ -149,10 +150,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

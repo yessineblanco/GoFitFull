@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import ActivityLogsTable from "@/components/activity-logs/ActivityLogsTable";
+import type { AdminAuditLog } from "@/types/database";
 
 // Force dynamic rendering (no static generation)
 export const dynamic = 'force-dynamic';
@@ -25,11 +26,13 @@ async function getActivityLogs() {
       return [];
     }
 
+    const auditLogs = logs as AdminAuditLog[];
+
     // Get unique user IDs
-    const userIds = [...new Set(logs.map((log: any) => log.admin_user_id))];
+    const userIds = [...new Set(auditLogs.map((log) => log.admin_user_id))];
 
     // Fetch user data from auth.users using admin API
-    const usersMap = new Map();
+    const usersMap = new Map<string, { email: string; displayName: string }>();
     for (const userId of userIds) {
       try {
         const { data: { user }, error: userError } = await adminClient.auth.admin.getUserById(userId);
@@ -39,13 +42,13 @@ async function getActivityLogs() {
             displayName: user.user_metadata?.display_name || user.email?.split("@")[0] || "Unknown",
           });
         }
-      } catch (e) {
+      } catch {
         // Ignore errors for individual users
       }
     }
 
     // Format the data
-    return logs.map((log: any) => {
+    return auditLogs.map((log) => {
       const user = usersMap.get(log.admin_user_id) || { email: "Unknown", displayName: "Unknown" };
       return {
         id: log.id,
@@ -61,7 +64,7 @@ async function getActivityLogs() {
         createdAt: log.created_at,
       };
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching activity logs:", error);
     return [];
   }

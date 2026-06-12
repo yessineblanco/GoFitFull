@@ -76,7 +76,7 @@ function LoginForm() {
       // Success - redirect to dashboard
       router.push(redirectTo);
       router.refresh();
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
       setLoading(false);
     }

@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getAdminRouteKind } from "@/lib/admin-access";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -34,30 +35,33 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes - require authentication
-  const protectedPaths = ["/dashboard", "/users", "/coaches", "/transactions", "/exercises", "/workouts"];
-  const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+  const routeKind = getAdminRouteKind(request.nextUrl.pathname);
 
-  // If accessing protected path without auth, redirect to login
-  if (isProtectedPath && !user) {
+  if (routeKind === "api" && !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // If accessing a protected page without auth, redirect to login.
+  if (routeKind === "page" && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  // If accessing protected path, verify admin status
-  if (isProtectedPath && user) {
+  // Verify admin status for every protected page and API route.
+  if (routeKind && user) {
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("is_admin")
       .eq("id", user.id)
       .single();
 
-    // If not admin, redirect to login with error
     if (!profile || !profile.is_admin) {
+      if (routeKind === "api") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("error", "not_admin");

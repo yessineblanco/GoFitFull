@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Bell } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { GlobalSearch } from "@/components/search/GlobalSearch";

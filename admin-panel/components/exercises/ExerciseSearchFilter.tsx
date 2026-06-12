@@ -23,7 +23,8 @@ import { BulkDeleteButton } from "@/components/exercises/BulkDeleteButton";
 import { ExportExercisesButton } from "@/components/exercises/ExportExercisesButton";
 import { ImportExercisesButton } from "@/components/exercises/ImportExercisesButton";
 import { EmptySearchState } from "@/components/ui/empty-state";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { ExternalImage } from "@/components/ui/external-image";
 
 interface ExerciseSearchFilterProps {
   exercises: Exercise[];
@@ -246,7 +247,7 @@ export default function ExerciseSearchFilter({
             {/* Category Filter */}
             <Select
               value={categoryFilter}
-              onValueChange={(value: any) => setCategoryFilter(value)}
+              onValueChange={setCategoryFilter}
             >
               <SelectTrigger className="w-full sm:w-[160px]">
                 <SelectValue placeholder="Category" />
@@ -264,7 +265,7 @@ export default function ExerciseSearchFilter({
             {/* Difficulty Filter */}
             <Select
               value={difficultyFilter}
-              onValueChange={(value: any) => setDifficultyFilter(value)}
+              onValueChange={setDifficultyFilter}
             >
               <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="Difficulty" />
@@ -280,7 +281,7 @@ export default function ExerciseSearchFilter({
             {/* Sort */}
             <Select
               value={sortBy}
-              onValueChange={(value: any) => setSortBy(value)}
+              onValueChange={(value) => setSortBy(value as typeof sortBy)}
             >
               <SelectTrigger className="w-full sm:w-[140px]">
                 <SelectValue placeholder="Sort by" />
@@ -473,9 +474,11 @@ export default function ExerciseSearchFilter({
                     <td className="p-3 sm:p-4">
                       <div className="flex items-center gap-2 sm:gap-3">
                         {exercise.image_url ? (
-                          <img
+                          <ExternalImage
                             src={exercise.image_url}
                             alt={exercise.name}
+                            width={40}
+                            height={40}
                             className="h-8 w-8 sm:h-10 sm:w-10 rounded object-cover flex-shrink-0"
                           />
                         ) : (

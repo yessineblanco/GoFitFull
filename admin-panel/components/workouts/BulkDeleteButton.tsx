@@ -58,10 +58,10 @@ export function BulkDeleteButton({
       setOpen(false);
       onDelete(); // Clear selection
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Error",
-        description: err.message || "An error occurred",
+        description: err instanceof Error ? err.message : "An error occurred",
         variant: "destructive",
       });
     } finally {

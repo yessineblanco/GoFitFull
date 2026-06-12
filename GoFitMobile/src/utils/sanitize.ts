@@ -30,18 +30,17 @@ export const sanitizeString = (input: string): string => {
     return String(input);
   }
 
-  // Remove HTML tags
-  let sanitized = input.replace(/<[^>]*>/g, '');
+  // Remove script and style blocks before stripping tags so their contents do
+  // not survive as plain text.
+  let sanitized = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+
+  // Remove remaining HTML tags.
+  sanitized = sanitized.replace(/<[^>]*>/g, '');
 
   // Remove JavaScript event handlers (onclick, onerror, etc.)
   sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
   sanitized = sanitized.replace(/on\w+\s*=\s*[^\s>]*/gi, '');
-
-  // Remove script tags and their content
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-  // Remove style tags and their content
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
 
   // Remove data URIs that could contain scripts
   sanitized = sanitized.replace(/data:[^;]*;base64[^,)]*/gi, '');
@@ -88,9 +87,13 @@ export const sanitizeObject = <T extends Record<string, any>>(obj: T): T => {
     } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null && !Array.isArray(sanitized[key])) {
       sanitized[key] = sanitizeObject(sanitized[key]) as T[Extract<keyof T, string>];
     } else if (Array.isArray(sanitized[key])) {
-      sanitized[key] = sanitized[key].map((item: unknown) => 
-        typeof item === 'string' ? sanitizeString(item) : item
-      ) as T[Extract<keyof T, string>];
+      sanitized[key] = sanitized[key].map((item: unknown) => {
+        if (typeof item === 'string') return sanitizeString(item);
+        if (typeof item === 'object' && item !== null) {
+          return sanitizeObject(item as Record<string, any>);
+        }
+        return item;
+      }) as T[Extract<keyof T, string>];
     }
   }
   
@@ -119,16 +122,14 @@ export const sanitizeText = (input: string): string => {
     return String(input);
   }
 
-  // Remove HTML tags but keep the text content
-  let sanitized = input.replace(/<[^>]*>/g, '');
+  // Remove script and style blocks before stripping the remaining HTML tags.
+  let sanitized = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  sanitized = sanitized.replace(/<[^>]*>/g, '');
 
   // Remove JavaScript event handlers
   sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
   sanitized = sanitized.replace(/on\w+\s*=\s*[^\s>]*/gi, '');
-
-  // Remove script and style tags
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
 
   // Don't escape special characters for text input (allow normal punctuation)
   // This is less aggressive than sanitizeString

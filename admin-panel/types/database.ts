@@ -1,5 +1,13 @@
 // Database types based on GoFit Supabase schema
 
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json }
+  | Json[];
+
 export interface UserProfile {
   id: string; // Primary key, references auth.users(id)
   // Note: display_name is stored in auth.users.user_metadata, not here
@@ -13,8 +21,8 @@ export interface UserProfile {
   age: number | null;
   gender: string | null;
   is_admin: boolean;
-  notification_preferences: Record<string, any> | null;
-  rest_timer_preferences: Record<string, any> | null;
+  notification_preferences: Record<string, Json> | null;
+  rest_timer_preferences: Record<string, Json> | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,7 +81,7 @@ export interface WorkoutSession {
   duration_minutes: number | null;
   date: string | null;
   calories: number | null;
-  exercises_completed: Record<string, any> | null; // JSONB
+  exercises_completed: Record<string, Json> | null; // JSONB
   notes: string | null;
   created_at: string;
 }
@@ -84,7 +92,7 @@ export interface AdminAuditLog {
   action: string;
   resource_type: string;
   resource_id: string | null;
-  details: Record<string, any> | null;
+  details: Record<string, Json> | null;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;

@@ -367,7 +367,7 @@ Fetches recent user activities.
 ### Data Access
 - Uses `createAdminClient()` with service role
 - Bypasses RLS for aggregated stats (no personal data exposed)
-- Protected by middleware (admin-only access)
+- Protected by the Next.js proxy (admin-only access)
 
 ### Query Optimization
 - Parallel data fetching with `Promise.all()`

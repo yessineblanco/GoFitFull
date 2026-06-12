@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { ExternalImage } from "@/components/ui/external-image";
 import { Dumbbell, Clock, Repeat } from "lucide-react";
 import type { Workout, WorkoutExercise, Exercise } from "@/types/database";
 
@@ -65,9 +66,11 @@ export default function WorkoutPreviewModal({
         <div className="space-y-6">
           {/* Header Image */}
           {workout.image_url ? (
-            <img
+            <ExternalImage
               src={workout.image_url}
               alt={workout.name}
+              width={768}
+              height={192}
               className="w-full h-48 object-cover rounded-lg"
             />
           ) : (
@@ -112,9 +115,11 @@ export default function WorkoutPreviewModal({
                       {/* Exercise Image */}
                       <div className="flex-shrink-0">
                         {we.exercises.image_url ? (
-                          <img
+                          <ExternalImage
                             src={we.exercises.image_url}
                             alt={we.exercises.name}
+                            width={80}
+                            height={80}
                             className="w-20 h-20 object-cover rounded-md"
                           />
                         ) : (

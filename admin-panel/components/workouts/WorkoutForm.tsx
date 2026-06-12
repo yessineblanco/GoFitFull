@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, X, GripVertical, ChevronDown } from "lucide-react";
+import { Loader2, Plus, X, GripVertical } from "lucide-react";
 import type { Exercise, Workout, WorkoutExercise } from "@/types/database";
 
 const DIFFICULTIES = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -101,12 +102,16 @@ export function WorkoutForm({ workout, workoutExercises, isEditing = false }: Wo
     setSelectedExercises(selectedExercises.filter((_, i) => i !== index));
   };
 
-  const updateExercise = (index: number, field: keyof WorkoutExerciseConfig, value: any) => {
+  const updateExercise = <K extends keyof WorkoutExerciseConfig,>(
+    index: number,
+    field: K,
+    value: WorkoutExerciseConfig[K]
+  ) => {
     const updated = [...selectedExercises];
     updated[index] = { ...updated[index], [field]: value };
 
     // If exercise_id changed, update exercise_name
-    if (field === "exercise_id") {
+    if (field === "exercise_id" && typeof value === "string") {
       const exercise = exercises.find((e) => e.id === value);
       if (exercise) {
         updated[index].exercise_name = exercise.name;
@@ -167,8 +172,8 @@ export function WorkoutForm({ workout, workoutExercises, isEditing = false }: Wo
 
       router.push("/workouts");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "An error occurred"));
     } finally {
       setIsLoading(false);
     }
@@ -183,7 +188,7 @@ export function WorkoutForm({ workout, workoutExercises, isEditing = false }: Wo
           <h3 className="text-lg font-semibold">Day {day}</h3>
         )}
 
-        {dayExercises.map((exerciseConfig, index) => {
+        {dayExercises.map((exerciseConfig) => {
           const globalIndex = selectedExercises.indexOf(exerciseConfig);
           return (
             <div key={globalIndex} className="flex gap-2 items-start p-4 border rounded-lg">

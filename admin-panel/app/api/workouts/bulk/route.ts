@@ -7,10 +7,28 @@ import {
   getUserAgent,
   getAdminUserIdFromRequest,
 } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
+
+interface WorkoutExerciseImport {
+  exercise_id?: string;
+  id?: string;
+  sets?: number;
+  reps?: string;
+  rest_time?: number;
+  day?: number | null;
+  exercise_order?: number;
+}
+
+interface WorkoutImport {
+  name?: string;
+  difficulty?: string;
+  image_url?: string;
+  exercises?: WorkoutExerciseImport[];
+}
 
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { ids?: string[] };
     const { ids } = body;
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -47,10 +65,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, deletedCount: ids.length }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }
@@ -58,7 +76,7 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as { workouts?: WorkoutImport[] };
     const { workouts } = body;
 
     if (!workouts || !Array.isArray(workouts) || workouts.length === 0) {
@@ -111,7 +129,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Add exercises to workout
-        const workoutExercises = workout.exercises.map((ex: any, index: number) => ({
+        const workoutExercises = workout.exercises.map((ex, index) => ({
           workout_id: workoutData.id,
           exercise_id: ex.exercise_id || ex.id, // Support both field names
           sets: ex.sets || 3,
@@ -122,7 +140,9 @@ export async function POST(request: NextRequest) {
         }));
 
         // Validate exercise IDs exist
-        const exerciseIds = workoutExercises.map((we: any) => we.exercise_id).filter(Boolean);
+        const exerciseIds = workoutExercises
+          .map((workoutExercise) => workoutExercise.exercise_id)
+          .filter((id): id is string => Boolean(id));
         if (exerciseIds.length > 0) {
           const { data: existingExercises, error: checkError } = await adminClient
             .from("exercises")
@@ -137,7 +157,9 @@ export async function POST(request: NextRequest) {
             continue;
           }
 
-          const validExerciseIds = new Set((existingExercises || []).map((e: any) => e.id));
+          const validExerciseIds = new Set(
+            (existingExercises || []).map((exercise) => exercise.id)
+          );
           const invalidExerciseIds = exerciseIds.filter((id: string) => !validExerciseIds.has(id));
           if (invalidExerciseIds.length > 0) {
             // Rollback workout
@@ -160,8 +182,8 @@ export async function POST(request: NextRequest) {
         } else {
           successCount++;
         }
-      } catch (error: any) {
-        errors.push(`Row ${i + 1}: ${error.message || "Unknown error"}`);
+      } catch (error: unknown) {
+        errors.push(`Row ${i + 1}: ${getErrorMessage(error, "Unknown error")}`);
         failedCount++;
       }
     }
@@ -191,10 +213,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

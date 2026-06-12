@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -44,11 +45,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, coach: data });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "Internal server error");
     console.error("Coach status update error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: error.message?.includes("Not") ? 403 : 500 }
+      { error: message },
+      { status: message.includes("Not") ? 403 : 500 }
     );
   }
 }

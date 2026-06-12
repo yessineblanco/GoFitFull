@@ -1,6 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminUserIdFromRequest } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
+import type { Json } from "@/types/database";
+
+interface SettingsResponse {
+  settings: unknown;
+  stats?: {
+    totalUsers: number;
+    totalCoaches: number;
+    activePacks: number;
+    totalBookings: number;
+  };
+}
+
+interface SettingsRequest {
+  platformName?: string;
+  supportEmail?: string;
+  maintenanceMode?: boolean;
+  maxUsersPerPlan?: number;
+  platformFeePercent?: number | string;
+  notifications?: Json;
+}
 
 // Store settings in a simple table or JSONB column
 // For now, we'll use a settings table. If it doesn't exist, create it first.
@@ -32,7 +53,7 @@ export async function GET(request: NextRequest) {
       platformFeePercent: 10,
     };
 
-    const result: Record<string, any> = {
+    const result: SettingsResponse = {
       settings: data?.value || defaultSettings,
     };
 
@@ -52,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
       {
@@ -70,7 +91,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: SettingsRequest = await request.json();
     const { platformName, supportEmail, maintenanceMode, maxUsersPerPlan, platformFeePercent, notifications } = body;
 
     // Validate
@@ -92,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert settings
-    const settingsValue: Record<string, any> = {
+    const settingsValue: Record<string, Json> = {
       platformName: platformName.trim(),
       supportEmail: supportEmail.trim(),
       maintenanceMode: maintenanceMode || false,
@@ -132,10 +153,10 @@ export async function POST(request: NextRequest) {
       { success: true, settings: data.value },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

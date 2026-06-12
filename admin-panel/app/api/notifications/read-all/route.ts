@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminUserIdFromRequest } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,10 +33,10 @@ export async function POST(request: NextRequest) {
       { message: "All notifications marked as read" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

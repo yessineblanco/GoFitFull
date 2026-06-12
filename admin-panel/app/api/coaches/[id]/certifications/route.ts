@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient, verifyAdminAccess } from "@/lib/supabase/admin";
+import { getErrorMessage } from "@/lib/errors";
+
+interface CertificationUpdate {
+  status: string;
+  updated_at: string;
+  verified_at?: string;
+}
 
 export async function PATCH(
   request: NextRequest,
@@ -28,7 +35,7 @@ export async function PATCH(
 
     const adminClient = createAdminClient();
 
-    const updateData: Record<string, any> = {
+    const updateData: CertificationUpdate = {
       status,
       updated_at: new Date().toISOString(),
     };
@@ -54,11 +61,12 @@ export async function PATCH(
     }
 
     return NextResponse.json({ success: true, certification: data });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, "Internal server error");
     console.error("Certification update error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: error.message?.includes("Not") ? 403 : 500 }
+      { error: message },
+      { status: message.includes("Not") ? 403 : 500 }
     );
   }
 }

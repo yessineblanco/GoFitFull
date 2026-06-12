@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function DELETE(
   request: NextRequest,
@@ -28,10 +29,10 @@ export async function DELETE(
     return NextResponse.json({
       message: "User deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in delete user API:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Edit, Dumbbell, Copy, Eye } from "lucide-react";
+import { Search, Edit, Dumbbell, Eye } from "lucide-react";
 import Link from "next/link";
 import {
   Select,
@@ -22,6 +22,7 @@ import { ExportWorkoutsButton } from "@/components/workouts/ExportWorkoutsButton
 import DuplicateWorkoutButton from "@/components/workouts/DuplicateWorkoutButton";
 import WorkoutPreviewModal from "@/components/workouts/WorkoutPreviewModal";
 import { EmptySearchState } from "@/components/ui/empty-state";
+import { ExternalImage } from "@/components/ui/external-image";
 
 type WorkoutWithExercises = Workout & {
   workout_exercises: (WorkoutExercise & {
@@ -136,7 +137,7 @@ export default function WorkoutSearchFilter({
               {/* Difficulty Filter */}
               <Select
                 value={difficultyFilter}
-                onValueChange={(value: any) => setDifficultyFilter(value)}
+                onValueChange={setDifficultyFilter}
               >
                 <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="Difficulty" />
@@ -152,7 +153,7 @@ export default function WorkoutSearchFilter({
               {/* Sort */}
               <Select
                 value={sortBy}
-                onValueChange={(value: any) => setSortBy(value)}
+                onValueChange={(value) => setSortBy(value as typeof sortBy)}
               >
                 <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Sort by" />
@@ -237,9 +238,11 @@ export default function WorkoutSearchFilter({
                       />
                     </div>
                     {workout.image_url ? (
-                      <img
+                      <ExternalImage
                         src={workout.image_url}
                         alt={workout.name}
+                        width={640}
+                        height={160}
                         className="h-40 w-full object-cover"
                       />
                     ) : (

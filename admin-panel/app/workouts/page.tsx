@@ -41,7 +41,7 @@ async function getWorkouts() {
     }
 
     return workouts as WorkoutWithExercises[];
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error in getWorkouts:", error);
     return [];
   }

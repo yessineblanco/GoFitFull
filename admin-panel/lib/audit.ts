@@ -2,12 +2,14 @@
  * Audit logging utilities for tracking admin actions
  */
 
+import type { Json } from "@/types/database";
+
 interface AuditLogData {
   adminUserId: string;
   action: string;
   resourceType: string;
   resourceId?: string | null;
-  details?: Record<string, any>;
+  details?: Record<string, Json>;
   ipAddress?: string | null;
   userAgent?: string | null;
 }
@@ -17,9 +19,8 @@ interface AuditLogData {
  */
 export async function getAdminUserIdFromRequest(request?: Request): Promise<string | null> {
   try {
+    void request;
     const { createClient } = await import("@/lib/supabase/server");
-    const { cookies } = await import("next/headers");
-    const cookieStore = await cookies();
     const supabase = await createClient();
     
     const {
@@ -66,14 +67,14 @@ export async function createAuditLog(data: AuditLogData): Promise<void> {
  * Check if an action should create a notification
  */
 function shouldCreateNotification(action: string): boolean {
-  const notificationActions = [
+  const notificationActions: string[] = [
     AuditActions.CREATE_EXERCISE,
     AuditActions.CREATE_WORKOUT,
     AuditActions.DELETE_USER,
     AuditActions.BULK_DELETE_EXERCISES,
     AuditActions.BULK_DELETE_WORKOUTS,
   ];
-  return notificationActions.includes(action as any);
+  return notificationActions.includes(action);
 }
 
 /**
@@ -106,7 +107,10 @@ function getNotificationFromAction(
   action: string,
   data: AuditLogData
 ): { type: string; title: string; message: string; href?: string } {
-  const resourceName = data.details?.name || data.resourceType;
+  const detailName = data.details?.name;
+  const resourceName = typeof detailName === "string" ? detailName : data.resourceType;
+  const detailCount = data.details?.count;
+  const count = typeof detailCount === "number" ? detailCount : 0;
   
   switch (action) {
     case AuditActions.CREATE_EXERCISE:
@@ -134,14 +138,14 @@ function getNotificationFromAction(
       return {
         type: "info",
         title: "Bulk Delete",
-        message: `${data.details?.count || 0} exercises have been deleted`,
+        message: `${count} exercises have been deleted`,
         href: "/exercises",
       };
     case AuditActions.BULK_DELETE_WORKOUTS:
       return {
         type: "info",
         title: "Bulk Delete",
-        message: `${data.details?.count || 0} workouts have been deleted`,
+        message: `${count} workouts have been deleted`,
         href: "/workouts",
       };
     default:

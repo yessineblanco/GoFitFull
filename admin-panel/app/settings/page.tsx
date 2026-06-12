@@ -107,16 +107,17 @@ export default function SettingsPage() {
         throw new Error(error.error || "Failed to save settings");
       }
 
-      const data = await response.json();
+      await response.json();
       toast({
         title: "Settings saved",
         description: "Platform settings have been updated successfully.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving settings:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save settings.",
+        description:
+          error instanceof Error ? error.message : "Failed to save settings.",
         variant: "destructive",
       });
     } finally {

@@ -90,7 +90,12 @@ export default function UserSearchFilter({ users }: UserSearchFilterProps) {
             </div>
 
             {/* Role Filter */}
-            <Select value={roleFilter} onValueChange={(value: any) => setRoleFilter(value)}>
+            <Select
+              value={roleFilter}
+              onValueChange={(value) =>
+                setRoleFilter(value as typeof roleFilter)
+              }
+            >
               <SelectTrigger className="w-full sm:w-[130px]">
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
@@ -102,7 +107,10 @@ export default function UserSearchFilter({ users }: UserSearchFilterProps) {
             </Select>
 
             {/* Sort */}
-            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <Select
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as typeof sortBy)}
+            >
               <SelectTrigger className="w-full sm:w-[130px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>

@@ -70,7 +70,7 @@ export function EmptySearchState({ searchQuery, onClear }: EmptySearchStateProps
       <p className="mt-2 text-sm text-muted-foreground max-w-sm">
         {searchQuery ? (
           <>
-            No results found for <span className="font-medium">"{searchQuery}"</span>.
+            No results found for <span className="font-medium">{`"${searchQuery}"`}</span>.
             <br />
             Try adjusting your search or filters.
           </>

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getErrorMessage } from "@/lib/errors";
 
 interface HealthMetric {
   name: string;
@@ -8,14 +9,14 @@ interface HealthMetric {
   value: string;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const healthMetrics: HealthMetric[] = [];
 
     // 1. Database Health Check
     try {
       const adminClient = createAdminClient();
-      const { data, error } = await adminClient
+      const { error } = await adminClient
         .from("user_profiles")
         .select("id")
         .limit(1);
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
           value: "Connected",
         });
       }
-    } catch (error) {
+    } catch {
       healthMetrics.push({
         name: "Database",
         status: "error",
@@ -45,14 +46,14 @@ export async function GET(request: NextRequest) {
     try {
       // Simple check - if we can create a client, server is up
       const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.auth.getUser();
       
       healthMetrics.push({
         name: "API Server",
         status: "healthy",
         value: "Online",
       });
-    } catch (error) {
+    } catch {
       healthMetrics.push({
         name: "API Server",
         status: "warning",
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
           value: "Unknown",
         });
       }
-    } catch (error) {
+    } catch {
       healthMetrics.push({
         name: "Active Users",
         status: "error",
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
         .gte("created_at", oneHourAgo.toISOString());
 
       if (!logsError) {
-        const activityCount = (logs as any[])?.length || 0;
+        const activityCount = logs?.length || 0;
         // Determine load based on activity
         let status: "healthy" | "warning" | "error" = "healthy";
         let loadValue = "Low";
@@ -135,7 +136,7 @@ export async function GET(request: NextRequest) {
           value: "Unknown",
         });
       }
-    } catch (error) {
+    } catch {
       healthMetrics.push({
         name: "System Load",
         status: "warning",
@@ -144,10 +145,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ metrics: healthMetrics }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching health metrics:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch health metrics" },
+      { error: getErrorMessage(error, "Failed to fetch health metrics") },
       { status: 500 }
     );
   }

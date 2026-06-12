@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 import { createAuditLog, AuditActions, getClientIP, getUserAgent, getAdminUserIdFromRequest } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function POST(
   request: NextRequest,
@@ -53,10 +54,10 @@ export async function POST(
       message: `Admin status ${isAdmin ? "granted" : "revoked"} successfully`,
       isAdmin,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in toggle-admin API:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createAuditLog, AuditActions, getClientIP, getUserAgent, getAdminUserIdFromRequest } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
+
+interface WorkoutExerciseInput {
+  exercise_id: string;
+  sets?: number;
+  reps?: string;
+  rest_time?: number;
+  day?: number | null;
+  exercise_order?: number;
+}
+
+interface WorkoutUpdateRequest {
+  name?: string;
+  difficulty?: string;
+  image_url?: string | null;
+  exercises?: WorkoutExerciseInput[];
+}
 
 export async function GET(
   request: NextRequest,
@@ -33,10 +50,10 @@ export async function GET(
     }
 
     return NextResponse.json({ data }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }
@@ -48,7 +65,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
+    const body: WorkoutUpdateRequest = await request.json();
 
     const { name, difficulty, image_url, exercises } = body;
 
@@ -98,7 +115,7 @@ export async function PUT(
     }
 
     // 3. Insert new workout_exercises
-    const workoutExercises = exercises.map((ex: any, index: number) => ({
+    const workoutExercises = exercises.map((ex, index) => ({
       workout_id: id,
       exercise_id: ex.exercise_id,
       sets: ex.sets || 3,
@@ -137,10 +154,10 @@ export async function PUT(
     }
 
     return NextResponse.json({ data: workout }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }
@@ -188,10 +205,10 @@ export async function DELETE(
       { message: "Workout deleted successfully" },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

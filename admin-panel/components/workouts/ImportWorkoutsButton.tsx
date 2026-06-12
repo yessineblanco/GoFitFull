@@ -17,6 +17,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
+import { getErrorMessage } from "@/lib/errors";
+import {
+  normalizeWorkoutImport,
+  parseImportCSV,
+  parseImportJSON,
+} from "@/lib/import-parsers";
 
 interface ImportResult {
   success: number;
@@ -57,91 +63,6 @@ export function ImportWorkoutsButton() {
     }
   };
 
-  const parseCSV = (csvText: string): any[] => {
-    const lines = csvText.split("\n").filter((line) => line.trim());
-    if (lines.length === 0) return [];
-
-    // Parse header
-    const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
-    const data: any[] = [];
-
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(",").map((v) => v.trim().replace(/"/g, ""));
-      const obj: any = {};
-      headers.forEach((header, index) => {
-        obj[header.toLowerCase().replace(/\s+/g, "_")] = values[index] || "";
-      });
-      data.push(obj);
-    }
-
-    return data;
-  };
-
-  const parseJSON = (jsonText: string): any[] => {
-    try {
-      const parsed = JSON.parse(jsonText);
-      return Array.isArray(parsed) ? parsed : [parsed];
-    } catch (error) {
-      throw new Error("Invalid JSON format");
-    }
-  };
-
-  const normalizeWorkoutData = (data: any): any => {
-    // Map common field names to our schema
-    const mapping: Record<string, string> = {
-      id: "id",
-      name: "name",
-      difficulty: "difficulty",
-      image_url: "image_url",
-      imageurl: "image_url",
-      exercises: "exercises",
-      workout_type: "workout_type",
-    };
-
-    const normalized: any = {};
-    Object.keys(data).forEach((key) => {
-      const mappedKey = mapping[key.toLowerCase()] || key.toLowerCase();
-      normalized[mappedKey] = data[key];
-    });
-
-    // Ensure required fields
-    if (!normalized.name) {
-      throw new Error("Missing required field: name");
-    }
-
-    // Ensure exercises is an array
-    if (!normalized.exercises || !Array.isArray(normalized.exercises)) {
-      if (typeof normalized.exercises === "string") {
-        // Try to parse as JSON
-        try {
-          normalized.exercises = JSON.parse(normalized.exercises);
-        } catch {
-          throw new Error("Invalid exercises format (must be an array)");
-        }
-      } else {
-        throw new Error("Missing or invalid exercises field (must be an array)");
-      }
-    }
-
-    // Normalize exercises
-    normalized.exercises = normalized.exercises.map((ex: any, index: number) => ({
-      exercise_id: ex.exercise_id || ex.id || ex.exerciseId,
-      sets: parseInt(ex.sets || ex.default_sets) || 3,
-      reps: String(ex.reps || ex.default_reps || "10"),
-      rest_time: parseInt(ex.rest_time || ex.default_rest_time || ex.restTime) || 60,
-      day: ex.day || null,
-      exercise_order: ex.exercise_order !== undefined ? ex.exercise_order : index,
-    }));
-
-    // Remove id if present (we'll generate new ones)
-    delete normalized.id;
-
-    // Set workout_type to native for imports
-    normalized.workout_type = "native";
-
-    return normalized;
-  };
-
   const handleImport = async () => {
     if (importType === "file" && !file) {
       toast({
@@ -165,17 +86,17 @@ export function ImportWorkoutsButton() {
     setResult(null);
 
     try {
-      let rawData: any[];
+      let rawData: unknown[];
 
       if (importType === "file" && file) {
         if (file.type === "application/json" || file.name.endsWith(".json")) {
-          rawData = parseJSON(jsonData);
+          rawData = parseImportJSON(jsonData);
         } else {
           const csvText = await file.text();
-          rawData = parseCSV(csvText);
+          rawData = parseImportCSV(csvText);
         }
       } else {
-        rawData = parseJSON(jsonData);
+        rawData = parseImportJSON(jsonData);
       }
 
       if (rawData.length === 0) {
@@ -185,9 +106,9 @@ export function ImportWorkoutsButton() {
       // Normalize and validate data
       const normalizedData = rawData.map((item, index) => {
         try {
-          return normalizeWorkoutData(item);
-        } catch (error: any) {
-          throw new Error(`Row ${index + 1}: ${error.message}`);
+          return normalizeWorkoutImport(item);
+        } catch (error: unknown) {
+          throw new Error(`Row ${index + 1}: ${getErrorMessage(error, "Unknown error")}`);
         }
       });
 
@@ -225,17 +146,18 @@ export function ImportWorkoutsButton() {
         setJsonData("");
         setResult(null);
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = getErrorMessage(error, "Failed to import workouts.");
       console.error("Import error:", error);
       toast({
         title: "Import failed",
-        description: error.message || "Failed to import workouts.",
+        description: message,
         variant: "destructive",
       });
       setResult({
         success: 0,
         failed: 1,
-        errors: [error.message || "Unknown error"],
+        errors: [getErrorMessage(error, "Unknown error")],
       });
     } finally {
       setLoading(false);

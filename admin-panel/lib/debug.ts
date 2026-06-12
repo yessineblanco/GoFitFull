@@ -31,7 +31,7 @@ export async function testSupabaseConnection() {
     const adminClient = createAdminClient();
 
     // Test basic query
-    const { data, error } = await adminClient
+    const { error } = await adminClient
       .from("user_profiles")
       .select("count")
       .limit(1);

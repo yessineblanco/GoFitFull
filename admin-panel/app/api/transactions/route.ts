@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getErrorMessage } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+interface PurchasedPackTransaction {
+  id: string;
+  client_id: string;
+  coach_id: string;
+  sessions_remaining: number;
+  sessions_total: number;
+  purchased_at: string;
+  status: string;
+  session_packs: { name?: string; price?: number } | null;
+}
 
 export async function GET() {
   try {
@@ -37,22 +49,24 @@ export async function GET() {
       return NextResponse.json({ transactions: [] }, { status: 200 });
     }
 
-    const clientIds = [...new Set(purchases.map((p: any) => p.client_id))];
-    const coachIds = [...new Set(purchases.map((p: any) => p.coach_id))];
+    const transactionRows = purchases as PurchasedPackTransaction[];
+    const coachIds = [...new Set(transactionRows.map((purchase) => purchase.coach_id))];
 
     const { data: authUsers } = await adminClient.auth.admin.listUsers();
-    const authMap = new Map((authUsers?.users || []).map((u: any) => [u.id, u]));
+    const authMap = new Map(
+      (authUsers?.users || []).map((user) => [user.id, user] as const)
+    );
 
     const { data: coachProfiles } = await adminClient
       .from("coach_profiles")
       .select("id, user_id")
       .in("id", coachIds);
     const coachUserIds = new Map(
-      (coachProfiles || []).map((c: any) => [c.id, c.user_id])
+      (coachProfiles || []).map((coach) => [coach.id, coach.user_id] as const)
     );
 
-    const transactions = purchases.map((p: any) => {
-      const pack = p.session_packs as { name?: string; price?: number };
+    const transactions = transactionRows.map((p) => {
+      const pack = p.session_packs;
       const clientAuth = authMap.get(p.client_id);
       const coachUserId = coachUserIds.get(p.coach_id);
       const coachAuth = coachUserId ? authMap.get(coachUserId) : null;
@@ -80,10 +94,10 @@ export async function GET() {
     });
 
     return NextResponse.json({ transactions }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in transactions API:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

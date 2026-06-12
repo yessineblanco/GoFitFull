@@ -1,6 +1,6 @@
 # GoFit Live Roadmap
 
-**Last verified:** June 10, 2026
+**Last verified:** June 12, 2026
 
 This is the canonical remaining-work list. Verify completion against code,
 migrations, deployed Supabase functions, and n8n before changing status.
@@ -17,9 +17,17 @@ automations.
 ## Active Work
 
 1. **Supabase advisor remediation**
-   - Re-run security and performance advisors.
-   - Review exposed `SECURITY DEFINER` functions, profile-picture listing, and
-     overlapping workout RLS policies without breaking current clients.
+   - Security findings reduced from 38 to 13; remaining function warnings are
+     reviewed caller-checked RPCs or intentional marketplace reads.
+   - Caller-identity checks are implemented for pack, admin, coach dashboard,
+     coach-client, and client-progress RPCs.
+   - Overlapping workout, wallet, and transaction policies were consolidated
+     after proving equivalent access behavior; all 98 initPlan findings are
+     resolved and performance findings fell from 296 to 152.
+   - Review unused indexes only with query-usage evidence and consolidate
+     overlapping policies only after proving equivalent access behavior.
+   - Enable leaked-password protection after a Supabase Pro upgrade; the Free
+     plan rejected this setting on June 12, 2026.
 
 2. **Body-measurement reliability**
    - Calibrate estimator confidence and formulas against repeat measurements.
@@ -27,9 +35,14 @@ automations.
    - Keep the feature clearly labeled as an estimate, not a medical tool.
 
 3. **Quality foundation**
-   - Add automated mobile and admin tests for critical services and workflows.
-   - Resolve admin lint errors and verify a production build in a networked
-     environment.
+   - Mobile Jest infrastructure covers utility rules plus auth, booking, and
+     session-pack stores; expand it to services and critical workflows.
+   - Admin-panel unit tests now cover admin-route access classification,
+     validation boundaries, import parsing, shared API error handling, and BI
+     KPI contract integrity; expand them to API handlers and BI aggregation
+     logic.
+   - The admin production build passed on June 13, 2026. Admin lint is clean
+     with zero errors and zero warnings, down from 114 errors and 41 warnings.
 
 ## Next Advanced Features
 

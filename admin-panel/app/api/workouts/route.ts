@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createAuditLog, AuditActions, getClientIP, getUserAgent, getAdminUserIdFromRequest } from "@/lib/audit";
+import { getErrorMessage } from "@/lib/errors";
+
+interface WorkoutExerciseInput {
+  exercise_id: string;
+  sets?: number;
+  reps?: string;
+  rest_time?: number;
+  day?: number | null;
+  exercise_order?: number;
+}
+
+interface WorkoutRequest {
+  name?: string;
+  difficulty?: string;
+  image_url?: string | null;
+  workout_type?: string;
+  exercises?: WorkoutExerciseInput[];
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: WorkoutRequest = await request.json();
 
     const { name, difficulty, image_url, workout_type, exercises } = body;
 
@@ -40,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Add exercises to the workout
-    const workoutExercises = exercises.map((ex: any, index: number) => ({
+    const workoutExercises = exercises.map((ex, index) => ({
       workout_id: workout.id,
       exercise_id: ex.exercise_id,
       sets: ex.sets || 3,
@@ -82,16 +100,16 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ data: workout }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const adminClient = createAdminClient();
 
@@ -118,10 +136,10 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ data }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

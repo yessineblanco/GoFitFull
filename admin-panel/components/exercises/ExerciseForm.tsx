@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, X, Upload } from "lucide-react";
+import { Loader2, Upload } from "lucide-react";
 import type { Exercise } from "@/types/database";
 import { FormField } from "@/components/ui/form-field";
 import {
@@ -325,8 +325,8 @@ export function ExerciseForm({ exercise, isEditing = false }: ExerciseFormProps)
 
       router.push("/exercises");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }

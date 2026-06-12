@@ -69,10 +69,10 @@ async function getUsers() {
     });
 
     return mergedUsers;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Unexpected error in getUsers:", {
-      message: error?.message,
-      stack: error?.stack,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return [];
   }

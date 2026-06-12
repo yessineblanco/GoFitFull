@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CheckCircle, XCircle, FileText, ExternalLink } from "lucide-react";
+import { CheckCircle, XCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -52,8 +52,10 @@ export function CoachActions({ coach }: CoachActionsProps) {
         `Coach ${coach.display_name} has been ${newStatus}.`
       );
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update coach status");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update coach status"
+      );
     } finally {
       setLoading(false);
     }

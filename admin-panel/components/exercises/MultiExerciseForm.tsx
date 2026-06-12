@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -276,10 +277,12 @@ export function MultiExerciseForm() {
       }
 
       const data = await response.json();
-      const created = Array.isArray(data.data) ? data.data : [data.data];
+      const created = (Array.isArray(data.data) ? data.data : [data.data]) as Array<{
+        name: string;
+      }>;
 
       setResults(
-        created.map((ex: any) => ({
+        created.map((ex) => ({
           name: ex.name,
           success: true,
         }))
@@ -289,8 +292,8 @@ export function MultiExerciseForm() {
         router.push("/exercises");
         router.refresh();
       }, 1500);
-    } catch (err: any) {
-      setGlobalError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      setGlobalError(getErrorMessage(err, "An error occurred"));
     } finally {
       setIsLoading(false);
     }

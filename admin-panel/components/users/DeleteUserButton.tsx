@@ -51,10 +51,10 @@ export default function DeleteUserButton({
       });
       router.push("/users");
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting user:", error);
       toast.error("Failed to delete user", {
-        description: error.message || "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setIsLoading(false);

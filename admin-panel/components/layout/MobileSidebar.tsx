@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -59,9 +60,11 @@ export function MobileSidebar() {
             {/* Header */}
             <div className="flex h-16 items-center justify-between border-b border-border px-6">
               <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity" onClick={() => setIsOpen(false)}>
-                <img
+                <Image
                   src="/logo.png"
                   alt="GoFit Logo"
+                  width={153}
+                  height={40}
                   className="h-10 w-auto dark:brightness-0 dark:invert"
                 />
                 <div>

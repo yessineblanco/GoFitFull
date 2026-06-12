@@ -98,12 +98,62 @@ isProject: false
 - [x] Queried FK columns involved in performance warnings.
 - [x] Reviewed Supabase docs for RLS performance and `auth.uid()` wrapping guidance.
 - [x] Separated low-risk fixes from behavior-changing fixes.
+- [x] Re-ran advisors on June 10, 2026 and confirmed the earlier search-path and
+  foreign-key-index warnings are resolved.
+- [x] Revoked direct client execution from seven trigger-only functions.
+- [x] Added owner-read access for `workout_session_stats`.
+- [x] Removed permissive client insert policies from server-generated admin
+  audit logs and notifications.
+- [x] Removed broad profile-picture object listing and restricted upload,
+  upsert, and delete policies to `<auth.uid()>.jpg`.
+- [x] Removed anonymous execution from seven authenticated-only RPCs.
+- [x] Reduced live security advisor findings from 38 to 13.
+- [x] Bound pack deduction to the authenticated pack owner.
+- [x] Bound coach client, dashboard, and client-progress RPCs to the user who
+  owns the requested coach profile.
+- [x] Restricted admin-ID enumeration to authenticated admins.
+- [x] Reviewed the remaining function warnings: account deletion,
+  conversations, and `is_admin()` already validate `auth.uid()`; marketplace
+  directory and coach identity reads remain public by design.
+- [x] Snapshotted and consolidated the overlapping `workouts` and
+  `workout_exercises` policies after a truth-table equivalence check returned
+  zero mismatches.
+- [x] Optimized direct owner policies on `workout_sessions`, `health_data`,
+  `meal_logs`, `progress_photos`, `user_profiles`, `coach_profiles`,
+  `body_measurements`, `nutrition_goals`, `notifications`, `push_tokens`, and
+  `workout_plans`, `coach_certifications`, and `coach_reviews` to use
+  `(SELECT auth.uid())` without changing roles, commands, or access conditions;
+  the same optimization is applied to `coach_availability` and
+  `purchased_packs`, `bookings`, `custom_programs`, `wallets`, `transactions`,
+  `coach_client_notes`, `ai_session_notes`, `check_in_responses`,
+  `check_in_schedules`, `exercises`, `admin_audit_logs`, and
+  `admin_notifications`, `session_packs`, `conversations`, `messages`, and
+  `admin_settings`.
+- [x] Resolved all 98 `auth_rls_initplan` findings without changing deployed
+  policy access semantics.
+- [x] Consolidated the wallet admin and owning-coach SELECT policies into their
+  exact existing `OR` semantics.
+- [x] Consolidated the transaction admin and owning-coach SELECT policies into
+  their exact existing `OR` semantics.
+- [x] Reduced live performance findings from 296 to 152;
+  `multiple_permissive_policies` fell from 131 to 85.
 
 ### Planned
 
 - [x] Apply function `search_path` migration.
 - [x] Apply missing FK index migration.
-- [ ] Re-run security and performance advisors.
-- [ ] Audit and fix exposed `SECURITY DEFINER` functions one group at a time.
-- [ ] Audit and fix profile picture bucket listing.
-- [ ] Audit and consolidate overlapping workout policies.
+- [x] Re-run security and performance advisors.
+- [x] Add caller-identity checks to authenticated `SECURITY DEFINER` coach,
+  admin, and pack RPCs one group at a time.
+- [x] Audit and fix profile picture bucket listing.
+- [x] Audit and consolidate overlapping workout policies.
+- [x] Complete `auth_rls_initplan` remediation table by table, preserving each
+  policy's current roles and access semantics.
+- [ ] Review unused indexes against query usage before removing any index.
+- [ ] Enable leaked-password protection after upgrading the Supabase project;
+  the dashboard rejected the setting on June 12, 2026 because it is Pro-only.
+
+The 12 remaining function advisor rows are expected after this review because
+the advisor reports client-executable `SECURITY DEFINER` functions without
+evaluating their body-level authorization. They should remain tracked, but are
+not equivalent to 12 unmitigated authorization defects.

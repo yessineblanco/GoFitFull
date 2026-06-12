@@ -68,8 +68,11 @@ async function getCoaches(): Promise<CoachRow[]> {
         certifications_count: certCounts.get(coach.id) || 0,
       };
     });
-  } catch (error: any) {
-    console.error("Error in getCoaches:", error?.message);
+  } catch (error: unknown) {
+    console.error(
+      "Error in getCoaches:",
+      error instanceof Error ? error.message : error
+    );
     return [];
   }
 }

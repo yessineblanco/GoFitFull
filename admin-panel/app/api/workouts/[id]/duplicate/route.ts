@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
+import { getErrorMessage } from "@/lib/errors";
+import type { WorkoutExercise } from "@/types/database";
 
 export async function POST(
   request: NextRequest,
@@ -51,7 +53,8 @@ export async function POST(
 
     // Copy all exercises
     if (workout.workout_exercises && workout.workout_exercises.length > 0) {
-      const exercisesToInsert = workout.workout_exercises.map((we: any) => ({
+      const workoutExercises = workout.workout_exercises as WorkoutExercise[];
+      const exercisesToInsert = workoutExercises.map((we) => ({
         workout_id: newWorkout.id,
         exercise_id: we.exercise_id,
         sets: we.sets,
@@ -84,10 +87,10 @@ export async function POST(
       message: "Workout duplicated successfully",
       workout: newWorkout,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in duplicate workout API:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error, "Internal server error") },
       { status: 500 }
     );
   }

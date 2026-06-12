@@ -59,10 +59,10 @@ export default function ToggleAdminButton({
         }
       );
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error toggling admin status:", error);
       toast.error("Failed to update admin status", {
-        description: error.message || "Please try again.",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
       setIsLoading(false);

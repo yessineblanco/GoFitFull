@@ -24,7 +24,10 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">User Growth</CardTitle>
-          <Select value={viewType} onValueChange={(value: any) => setViewType(value)}>
+          <Select
+            value={viewType}
+            onValueChange={(value) => setViewType(value as typeof viewType)}
+          >
             <SelectTrigger className="w-[140px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>

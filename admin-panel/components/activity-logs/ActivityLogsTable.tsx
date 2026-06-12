@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Calendar } from "lucide-react";
+import { Search } from "lucide-react";
+import type { Json } from "@/types/database";
 import {
   Select,
   SelectContent,
@@ -24,7 +25,7 @@ interface ActivityLog {
   action: string;
   resourceType: string;
   resourceId: string | null;
-  details: Record<string, any> | null;
+  details: Record<string, Json> | null;
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: string;

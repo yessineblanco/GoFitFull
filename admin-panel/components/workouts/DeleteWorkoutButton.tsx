@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,8 +47,8 @@ export function DeleteWorkoutButton({
       setOpen(false);
       router.push("/workouts");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +66,7 @@ export function DeleteWorkoutButton({
           <AlertDialogTitle>Delete Workout</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete <strong>{workoutName}</strong>? This
-            will remove it from all users' workout libraries. This action cannot be
+            will remove it from all users&apos; workout libraries. This action cannot be
             undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

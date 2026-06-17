@@ -4,28 +4,15 @@ import { getBIClientHealthOverview } from "./bi-client-health";
 import { getBICoachOpsOverview } from "./bi-coach-ops";
 import { getBIFinanceOverview } from "./bi-finance";
 import { getBIUserLifecycleOverview } from "./bi-user-lifecycle";
+import {
+  BI_RANGE_CONFIG,
+  BI_RANGE_KEYS,
+  type BIRangeKey,
+} from "./bi-api";
 
-const ADVANCED_BI_SNAPSHOT_RANGES = {
-  "7d": {
-    days: 7,
-    label: "7D",
-  },
-  "30d": {
-    days: 30,
-    label: "30D",
-  },
-  "90d": {
-    days: 90,
-    label: "90D",
-  },
-} as const;
+export const ADVANCED_BI_SNAPSHOT_RANGE_KEYS = BI_RANGE_KEYS;
 
-export const ADVANCED_BI_SNAPSHOT_RANGE_KEYS = Object.keys(
-  ADVANCED_BI_SNAPSHOT_RANGES
-) as Array<keyof typeof ADVANCED_BI_SNAPSHOT_RANGES>;
-
-export type AdvancedBISnapshotRangeKey =
-  (typeof ADVANCED_BI_SNAPSHOT_RANGE_KEYS)[number];
+export type AdvancedBISnapshotRangeKey = BIRangeKey;
 
 export interface AdvancedBISnapshotScope {
   coachId?: string | null;
@@ -118,7 +105,7 @@ function buildSnapshotTitle({
   rangeKey,
   viewName,
 }: AdvancedBISnapshotScope) {
-  const rangeLabel = ADVANCED_BI_SNAPSHOT_RANGES[rangeKey].label;
+  const rangeLabel = BI_RANGE_CONFIG[rangeKey].label;
 
   if (viewName) {
     return `BI Snapshot - ${rangeLabel} - ${viewName}`;
@@ -146,7 +133,7 @@ function buildScopeNote({ coachId, packId }: AdvancedBISnapshotScope) {
 export async function buildAdvancedBISnapshotNotification(
   scope: AdvancedBISnapshotScope
 ): Promise<AdvancedBISnapshotNotificationPayload> {
-  const range = ADVANCED_BI_SNAPSHOT_RANGES[scope.rangeKey];
+  const range = BI_RANGE_CONFIG[scope.rangeKey];
   const endDate = startOfDay(new Date());
   const startDate = startOfDay(subDays(endDate, range.days - 1));
 

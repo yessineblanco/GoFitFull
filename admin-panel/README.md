@@ -43,9 +43,9 @@ npm run lint
 npm run build
 ```
 
-The built-in Node test suite covers admin-route access classification, import
-parsing, validation boundaries, shared API errors, and the BI KPI contract
-without requiring live Supabase access. Lint is clean; remaining quality work
-is tracked in [../docs/ROADMAP.md](../docs/ROADMAP.md). Historical completion
-reports are archived under
+The built-in Node test suite covers admin-route access classification, BI API
+request and CSV boundaries, import parsing, validation, shared API errors, and
+the BI KPI contract without requiring live Supabase access. Lint is clean;
+remaining quality work is tracked in
+[../docs/ROADMAP.md](../docs/ROADMAP.md). Historical completion reports are archived under
 [../docs/archive/obsolete-status/admin-panel/](../docs/archive/obsolete-status/admin-panel/).

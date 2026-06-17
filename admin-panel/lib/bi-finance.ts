@@ -1,5 +1,3 @@
-import { createAdminClient } from "./supabase/admin";
-
 interface RawBIFinanceDailyRow {
   metric_date: string;
   coach_id: string;
@@ -16,7 +14,7 @@ interface RawBIFinanceDailyRow {
   payout_count: number | null;
 }
 
-interface RawPackSaleRow {
+export interface BIFinancePackSaleSourceRow {
   purchased_at: string;
   coach_id: string;
   session_packs:
@@ -96,6 +94,11 @@ function formatDateFilter(value: Date | string) {
   return value.slice(0, 10);
 }
 
+async function createBIAdminClient() {
+  const { createAdminClient } = await import("./supabase/admin");
+  return createAdminClient();
+}
+
 function toNumber(value: number | string | null | undefined) {
   if (typeof value === "number") {
     return value;
@@ -127,7 +130,7 @@ function mapDailyRow(row: RawBIFinanceDailyRow): BIFinanceDailyRow {
   };
 }
 
-function summarizeByCurrency(
+export function summarizeBIFinanceByCurrency(
   dailyRows: BIFinanceDailyRow[],
   liabilityRows: BIFinanceLiabilitySnapshot[]
 ) {
@@ -193,7 +196,9 @@ function summarizeByCurrency(
   }));
 }
 
-function summarizePackSalesDailyRows(rows: RawPackSaleRow[]): BIFinanceDailyRow[] {
+export function summarizeBIFinancePackSalesDailyRows(
+  rows: BIFinancePackSaleSourceRow[]
+): BIFinanceDailyRow[] {
   const grouped = new Map<string, BIFinanceDailyRow>();
 
   rows.forEach((row) => {
@@ -249,7 +254,7 @@ function summarizePackSalesDailyRows(rows: RawPackSaleRow[]): BIFinanceDailyRow[
 export async function getBIFinanceDailyRows(
   filters: BIFinanceFilters = {}
 ): Promise<BIFinanceDailyRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBIAdminClient();
 
   if (filters.packId) {
     let packSalesQuery = adminClient
@@ -276,7 +281,9 @@ export async function getBIFinanceDailyRows(
       throw new Error(`Failed to fetch BI finance pack sales rows: ${error.message}`);
     }
 
-    return summarizePackSalesDailyRows((data || []) as RawPackSaleRow[]);
+    return summarizeBIFinancePackSalesDailyRows(
+      (data || []) as BIFinancePackSaleSourceRow[]
+    );
   }
 
   let query = adminClient
@@ -309,7 +316,7 @@ export async function getBIFinanceDailyRows(
 export async function getCurrentCoachPayoutLiability(
   coachId?: string
 ): Promise<BIFinanceLiabilitySnapshot[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBIAdminClient();
   let query = adminClient
     .from("wallets")
     .select("coach_id, currency, balance")
@@ -344,7 +351,7 @@ export async function getBIFinanceOverview(
 
   return {
     dailyRows,
-    summaryByCurrency: summarizeByCurrency(dailyRows, currentLiability),
+    summaryByCurrency: summarizeBIFinanceByCurrency(dailyRows, currentLiability),
     currentLiability,
   };
 }

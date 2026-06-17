@@ -1,5 +1,4 @@
 import { eachDayOfInterval, format, startOfDay, subDays } from "date-fns";
-import { createAdminClient } from "./supabase/admin";
 
 interface RawBIClientHealthDailyRow {
   metric_date: string;
@@ -207,6 +206,11 @@ function getAuthDisplayName(
   );
 }
 
+async function createBIClientHealthAdminClient() {
+  const { createAdminClient } = await import("./supabase/admin");
+  return createAdminClient();
+}
+
 function mapDailyRow(row: RawBIClientHealthDailyRow): BIClientHealthDailyRow {
   return {
     metricDate: row.metric_date,
@@ -252,7 +256,7 @@ function mapDailyRow(row: RawBIClientHealthDailyRow): BIClientHealthDailyRow {
   };
 }
 
-function buildDailySeries(
+export function buildBIClientHealthDailySeries(
   rows: BIClientHealthDailyRow[],
   startDate: Date,
   endDate: Date
@@ -321,7 +325,7 @@ function buildDailySeries(
 export async function getBIClientHealthDailyRows(
   filters: BIClientHealthFilters = {}
 ): Promise<BIClientHealthDailyRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBIClientHealthAdminClient();
   let query = adminClient
     .from("bi_client_health_daily")
     .select("*")
@@ -353,7 +357,7 @@ export async function getCurrentBIClientHealthSnapshots(
   userId?: string,
   referenceDate: Date = new Date()
 ): Promise<BIClientHealthSnapshotRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBIClientHealthAdminClient();
   const referenceDateKey = toDateKey(referenceDate);
   let currentRowsQuery = adminClient
     .from("bi_client_health_daily")
@@ -499,6 +503,25 @@ export async function getCurrentBIClientHealthSnapshots(
     });
 }
 
+export function summarizeBIClientHealthSnapshots(
+  snapshots: BIClientHealthSnapshotRow[]
+): BIClientHealthOverview["summary"] {
+  return {
+    usersWithWorkoutLast7d: snapshots.filter((row) => !row.workoutInactive7d).length,
+    usersInactive14d: snapshots.filter((row) => row.workoutInactive14d).length,
+    usersWithNutritionLast7d: snapshots.filter((row) => !row.nutritionInactive7d).length,
+    usersWithRecentBodyMeasurement30d: snapshots.filter(
+      (row) => row.hasRecentBodyMeasurement30d
+    ).length,
+    usersWithExpiringPack7d: snapshots.filter(
+      (row) => row.currentExpiringPackCount7d > 0
+    ).length,
+    usersWithThreePlusRiskSignals: snapshots.filter(
+      (row) => row.atRiskSignalsCount >= 3
+    ).length,
+  };
+}
+
 export async function getBIClientHealthOverview(
   filters: BIClientHealthFilters = {}
 ): Promise<BIClientHealthOverview> {
@@ -522,21 +545,12 @@ export async function getBIClientHealthOverview(
 
   return {
     dailyRows,
-    dailySeries: buildDailySeries(dailyRows, resolvedStartDate, resolvedEndDate),
+    dailySeries: buildBIClientHealthDailySeries(
+      dailyRows,
+      resolvedStartDate,
+      resolvedEndDate
+    ),
     snapshots,
-    summary: {
-      usersWithWorkoutLast7d: snapshots.filter((row) => !row.workoutInactive7d).length,
-      usersInactive14d: snapshots.filter((row) => row.workoutInactive14d).length,
-      usersWithNutritionLast7d: snapshots.filter((row) => !row.nutritionInactive7d).length,
-      usersWithRecentBodyMeasurement30d: snapshots.filter(
-        (row) => row.hasRecentBodyMeasurement30d
-      ).length,
-      usersWithExpiringPack7d: snapshots.filter(
-        (row) => row.currentExpiringPackCount7d > 0
-      ).length,
-      usersWithThreePlusRiskSignals: snapshots.filter(
-        (row) => row.atRiskSignalsCount >= 3
-      ).length,
-    },
+    summary: summarizeBIClientHealthSnapshots(snapshots),
   };
 }

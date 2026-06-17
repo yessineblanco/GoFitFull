@@ -2,23 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getAdminUserIdFromRequest } from "@/lib/audit";
 import {
-  ADVANCED_BI_SNAPSHOT_RANGE_KEYS,
   buildAdvancedBISnapshotNotification,
-  type AdvancedBISnapshotRangeKey,
 } from "@/lib/bi-snapshot";
+import { parseBISnapshotInput } from "@/lib/bi-api";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-function normalizeString(value: unknown) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed || null;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,28 +18,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const rangeKey = normalizeString(body.rangeKey);
+    const input = parseBISnapshotInput(await request.json());
 
-    if (
-      !rangeKey ||
-      !ADVANCED_BI_SNAPSHOT_RANGE_KEYS.includes(
-        rangeKey as AdvancedBISnapshotRangeKey
-      )
-    ) {
+    if (!input.ok) {
       return NextResponse.json(
-        { error: "Invalid BI snapshot range." },
+        { error: input.error },
         { status: 400 }
       );
     }
 
-    const notification = await buildAdvancedBISnapshotNotification({
-      rangeKey: rangeKey as AdvancedBISnapshotRangeKey,
-      coachId: normalizeString(body.coachId),
-      coachName: normalizeString(body.coachName),
-      packId: normalizeString(body.packId),
-      packName: normalizeString(body.packName),
-    });
+    const notification = await buildAdvancedBISnapshotNotification(input.value);
 
     const adminClient = createAdminClient();
     const { data, error } = await adminClient

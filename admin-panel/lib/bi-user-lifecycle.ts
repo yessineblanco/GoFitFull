@@ -6,7 +6,6 @@ import {
   subDays,
   subMonths,
 } from "date-fns";
-import { createAdminClient } from "./supabase/admin";
 
 interface RawBIUserLifecycleDailyRow {
   metric_date: string;
@@ -170,6 +169,11 @@ function getAuthDisplayName(
   );
 }
 
+async function createBIUserLifecycleAdminClient() {
+  const { createAdminClient } = await import("./supabase/admin");
+  return createAdminClient();
+}
+
 function diffDays(endDate: Date, startDateKey: string | null) {
   if (!startDateKey) {
     return null;
@@ -204,7 +208,7 @@ function mapLifecycleRow(row: RawBIUserLifecycleDailyRow): BIUserLifecycleDailyR
   };
 }
 
-function buildDailySeries(
+export function buildBIUserLifecycleDailySeries(
   rows: BIUserLifecycleDailyRow[],
   startDate: Date,
   endDate: Date
@@ -282,7 +286,7 @@ function getDistinctUsers(
 async function getCurrentBIUserLifecycleSnapshots(
   endDate: Date
 ): Promise<BIUserLifecycleSnapshotRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBIUserLifecycleAdminClient();
   const [rows, userProfilesResult, authUsersResult] = await Promise.all([
     getBIUserLifecycleDailyRows({ endDate }),
     adminClient.from("user_profiles").select("id, user_type, is_admin"),
@@ -445,136 +449,10 @@ function monthDiff(startDate: string, endDate: string) {
   return (endYear - startYear) * 12 + (endMonth - startMonth);
 }
 
-export async function getBIUserLifecycleDailyRows(
-  filters: BIUserLifecycleFilters = {}
-): Promise<BIUserLifecycleDailyRow[]> {
-  const adminClient = createAdminClient();
-  let query = adminClient
-    .from("bi_user_lifecycle_daily")
-    .select("*")
-    .order("metric_date", { ascending: true })
-    .order("user_id", { ascending: true });
-
-  if (filters.startDate) {
-    query = query.gte("metric_date", toDateKey(filters.startDate));
-  }
-
-  if (filters.endDate) {
-    query = query.lte("metric_date", toDateKey(filters.endDate));
-  }
-
-  if (filters.userId) {
-    query = query.eq("user_id", filters.userId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(`Failed to fetch BI user lifecycle rows: ${error.message}`);
-  }
-
-  return ((data || []) as RawBIUserLifecycleDailyRow[]).map(mapLifecycleRow);
-}
-
-export async function getBIUserLifecycleOverview(
-  filters: BIUserLifecycleFilters = {}
-): Promise<BIUserLifecycleOverview> {
-  const resolvedEndDate = filters.endDate
-    ? startOfDay(new Date(toDateKey(filters.endDate)))
-    : startOfDay(new Date());
-  const resolvedStartDate = filters.startDate
-    ? startOfDay(new Date(toDateKey(filters.startDate)))
-    : startOfDay(subDays(resolvedEndDate, 29));
-  const rollingStartDate = startOfDay(subDays(resolvedEndDate, 29));
-  const queryStartDate =
-    rollingStartDate < resolvedStartDate ? rollingStartDate : resolvedStartDate;
-
-  const [rows, snapshots] = await Promise.all([
-    getBIUserLifecycleDailyRows({
-      ...filters,
-      startDate: queryStartDate,
-      endDate: resolvedEndDate,
-    }),
-    getCurrentBIUserLifecycleSnapshots(resolvedEndDate),
-  ]);
-
-  const rangeStartKey = toDateKey(resolvedStartDate);
-  const rangeEndKey = toDateKey(resolvedEndDate);
-  const rangeRows = rows.filter(
-    (row) => row.metricDate >= rangeStartKey && row.metricDate <= rangeEndKey
-  );
-  const dailySeries = buildDailySeries(rangeRows, resolvedStartDate, resolvedEndDate);
-  const dauStart = toDateKey(resolvedEndDate);
-  const wauStart = toDateKey(startOfDay(subDays(resolvedEndDate, 6)));
-  const mauStart = toDateKey(rollingStartDate);
-
-  return {
-    dailySeries,
-    snapshots,
-    summary: {
-      signupsInRange: rangeRows.filter((row) => row.didSignup).length,
-      firstWorkoutActivationsInRange: rangeRows.filter(
-        (row) => row.didFirstCompletedWorkout
-      ).length,
-      firstBookingActivationsInRange: rangeRows.filter(
-        (row) => row.didFirstCompletedBooking
-      ).length,
-      workoutActiveUsersInRange: getDistinctUsers(rangeRows, (row) => row.hadWorkoutSession),
-      bookingActiveUsersInRange: getDistinctUsers(
-        rangeRows,
-        (row) => row.hadCompletedBooking
-      ),
-      anyActiveUsersInRange: getDistinctUsers(rangeRows, (row) => row.hadAnyActivity),
-      packPurchasersInRange: getDistinctUsers(rangeRows, (row) => row.hadPackPurchase),
-      dau: getDistinctUsers(
-        rows,
-        (row) => row.hadWorkoutSession && row.metricDate >= dauStart
-      ),
-      wau: getDistinctUsers(
-        rows,
-        (row) => row.hadWorkoutSession && row.metricDate >= wauStart
-      ),
-      mau: getDistinctUsers(
-        rows,
-        (row) => row.hadWorkoutSession && row.metricDate >= mauStart
-      ),
-      workoutActivatedUsers: snapshots.filter(
-        (snapshot) => snapshot.activationType === "workout"
-      ).length,
-      bookingOnlyActivatedUsers: snapshots.filter(
-        (snapshot) => snapshot.activationType === "booking"
-      ).length,
-      unactivatedUsers: snapshots.filter(
-        (snapshot) => snapshot.activationType === "none"
-      ).length,
-      workoutActive7d: snapshots.filter((snapshot) => snapshot.isWorkoutActive7d).length,
-      workoutInactive8to14d: snapshots.filter(
-        (snapshot) => snapshot.isWorkoutInactive8to14d
-      ).length,
-      workoutInactive15to30d: snapshots.filter(
-        (snapshot) => snapshot.isWorkoutInactive15to30d
-      ).length,
-      workoutInactive31PlusOrNever: snapshots.filter(
-        (snapshot) => snapshot.isWorkoutInactive31PlusOrNever
-      ).length,
-    },
-  };
-}
-
-export async function getBIUserWorkoutCohortRetention(
-  options: BIUserWorkoutCohortRetentionOptions = {}
-): Promise<BIUserWorkoutCohortRetentionRow[]> {
-  const resolvedEndDate = options.endDate
-    ? startOfDay(new Date(toDateKey(options.endDate)))
-    : startOfDay(new Date());
-  const cohortCount = options.cohortCount || 6;
-  const maxPeriod = options.maxPeriod || 6;
-  const cohortStartDate = startOfMonth(subMonths(resolvedEndDate, cohortCount - 1));
-  const rows = await getBIUserLifecycleDailyRows({
-    startDate: cohortStartDate,
-    endDate: resolvedEndDate,
-  });
-
+export function buildBIUserWorkoutCohortRetentionRows(
+  rows: BIUserLifecycleDailyRow[],
+  maxPeriod: number
+): BIUserWorkoutCohortRetentionRow[] {
   const grouped = new Map<
     string,
     {
@@ -632,4 +510,154 @@ export async function getBIUserWorkoutCohortRetention(
         periods,
       };
     });
+}
+
+export async function getBIUserLifecycleDailyRows(
+  filters: BIUserLifecycleFilters = {}
+): Promise<BIUserLifecycleDailyRow[]> {
+  const adminClient = await createBIUserLifecycleAdminClient();
+  let query = adminClient
+    .from("bi_user_lifecycle_daily")
+    .select("*")
+    .order("metric_date", { ascending: true })
+    .order("user_id", { ascending: true });
+
+  if (filters.startDate) {
+    query = query.gte("metric_date", toDateKey(filters.startDate));
+  }
+
+  if (filters.endDate) {
+    query = query.lte("metric_date", toDateKey(filters.endDate));
+  }
+
+  if (filters.userId) {
+    query = query.eq("user_id", filters.userId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to fetch BI user lifecycle rows: ${error.message}`);
+  }
+
+  return ((data || []) as RawBIUserLifecycleDailyRow[]).map(mapLifecycleRow);
+}
+
+export function buildBIUserLifecycleOverviewFromRows(
+  rows: BIUserLifecycleDailyRow[],
+  snapshots: BIUserLifecycleSnapshotRow[],
+  startDate: Date,
+  endDate: Date
+): Pick<BIUserLifecycleOverview, "dailySeries" | "summary"> {
+  const rollingStartDate = startOfDay(subDays(endDate, 29));
+  const rangeStartKey = toDateKey(startDate);
+  const rangeEndKey = toDateKey(endDate);
+  const rangeRows = rows.filter(
+    (row) => row.metricDate >= rangeStartKey && row.metricDate <= rangeEndKey
+  );
+  const dailySeries = buildBIUserLifecycleDailySeries(rangeRows, startDate, endDate);
+  const dauStart = toDateKey(endDate);
+  const wauStart = toDateKey(startOfDay(subDays(endDate, 6)));
+  const mauStart = toDateKey(rollingStartDate);
+
+  return {
+    dailySeries,
+    summary: {
+      signupsInRange: rangeRows.filter((row) => row.didSignup).length,
+      firstWorkoutActivationsInRange: rangeRows.filter(
+        (row) => row.didFirstCompletedWorkout
+      ).length,
+      firstBookingActivationsInRange: rangeRows.filter(
+        (row) => row.didFirstCompletedBooking
+      ).length,
+      workoutActiveUsersInRange: getDistinctUsers(rangeRows, (row) => row.hadWorkoutSession),
+      bookingActiveUsersInRange: getDistinctUsers(
+        rangeRows,
+        (row) => row.hadCompletedBooking
+      ),
+      anyActiveUsersInRange: getDistinctUsers(rangeRows, (row) => row.hadAnyActivity),
+      packPurchasersInRange: getDistinctUsers(rangeRows, (row) => row.hadPackPurchase),
+      dau: getDistinctUsers(
+        rows,
+        (row) => row.hadWorkoutSession && row.metricDate >= dauStart
+      ),
+      wau: getDistinctUsers(
+        rows,
+        (row) => row.hadWorkoutSession && row.metricDate >= wauStart
+      ),
+      mau: getDistinctUsers(
+        rows,
+        (row) => row.hadWorkoutSession && row.metricDate >= mauStart
+      ),
+      workoutActivatedUsers: snapshots.filter(
+        (snapshot) => snapshot.activationType === "workout"
+      ).length,
+      bookingOnlyActivatedUsers: snapshots.filter(
+        (snapshot) => snapshot.activationType === "booking"
+      ).length,
+      unactivatedUsers: snapshots.filter(
+        (snapshot) => snapshot.activationType === "none"
+      ).length,
+      workoutActive7d: snapshots.filter((snapshot) => snapshot.isWorkoutActive7d).length,
+      workoutInactive8to14d: snapshots.filter(
+        (snapshot) => snapshot.isWorkoutInactive8to14d
+      ).length,
+      workoutInactive15to30d: snapshots.filter(
+        (snapshot) => snapshot.isWorkoutInactive15to30d
+      ).length,
+      workoutInactive31PlusOrNever: snapshots.filter(
+        (snapshot) => snapshot.isWorkoutInactive31PlusOrNever
+      ).length,
+    },
+  };
+}
+
+export async function getBIUserLifecycleOverview(
+  filters: BIUserLifecycleFilters = {}
+): Promise<BIUserLifecycleOverview> {
+  const resolvedEndDate = filters.endDate
+    ? startOfDay(new Date(toDateKey(filters.endDate)))
+    : startOfDay(new Date());
+  const resolvedStartDate = filters.startDate
+    ? startOfDay(new Date(toDateKey(filters.startDate)))
+    : startOfDay(subDays(resolvedEndDate, 29));
+  const rollingStartDate = startOfDay(subDays(resolvedEndDate, 29));
+  const queryStartDate =
+    rollingStartDate < resolvedStartDate ? rollingStartDate : resolvedStartDate;
+
+  const [rows, snapshots] = await Promise.all([
+    getBIUserLifecycleDailyRows({
+      ...filters,
+      startDate: queryStartDate,
+      endDate: resolvedEndDate,
+    }),
+    getCurrentBIUserLifecycleSnapshots(resolvedEndDate),
+  ]);
+  const overview = buildBIUserLifecycleOverviewFromRows(
+    rows,
+    snapshots,
+    resolvedStartDate,
+    resolvedEndDate
+  );
+
+  return {
+    snapshots,
+    ...overview,
+  };
+}
+
+export async function getBIUserWorkoutCohortRetention(
+  options: BIUserWorkoutCohortRetentionOptions = {}
+): Promise<BIUserWorkoutCohortRetentionRow[]> {
+  const resolvedEndDate = options.endDate
+    ? startOfDay(new Date(toDateKey(options.endDate)))
+    : startOfDay(new Date());
+  const cohortCount = options.cohortCount || 6;
+  const maxPeriod = options.maxPeriod || 6;
+  const cohortStartDate = startOfMonth(subMonths(resolvedEndDate, cohortCount - 1));
+  const rows = await getBIUserLifecycleDailyRows({
+    startDate: cohortStartDate,
+    endDate: resolvedEndDate,
+  });
+  return buildBIUserWorkoutCohortRetentionRows(rows, maxPeriod);
 }

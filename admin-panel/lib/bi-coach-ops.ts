@@ -1,5 +1,3 @@
-import { createAdminClient } from "./supabase/admin";
-
 interface RawBICoachOpsDailyRow {
   metric_date: string;
   coach_id: string;
@@ -155,6 +153,11 @@ function getAuthDisplayName(
   );
 }
 
+async function createBICoachOpsAdminClient() {
+  const { createAdminClient } = await import("./supabase/admin");
+  return createAdminClient();
+}
+
 function mapDailyRow(row: RawBICoachOpsDailyRow): BICoachOpsDailyRow {
   return {
     metricDate: row.metric_date,
@@ -188,7 +191,7 @@ function mapDailyRow(row: RawBICoachOpsDailyRow): BICoachOpsDailyRow {
 export async function getBICoachOpsDailyRows(
   filters: BICoachOpsFilters = {}
 ): Promise<BICoachOpsDailyRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBICoachOpsAdminClient();
   let query = adminClient
     .from("bi_coach_ops_daily")
     .select("*")
@@ -219,7 +222,7 @@ export async function getBICoachOpsDailyRows(
 export async function getCurrentBICoachOpsSnapshots(
   coachId?: string
 ): Promise<BICoachOpsSnapshotRow[]> {
-  const adminClient = createAdminClient();
+  const adminClient = await createBICoachOpsAdminClient();
   let coachProfilesQuery = adminClient
     .from("coach_profiles")
     .select("id, user_id, status, average_rating, total_reviews, total_sessions");
@@ -307,14 +310,10 @@ export async function getCurrentBICoachOpsSnapshots(
   });
 }
 
-export async function getBICoachOpsOverview(
-  filters: BICoachOpsFilters = {}
-): Promise<BICoachOpsOverview> {
-  const [dailyRows, snapshots] = await Promise.all([
-    getBICoachOpsDailyRows(filters),
-    getCurrentBICoachOpsSnapshots(filters.coachId),
-  ]);
-
+export function buildBICoachOpsOverview(
+  dailyRows: BICoachOpsDailyRow[],
+  snapshots: BICoachOpsSnapshotRow[]
+): Pick<BICoachOpsOverview, "summaryByCoach" | "totals"> {
   const snapshotMap = new Map(snapshots.map((snapshot) => [snapshot.coachId, snapshot]));
   const summaryMap = new Map<string, BICoachOpsSummaryRow>();
 
@@ -399,8 +398,6 @@ export async function getBICoachOpsOverview(
     });
 
   return {
-    dailyRows,
-    snapshots,
     summaryByCoach,
     totals: {
       approvedCoaches: snapshots.filter((snapshot) => snapshot.coachStatus === "approved")
@@ -418,5 +415,21 @@ export async function getBICoachOpsOverview(
       ),
       totalNoShows: summaryByCoach.reduce((sum, row) => sum + row.noShows, 0),
     },
+  };
+}
+
+export async function getBICoachOpsOverview(
+  filters: BICoachOpsFilters = {}
+): Promise<BICoachOpsOverview> {
+  const [dailyRows, snapshots] = await Promise.all([
+    getBICoachOpsDailyRows(filters),
+    getCurrentBICoachOpsSnapshots(filters.coachId),
+  ]);
+  const overview = buildBICoachOpsOverview(dailyRows, snapshots);
+
+  return {
+    dailyRows,
+    snapshots,
+    ...overview,
   };
 }

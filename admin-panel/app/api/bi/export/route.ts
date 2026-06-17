@@ -8,45 +8,23 @@ import {
   getBIUserLifecycleOverview,
   getBIUserWorkoutCohortRetention,
 } from "@/lib/bi-user-lifecycle";
+import {
+  parseBIExportQuery,
+  serializeCSV,
+  type BIExportQuery,
+  type BIExportSlice,
+  type CSVValue,
+} from "@/lib/bi-api";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const RANGE_OPTIONS = [
-  { key: "7d", days: 7 },
-  { key: "30d", days: 30 },
-  { key: "90d", days: 90 },
-] as const;
-
-const EXPORT_SLICES = [
-  "finance",
-  "lifecycle",
-  "cohorts",
-  "coach-ops",
-  "client-health",
-] as const;
-
-type BIExportSlice = (typeof EXPORT_SLICES)[number];
-type BIExportRange = (typeof RANGE_OPTIONS)[number];
-type CSVValue = boolean | number | string | null | undefined;
+type BIExportRange = BIExportQuery["range"];
 
 interface CSVDataSet {
   columns: string[];
   filename: string;
   rows: Record<string, CSVValue>[];
-}
-
-function normalizeParam(value: string | null) {
-  const normalized = value?.trim();
-  return normalized ? normalized : undefined;
-}
-
-function resolveRange(rangeKey: string | undefined): BIExportRange {
-  return RANGE_OPTIONS.find((option) => option.key === rangeKey) || RANGE_OPTIONS[1];
-}
-
-function resolveSlice(sliceKey: string | undefined): BIExportSlice | null {
-  return EXPORT_SLICES.find((slice) => slice === sliceKey) || null;
 }
 
 function getDateWindow(range: BIExportRange) {
@@ -62,30 +40,6 @@ function buildFilename(
   endDate: Date
 ) {
   return `gofit-${slice}-${rangeKey}-${format(endDate, "yyyy-MM-dd")}.csv`;
-}
-
-function escapeCSVValue(value: CSVValue) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  const stringValue =
-    typeof value === "boolean" ? (value ? "true" : "false") : String(value);
-
-  if (!/[",\r\n]/.test(stringValue)) {
-    return stringValue;
-  }
-
-  return `"${stringValue.replace(/"/g, '""')}"`;
-}
-
-function serializeCSV(columns: string[], rows: Record<string, CSVValue>[]) {
-  const lines = [
-    columns.join(","),
-    ...rows.map((row) => columns.map((column) => escapeCSVValue(row[column])).join(",")),
-  ];
-
-  return `\uFEFF${lines.join("\r\n")}`;
 }
 
 async function buildFinanceExportDataSet(
@@ -348,18 +302,16 @@ async function buildClientHealthExportDataSet(
 
 export async function GET(request: NextRequest) {
   try {
-    const slice = resolveSlice(normalizeParam(request.nextUrl.searchParams.get("slice")));
+    const query = parseBIExportQuery(request.nextUrl.searchParams);
 
-    if (!slice) {
+    if (!query.ok) {
       return NextResponse.json(
-        { error: "Invalid BI export slice." },
+        { error: query.error },
         { status: 400 }
       );
     }
 
-    const range = resolveRange(normalizeParam(request.nextUrl.searchParams.get("range")));
-    const coachId = normalizeParam(request.nextUrl.searchParams.get("coach"));
-    const packId = normalizeParam(request.nextUrl.searchParams.get("pack"));
+    const { slice, range, coachId, packId } = query.value;
 
     const dataSet =
       slice === "finance"

@@ -35,12 +35,13 @@ automations.
    - Keep the feature clearly labeled as an estimate, not a medical tool.
 
 3. **Quality foundation**
-   - Mobile Jest infrastructure covers utility rules plus auth, booking, and
-     session-pack stores; expand it to services and critical workflows.
-   - Admin-panel unit tests now cover admin-route access classification,
-     validation boundaries, import parsing, shared API error handling, and BI
-     KPI contract integrity; expand them to API handlers and BI aggregation
-     logic.
+   - Mobile Jest infrastructure covers utility rules, readiness scoring, rate
+     limiting, and auth, booking, and session-pack stores; expand it to more
+     services and critical workflows.
+   - Admin-panel unit tests now cover admin-route access classification, BI API
+     request/CSV boundaries, finance, coach-ops, client-health, and
+     user-lifecycle aggregation, validation, import parsing, shared API errors,
+     and BI KPI contract integrity; expand remaining BI aggregation coverage.
    - The admin production build passed on June 13, 2026. Admin lint is clean
      with zero errors and zero warnings, down from 114 errors and 41 warnings.
 

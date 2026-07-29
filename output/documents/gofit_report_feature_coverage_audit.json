@@ -1,0 +1,1612 @@
+{
+  "report": "C:\\Users\\yessi\\Desktop\\work\\GoFit\\output\\documents\\PFE_GoFit_Polished_Academic_Draft_Accessible_AI_Workout.docx",
+  "feature_source": "FEATURES.md",
+  "parsed_feature_rows": 250,
+  "feature_group_counts": {
+    "Mobile client": 117,
+    "Mobile coach": 35,
+    "Admin panel": 55,
+    "Backend and infrastructure": 43
+  },
+  "feature_table_comparison": [
+    {
+      "group": "Mobile client",
+      "expected_rows": 117,
+      "actual_rows": 117,
+      "missing_feature_titles": [],
+      "unexpected_feature_titles": []
+    },
+    {
+      "group": "Mobile coach",
+      "expected_rows": 35,
+      "actual_rows": 35,
+      "missing_feature_titles": [],
+      "unexpected_feature_titles": []
+    },
+    {
+      "group": "Admin panel",
+      "expected_rows": 55,
+      "actual_rows": 55,
+      "missing_feature_titles": [],
+      "unexpected_feature_titles": []
+    },
+    {
+      "group": "Backend and infrastructure",
+      "expected_rows": 43,
+      "actual_rows": 43,
+      "missing_feature_titles": [],
+      "unexpected_feature_titles": []
+    }
+  ],
+  "term_counts": {
+    "AI Session Prep v1": 4,
+    "Booking Reminders v1": 4,
+    "Check-in Reminders v1": 4,
+    "Coach Daily Digest v1": 4,
+    "Admin Ops Digest v1": 4,
+    "n8n": 52,
+    "MediaPipe Pose Landmarker": 7,
+    "MediaPipe Image Segmenter": 5,
+    "MoveNet": 19,
+    "TFLite": 13,
+    "Groq": 24,
+    "LiveKit": 20,
+    "Expo Haptics": 3,
+    "haptics_enabled": 1,
+    "Codex": 14,
+    "MCP": 12,
+    "Supabase": 298,
+    "Row-level security": 6,
+    "React Hook Form": 4,
+    "Zod": 43,
+    "TanStack": 2,
+    "Radix": 14,
+    "Reanimated": 2,
+    "Gesture Handler": 1,
+    "ai-workout-recommendation": 5,
+    "RecommendedWorkouts": 2,
+    "workoutRecommendationService": 1,
+    "Adaptive workout": 5,
+    "llama-3.3-70b-versatile": 2,
+    "daily_readiness": 1,
+    "computeAdaptiveContext": 1,
+    "volumeAdjustment": 1,
+    "coach companion": 1,
+    "response_format": 1,
+    "Business Intelligence": 2,
+    "Advanced BI": 3,
+    "bi_finance_daily": 2,
+    "bi_user_lifecycle_daily": 2,
+    "bi_coach_ops_daily": 2,
+    "bi_client_health_daily": 2,
+    "/api/bi/export": 1,
+    "/api/bi/saved-views": 1,
+    "/api/bi/snapshot": 1,
+    "/api/bi/scheduled-digests": 1,
+    "saved BI views": 2,
+    "threshold alerts": 3,
+    "scheduled digests": 4,
+    "CSV exports": 2
+  },
+  "dependencies": [
+    {
+      "app": "mobile",
+      "package": "@expo-google-fonts/barlow",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@expo-google-fonts/barlow",
+        "expo-google-fonts barlow",
+        "expo fonts",
+        "barlow",
+        "fonts"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@expo/vector-icons",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@expo/vector-icons",
+        "expo vector-icons",
+        "vector icons",
+        "icons"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@hookform/resolvers",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@hookform/resolvers",
+        "hookform resolvers",
+        "react hook form",
+        "resolvers"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@livekit/react-native",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@livekit/react-native",
+        "livekit react-native",
+        "react native",
+        "livekit"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@livekit/react-native-expo-plugin",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@livekit/react-native-expo-plugin",
+        "livekit react-native-expo-plugin",
+        "react native expo plugin",
+        "expo plugin",
+        "livekit"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@livekit/react-native-webrtc",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@livekit/react-native-webrtc",
+        "livekit react-native-webrtc",
+        "react native webrtc",
+        "livekit",
+        "webrtc"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-native-async-storage/async-storage",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-native-async-storage/async-storage",
+        "react-native-async-storage async-storage",
+        "async storage"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-native-community/datetimepicker",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-native-community/datetimepicker",
+        "react-native-community datetimepicker",
+        "datetime picker",
+        "datetimepicker",
+        "date picker",
+        "calendar"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-native-masked-view/masked-view",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-native-masked-view/masked-view",
+        "react-native-masked-view masked-view",
+        "masked view"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-navigation/bottom-tabs",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-navigation/bottom-tabs",
+        "react-navigation bottom-tabs",
+        "react navigation",
+        "bottom tabs"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-navigation/native",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-navigation/native",
+        "react-navigation native",
+        "react navigation",
+        "native"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@react-navigation/stack",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-navigation/stack",
+        "react-navigation stack",
+        "react navigation",
+        "stack"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@supabase/supabase-js",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "supabase javascript client",
+        "@supabase/supabase-js",
+        "supabase supabase-js",
+        "supabase js",
+        "supabase"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "date-fns",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "date-fns",
+        "date fns"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo sdk",
+        "expo"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-av",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo av",
+        "expo-av",
+        "video",
+        "audio",
+        "media"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-blur",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-blur",
+        "expo blur",
+        "blur"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-build-properties",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo build properties",
+        "expo-build-properties",
+        "build properties",
+        "eas build"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-calendar",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo calendar",
+        "expo-calendar",
+        "calendar"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-camera",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-camera",
+        "expo camera",
+        "camera"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-dev-client",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-dev-client",
+        "expo dev client"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-document-picker",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-document-picker",
+        "expo document picker",
+        "document picker"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-file-system",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-file-system",
+        "expo file system",
+        "file system"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-font",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-font",
+        "expo font",
+        "fonts"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-haptics",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-haptics",
+        "expo haptics",
+        "haptics"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-health-connect",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-health-connect",
+        "expo health connect",
+        "health connect"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-image",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-image",
+        "expo image",
+        "image"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-image-manipulator",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo image manipulator",
+        "expo-image-manipulator",
+        "image manipulator"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-image-picker",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo image picker",
+        "expo-image-picker",
+        "image picker"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-linear-gradient",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-linear-gradient",
+        "expo linear gradient",
+        "linear gradient"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-localization",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo localization",
+        "expo-localization",
+        "localization"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-location",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo location",
+        "expo-location",
+        "location"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-notifications",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-notifications",
+        "expo notifications",
+        "notifications"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-secure-store",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo secure store",
+        "expo-secure-store",
+        "secure store"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-splash-screen",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-splash-screen",
+        "expo splash screen",
+        "splash screen"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-status-bar",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo status bar",
+        "expo-status-bar",
+        "status bar"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "expo-video",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "expo-video",
+        "expo video",
+        "video"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "i18next",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "localization",
+        "i18next"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "jpeg-js",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "image processing",
+        "jpeg js",
+        "jpeg-js",
+        "jpeg"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "lucide-react-native",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "lucide react native",
+        "lucide-react-native",
+        "lucide"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-dom",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-dom",
+        "react dom",
+        "react"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-hook-form",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react hook form",
+        "react-hook-form"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-i18next",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-i18next",
+        "react i18next",
+        "localization"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native",
+        "react native"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-chart-kit",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native chart kit",
+        "react-native-chart-kit",
+        "chart kit",
+        "charts"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-fast-tflite",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-fast-tflite",
+        "react native fast tflite",
+        "fast-tflite",
+        "tflite"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-gesture-handler",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-gesture-handler",
+        "react native gesture handler",
+        "gesture handler"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-health-connect",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native health connect",
+        "react-native-health-connect",
+        "health connect"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-incall-manager",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-incall-manager",
+        "react native incall manager",
+        "incall manager",
+        "video"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-nitro-modules",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-nitro-modules",
+        "react native nitro modules",
+        "native modules",
+        "nitro modules"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-reanimated",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native reanimated",
+        "react-native-reanimated",
+        "reanimated"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-safe-area-context",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-safe-area-context",
+        "react native safe area context",
+        "safe area"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-screens",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native screens",
+        "react-native-screens",
+        "screens"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-svg",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-svg",
+        "react native svg",
+        "svg"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-vector-icons",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-vector-icons",
+        "react native vector icons",
+        "vector icons"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-web",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-native-web",
+        "react native web",
+        "web"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-worklets",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native worklets",
+        "react-native-worklets",
+        "worklets"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "react-native-worklets-core",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react native worklets core",
+        "react-native-worklets-core",
+        "worklets"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "webrtc-adapter",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "webrtc-adapter",
+        "webrtc adapter",
+        "webrtc"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "zod",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "zod"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "zustand",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "zustand"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@types/jest",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@types/jest",
+        "types jest",
+        "jest"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@types/react",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@types/react",
+        "types react",
+        "react"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "@types/react-native-vector-icons",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "@types/react-native-vector-icons",
+        "types react-native-vector-icons",
+        "react native vector icons"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "adm-zip",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "adm-zip",
+        "adm zip"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "babel-preset-expo",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "babel-preset-expo",
+        "babel preset expo"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "jest",
+      "type": "devDependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "jest"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "jest-expo",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "jest expo",
+        "jest-expo"
+      ]
+    },
+    {
+      "app": "mobile",
+      "package": "typescript",
+      "type": "devDependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "typescript"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@aws-sdk/client-s3",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@aws-sdk/client-s3",
+        "aws-sdk client-s3",
+        "client s3",
+        "s3 client",
+        "aws s3"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@hookform/resolvers",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@hookform/resolvers",
+        "hookform resolvers",
+        "react hook form",
+        "resolvers"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-alert-dialog",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-alert-dialog",
+        "radix-ui react-alert-dialog",
+        "react alert dialog",
+        "alert dialog",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-avatar",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-avatar",
+        "radix-ui react-avatar",
+        "react avatar",
+        "avatar",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-checkbox",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-checkbox",
+        "radix-ui react-checkbox",
+        "react checkbox",
+        "checkbox",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-collapsible",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-collapsible",
+        "radix-ui react-collapsible",
+        "react collapsible",
+        "collapsible",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-dialog",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-dialog",
+        "radix-ui react-dialog",
+        "react dialog",
+        "dialog",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-dropdown-menu",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-dropdown-menu",
+        "radix-ui react-dropdown-menu",
+        "react dropdown menu",
+        "dropdown",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-popover",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-popover",
+        "radix-ui react-popover",
+        "react popover",
+        "popover",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-progress",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-progress",
+        "radix-ui react-progress",
+        "react progress",
+        "progress",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-scroll-area",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-scroll-area",
+        "radix-ui react-scroll-area",
+        "react scroll area",
+        "scroll area",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-select",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-select",
+        "radix-ui react-select",
+        "react select",
+        "select",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-slot",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-slot",
+        "radix-ui react-slot",
+        "react slot",
+        "radix",
+        "slot"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-switch",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-switch",
+        "radix-ui react-switch",
+        "react switch",
+        "switch",
+        "radix"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@radix-ui/react-toast",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@radix-ui/react-toast",
+        "radix-ui react-toast",
+        "react toast",
+        "radix",
+        "toast"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@supabase/ssr",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@supabase/ssr",
+        "supabase ssr",
+        "supabase",
+        "ssr"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@supabase/supabase-js",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "supabase javascript client",
+        "@supabase/supabase-js",
+        "supabase supabase-js",
+        "supabase js",
+        "supabase"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@tanstack/react-table",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@tanstack/react-table",
+        "tanstack react-table",
+        "react table",
+        "tanstack"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "class-variance-authority",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "class variance authority",
+        "class-variance-authority",
+        "component variants",
+        "class utilities"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "clsx",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "class utilities",
+        "clsx"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "cmdk",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "cmdk"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "date-fns",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "date-fns",
+        "date fns"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "lucide-react",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "lucide react",
+        "lucide-react",
+        "lucide"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "next",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "next.js",
+        "next"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "next-themes",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "next themes",
+        "next-themes",
+        "theme"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "react",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "react-day-picker",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-day-picker",
+        "react day picker",
+        "date picker",
+        "day picker"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "react-dom",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react-dom",
+        "react dom",
+        "react"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "react-hook-form",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "react hook form",
+        "react-hook-form"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "recharts",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "recharts"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "sonner",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "sonner"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "tailwind-merge",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "class utilities",
+        "tailwind merge",
+        "tailwind-merge",
+        "tailwind"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "tailwindcss-animate",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "tailwindcss animate",
+        "tailwindcss-animate",
+        "animations",
+        "tailwind"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "zod",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "zod"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@types/node",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@types/node",
+        "types node",
+        "node"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@types/react",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@types/react",
+        "types react",
+        "react"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "@types/react-dom",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "@types/react-dom",
+        "types react-dom",
+        "react dom"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "autoprefixer",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "autoprefixer"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "eslint",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "eslint"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "eslint-config-next",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "eslint config next",
+        "eslint-config-next"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "postcss",
+      "type": "devDependency",
+      "exact_mentioned": false,
+      "covered_by_family_or_alias": false,
+      "aliases_checked": [
+        "postcss"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "tailwindcss",
+      "type": "devDependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "tailwindcss"
+      ]
+    },
+    {
+      "app": "admin",
+      "package": "typescript",
+      "type": "devDependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "typescript"
+      ]
+    }
+  ],
+  "n8n_workflows": [
+    {
+      "file": "docs/automation/n8n/workflows/admin-ops-digest-v1.json",
+      "workflow_name": "GoFit Admin Ops Digest v1",
+      "mentioned_by_name": true,
+      "mentioned_by_file_stem": true
+    },
+    {
+      "file": "docs/automation/n8n/workflows/ai-session-prep-v1.json",
+      "workflow_name": "GoFit AI Session Prep v1",
+      "mentioned_by_name": true,
+      "mentioned_by_file_stem": true
+    },
+    {
+      "file": "docs/automation/n8n/workflows/booking-reminders-v1.json",
+      "workflow_name": "GoFit Booking Reminders v1",
+      "mentioned_by_name": true,
+      "mentioned_by_file_stem": true
+    },
+    {
+      "file": "docs/automation/n8n/workflows/check-in-reminders-v1.json",
+      "workflow_name": "GoFit Check-in Reminders v1",
+      "mentioned_by_name": true,
+      "mentioned_by_file_stem": true
+    },
+    {
+      "file": "docs/automation/n8n/workflows/coach-daily-digest-v1.json",
+      "workflow_name": "GoFit Coach Daily Digest v1",
+      "mentioned_by_name": true,
+      "mentioned_by_file_stem": true
+    }
+  ],
+  "haptics": {
+    "source_files_with_haptics": 76,
+    "source_haptics_calls": 397,
+    "report_mentions_haptics": 30,
+    "sample_haptics_files": [
+      "GoFitMobile/src/components/auth/Checkbox.tsx",
+      "GoFitMobile/src/components/auth/CustomButton.tsx",
+      "GoFitMobile/src/components/auth/SocialButton.tsx",
+      "GoFitMobile/src/components/coach/CoachStitchHeader.tsx",
+      "GoFitMobile/src/components/coach/CoachSubScreenBar.tsx",
+      "GoFitMobile/src/components/home/ArticlesFeed.tsx",
+      "GoFitMobile/src/components/home/Banner.tsx",
+      "GoFitMobile/src/components/home/CheckInHomeCard.tsx",
+      "GoFitMobile/src/components/home/DailyCoachLoopCard.tsx",
+      "GoFitMobile/src/components/home/HealthWidget.tsx",
+      "GoFitMobile/src/components/home/NutritionHomeCard.tsx",
+      "GoFitMobile/src/components/home/QuickActions.tsx",
+      "GoFitMobile/src/components/home/RecommendedWorkouts.tsx",
+      "GoFitMobile/src/components/home/TopTrainers.tsx",
+      "GoFitMobile/src/components/home/TopWorkouts.tsx",
+      "GoFitMobile/src/components/home/YourPrograms.tsx",
+      "GoFitMobile/src/components/onboarding/OnboardingNavigationButtons.tsx",
+      "GoFitMobile/src/components/onboarding/WeightScale.tsx",
+      "GoFitMobile/src/components/shared/CoachTabBar.tsx",
+      "GoFitMobile/src/components/shared/CustomDialog.tsx"
+    ]
+  },
+  "artifact_counts": {
+    "mobile_screens": {
+      "total_files": 82,
+      "explicit_path_mentions_in_report": 72,
+      "sample_unmentioned_paths": [
+        "GoFitMobile/src/screens/check-in/CheckInScreen.tsx",
+        "GoFitMobile/src/screens/coach-app/ClientCheckInsScreen.tsx",
+        "GoFitMobile/src/screens/nutrition/AddFoodScreen.tsx",
+        "GoFitMobile/src/screens/nutrition/NutritionGoalsScreen.tsx",
+        "GoFitMobile/src/screens/nutrition/NutritionScreen.tsx",
+        "GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx",
+        "GoFitMobile/src/screens/profile/HabitSettingsScreen.tsx",
+        "GoFitMobile/src/screens/profile/HealthSyncScreen.tsx",
+        "GoFitMobile/src/screens/progress/ProgressPhotoDetailScreen.tsx",
+        "GoFitMobile/src/screens/progress/ProgressPhotosScreen.tsx"
+      ]
+    },
+    "mobile_navigation": {
+      "total_files": 7,
+      "explicit_path_mentions_in_report": 7,
+      "sample_unmentioned_paths": []
+    },
+    "admin_pages": {
+      "total_files": 57,
+      "explicit_path_mentions_in_report": 52,
+      "sample_unmentioned_paths": [
+        "admin-panel/app/api/bi/export/route.ts",
+        "admin-panel/app/api/bi/saved-views/route.ts",
+        "admin-panel/app/api/bi/scheduled-digests/route.ts",
+        "admin-panel/app/api/bi/snapshot/route.ts",
+        "admin-panel/app/users/EmptyUsersState.tsx"
+      ]
+    },
+    "supabase_functions": {
+      "total_files": 6,
+      "explicit_path_mentions_in_report": 4,
+      "sample_unmentioned_paths": [
+        "supabase/functions/ai-session-notes/index.ts",
+        "supabase/functions/food-barcode-lookup/index.ts"
+      ]
+    },
+    "database_migrations": {
+      "total_files": 100,
+      "explicit_path_mentions_in_report": 34,
+      "sample_unmentioned_paths": [
+        "database/migrations/add_advisor_missing_fk_indexes_v1.sql",
+        "database/migrations/add_body_measurement_height_cm.sql",
+        "database/migrations/add_body_measurement_lengths.sql",
+        "database/migrations/add_body_measurement_ondevice_columns.sql",
+        "database/migrations/add_food_item_barcodes_v1.sql",
+        "database/migrations/add_food_item_source_attribution_v1.sql",
+        "database/migrations/add_saved_meal_item_update_policy_v1.sql",
+        "database/migrations/consolidate_transaction_select_policies_v1.sql",
+        "database/migrations/consolidate_wallet_select_policies_v1.sql",
+        "database/migrations/consolidate_workout_rls_policies_v1.sql",
+        "database/migrations/create_bi_client_health_daily_view.sql",
+        "database/migrations/create_bi_coach_ops_daily_view.sql",
+        "database/migrations/create_bi_finance_daily_view.sql",
+        "database/migrations/create_bi_user_lifecycle_daily_view.sql",
+        "database/migrations/create_daily_coach_loop_v1.sql"
+      ]
+    },
+    "n8n_workflows": {
+      "total_files": 5,
+      "explicit_path_mentions_in_report": 0,
+      "sample_unmentioned_paths": [
+        "docs/automation/n8n/workflows/admin-ops-digest-v1.json",
+        "docs/automation/n8n/workflows/ai-session-prep-v1.json",
+        "docs/automation/n8n/workflows/booking-reminders-v1.json",
+        "docs/automation/n8n/workflows/check-in-reminders-v1.json",
+        "docs/automation/n8n/workflows/coach-daily-digest-v1.json"
+      ]
+    }
+  },
+  "verdict": {
+    "feature_inventory_status": "PASS",
+    "missing_feature_count": 0,
+    "unexpected_feature_count": 0,
+    "n8n_status": "PASS",
+    "missing_n8n_workflows": [],
+    "core_term_status": "PASS",
+    "missing_core_terms": [],
+    "dependency_family_status": "PASS",
+    "dependency_family_missing_count": 0,
+    "dependency_family_missing": []
+  }
+}

@@ -27,6 +27,12 @@ type OpenFoodFactsProduct = {
 
 const jsonHeaders = { ...corsHeaders, 'Content-Type': 'application/json' };
 
+const jsonResponse = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: jsonHeaders,
+  });
+
 function toNum(value: unknown): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : 0;
@@ -70,10 +76,7 @@ Deno.serve(async (req: Request) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: jsonHeaders,
-    });
+    return jsonResponse({ error: 'Method not allowed' }, 405);
   }
 
   try {
@@ -81,19 +84,27 @@ Deno.serve(async (req: Request) => {
     const candidates = barcodeCandidates(String(barcode ?? ''));
 
     if (candidates.length === 0) {
-      return new Response(JSON.stringify({ food: null, source: 'invalid' }), {
-        status: 400,
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ food: null, source: 'invalid' }, 400);
+    }
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return jsonResponse({ error: 'Missing Authorization header' }, 401);
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !serviceRoleKey) {
-      return new Response(JSON.stringify({ error: 'Supabase service role is not configured' }), {
-        status: 500,
-        headers: jsonHeaders,
-      });
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+      return jsonResponse({ error: 'Supabase credentials are not configured' }, 500);
+    }
+
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await authClient.auth.getUser();
+    if (userError || !userData.user) {
+      return jsonResponse({ error: 'Invalid user session' }, 401);
     }
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -106,9 +117,7 @@ Deno.serve(async (req: Request) => {
 
     if (existingError) throw existingError;
     if (existing?.[0]) {
-      return new Response(JSON.stringify({ food: existing[0] as FoodItemRow, source: 'cache' }), {
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ food: existing[0] as FoodItemRow, source: 'cache' });
     }
 
     const canonicalBarcode = candidates[0];
@@ -122,24 +131,17 @@ Deno.serve(async (req: Request) => {
     });
 
     if (!offResponse.ok) {
-      return new Response(JSON.stringify({ food: null, source: 'provider_error' }), {
-        status: 502,
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ food: null, source: 'provider_error' }, 502);
     }
 
     const offData = await offResponse.json();
     if (offData.status !== 1 || !offData.product) {
-      return new Response(JSON.stringify({ food: null, source: 'not_found' }), {
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ food: null, source: 'not_found' });
     }
 
     const normalized = normalizeProduct(canonicalBarcode, offData.product as OpenFoodFactsProduct);
     if (!normalized) {
-      return new Response(JSON.stringify({ food: null, source: 'incomplete' }), {
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ food: null, source: 'incomplete' });
     }
 
     const { data: inserted, error: insertError } = await supabase
@@ -157,21 +159,14 @@ Deno.serve(async (req: Request) => {
 
       if (raceError) throw raceError;
       if (cachedAfterRace?.[0]) {
-        return new Response(JSON.stringify({ food: cachedAfterRace[0] as FoodItemRow, source: 'cache' }), {
-          headers: jsonHeaders,
-        });
+        return jsonResponse({ food: cachedAfterRace[0] as FoodItemRow, source: 'cache' });
       }
       throw insertError;
     }
 
-    return new Response(JSON.stringify({ food: inserted as FoodItemRow, source: 'open_food_facts' }), {
-      headers: jsonHeaders,
-    });
+    return jsonResponse({ food: inserted as FoodItemRow, source: 'open_food_facts' });
   } catch (error) {
     console.error('food-barcode-lookup error', error);
-    return new Response(JSON.stringify({ error: 'Barcode lookup failed' }), {
-      status: 500,
-      headers: jsonHeaders,
-    });
+    return jsonResponse({ error: 'Barcode lookup failed' }, 500);
   }
 });

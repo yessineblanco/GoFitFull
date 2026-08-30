@@ -30,6 +30,7 @@ import * as Location from 'expo-location';
 import { useCoachStore } from '@/store/coachStore';
 import { useBookingsStore } from '@/store/bookingsStore';
 import { usePacksStore } from '@/store/packsStore';
+import { checkInsService } from '@/services/checkIns';
 import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -181,6 +182,7 @@ export const CoachDashboardScreen: React.FC = () => {
   const [atRiskPacks, setAtRiskPacks] = useState<
     { clientId: string; name: string; sessionsLeft: number }[]
   >([]);
+  const [lowCheckIns, setLowCheckIns] = useState<any[]>([]);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const enterAnim = useRef(new Animated.Value(0)).current;
@@ -296,11 +298,13 @@ export const CoachDashboardScreen: React.FC = () => {
   const load = useCallback(async () => {
     if (!profile?.id) return;
     try {
-      await Promise.all([
+      const [_, __, ___, lowCheckInsRes] = await Promise.all([
         loadCoachBookings(profile.id),
         loadMyPacks(profile.id),
         useWalletStore.getState().loadEarningsSummary(),
+        checkInsService.getRecentLowCheckInsForCoach(profile.id),
       ]);
+      setLowCheckIns(lowCheckInsRes || []);
       const bookings = useBookingsStore.getState().coachBookings;
       const packs = usePacksStore.getState().myPacks;
       const earnings = useWalletStore.getState().earningsSummary;
@@ -623,6 +627,64 @@ export const CoachDashboardScreen: React.FC = () => {
                 </View>
                 <ChevronRight size={22} color={textMuted} strokeWidth={2} />
               </GlassPanel>
+              {/* Wellness Alerts */}
+              {lowCheckIns.length > 0 && (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={{ fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: textPri, marginBottom: 12 }}>
+                    Wellness Alerts
+                  </Text>
+                  {lowCheckIns.map(checkIn => (
+                    <GlassPanel
+                      key={checkIn.id}
+                      isDark={isDark}
+                      style={[s.insightCard, { marginBottom: 8, borderColor: '#FF4B4B' }]}
+                      onPress={() => nav.navigate('ClientManagement', { screen: 'ClientDetail', params: { clientId: checkIn.client_id, clientName: checkIn.user_profiles?.display_name || 'Client' } })}
+                    >
+                      <View style={[s.insightIconWell, { backgroundColor: 'rgba(255, 75, 75, 0.15)' }]}>
+                        <Flame size={20} color="#FF4B4B" strokeWidth={2.2} />
+                      </View>
+                      <View style={[s.insightBody, { marginLeft: 12 }]}>
+                        <Text style={[s.insightTitle, { color: textPri }]} numberOfLines={1}>
+                          {checkIn.user_profiles?.display_name || 'Client'}
+                        </Text>
+                        <Text style={[s.insightMeta, { color: '#FF4B4B' }]} numberOfLines={1}>
+                          Low mood or energy reported recently
+                        </Text>
+                      </View>
+                      <ChevronRight size={18} color={textMuted} />
+                    </GlassPanel>
+                  ))}
+                </View>
+              )}
+
+              {/* Quick Client Access (CRM UX Improvement) */}
+              <View style={{ marginTop: 8 }}>
+                <Text style={{ fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: textPri, marginBottom: 12 }}>
+                  Recent Clients
+                </Text>
+                {clients.slice(0, 3).map(client => (
+                  <GlassPanel
+                    key={client.client_id}
+                    isDark={isDark}
+                    style={[s.insightCard, { marginBottom: 8 }]}
+                    onPress={() => nav.navigate('ClientManagement', { screen: 'ClientDetail', params: { clientId: client.client_id, clientName: client.display_name } })}
+                  >
+                    <ExpoImage 
+                      source={{ uri: resolvePublicAvatarUrl(client.profile_picture_url) || 'https://via.placeholder.com/150' }}
+                      style={{ width: 40, height: 40, borderRadius: 20 }}
+                    />
+                    <View style={[s.insightBody, { marginLeft: 12 }]}>
+                      <Text style={[s.insightTitle, { color: textPri }]} numberOfLines={1}>
+                        {client.display_name}
+                      </Text>
+                      <Text style={[s.insightMeta, { color: textMuted }]} numberOfLines={1}>
+                        Tap to view profile & assign programs
+                      </Text>
+                    </View>
+                    <ChevronRight size={18} color={textMuted} />
+                  </GlassPanel>
+                ))}
+              </View>
 
               {/* Client spotlight: longest since last completed session */}
               {clientSpotlight ? (

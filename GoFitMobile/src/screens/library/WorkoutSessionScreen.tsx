@@ -176,6 +176,10 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
     }
   }, [sessionStarted, isPaused]);
 
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackDifficulty, setFeedbackDifficulty] = useState<string>('Good');
+  const [feedbackNotes, setFeedbackNotes] = useState('');
+
   const [displayStats, setDisplayStats] = useState({
     time: 0,
     sets: 0,
@@ -728,46 +732,57 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
     };
   }, [startTime]);
 
-  // Finish workout
-  const finishWorkout = async () => {
+  // Open feedback modal instead of immediate finish
+  const openFeedbackModal = () => {
     if (!user?.id || !sessionId) {
       dialogManager.error(t('common.error'), t('library.workoutSession.sessionNotFound'));
       return;
     }
+    
+    // Pause the timer when opening feedback
+    if (!isPaused) {
+      togglePause();
+    }
+    
+    setShowFeedbackModal(true);
+  };
 
-    dialogManager.show(
-      t('library.workoutSession.finishWorkout'),
-      t('library.workoutSession.finishConfirm'),
-      'info',
-      {
-        showCancel: true,
-        cancelText: t('library.workoutSession.cancel'),
-        confirmText: t('library.workoutSession.finish'),
-        onConfirm: async () => {
-          try {
-            const endTime = new Date();
-            // Calculate duration accounting for paused time
-            const totalSeconds = startTime
-              ? Math.floor((endTime.getTime() - startTime.getTime()) / 1000) - totalPausedDuration
-              : 0;
-            const durationMinutes = Math.max(0, Math.floor(totalSeconds / 60));
+  // Actually finish and save workout
+  const submitWorkoutFeedback = async () => {
+    setShowFeedbackModal(false);
+    
+    try {
+      const endTime = new Date();
+      // Calculate duration accounting for paused time
+      const totalSeconds = startTime
+        ? Math.floor((endTime.getTime() - startTime.getTime()) / 1000) - totalPausedDuration
+        : 0;
+      const durationMinutes = Math.max(0, Math.floor(totalSeconds / 60));
 
-            const exercisesCompleted = exercises.map(ex => ({
-              id: ex.id,
-              name: ex.name,
-              sets: String(ex.sets), // Ensure sets is a string
-              reps: String(ex.reps), // Ensure reps is a string (can be "12,10,8,6")
-              restTime: String(ex.restTime), // Ensure restTime is a string
-              completedSets: ex.completedSets,
-              weights: ex.weights,
-              completed: ex.completed,
-            }));
+      const exercisesCompleted = exercises.map(ex => ({
+        id: ex.id,
+        name: ex.name,
+        sets: String(ex.sets), // Ensure sets is a string
+        reps: String(ex.reps), // Ensure reps is a string (can be "12,10,8,6")
+        restTime: String(ex.restTime), // Ensure restTime is a string
+        completedSets: ex.completedSets,
+        weights: ex.weights,
+        completed: ex.completed,
+      }));
 
-            const updatedSession = await workoutService.updateWorkoutSession(sessionId, user.id, {
-              completed_at: endTime.toISOString(),
-              duration_minutes: durationMinutes,
-              exercises_completed: exercisesCompleted,
-            });
+      // Combine difficulty and notes
+      let finalNotes = feedbackNotes.trim();
+      if (feedbackDifficulty) {
+        const difficultyPrefix = `[Difficulty: ${feedbackDifficulty}]`;
+        finalNotes = finalNotes ? `${difficultyPrefix} ${finalNotes}` : difficultyPrefix;
+      }
+
+      const updatedSession = await workoutService.updateWorkoutSession(sessionId!, user!.id, {
+        completed_at: endTime.toISOString(),
+        duration_minutes: durationMinutes,
+        exercises_completed: exercisesCompleted,
+        notes: finalNotes || undefined,
+      });
 
             if (__DEV__) {
               logger.debug('Workout completed - updated session:', {
@@ -817,23 +832,20 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
               loadLatestIncompleteSession(user.id, true);
             }, 500);
 
-            // Mark that we're completing the workout to allow navigation
-            isCompletingWorkoutRef.current = true;
+      // Mark that we're completing the workout to allow navigation
+      isCompletingWorkoutRef.current = true;
 
-            // Navigate to workout summary screen
-            navigation.navigate('WorkoutSummary', {
-              workoutName: workoutName,
-              durationMinutes: durationMinutes,
-              exercises: exercisesCompleted,
-              completedAt: endTime.toISOString(),
-              returnTo: route.params?.returnTo,
-            });
-          } catch (error: any) {
-            dialogManager.error(t('common.error'), error.message || t('library.workoutSession.failedToFinish'));
-          }
-        },
-      }
-    );
+      // Navigate to workout summary screen
+      navigation.navigate('WorkoutSummary', {
+        workoutName: workoutName,
+        durationMinutes: durationMinutes,
+        exercises: exercisesCompleted,
+        completedAt: endTime.toISOString(),
+        returnTo: route.params?.returnTo,
+      });
+    } catch (error: any) {
+      dialogManager.error(t('common.error'), error.message || t('library.workoutSession.failedToFinish'));
+    }
   };
 
   const currentExercise = exercises[currentExerciseIndex] || null;
@@ -1777,7 +1789,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
               borderRadius: 12,
               marginLeft: 8,
             }}
-            onPress={finishWorkout}
+            onPress={openFeedbackModal}
             activeOpacity={0.7}
           >
             <Square size={16} color="#FF4B4B" fill="#FF4B4B" />
@@ -2141,7 +2153,7 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
               }}
               onPress={() => {
                 if (exercises.every(ex => ex.completed)) {
-                  finishWorkout();
+                  openFeedbackModal();
                 } else if (currentExerciseIndex < exercises.length - 1 && currentExercise?.completed) {
                   Animated.parallel([
                     Animated.timing(exerciseCardAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
@@ -2183,6 +2195,79 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
           </BlurView>
         </View>
       )}
+    {/* Post-Workout Feedback Modal */}
+    <Modal visible={showFeedbackModal} transparent animationType="slide">
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'flex-end' }}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <View style={{ backgroundColor: getBackgroundColor(isDark), padding: 24, borderTopLeftRadius: 24, borderTopRightRadius: 24, minHeight: 350 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 20, fontFamily: 'Barlow_700Bold', color: colors.text }}>Workout Complete! 🎉</Text>
+              <TouchableOpacity onPress={() => setShowFeedbackModal(false)}>
+                <X size={24} color={colors.textLight} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ fontSize: 14, fontFamily: 'Barlow_500Medium', color: colors.text, marginBottom: 12 }}>How did it feel?</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+              {['Easy', 'Good', 'Hard', 'Exhausting'].map(level => {
+                const isSelected = feedbackDifficulty === level;
+                return (
+                  <TouchableOpacity
+                    key={level}
+                    onPress={() => {
+                      setFeedbackDifficulty(level);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                    style={{
+                      flex: 1, marginHorizontal: 4, paddingVertical: 12, alignItems: 'center',
+                      backgroundColor: isSelected ? BRAND_PRIMARY : getGlassBg(isDark),
+                      borderRadius: 12,
+                      borderWidth: 1, borderColor: isSelected ? BRAND_PRIMARY : getGlassBorder(isDark)
+                    }}
+                  >
+                    <Text style={{ 
+                      color: isSelected ? '#000' : colors.text,
+                      fontFamily: isSelected ? 'Barlow_600SemiBold' : 'Barlow_500Medium',
+                      fontSize: 13
+                    }}>
+                      {level}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <Text style={{ fontSize: 14, fontFamily: 'Barlow_500Medium', color: colors.text, marginBottom: 8 }}>Any notes for your coach?</Text>
+            <TextInput
+              style={{
+                backgroundColor: getGlassBg(isDark),
+                borderColor: getGlassBorder(isDark),
+                borderWidth: 1,
+                borderRadius: 12,
+                color: colors.text,
+                padding: 16,
+                minHeight: 100,
+                textAlignVertical: 'top',
+                fontFamily: 'Barlow_400Regular',
+                marginBottom: 24
+              }}
+              placeholder="Felt a tweak in my shoulder on the last set..."
+              placeholderTextColor={colors.textLight}
+              multiline
+              value={feedbackNotes}
+              onChangeText={setFeedbackNotes}
+            />
+
+            <TouchableOpacity
+              style={{ backgroundColor: BRAND_PRIMARY, paddingVertical: 16, borderRadius: 12, alignItems: 'center' }}
+              onPress={submitWorkoutFeedback}
+            >
+              <Text style={{ color: '#000', fontFamily: 'Barlow_700Bold', fontSize: 16 }}>Save & Finish</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
 
     </View>
   );

@@ -16,6 +16,7 @@ import { NutritionHomeCard } from '@/components/home/NutritionHomeCard';
 import { HealthWidget } from '@/components/home/HealthWidget';
 import { CheckInHomeCard } from '@/components/home/CheckInHomeCard';
 import { DailyCoachLoopCard } from '@/components/home/DailyCoachLoopCard';
+import { ContactCoachCard } from '@/components/home/ContactCoachCard';
 import { GlassCalendar } from '@/components/home/GlassCalendar';
 import { RecommendedWorkouts } from '@/components/home/RecommendedWorkouts';
 import { MilestonesCard } from '@/components/home/MilestonesCard';
@@ -118,6 +119,8 @@ export const HomeScreen: React.FC = () => {
         }
       >
         <HomeHeader />
+
+        <ContactCoachCard />
 
         <GlassCalendar workoutDays={workoutDays} />
 

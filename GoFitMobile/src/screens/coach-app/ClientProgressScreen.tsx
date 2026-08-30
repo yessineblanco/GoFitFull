@@ -5,7 +5,7 @@ import {
 import { ChartSkeleton, StatCardSkeleton } from '@/components/shared/Shimmer';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, TrendingUp, Flame, Target, Calendar } from 'lucide-react-native';
+import { ArrowLeft, TrendingUp, Flame, Target, Calendar, MessageCircle } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useCoachStore } from '@/store/coachStore';
 import { clientManagementService, type ClientProgressData } from '@/services/clientManagement';
@@ -325,14 +325,36 @@ export const ClientProgressScreen: React.FC = () => {
               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.workoutHistory')}</Text>
               {data.sessions?.length ? (
                 data.sessions.slice(0, 15).map((s) => (
-                  <View key={s.id} style={[styles.sessionRow, { backgroundColor: getGlassBg(isDark) }]}>
-                    <View style={styles.sessionInfo}>
-                      <Text style={[styles.sessionName, { color: colors.text }]}>{s.workout_name}</Text>
-                      <Text style={[styles.sessionDate, { color: colors.textLight }]}>{formatDate(s.started_at)}</Text>
+                  <View key={s.id} style={[styles.sessionRow, { backgroundColor: getGlassBg(isDark), flexDirection: 'column', alignItems: 'stretch' }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={styles.sessionInfo}>
+                        <Text style={[styles.sessionName, { color: colors.text }]}>{s.workout_name}</Text>
+                        <Text style={[styles.sessionDate, { color: colors.textLight }]}>{formatDate(s.started_at)}</Text>
+                      </View>
+                      {s.duration_minutes != null && (
+                        <Text style={styles.sessionDuration}>{s.duration_minutes} {t('clientManagement.minutesAbbr')}</Text>
+                      )}
                     </View>
-                    {s.duration_minutes != null && (
-                      <Text style={styles.sessionDuration}>{s.duration_minutes} {t('clientManagement.minutesAbbr')}</Text>
-                    )}
+                    
+                    {s.notes ? (
+                      <View style={{ marginTop: 12, padding: 12, backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)', borderRadius: 8 }}>
+                        <Text style={{ color: colors.text, fontFamily: 'Barlow_400Regular', fontSize: 13, lineHeight: 18 }}>
+                          {s.notes}
+                        </Text>
+                        <TouchableOpacity 
+                          style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center' }} 
+                          onPress={() => navigation.navigate('ChatScreen' as never, { 
+                            recipientId: clientId,
+                            recipientName: data.profile?.display_name 
+                          } as never)}
+                        >
+                          <MessageCircle size={14} color={PRIMARY_GREEN} />
+                          <Text style={{ color: PRIMARY_GREEN, fontSize: 13, marginLeft: 6, fontFamily: 'Barlow_600SemiBold' }}>
+                            Reply in Chat
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
                   </View>
                 ))
               ) : (

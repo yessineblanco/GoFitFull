@@ -221,9 +221,9 @@ class CheckInsService {
     const { data, error } = await supabase
       .from('check_in_responses')
       .select('*')
-      .eq('coach_id', coachId)
       .eq('client_id', clientId)
-      .order('responded_at', { ascending: false })
+      .eq('coach_id', coachId)
+      .order('response_date', { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -232,6 +232,27 @@ class CheckInsService {
     }
 
     return (data || []).map(normalizeResponse);
+  }
+
+  async getRecentLowCheckInsForCoach(coachId: string): Promise<any[]> {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const dateStr = twoDaysAgo.toISOString().split('T')[0];
+
+    const { data, error } = await supabase
+      .from('check_in_responses')
+      .select('*, user_profiles!client_id(display_name, avatar_url)')
+      .eq('coach_id', coachId)
+      .gte('response_date', dateStr)
+      .or('mood.lte.2,energy.lte.2')
+      .order('response_date', { ascending: false });
+
+    if (error) {
+      logger.error('Failed to load low check-ins for coach:', error);
+      return [];
+    }
+
+    return data || [];
   }
 }
 

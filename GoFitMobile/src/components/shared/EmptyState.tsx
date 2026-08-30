@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Inbox, Package, Search, Calendar, Dumbbell } from 'lucide-react-native';
+import { Inbox, Package, Search, Calendar, Dumbbell, Users, UtensilsCrossed, MessageCircle, Wallet } from 'lucide-react-native';
 import { theme } from '@/theme';
 import { getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { getTextColor, getTextSecondaryColor } from '@/utils/colorUtils';
 import { useThemeStore } from '@/store/themeStore';
 
-export type EmptyStateType = 'workouts' | 'exercises' | 'sessions' | 'plans' | 'search' | 'generic';
+export type EmptyStateType = 'workouts' | 'exercises' | 'sessions' | 'plans' | 'search' | 'clients' | 'nutrition' | 'chat' | 'wallet' | 'generic';
 
 interface EmptyStateProps {
     type?: EmptyStateType;
@@ -51,6 +51,30 @@ const getDefaultContent = (type: EmptyStateType, isDark: boolean): { title: stri
                 title: 'No Results Found',
                 message: 'Try different keywords or check your filters.',
                 icon: <Search size={48} color={iconColor} strokeWidth={1.5} />,
+            };
+        case 'clients':
+            return {
+                title: 'No Clients Yet',
+                message: 'When clients book sessions or buy packs from your profile, they\'ll appear here.',
+                icon: <Users size={48} color={iconColor} strokeWidth={1.5} />,
+            };
+        case 'nutrition':
+            return {
+                title: 'Nothing Logged Yet',
+                message: 'Search the food catalog to log your first meal and start tracking.',
+                icon: <UtensilsCrossed size={48} color={iconColor} strokeWidth={1.5} />,
+            };
+        case 'chat':
+            return {
+                title: 'No Conversations',
+                message: 'Your messages with coaches and clients will appear here.',
+                icon: <MessageCircle size={48} color={iconColor} strokeWidth={1.5} />,
+            };
+        case 'wallet':
+            return {
+                title: 'No Transactions Yet',
+                message: 'Your earnings and payouts will be displayed here.',
+                icon: <Wallet size={48} color={iconColor} strokeWidth={1.5} />,
             };
         default:
             return {

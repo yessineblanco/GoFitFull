@@ -13,6 +13,8 @@ import type { AvailabilitySlot } from '@/services/bookings';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
+import { useStripe } from '@stripe/stripe-react-native';
+import { supabase } from '@/config/supabase';
 
 const PRIMARY_GREEN = '#B4F04E';
 const DAY_KEYS = ['daySunday', 'dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday'] as const;
@@ -32,6 +34,7 @@ export const BookSessionScreen: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [selectedHour, setSelectedHour] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   useEffect(() => {
     if (coachId) loadAvailability(coachId);
@@ -78,6 +81,45 @@ export const BookSessionScreen: React.FC = () => {
     setBooking(true);
 
     try {
+      // 1. Fetch Payment Intent from Edge Function
+      const { data, error } = await supabase.functions.invoke('stripe-payment', {
+        body: {
+          amount: 50, // Hardcoded for this MVP, should fetch coach's hourly_rate
+          currency: 'usd',
+          metadata: { coachId, clientId: user.id },
+        },
+      });
+
+      if (error || !data?.clientSecret) {
+        throw new Error('Failed to initialize payment');
+      }
+
+      // 2. Initialize the Payment Sheet
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: 'GoFit',
+        paymentIntentClientSecret: data.clientSecret,
+        defaultBillingDetails: {
+          name: user.user_metadata?.display_name || 'Client',
+        },
+      });
+
+      if (initError) {
+        throw new Error(initError.message);
+      }
+
+      // 3. Present the Payment Sheet
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        // User cancelled or payment failed
+        if (presentError.code !== 'Canceled') {
+          dialogManager.error(t('common.error'), presentError.message);
+        }
+        setBooking(false);
+        return; // Don't proceed to booking
+      }
+
+      // 4. Payment Success - Create Booking
       const date = getNextDateForDay(selectedDay);
       const [h, m] = selectedHour.split(':').map(Number);
       date.setHours(h, m, 0, 0);
@@ -88,10 +130,11 @@ export const BookSessionScreen: React.FC = () => {
         scheduled_at: date.toISOString(),
         duration_minutes: 60,
       });
+
       dialogManager.success(t('common.success'), t('booking.bookingCreated'));
       navigation.goBack();
-    } catch {
-      dialogManager.error(t('common.error'), t('booking.failedToBook'));
+    } catch (err: any) {
+      dialogManager.error(t('common.error'), err.message || t('booking.failedToBook'));
     } finally {
       setBooking(false);
     }

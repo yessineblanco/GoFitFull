@@ -1,0 +1,8 @@
+flowchart LR
+  U[Mobile user] --> Login((Sign up / sign in))
+  U --> Onboard((Complete onboarding))
+  U --> Profile((Manage profile))
+  U --> Build((Create workout))
+  U --> Session((Execute workout session))
+  U --> Timer((Use rest timer))
+  Session --> Save[(workout_sessions)]

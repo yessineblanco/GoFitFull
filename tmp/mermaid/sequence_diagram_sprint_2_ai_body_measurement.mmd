@@ -1,0 +1,14 @@
+sequenceDiagram
+  actor User
+  participant Camera as Body Measurement Screen
+  participant Pose as MediaPipe / MoveNet
+  participant Segmenter as Segmentation Service
+  participant Estimator as Measurement Estimator
+  participant DB as Supabase backend
+  User->>Camera: Capture front and side photos
+  Camera->>Pose: Detect body landmarks
+  Camera->>Segmenter: Extract person mask
+  Segmenter-->>Estimator: Widths, depths, quality values
+  Estimator-->>Camera: Draft measurements and warnings
+  User->>Camera: Review or correct values
+  Camera->>DB: Save final measurement

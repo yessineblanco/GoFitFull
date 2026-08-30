@@ -394,7 +394,7 @@ npx expo start --no-dev --minify
 - **Expo Documentation**: https://docs.expo.dev/
 - **React Native Documentation**: https://reactnative.dev/
 - **Supabase Documentation**: https://supabase.com/docs
-- **NativeWind Documentation**: https://www.nativewind.dev/
+- **React Navigation Documentation**: https://reactnavigation.org/docs/getting-started
 
 ---
 

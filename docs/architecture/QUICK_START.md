@@ -84,13 +84,13 @@ Open: http://localhost:3000
 
 ## What's Next?
 
-The foundation is complete! Now you can:
+The foundation files are present, but this quick start is not a release-readiness check. Verify the current admin source, database migrations, and tests before building on these areas:
 
 1. **Build user management** - View/manage users
 2. **Build exercise library** - CRUD for exercises
 3. **Build workout management** - Create native workouts
 
-All types and database structures are ready to use.
+Use the current TypeScript definitions and database migrations as the source of truth before extending these areas.
 
 ## Quick Commands
 

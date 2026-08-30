@@ -148,4 +148,20 @@ export const sessionPacksService = {
       return [];
     }
   },
+
+  async purchasePack(clientId: string, packId: string, coachId: string, sessions: number): Promise<void> {
+    try {
+      const { error } = await supabase.from('purchased_packs').insert({
+        client_id: clientId,
+        pack_id: packId,
+        coach_id: coachId,
+        sessions_remaining: sessions,
+        status: 'active',
+      });
+      if (error) throw error;
+    } catch (error) {
+      logger.error('Failed to purchase pack:', error);
+      throw error;
+    }
+  },
 };

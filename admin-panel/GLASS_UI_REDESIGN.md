@@ -240,7 +240,7 @@ After: Glass blur, gradient buttons, animations
 
 ### Tablet:
 - Full sidebar visible
-- All features work
+- Layout is intended to remain usable on tablet widths
 - Touch-friendly buttons
 
 ### Desktop:
@@ -292,9 +292,9 @@ After: Glass blur, gradient buttons, animations
 
 ## 🐛 **Known Issues**
 
-### None currently! ✅
+### Verification status
 
-All components tested and working.
+This document records the visual redesign work, not a full E2E verification pass. Re-run the admin checks from `admin-panel/` and perform manual browser checks before treating the redesigned UI as release-verified.
 
 ---
 
@@ -322,4 +322,4 @@ For questions about the redesign:
 
 Your admin panel now matches your mobile app's beautiful glass UI design with the signature lime green color (`#84c441`). The interface feels modern, smooth, and professional with blur effects, animations, and depth.
 
-**Next time you open the admin panel, you'll see the complete transformation!** 🌟
+The redesigned styling is documented here; current functional readiness should be verified against the admin test suite and a live browser run.

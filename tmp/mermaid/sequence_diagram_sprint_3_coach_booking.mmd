@@ -1,0 +1,12 @@
+sequenceDiagram
+  actor Client
+  participant Market as Marketplace Screen
+  participant Service as Booking Service
+  participant DB as Supabase backend
+  participant Coach as Coach Dashboard
+  Client->>Market: Select coach and session
+  Market->>Service: Request booking
+  Service->>DB: Insert booking and related notification
+  DB-->>Market: Confirmation result
+  DB-->>Coach: Realtime/dashboard update
+  Coach-->>Client: Follow-up through chat or program

@@ -282,15 +282,13 @@ Relevant test declarations:
 
 ## Discrepancies Found
 
-### Mobile Docs Claim Expo Router, Code Uses React Navigation
+### Mobile Routing Docs Were Corrected
 
-`GoFitMobile/docs/README.md:3` says the mobile application uses Expo Router. Actual code imports and uses React Navigation stack/tab navigators. Evidence: `GoFitMobile/src/navigation/AppNavigator.tsx:2`, `GoFitMobile/src/navigation/CoachAppNavigator.tsx:2`, `GoFitMobile/App.tsx:6`.
+Earlier mobile docs said the app used Expo Router. That was re-verified against the code and corrected to React Navigation stack/tab navigators. Evidence: `GoFitMobile/src/navigation/AppNavigator.tsx:2`, `GoFitMobile/src/navigation/CoachAppNavigator.tsx:2`, `GoFitMobile/App.tsx:6`.
 
-### Native Workout Documentation Contradicts Itself
+### Native Workout Documentation Was Consolidated
 
-`database/MIGRATION_NATIVE_WORKOUTS.md:4` says native workouts were moved from hardcoded app data to the database.
-
-`database/NATIVE_WORKOUTS_EXPLANATION.md:19` says native workouts are hardcoded in app code and not stored in the database.
+Earlier database docs contradicted each other about hardcoded native workouts versus a separate `native_workouts` table. They were re-verified against the current code and consolidated around the unified `workouts` plus `workout_exercises` model.
 
 Actual current mobile code queries `workouts` from Supabase for native workouts. Evidence: `GoFitMobile/src/services/workouts.ts:185`.
 
@@ -306,9 +304,9 @@ Docs discuss current/future body measurement work and leave statistical estimato
 
 Actual iOS native module throws not implemented for pose and segmentation analysis. Evidence: `GoFitMobile/modules/mediapipe-pose-landmarker/ios/MediaPipePoseLandmarkerModule.swift:11`, `GoFitMobile/modules/mediapipe-pose-landmarker/ios/MediaPipePoseLandmarkerModule.swift:19`.
 
-### Broad "Complete" Status Docs Are Not Equivalent To Verified E2E Coverage
+### Broad Status Docs Were Softened
 
-Several status documents make broad "complete" or "tested and working" claims, for example `admin-panel/GLASS_UI_REDESIGN.md:297` and `GoFitMobile/docs/implementation/TYPESCRIPT_FIXES_COMPLETE.md:153`.
+Several status documents previously made broad "complete" or "tested and working" claims, including the admin glass redesign note and mobile TypeScript-fix note. Those claims were softened to point to current checks and manual/browser verification needs.
 
 Actual tests are unit/helper/store tests and do not prove full app/browser/native/Supabase E2E behavior.
 
@@ -345,4 +343,3 @@ npm test -- --watch=false
 ```
 
 Result: 43 tests passed across 11 suites.
-

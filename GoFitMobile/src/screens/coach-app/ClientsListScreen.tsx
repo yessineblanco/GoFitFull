@@ -31,6 +31,7 @@ import { getBackgroundColor } from '@/utils/colorUtils';
 import { COACH_STITCH, coachStitchOr } from '@/theme/coachStitch';
 import { CoachSubScreenBar } from '@/components/coach/CoachSubScreenBar';
 import { resolvePublicAvatarUrl } from '@/utils/avatarUrl';
+import { EmptyState } from '@/components/shared/EmptyState';
 
 const AVATAR_COLORS: [string, string][] = [
   ['#a3e635', '#446900'],
@@ -323,10 +324,11 @@ export const ClientsListScreen: React.FC = () => {
               ))}
             </View>
           ) : (
-            <View style={st.empty}>
-              <Text style={[st.emptyTitle, { color: onSurface }]}>{t('clientManagement.noClients')}</Text>
-              <Text style={[st.emptySub, { color: onVar }]}>{t('clientManagement.noClientsDesc')}</Text>
-            </View>
+            <EmptyState
+              type="clients"
+              title={t('clientManagement.noClients')}
+              message={t('clientManagement.noClientsDesc')}
+            />
           )
         }
       />

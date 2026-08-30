@@ -123,6 +123,15 @@ export const useProfileStore = create<ProfileStore>((set, get) => ({
       if (updates.goal !== undefined) {
         onboardingUpdates.goal = updates.goal;
       }
+      if (updates.dietary_preferences !== undefined) {
+        onboardingUpdates.dietaryPreferences = updates.dietary_preferences;
+      }
+      if (updates.food_allergies !== undefined) {
+        onboardingUpdates.foodAllergies = updates.food_allergies;
+      }
+      if (updates.food_dislikes !== undefined) {
+        onboardingUpdates.foodDislikes = updates.food_dislikes;
+      }
 
       await userProfileService.updateUserProfile(user.id, onboardingUpdates);
       // Mark profile as updated (for smart reload in ProfileScreen)

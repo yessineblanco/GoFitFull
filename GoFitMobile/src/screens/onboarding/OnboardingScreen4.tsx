@@ -62,29 +62,12 @@ export const OnboardingScreen4: React.FC = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     try {
-      try {
-        await userProfileService.saveOnboardingData(user.id, {
-          weight: onboardingData.weight,
-          weightUnit: onboardingData.weightUnit || 'kg',
-          height: onboardingData.height,
-          heightUnit: onboardingData.heightUnit || 'cm',
-          goal: selectedGoal,
-          age: onboardingData.age,
-          gender: onboardingData.gender,
-        });
-
-        if (onboardingData.displayName) {
-          await authService.updateUserMetadata({ display_name: onboardingData.displayName });
-        }
-      } catch (dbError: any) {
-        console.warn('Could not save to database:', dbError.message);
-      }
-
-      await setHasCompletedOnboarding(user.id, true);
-      clearOnboardingData();
+      const { setOnboardingData } = useOnboardingStore.getState();
+      setOnboardingData({ goal: selectedGoal });
       setIsLoading(false);
+      navigation.navigate('OnboardingNutrition');
     } catch (error: any) {
-      console.error('Error completing onboarding:', error);
+      console.error('Error continuing onboarding:', error);
       setError(error.message || t('onboarding.screen4.failedToComplete'));
       setIsLoading(false);
     }

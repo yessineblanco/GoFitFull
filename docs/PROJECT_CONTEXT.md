@@ -8,8 +8,8 @@ GoFit combines a member-facing fitness application, coach workflows, an administ
 
 | Area | Current implementation |
 | --- | --- |
-| Mobile | Expo SDK 54, React Native 0.81, Expo Router, TypeScript, React Native `StyleSheet` and shared theme tokens |
-| Admin | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Mobile | Expo SDK 54, React Native 0.81, React Navigation stack/tab navigators, TypeScript, React Native `StyleSheet` and shared theme tokens |
+| Admin | Next.js 16, React 19, TypeScript, Tailwind CSS 3.4 |
 | Backend | Supabase PostgreSQL, Auth, Storage, Realtime, and Edge Functions |
 | Automation | n8n workflows for scheduled and event-driven operations |
 

@@ -1,202 +1,56 @@
-# Native Workouts Explanation (UPDATED)
+# Native Workouts Current Implementation
 
-> ✅ **This document has been updated** to reflect the current unified design.
-> 
-> Native workouts are now stored in the unified `workouts` table with `workout_type = 'native'` and `user_id = NULL`.
+This is the canonical explanation for native workout templates in the current codebase.
 
----
+Native workouts are database-backed rows in the unified `public.workouts` table. They are identified by:
 
-## Historical Context
+- `workouts.workout_type = 'native'`
+- `workouts.user_id IS NULL`
 
-Previously, native workouts were hardcoded in the app. They are now loaded from the database.
+Custom user workouts use the same table with `workouts.workout_type = 'custom'` and `workouts.user_id` set to the owning user.
 
----
+## Verified Implementation
 
-# Native Workouts Explanation
+The mobile service loads native workouts from Supabase, not from a hardcoded `MOCK_WORKOUTS` list:
 
-## Answer: No, Native Workouts Do NOT Load from Exercises Table via JSONB
+- `GoFitMobile/src/services/workouts.ts` uses `getNativeWorkouts()` to query `.from('workouts')`.
+- `getNativeWorkouts()` filters with `.eq('workout_type', 'native')` and `.is('user_id', null)`.
+- `getCustomWorkouts(userId)` queries the same `workouts` table with `.eq('user_id', userId)` and `.eq('workout_type', 'custom')`.
 
-Native workouts are **hardcoded in the app code**, not stored in the database. Here's how they work:
+Workout exercise templates are stored separately from the workout row:
 
----
+- `database/migrations/unify_workouts_design.sql` creates `public.workout_exercises`.
+- Each `workout_exercises` row links one workout to one exercise and stores ordering, sets, reps, rest time, and optional notes.
+- The mobile service loads those rows with `getWorkoutExercises(workoutId)`.
 
-## Native Workouts Flow
+Workout execution history is stored in `public.workout_sessions`:
 
-### 1. **Definition (Hardcoded)**
-Native workouts are defined in `src/screens/library/LibraryScreen.tsx`:
+- `workout_sessions.workout_id` points to `public.workouts.id`.
+- `workout_sessions.exercises_completed` is JSONB performance/progress data captured during a session.
+- `exercises_completed` is not the source of truth for the workout template; it is the executed-session snapshot.
 
-```typescript
-const MOCK_WORKOUTS = [
-  {
-    id: '1',  // Simple string ID, NOT a UUID
-    name: '3 Day Split + Full Body Fridays',
-    difficulty: 'Beginner',
-    image: 'https://...',
-    type: 'native' as const,
-  },
-  // ... more workouts
-];
-```
+## Current Data Flow
 
-**Key Point**: These are **hardcoded in the app**, not in the database.
+1. The user opens the workout library.
+2. The app calls `workoutService.getNativeWorkouts()`.
+3. Supabase returns `workouts` rows where `workout_type = 'native'` and `user_id IS NULL`.
+4. Opening a workout loads template exercises from `workout_exercises` joined to `exercises`.
+5. Starting a workout creates or resumes a `workout_sessions` row for the selected `workout_id`.
+6. During the workout, completed sets, weights, reps, and progress are stored on the session record.
 
----
+## Superseded Designs
 
-### 2. **Exercise Lists (Also Hardcoded)**
-When you click on a native workout, `WorkoutDetailScreen.tsx` shows exercises that are **hardcoded**:
+Older documents and migrations referenced:
 
-```typescript
-// In WorkoutDetailScreen.tsx (lines 51-58)
-const exercises = [
-  { id: '1', name: 'Bench Press', sets: 4, reps: '12,10,8,6', restTime: '90s' },
-  { id: '2', name: 'Incline Dumbbell Press', sets: 3, reps: '10,8,6', restTime: '60s' },
-  // ... more exercises
-];
-```
+- Hardcoded mobile `MOCK_WORKOUTS`
+- A separate `native_workouts` table
+- A separate `custom_workouts` table
+- `custom_workouts.exercises` JSONB as template storage
 
-**Key Point**: Exercises are **hardcoded per workout**, not loaded from the `exercises` table.
+Those are historical designs. The current implementation uses the unified `workouts` plus `workout_exercises` model described above.
 
----
+## Related Files
 
-### 3. **Starting a Native Workout Session**
-
-When you click "Start Workout":
-
-1. Exercises are passed via **route params** (not from database):
-```typescript
-navigation.navigate('WorkoutSession', {
-  workoutId: undefined,  // Native workouts don't have workout_id
-  workoutName: '3 Day Split + Full Body Fridays',
-  workoutType: 'native',
-  exercises: [  // ← Hardcoded exercises passed here
-    { id: '1', name: 'Bench Press', sets: '4', reps: '12,10,8,6', restTime: '90' },
-    // ...
-  ],
-});
-```
-
-2. A new `workout_sessions` record is created:
-```sql
-INSERT INTO workout_sessions (
-  user_id,
-  workout_id,        -- NULL for native workouts
-  workout_name,      -- '3 Day Split + Full Body Fridays'
-  workout_type,      -- 'native'
-  exercises_completed -- [] (empty initially)
-)
-```
-
-**Key Point**: Exercises come from **route params**, not from the database.
-
----
-
-### 4. **During the Workout**
-
-As you complete sets, the data is saved to `workout_sessions.exercises_completed` JSONB:
-
-```json
-[
-  {
-    "id": "1",
-    "name": "Bench Press",
-    "sets": "4",
-    "reps": "12,10,8,6",
-    "weights": [60, 65, 70, 70],
-    "completedSets": [true, true, true, true],
-    "restTime": "90"
-  }
-]
-```
-
-**Key Point**: This is **performance data**, not a reference to the exercises table.
-
----
-
-### 5. **Resuming a Native Workout**
-
-When resuming an incomplete session:
-
-1. Load session from `workout_sessions` table
-2. Read `exercises_completed` JSONB (contains saved progress)
-3. Use that data to restore the workout state
-
-**Key Point**: Exercises come from `exercises_completed` JSONB, **not** from the `exercises` table.
-
----
-
-## Comparison: Native vs Custom Workouts
-
-| Aspect | Native Workouts | Custom Workouts |
-|--------|----------------|-----------------|
-| **Definition** | Hardcoded in app | Stored in `custom_workouts` table |
-| **Exercise Source** | Hardcoded in `WorkoutDetailScreen` | From `custom_workouts.exercises` JSONB |
-| **Starting Session** | Exercises from route params | Exercises from `custom_workouts.exercises` |
-| **Resuming Session** | From `workout_sessions.exercises_completed` | From `workout_sessions.exercises_completed` |
-| **Exercise IDs** | Simple strings ('1', '2') | UUIDs from exercises table |
-| **workout_id** | NULL | References `custom_workouts.id` |
-
----
-
-## When Does the Exercises Table Get Used?
-
-The `exercises` table is used **optionally** for:
-
-1. **Looking up exercise details** (if name matches):
-   ```typescript
-   // In WorkoutDetailScreen.tsx
-   const foundExercise = await workoutService.getExerciseByName(exercise.name);
-   // If found, show details from database
-   // If not found, show empty state
-   ```
-
-2. **Providing default sets/reps/rest** (if exercise exists in table)
-
-3. **Exercise library** (for creating custom workouts)
-
-**But native workouts don't REQUIRE exercises to exist in the table!**
-
----
-
-## Visual Flow
-
-### Native Workout Flow:
-```
-App Code (MOCK_WORKOUTS)
-    ↓
-WorkoutDetailScreen (hardcoded exercises)
-    ↓
-Route Params (exercises passed)
-    ↓
-WorkoutSessionScreen (uses route params)
-    ↓
-workout_sessions.exercises_completed (JSONB) ← Saved progress
-    ↓
-Resume: Load from exercises_completed JSONB
-```
-
-### Custom Workout Flow:
-```
-custom_workouts.exercises (JSONB) ← Stored in database
-    ↓
-Load from database
-    ↓
-WorkoutSessionScreen (uses database exercises)
-    ↓
-workout_sessions.exercises_completed (JSONB) ← Saved progress
-    ↓
-Resume: Load from exercises_completed JSONB
-```
-
----
-
-## Summary
-
-**Native workouts:**
-- ❌ Do NOT load from `exercises` table
-- ✅ Are hardcoded in app code
-- ✅ Exercises passed via route params
-- ✅ Progress saved to `workout_sessions.exercises_completed` JSONB
-- ✅ Can optionally look up exercise details by name (if exists in table)
-
-**The JSONB in `workout_sessions.exercises_completed` stores the actual workout performance data, not references to the exercises table!**
-
+- `GoFitMobile/src/services/workouts.ts`
+- `database/migrations/unify_workouts_design.sql`
+- `database/DATABASE_STRUCTURE.md`

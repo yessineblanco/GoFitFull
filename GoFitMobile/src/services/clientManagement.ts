@@ -7,6 +7,9 @@ export interface CoachClient {
   profile_picture_url?: string | null;
   last_session_at: string | null;
   has_active_pack: boolean;
+  dietary_preferences?: string[] | null;
+  food_allergies?: string[] | null;
+  food_dislikes?: string[] | null;
 }
 
 export interface ClientNote {
@@ -40,7 +43,9 @@ export interface ClientProgressData {
       completedSets?: boolean[];
       completed?: boolean;
     }>;
+    notes?: string;
   }>;
+  profile?: { display_name?: string };
   total_workouts: number;
   streak: number;
   weekly_consistency: number;
@@ -51,13 +56,34 @@ export const clientManagementService = {
     try {
       const { data, error } = await supabase.rpc('get_coach_clients', { p_coach_id: coachId });
       if (error) throw error;
-      return (data || []).map((row: any) => ({
+      const clients = (data || []).map((row: any) => ({
         client_id: row.client_id,
         display_name: row.display_name,
         profile_picture_url: row.profile_picture_url ?? null,
         last_session_at: row.last_session_at,
         has_active_pack: row.has_active_pack ?? false,
       }));
+
+      if (clients.length === 0) return clients;
+
+      const clientIds = clients.map((c: CoachClient) => c.client_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id, dietary_preferences, food_allergies, food_dislikes')
+        .in('id', clientIds);
+
+      if (!profileError && profiles) {
+        for (const client of clients) {
+          const profile = profiles.find((p) => p.id === client.client_id);
+          if (profile) {
+            client.dietary_preferences = profile.dietary_preferences;
+            client.food_allergies = profile.food_allergies;
+            client.food_dislikes = profile.food_dislikes;
+          }
+        }
+      }
+
+      return clients;
     } catch (error) {
       logger.error('Failed to fetch coach clients:', error);
       return [];
@@ -66,8 +92,8 @@ export const clientManagementService = {
 
   async getClientDetail(clientId: string, coachId: string): Promise<ClientDetail | null> {
     try {
-      const [clientsRes, programsRes, bookingsRes] = await Promise.all([
-        supabase.rpc('get_coach_clients', { p_coach_id: coachId }),
+      const [clients, programsRes, bookingsRes] = await Promise.all([
+        this.getCoachClients(coachId),
         supabase
           .from('custom_programs')
           .select('id, title, status')
@@ -83,18 +109,11 @@ export const clientManagementService = {
           .in('status', ['pending', 'confirmed']),
       ]);
 
-      const clients = clientsRes.data || [];
-      const clientRow = clients.find((c: any) => c.client_id === clientId);
+      const clientRow = clients.find((c) => c.client_id === clientId);
       if (!clientRow) return null;
 
       return {
-        client: {
-          client_id: clientRow.client_id,
-          display_name: clientRow.display_name,
-          profile_picture_url: clientRow.profile_picture_url ?? null,
-          last_session_at: clientRow.last_session_at,
-          has_active_pack: clientRow.has_active_pack ?? false,
-        },
+        client: clientRow,
         activePrograms: (programsRes.data || []).map((p: any) => ({
           id: p.id,
           title: p.title,

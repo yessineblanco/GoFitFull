@@ -1,0 +1,8 @@
+flowchart LR
+  U[Mobile user] --> Library((Search exercise library))
+  U --> Progress((View progress dashboard))
+  U --> Measure((Log body measurements))
+  U --> AI((Generate AI measurement draft))
+  U --> Nutrition((Manage nutrition / saved meals))
+  AI --> Review((Review and correct values))
+  Review --> Save[(body_measurements)]

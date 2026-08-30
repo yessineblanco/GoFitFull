@@ -38,7 +38,10 @@ export function MealSection({ title, mealType, logs, onAdd, onDelete, onSave, is
         </View>
       </View>
       {logs.length === 0 ? (
-        <Text style={[styles.empty, { color: sub }]}>Nothing logged yet.</Text>
+        <TouchableOpacity onPress={() => onAdd(mealType)} activeOpacity={0.7} style={styles.emptyTap}>
+          <Plus size={16} color={sub} style={{ marginRight: 6 }} />
+          <Text style={[styles.empty, { color: sub }]}>Tap to add {title.toLowerCase()}</Text>
+        </TouchableOpacity>
       ) : (
         logs.map((log) => {
           const kcal = Math.round(log.food_item.calories * log.servings);
@@ -69,7 +72,8 @@ const styles = StyleSheet.create({
   h: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15) },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addBtn: { padding: 4 },
-  empty: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), paddingVertical: 6 },
+  empty: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12) },
+  emptyTap: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, justifyContent: 'center' },
   item: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1 },
   itemName: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(13) },
   itemMeta: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), marginTop: 3 },

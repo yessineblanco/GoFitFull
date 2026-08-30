@@ -25,6 +25,7 @@ import { FoodSearchItem } from '@/components/nutrition/FoodSearchItem';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import type { ProgressStackParamList } from '@/types';
 import { useThemeStore } from '@/store/themeStore';
+import { useProfileStore } from '@/store/profileStore';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const BRAND = '#84c441';
@@ -40,6 +41,7 @@ export default function AddFoodScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<ProgressStackParamList, 'AddFood'>>();
   const { isDark } = useThemeStore();
+  const { profile } = useProfileStore();
   const addLog = useNutritionStore((s) => s.addLog);
   const addSavedMeal = useNutritionStore((s) => s.addSavedMeal);
   const renameSavedMeal = useNutritionStore((s) => s.renameSavedMeal);
@@ -90,7 +92,11 @@ export default function AddFoodScreen() {
     (async () => {
       setSearching(true);
       try {
-        const rows = await nutritionService.searchFoods(debounced);
+        const exclusions = [
+          ...(profile?.food_dislikes || []),
+          ...(profile?.food_allergies || [])
+        ];
+        const rows = await nutritionService.searchFoods(debounced, 50, exclusions);
         if (!cancelled) setResults(rows);
       } catch {
         if (!cancelled) setResults([]);

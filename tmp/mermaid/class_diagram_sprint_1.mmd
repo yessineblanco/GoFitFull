@@ -1,0 +1,12 @@
+classDiagram
+  class UserProfile { id; goal; preferences; onboarding_status }
+  class Workout { id; name; difficulty; owner_id }
+  class Exercise { id; name; muscle_group; equipment }
+  class WorkoutExercise { workout_id; exercise_id; order; sets; reps }
+  class WorkoutSession { id; workout_id; started_at; completed_at; summary }
+  class TimerPreferences { rest_seconds; warnings_enabled; auto_advance }
+  UserProfile "1" --> "*" Workout
+  Workout "1" --> "*" WorkoutExercise
+  Exercise "1" --> "*" WorkoutExercise
+  Workout "1" --> "*" WorkoutSession
+  UserProfile "1" --> "1" TimerPreferences

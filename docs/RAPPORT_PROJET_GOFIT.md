@@ -223,11 +223,11 @@ Voir aussi `admin-panel/ENV_SETUP.md`.
 
 | Domaine | Statut typique |
 |---------|----------------|
-| Auth, onboarding client | Réalisé |
-| Workouts, séances, bibliothèque, progression | Réalisé |
-| i18n EN/FR | Réalisé |
-| Admin exercices / workouts / utilisateurs | Réalisé |
-| Marketplace coach, chat, réservations, programmes | En grande partie réalisé (détail selon branche) |
+| Auth, onboarding client | Implémentation présente ; à vérifier par démo et tests ciblés |
+| Workouts, séances, bibliothèque, progression | Implémentation présente ; couverture E2E complète non documentée |
+| i18n EN/FR | Implémentation présente |
+| Admin exercices / workouts / utilisateurs | Pages et routes présentes ; validation navigateur/prod à confirmer |
+| Marketplace coach, chat, réservations, programmes | En grande partie implémenté ; paiement, temps réel et déploiement à confirmer selon branche |
 | Paiements Stripe, wallet, webhooks | Souvent **planifié en dernier** |
 | Visioconférence (LiveKit, etc.) | Selon intégration effective |
 | Edge Functions Supabase | À documenter une fois déployées (`supabase/functions/` si utilisé) |

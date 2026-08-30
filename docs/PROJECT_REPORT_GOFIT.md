@@ -32,7 +32,7 @@
 - A **web admin panel** (Next.js) for content and user management.
 - A **backend-as-a-service** on **Supabase** (PostgreSQL, Auth, Storage, Realtime).
 
-The project is organized using **Scrum**: fixed-length sprints, a product backlog, and incremental delivery of potentially shippable features.
+The project is organized using **Scrum**: fixed-length sprints, a product backlog, and incremental delivery of demonstrable increments. Store release and production hardening remain separate from the academic demo scope unless verified in the current environment.
 
 ---
 
@@ -41,7 +41,7 @@ The project is organized using **Scrum**: fixed-length sprints, a product backlo
 ### 2.1 Agile principles applied
 
 - **Iterative delivery:** work is split into time-boxed **sprints** (2 weeks in the project plan).
-- **Incremental value:** each sprint aims for a **potentially shippable increment**.
+- **Incremental value:** each sprint aims for a **demonstrable increment**; production release requires additional hardening and verification.
 - **Adaptation:** backlog is refined based on stakeholder feedback and technical discovery.
 - **Collaboration:** clear roles (Product Owner, Scrum Master, Developers) — adjust names to your team.
 
@@ -109,7 +109,7 @@ flowchart TD
 |--------|------------------|
 | Product Backlog | Features from cahier des charges, Phase 5 marketplace, admin, payments |
 | Sprint Goal | e.g. “Ship exercise library + progress charts” |
-| Increment | Working mobile build + DB migrations + admin pages where applicable |
+| Increment | Working/demoable mobile build + DB migrations + admin pages where applicable |
 | Burndown | Tasks closed per sprint (tracked in your tool: Jira, Azure DevOps, Notion, etc.) |
 
 ---

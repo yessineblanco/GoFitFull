@@ -23,6 +23,7 @@ import {
   Package,
   Sun,
   Cloud,
+  Flame,
   CloudRain,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -657,34 +658,7 @@ export const CoachDashboardScreen: React.FC = () => {
                 </View>
               )}
 
-              {/* Quick Client Access (CRM UX Improvement) */}
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: textPri, marginBottom: 12 }}>
-                  Recent Clients
-                </Text>
-                {clients.slice(0, 3).map(client => (
-                  <GlassPanel
-                    key={client.client_id}
-                    isDark={isDark}
-                    style={[s.insightCard, { marginBottom: 8 }]}
-                    onPress={() => nav.navigate('ClientManagement', { screen: 'ClientDetail', params: { clientId: client.client_id, clientName: client.display_name } })}
-                  >
-                    <ExpoImage 
-                      source={{ uri: resolvePublicAvatarUrl(client.profile_picture_url) || 'https://via.placeholder.com/150' }}
-                      style={{ width: 40, height: 40, borderRadius: 20 }}
-                    />
-                    <View style={[s.insightBody, { marginLeft: 12 }]}>
-                      <Text style={[s.insightTitle, { color: textPri }]} numberOfLines={1}>
-                        {client.display_name}
-                      </Text>
-                      <Text style={[s.insightMeta, { color: textMuted }]} numberOfLines={1}>
-                        Tap to view profile & assign programs
-                      </Text>
-                    </View>
-                    <ChevronRight size={18} color={textMuted} />
-                  </GlassPanel>
-                ))}
-              </View>
+
 
               {/* Client spotlight: longest since last completed session */}
               {clientSpotlight ? (

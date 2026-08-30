@@ -204,6 +204,31 @@ export const ClientDetailScreen: React.FC = () => {
           <ChevronRight size={20} color={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)'} />
         </TouchableOpacity>
 
+        {/* Health & Nutrition Profile */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Health & Nutrition Profile</Text>
+          <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
+            <View style={styles.nutritionRow}>
+              <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>Dietary Preferences:</Text>
+              <Text style={[styles.nutritionValue, { color: colors.text }]}>
+                {client.dietary_preferences?.length ? client.dietary_preferences.join(', ') : 'None'}
+              </Text>
+            </View>
+            <View style={styles.nutritionRow}>
+              <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>Allergies:</Text>
+              <Text style={[styles.nutritionValue, { color: colors.text }]}>
+                {client.food_allergies?.length ? client.food_allergies.join(', ') : 'None'}
+              </Text>
+            </View>
+            <View style={styles.nutritionRow}>
+              <Text style={[styles.nutritionLabel, { color: colors.textSecondary }]}>Dislikes:</Text>
+              <Text style={[styles.nutritionValue, { color: colors.text }]}>
+                {client.food_dislikes?.length ? client.food_dislikes.join(', ') : 'None'}
+              </Text>
+            </View>
+          </View>
+        </View>
+
         {/* Active Programs */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('clientManagement.activePrograms')}</Text>
@@ -364,6 +389,27 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(180,240,78,0.15)',
     padding: 16,
     gap: 12,
+  },
+  card: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  nutritionLabel: {
+    fontFamily: 'Barlow_500Medium',
+    fontSize: getResponsiveFontSize(13),
+  },
+  nutritionValue: {
+    fontFamily: 'Barlow_600SemiBold',
+    fontSize: getResponsiveFontSize(14),
+    maxWidth: '65%',
+    textAlign: 'right',
   },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'flex-end' },
   briefingModal: { maxHeight: '82%', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden', paddingHorizontal: 20 },

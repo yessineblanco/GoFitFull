@@ -20,6 +20,7 @@ import { MealSection } from '@/components/nutrition/MealSection';
 import type { MealLogWithFood, MealType } from '@/services/nutrition';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useThemeStore } from '@/store/themeStore';
+import { useProfileStore } from '@/store/profileStore';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
 
 const BRAND = '#84c441';
@@ -39,6 +40,7 @@ export default function NutritionScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { isDark } = useThemeStore();
+  const { profile } = useProfileStore();
   const {
     selectedDate,
     setSelectedDate,
@@ -177,6 +179,22 @@ export default function NutritionScreen() {
           </View>
         ) : null}
 
+        {(!profile?.dietary_preferences || profile.dietary_preferences.length === 0) && (!profile?.food_dislikes || profile.food_dislikes.length === 0) && (
+          <TouchableOpacity
+            style={[styles.alertCard, { backgroundColor: glass, borderColor: border }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              navigation.navigate('OnboardingNutrition');
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.alertTitle, { color: text }]}>Complete Your Nutrition Profile</Text>
+              <Text style={[styles.alertSub, { color: sub }]}>Tell us your dietary preferences and disliked foods to get personalized recommendations.</Text>
+            </View>
+            <ChevronRight size={20} color={BRAND} />
+          </TouchableOpacity>
+        )}
+
         {goals && !isLoading ? (
           <MacroRings totals={totals} goals={goals} isDark={isDark} />
         ) : isLoading && !goals ? (
@@ -274,6 +292,9 @@ const styles = StyleSheet.create({
   dateTxt: { fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(15) },
   err: { padding: 12, borderRadius: 14, borderWidth: 1, marginBottom: 12 },
   errTxt: { fontFamily: 'Barlow_500Medium', fontSize: getResponsiveFontSize(13), color: '#ff8a80' },
+  alertCard: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 16, borderWidth: 1, marginBottom: 16 },
+  alertTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15), marginBottom: 4 },
+  alertSub: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(12), lineHeight: 18 },
   foot: { fontFamily: 'Barlow_400Regular', fontSize: getResponsiveFontSize(11), lineHeight: 16, marginTop: 8 },
   trendCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 12 },
   trendTitle: { fontFamily: 'Barlow_700Bold', fontSize: getResponsiveFontSize(15), marginBottom: 12 },

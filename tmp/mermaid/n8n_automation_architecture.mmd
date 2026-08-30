@@ -1,0 +1,11 @@
+flowchart LR
+  A[n8n schedule trigger] --> B[Workflow code node]
+  B --> C[Supabase REST API]
+  B --> D[Groq API for AI Session Prep]
+  C --> E[(PostgreSQL tables)]
+  E --> F[ai_session_notes]
+  E --> G[notifications]
+  E --> H[admin_notifications]
+  G --> I[Mobile coach/client inbox]
+  H --> J[Admin panel]
+  B --> K[Run summary counts]

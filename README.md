@@ -21,7 +21,7 @@ The live remaining-work list is maintained in [docs/ROADMAP.md](docs/ROADMAP.md)
 
 - Expo SDK 54
 - React Native 0.81
-- Expo Router
+- React Navigation stack and tab navigators
 - TypeScript
 - React Native `StyleSheet` and shared theme tokens
 - Supabase client integration
@@ -33,7 +33,7 @@ See [GoFitMobile/docs/README.md](GoFitMobile/docs/README.md).
 - Next.js 16
 - React 19
 - TypeScript
-- Tailwind CSS 4
+- Tailwind CSS 3.4
 - Supabase server and browser clients
 
 See [admin-panel/README.md](admin-panel/README.md).

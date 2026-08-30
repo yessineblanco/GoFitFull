@@ -23,6 +23,9 @@ export interface OnboardingData {
   activityLevel?: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extra_active';
   notificationPreferences?: NotificationPreferences;
   displayName?: string;
+  dietaryPreferences?: string[];
+  foodAllergies?: string[];
+  foodDislikes?: string[];
 }
 
 export interface NotificationPreferences {
@@ -48,6 +51,9 @@ export interface UserProfile {
   activity_level?: 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extra_active';
   profile_picture_url?: string | null;
   notification_preferences?: NotificationPreferences;
+  dietary_preferences?: string[];
+  food_allergies?: string[];
+  food_dislikes?: string[];
   updated_at?: string;
 }
 
@@ -129,6 +135,9 @@ export const userProfileService = {
           age: data.age,
           gender: data.gender,
           activity_level: data.activityLevel,
+          dietary_preferences: data.dietaryPreferences,
+          food_allergies: data.foodAllergies,
+          food_dislikes: data.foodDislikes,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'id' }
@@ -249,6 +258,9 @@ export const userProfileService = {
         height_unit?: 'cm' | 'inches';
         goal?: string;
         notification_preferences?: NotificationPreferences;
+        dietary_preferences?: string[];
+        food_allergies?: string[];
+        food_dislikes?: string[];
       }
 
       const updateData: UpdateData = {
@@ -289,6 +301,16 @@ export const userProfileService = {
       // Handle notification preferences
       if (updates.notificationPreferences !== undefined) {
         updateData.notification_preferences = updates.notificationPreferences;
+      }
+
+      if (updates.dietaryPreferences !== undefined) {
+        updateData.dietary_preferences = updates.dietaryPreferences;
+      }
+      if (updates.foodAllergies !== undefined) {
+        updateData.food_allergies = updates.foodAllergies;
+      }
+      if (updates.foodDislikes !== undefined) {
+        updateData.food_dislikes = updates.foodDislikes;
       }
 
       // Use API client with automatic timeout and retry

@@ -1,0 +1,18 @@
+flowchart LR
+  U[Mobile user] --> A((Manage account and profile))
+  U --> W((Plan and execute workouts))
+  U --> P((Track progress and measurements))
+  U --> M((Browse coaches and book sessions))
+  C[Coach] --> CP((Manage coach profile))
+  C --> CL((Follow clients and programs))
+  C --> B((Manage bookings and session packs))
+  AD[Administrator] --> ADM((Manage users, coaches, content, analytics))
+  SB[Supabase backend] --> AUTH[(Auth, database, storage, realtime, Edge Functions)]
+  A --> AUTH
+  W --> AUTH
+  P --> AUTH
+  M --> AUTH
+  CP --> AUTH
+  CL --> AUTH
+  B --> AUTH
+  ADM --> AUTH

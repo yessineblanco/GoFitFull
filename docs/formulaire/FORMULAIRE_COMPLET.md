@@ -81,11 +81,11 @@ Ajoutez chaque fonctionnalité une par une dans le formulaire (MAX 10 fonctionna
 
 **Fonctionnalité 9 :**
 - **Libellé :** Tests & Optimisation
-- **Description :** Tests complets iOS/Android, tests de performance, optimisation du code et de l'expérience utilisateur, correction des bugs et amélioration continue.
+- **Description :** Tests unitaires et vérifications locales ciblées sur les modules principaux, optimisation progressive du code et de l'expérience utilisateur, correction des bugs et amélioration continue. Les tests E2E complets iOS/Android et les tests de performance restent à finaliser avant publication.
 
 **Fonctionnalité 10 :**
 - **Libellé :** Déploiement & Publication
-- **Description :** Publication sur Play Store (Android) et App Store (iOS), configuration des environnements de production, déploiement du panel d'administration web, et mise en place de la surveillance et monitoring.
+- **Description :** Préparation de la publication Play Store / App Store, configuration progressive des environnements de production, déploiement du panel d'administration web selon l'environnement cible, et mise en place prévue de la surveillance et du monitoring.
 
 ---
 

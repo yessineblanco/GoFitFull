@@ -7,6 +7,7 @@ import { OnboardingScreen2 } from '@/screens/onboarding/OnboardingScreen2';
 import { OnboardingScreen3 } from '@/screens/onboarding/OnboardingScreen3';
 import { OnboardingScreen4 } from '@/screens/onboarding/OnboardingScreen4';
 import { OnboardingScreenPersonalDetails } from '@/screens/onboarding/OnboardingScreenPersonalDetails';
+import { OnboardingScreenNutrition } from '@/screens/onboarding/OnboardingScreenNutrition';
 
 const Stack = createStackNavigator<OnboardingStackParamList>();
 
@@ -45,6 +46,7 @@ export const OnboardingNavigator: React.FC = () => {
       <Stack.Screen name="Onboarding3" component={OnboardingScreen3} />
       <Stack.Screen name="OnboardingPersonalDetails" component={OnboardingScreenPersonalDetails} />
       <Stack.Screen name="Onboarding4" component={OnboardingScreen4} />
+      <Stack.Screen name="OnboardingNutrition" component={OnboardingScreenNutrition} />
     </Stack.Navigator>
   );
 };

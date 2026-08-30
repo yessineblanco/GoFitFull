@@ -1,0 +1,12 @@
+classDiagram
+  class CoachProfile { id; user_id; status; specialties }
+  class Booking { id; coach_id; client_id; scheduled_at; status }
+  class SessionPack { id; coach_id; title; sessions_count }
+  class PurchasedPack { id; client_id; pack_id; remaining_sessions }
+  class Conversation { id; coach_id; client_id }
+  class Message { id; conversation_id; sender_id; body }
+  class Program { id; coach_id; client_id; title }
+  CoachProfile "1" --> "*" Booking
+  SessionPack "1" --> "*" PurchasedPack
+  Conversation "1" --> "*" Message
+  CoachProfile "1" --> "*" Program

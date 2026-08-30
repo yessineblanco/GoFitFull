@@ -1,0 +1,14 @@
+sequenceDiagram
+  actor User
+  participant Screen as Workout Session Screen
+  participant Store as Workout Store
+  participant Service as Workout Service
+  participant DB as Supabase backend
+  User->>Screen: Start workout
+  Screen->>Store: Initialize active session
+  User->>Screen: Complete set and rest
+  Screen->>Store: Update session state
+  User->>Screen: Finish workout
+  Store->>Service: Persist summary
+  Service->>DB: Insert workout_sessions row
+  DB-->>Screen: Return saved session

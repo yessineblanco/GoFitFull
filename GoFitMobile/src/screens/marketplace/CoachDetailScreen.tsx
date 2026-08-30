@@ -1,4 +1,9 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
+import { dialogManager } from '@/components/shared/CustomDialog';
+import { useStripe } from '@stripe/stripe-react-native';
+import { supabase } from '@/config/supabase';
+import { sessionPacksService } from '@/services/sessionPacks';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
 } from 'react-native';
@@ -25,6 +30,9 @@ export const CoachDetailScreen: React.FC = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { selectedCoach, reviews, coachPacks, loadingDetail, loadingReviews, loadCoachDetail, loadReviews, loadCoachPacks, clearSelectedCoach } = useMarketplaceStore();
+  const { user } = useAuthStore();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [purchasingPack, setPurchasingPack] = useState<string | null>(null);
 
   const coachId = route.params?.coachId;
 
@@ -44,6 +52,60 @@ export const CoachDetailScreen: React.FC = () => {
       loadCoachPacks(coachId);
     }
   }, [coachId, loadCoachDetail, loadReviews, loadCoachPacks]);
+
+  const handlePurchasePack = async (pack: any) => {
+    if (!user?.id || !coachId) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setPurchasingPack(pack.id);
+
+    try {
+      // 1. Fetch Payment Intent from Edge Function
+      const { data, error } = await supabase.functions.invoke('stripe-payment', {
+        body: {
+          amount: pack.price,
+          currency: 'usd',
+          metadata: { packId: pack.id, coachId, clientId: user.id },
+        },
+      });
+
+      if (error || !data?.clientSecret) {
+        throw new Error('Failed to initialize payment');
+      }
+
+      // 2. Initialize the Payment Sheet
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: 'GoFit',
+        paymentIntentClientSecret: data.clientSecret,
+        defaultBillingDetails: {
+          name: user.user_metadata?.display_name || 'Client',
+        },
+      });
+
+      if (initError) {
+        throw new Error(initError.message);
+      }
+
+      // 3. Present the Payment Sheet
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        if (presentError.code !== 'Canceled') {
+          dialogManager.error(t('common.error'), presentError.message);
+        }
+        setPurchasingPack(null);
+        return; // Payment failed or was canceled
+      }
+
+      // 4. Payment Success - Create Pack
+      await sessionPacksService.purchasePack(user.id, pack.id, coachId, pack.session_count);
+      
+      dialogManager.success(t('common.success'), `Successfully purchased ${pack.name}!`);
+    } catch (err: any) {
+      dialogManager.error(t('common.error'), err.message || 'Failed to purchase pack');
+    } finally {
+      setPurchasingPack(null);
+    }
+  };
 
   if (!selectedCoach) {
     return (
@@ -189,10 +251,9 @@ export const CoachDetailScreen: React.FC = () => {
               <TouchableOpacity
                 key={pack.id}
                 style={styles.packCard}
-                onPress={() => {
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                }}
+                onPress={() => handlePurchasePack(pack)}
                 activeOpacity={0.7}
+                disabled={purchasingPack === pack.id}
               >
                 <View style={styles.packLeft}>
                   <Package size={16} color={PRIMARY_GREEN} />
@@ -201,7 +262,11 @@ export const CoachDetailScreen: React.FC = () => {
                     <Text style={styles.packSessions}>{pack.session_count} {t('sessionPacks.sessions')}</Text>
                   </View>
                 </View>
-                <Text style={styles.packPrice}>€{pack.price.toFixed(0)}</Text>
+                {purchasingPack === pack.id ? (
+                  <ActivityIndicator size="small" color={PRIMARY_GREEN} />
+                ) : (
+                  <Text style={styles.packPrice}>€{pack.price.toFixed(0)}</Text>
+                )}
               </TouchableOpacity>
             ))}
           </View>

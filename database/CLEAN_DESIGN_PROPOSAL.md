@@ -1,5 +1,7 @@
 # Clean Database Design Proposal
 
+This proposal has been implemented and superseded by the current unified workout schema. Use `database/DATABASE_STRUCTURE.md` and `database/migrations/unify_workouts_design.sql` as the source of truth; this file remains only as historical design context.
+
 ## Core Principle
 **Exercises are universal** - there are no "native" or "custom" exercises. Only workouts can be native or custom.
 

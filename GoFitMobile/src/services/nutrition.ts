@@ -112,14 +112,22 @@ function mapFood(row: Record<string, unknown>): FoodItem {
 }
 
 class NutritionService {
-  async searchFoods(query: string, limit = 50): Promise<FoodItem[]> {
+  async searchFoods(query: string, limit = 50, exclusions: string[] = []): Promise<FoodItem[]> {
     const q = query.trim();
     if (q.length < 1) return [];
 
-    const { data, error } = await supabase
+    let queryBuilder = supabase
       .from('food_items')
       .select(FOOD_SELECT)
-      .ilike('name', `%${q}%`)
+      .ilike('name', `%${q}%`);
+
+    for (const exclusion of exclusions) {
+      if (exclusion.trim()) {
+        queryBuilder = queryBuilder.not('name', 'ilike', `%${exclusion.trim()}%`);
+      }
+    }
+
+    const { data, error } = await queryBuilder
       .order('name', { ascending: true })
       .limit(limit);
 

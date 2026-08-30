@@ -1,0 +1,14 @@
+flowchart LR
+  Repo[Source repository] --> EAS[EAS mobile build]
+  Repo --> Web[Next.js hosting]
+  Repo --> Supa[Supabase project]
+  EAS --> Android[Android build]
+  EAS --> IOS[iOS build]
+  Web --> AdminPanel[Administration panel]
+  Supa --> Auth[Auth]
+  Supa --> DB[(Database migrations)]
+  Supa --> Edge[Edge Functions]
+  Supa --> Storage[Storage]
+  Env[Environment variables] --> EAS
+  Env --> Web
+  Env --> Supa

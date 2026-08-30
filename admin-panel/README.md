@@ -17,7 +17,7 @@ The GoFit administration panel is a Next.js 16 and React 19 application for oper
 - Next.js 16
 - React 19
 - TypeScript
-- Tailwind CSS 4
+- Tailwind CSS 3.4
 - Supabase browser and server clients
 
 ## Local Setup

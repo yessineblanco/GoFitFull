@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import * as ExpoSplashScreen from 'expo-splash-screen'; // Import SplashScreen
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { Easing120Hz } from './src/utils/animations';
 import {
   Barlow_400Regular,
@@ -39,6 +40,8 @@ import { notificationService } from './src/services/notifications';
 import { useDeepLinkStore, parseGoFitUrl } from './src/store/deepLinkStore';
 import type { RootStackParamList } from './src/navigation/types';
 import { theme } from './src/theme';
+import { offlineQueueService } from './src/services/offlineQueue';
+import NetInfo from '@react-native-community/netinfo';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -179,6 +182,20 @@ export default function App() {
       }
     }, 300); // Increased delay to ensure rehydration completes
     return () => clearTimeout(timer);
+  }, []);
+
+  // Auto-sync offline workout queue when connectivity returns
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        offlineQueueService.syncAll().then((count) => {
+          if (count > 0) {
+            logger.info(`[OfflineQueue] Auto-synced ${count} workout(s) on reconnect`);
+          }
+        });
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   // Set up notification listeners for custom UI
@@ -334,7 +351,8 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
+    <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}>
+      <SafeAreaProvider>
       <ErrorBoundary>
         <NavigationContainer ref={navigationRef} linking={linking} theme={navigationTheme}>
           {Platform.OS === 'android' && (
@@ -431,6 +449,7 @@ export default function App() {
         </NavigationContainer>
       </ErrorBoundary>
     </SafeAreaProvider>
+    </StripeProvider>
   );
 }
 

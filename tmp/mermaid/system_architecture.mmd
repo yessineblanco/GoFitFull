@@ -1,0 +1,13 @@
+flowchart TB
+  Mobile[GoFit mobile application] --> Supabase[Supabase backend]
+  Admin[GoFit administration panel] --> Supabase
+  Supabase --> DB[(PostgreSQL + RLS)]
+  Supabase --> Storage[(Storage buckets)]
+  Supabase --> Realtime[Realtime channels]
+  Supabase --> Edge[Edge Functions]
+  Edge --> Push[Expo Push]
+  Edge --> Video[LiveKit token service]
+  Edge --> Groq[Groq LLM API]
+  Mobile --> CV[On-device CV: MediaPipe / MoveNet]
+  Automation[n8n automations] --> Supabase
+  Automation --> Groq

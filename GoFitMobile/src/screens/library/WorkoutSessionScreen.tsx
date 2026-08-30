@@ -13,6 +13,8 @@ import {
   Image,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +30,8 @@ import { theme } from '@/theme';
 import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getSurfaceColor, getGlassBg, getGlassBorder, getBlurTint } from '@/utils/colorUtils';
 import type { LibraryStackParamList } from '@/types';
 import { workoutService, type ExerciseConfig } from '@/services/workouts';
+import { offlineQueueService } from '@/services/offlineQueue';
+import NetInfo from '@react-native-community/netinfo';
 import { updateWorkoutPlanStatus } from '@/services/workoutPlans';
 import { useAuthStore } from '@/store/authStore';
 import { useWorkoutsStore } from '@/store/workoutsStore';
@@ -844,7 +848,56 @@ export const WorkoutSessionScreen: React.FC<WorkoutSessionScreenProps> = ({ navi
         returnTo: route.params?.returnTo,
       });
     } catch (error: any) {
-      dialogManager.error(t('common.error'), error.message || t('library.workoutSession.failedToFinish'));
+      // Check if this is a network error — if so, save offline
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        try {
+          await offlineQueueService.enqueue({
+            sessionId: sessionId!,
+            userId: user!.id,
+            updates: {
+              completed_at: new Date().toISOString(),
+              duration_minutes: Math.max(0, Math.floor(
+                (startTime ? (Date.now() - startTime.getTime()) / 1000 - totalPausedDuration : 0) / 60
+              )),
+              exercises_completed: exercises.map(ex => ({
+                id: ex.id, name: ex.name, sets: String(ex.sets), reps: String(ex.reps),
+                restTime: String(ex.restTime), completedSets: ex.completedSets,
+                weights: ex.weights, completed: ex.completed,
+              })),
+              notes: feedbackNotes.trim() || undefined,
+            },
+          });
+
+          // Clear session locally so UI stays consistent
+          const { setLatestIncompleteSession } = useWorkoutsStore.getState();
+          setLatestIncompleteSession(null, null, sessionId!);
+          isCompletingWorkoutRef.current = true;
+
+          dialogManager.success(
+            t('common.success'),
+            'Workout saved offline! It will sync automatically when you are back online.'
+          );
+
+          navigation.navigate('WorkoutSummary', {
+            workoutName: workoutName,
+            durationMinutes: Math.max(0, Math.floor(
+              (startTime ? (Date.now() - startTime.getTime()) / 1000 - totalPausedDuration : 0) / 60
+            )),
+            exercises: exercises.map(ex => ({
+              id: ex.id, name: ex.name, sets: String(ex.sets), reps: String(ex.reps),
+              restTime: String(ex.restTime), completedSets: ex.completedSets,
+              weights: ex.weights, completed: ex.completed,
+            })),
+            completedAt: new Date().toISOString(),
+            returnTo: route.params?.returnTo,
+          });
+        } catch (queueError) {
+          dialogManager.error(t('common.error'), 'Failed to save workout. Please try again.');
+        }
+      } else {
+        dialogManager.error(t('common.error'), error.message || t('library.workoutSession.failedToFinish'));
+      }
     }
   };
 

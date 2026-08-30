@@ -104,8 +104,7 @@ export const workoutService = {
    * Get a single exercise by ID
    */
   async getExerciseById(exerciseId: string): Promise<Exercise | null> {
-    // Only query by ID if it's a valid UUID (custom workouts)
-    // Native workouts use simple string IDs like "1", "2" which are not UUIDs
+    // The current Supabase schema stores exercise IDs as UUIDs.
     if (!this.isValidUUID(exerciseId)) {
       return null;
     }
@@ -133,7 +132,7 @@ export const workoutService = {
   },
 
   /**
-   * Get exercise by name (for native workouts that might use string IDs)
+   * Get exercise by name as a fallback when a caller has display data but no UUID.
    */
   async getExerciseByName(exerciseName: string): Promise<Exercise | null> {
     try {

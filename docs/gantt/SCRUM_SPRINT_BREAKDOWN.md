@@ -5,7 +5,7 @@
 - **Total Sprints**: 13 sprints
 - **Project Duration**: 26 Jan - 26 Jul 2026 (26 weeks)
 - **Sprint Naming**: Sequential (Sprint 1, Sprint 2, ...)
-- **Increment**: Each sprint delivers a potentially shippable increment
+- **Increment**: Each sprint delivers a demonstrable increment; production release requires separate hardening and validation
 
 ---
 

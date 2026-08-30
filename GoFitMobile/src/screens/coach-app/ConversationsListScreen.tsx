@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Search, Camera } from 'lucide-react-native';
+import { EmptyState } from '@/components/shared/EmptyState';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useChatStore } from '@/store/chatStore';
@@ -249,10 +250,11 @@ export const ConversationsListScreen: React.FC = () => {
               ))}
             </View>
           ) : (
-            <View style={st.empty}>
-              <Text style={[st.emptyTitle, { color: onSurface }]}>{t('chat.noConversations')}</Text>
-              <Text style={[st.emptySub, { color: onVar }]}>{t('chat.noConversationsDesc')}</Text>
-            </View>
+            <EmptyState
+              type="chat"
+              title={t('chat.noConversations')}
+              message={t('chat.noConversationsDesc')}
+            />
           )
         }
       />

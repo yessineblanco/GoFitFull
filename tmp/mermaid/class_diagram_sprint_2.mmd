@@ -1,0 +1,13 @@
+classDiagram
+  class UserProfile { id; height_cm; goal; gender }
+  class WorkoutSession { id; user_id; completed_at; duration }
+  class BodyMeasurement { id; chest_cm; waist_cm; hip_cm; shoulder_cm; source }
+  class ProgressPhoto { id; user_id; uri; capture_type }
+  class NutritionEntry { id; user_id; meal_type; calories }
+  class SavedMeal { id; user_id; name }
+  class MeasurementFeatureVector { pose_score; scale_cm_per_px; segmentation_quality }
+  UserProfile "1" --> "*" WorkoutSession
+  UserProfile "1" --> "*" BodyMeasurement
+  BodyMeasurement "1" --> "0..1" MeasurementFeatureVector
+  UserProfile "1" --> "*" NutritionEntry
+  UserProfile "1" --> "*" SavedMeal

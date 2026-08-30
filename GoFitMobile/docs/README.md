@@ -1,6 +1,6 @@
 # GoFit Mobile Documentation
 
-The mobile application uses Expo SDK 54, React Native 0.81, Expo Router, TypeScript, Supabase, React Native `StyleSheet`, and shared theme tokens. NativeWind is not the active styling system.
+The mobile application uses Expo SDK 54, React Native 0.81, React Navigation stack/tab navigators, TypeScript, Supabase, React Native `StyleSheet`, and shared theme tokens. NativeWind is not the active styling system.
 
 ## Current References
 

@@ -21,6 +21,7 @@ import {
   Wallet,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { type Transaction } from '@/services/wallet';
 import { useWalletStore } from '@/stores/walletStore';
@@ -229,13 +230,13 @@ export const CoachWalletScreen: React.FC = () => {
           void loadMoreTransactions();
         }}
         ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            {initializing || isLoading ? (
+          initializing || isLoading ? (
+            <View style={styles.emptyWrap}>
               <ActivityIndicator color={BRAND} />
-            ) : (
-              <Text style={[styles.emptyText, { color: colors.textLight }]}>No transactions yet</Text>
-            )}
-          </View>
+            </View>
+          ) : (
+            <EmptyState type="wallet" />
+          )
         }
         ListFooterComponent={
           hasMore && isLoadingMore ? (

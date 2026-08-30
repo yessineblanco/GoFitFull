@@ -31,6 +31,7 @@ export type OnboardingStackParamList = {
   Onboarding3: undefined; // What is your height?
   OnboardingPersonalDetails: undefined; // Name, Age, Gender
   Onboarding4: undefined; // What do you want to achieve? (Goal Selection)
+  OnboardingNutrition: undefined; // Dietary preferences and dislikes
 };
 
 export type AuthStackParamList = {

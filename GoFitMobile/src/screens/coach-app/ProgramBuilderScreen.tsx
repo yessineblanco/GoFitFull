@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useProgramsStore } from '@/store/programsStore';
 import { useCoachStore } from '@/store/coachStore';
+import { useClientManagementStore } from '@/store/clientManagementStore';
 import { workoutService, type Exercise } from '@/services/workouts';
 import { programsService } from '@/services/programs';
 import type { ProgramDay, ProgramExercise, ProgramMeal } from '@/services/programs';
@@ -35,6 +36,7 @@ export const ProgramBuilderScreen: React.FC = () => {
   const colors = useThemeColors();
   const { profile } = useCoachStore();
   const { createProgram, updateProgram } = useProgramsStore();
+  const { clients: coachClients } = useClientManagementStore();
 
   const editProgramId: string | undefined = route.params?.programId;
   const preselectedClientId: string | undefined = route.params?.clientId;
@@ -58,6 +60,10 @@ export const ProgramBuilderScreen: React.FC = () => {
   const [pickerDayIndex, setPickerDayIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(null);
+
+  const selectedClient = useMemo(() => {
+    return coachClients.find(c => c.client_id === clientId);
+  }, [coachClients, clientId]);
 
   useEffect(() => {
     if (preselectedClientId) setClientId(preselectedClientId);
@@ -201,6 +207,19 @@ export const ProgramBuilderScreen: React.FC = () => {
     newDays[dayIndex].meals = (newDays[dayIndex].meals || []).filter((_, i) => i !== mealIndex);
     setDays(newDays);
   };
+
+  const getMealWarning = useCallback((mealName: string) => {
+    if (!selectedClient || !mealName) return null;
+    const nameLower = mealName.toLowerCase();
+    
+    if (selectedClient.food_allergies?.some(a => nameLower.includes(a.toLowerCase()))) {
+      return `Warning: Contains allergy`;
+    }
+    if (selectedClient.food_dislikes?.some(d => nameLower.includes(d.toLowerCase()))) {
+      return `Warning: Client dislikes this`;
+    }
+    return null;
+  }, [selectedClient]);
 
   const handleSave = async () => {
     if (!isValid || !profile?.id) return;
@@ -372,20 +391,30 @@ export const ProgramBuilderScreen: React.FC = () => {
               {/* Meals */}
               {(type === 'meal' || type === 'both') && (
                 <View style={styles.daySection}>
-                  {(day.meals || []).map((meal, mealIdx) => (
-                    <View key={mealIdx} style={styles.mealRow}>
-                      <TextInput style={[styles.input, styles.mealNameInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={meal.name} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'name', v)} placeholder={t('programs.mealName')} placeholderTextColor={colors.textLight} />
-                      <View style={styles.macroRow}>
-                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.calories || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'calories', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.calShort')} placeholderTextColor={colors.textLight} />
-                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.protein || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'protein', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.proteinShort')} placeholderTextColor={colors.textLight} />
-                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.carbs || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'carbs', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.carbsShort')} placeholderTextColor={colors.textLight} />
-                        <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.fat || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'fat', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.fatShort')} placeholderTextColor={colors.textLight} />
+                  {(day.meals || []).map((meal, mealIdx) => {
+                    const warning = getMealWarning(meal.name);
+                    return (
+                      <View key={mealIdx} style={{ marginBottom: 16 }}>
+                        <View style={styles.mealRow}>
+                          <TextInput style={[styles.input, styles.mealNameInput, { backgroundColor: getGlassBg(isDark), borderColor: warning ? 'rgba(239,83,80,0.5)' : getGlassBorder(isDark), color: colors.text }]} value={meal.name} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'name', v)} placeholder={t('programs.mealName')} placeholderTextColor={colors.textLight} />
+                          <View style={styles.macroRow}>
+                            <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.calories || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'calories', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.calShort')} placeholderTextColor={colors.textLight} />
+                            <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.protein || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'protein', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.proteinShort')} placeholderTextColor={colors.textLight} />
+                            <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.carbs || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'carbs', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.carbsShort')} placeholderTextColor={colors.textLight} />
+                            <TextInput style={[styles.macroInput, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark), color: colors.text }]} value={String(meal.fat || '')} onChangeText={(v) => updateMeal(dayIndex, mealIdx, 'fat', parseInt(v) || 0)} keyboardType="number-pad" placeholder={t('programs.fatShort')} placeholderTextColor={colors.textLight} />
+                          </View>
+                          <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIdx)} style={styles.removeBtn}>
+                            <Trash2 size={14} color="#EF5350" />
+                          </TouchableOpacity>
+                        </View>
+                        {warning && (
+                          <Text style={{ color: '#EF5350', fontSize: getResponsiveFontSize(12), marginTop: 4, fontFamily: 'Barlow_500Medium' }}>
+                            {warning}
+                          </Text>
+                        )}
                       </View>
-                      <TouchableOpacity onPress={() => removeMeal(dayIndex, mealIdx)} style={styles.removeBtn}>
-                        <Trash2 size={14} color="#EF5350" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
+                    );
+                  })}
                   <TouchableOpacity style={styles.addItemBtn} onPress={() => addMeal(dayIndex)}>
                     <UtensilsCrossed size={14} color={PRIMARY_GREEN} />
                     <Text style={styles.addItemText}>{t('programs.addMeal')}</Text>

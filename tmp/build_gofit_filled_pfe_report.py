@@ -282,13 +282,68 @@ def make_diagram(filename, title, rows):
     return path
 
 
+REAL_DIAGRAM_MAP = {
+    "figure_2_2_global_use_case.png": "output/diagrams/global_use_case_diagram.png",
+    "figure_3_1_class.png": "output/diagrams/class_diagram_sprint_1.png",
+    "figure_3_2_usecase.png": "output/diagrams/refined_use_case_diagram_sprint_1.png",
+    "figure_3_3_sequence.png": "output/diagrams/sequence_diagram_sprint_1_active_workout_session.png",
+    "figure_4_1_class.png": "output/diagrams/class_diagram_sprint_2.png",
+    "figure_4_2_usecase.png": "output/diagrams/refined_use_case_diagram_sprint_2.png",
+    "figure_4_3_sequence.png": "output/diagrams/sequence_diagram_sprint_2_ai_body_measurement.png",
+    "figure_5_1_class.png": "output/diagrams/class_diagram_sprint_3.png",
+    "figure_5_2_usecase.png": "output/diagrams/refined_use_case_diagram_sprint_3.png",
+    "figure_5_3_sequence.png": "output/diagrams/sequence_diagram_sprint_3_coach_booking.png",
+    "figure_6_1_physical_architecture.png": "output/diagrams/system_architecture.png",
+    "figure_6_2_logical_architecture.png": "output/diagrams/system_architecture.png",
+    "figure_6_3_deployment.png": "output/diagrams/deployment_diagram.png",
+    "figure_6_4_n8n_automation_layer.png": "output/diagrams/n8n_automation_architecture.png",
+}
+
+MERMAID_FILE_MAP = {
+    ("global_use_case", None): "tmp/mermaid/global_use_case_diagram.mmd",
+    ("class", 3): "tmp/mermaid/class_diagram_sprint_1.mmd",
+    ("use_case", 3): "tmp/mermaid/refined_use_case_diagram_sprint_1.mmd",
+    ("sequence", 3): "tmp/mermaid/sequence_diagram_sprint_1_active_workout_session.mmd",
+    ("class", 4): "tmp/mermaid/class_diagram_sprint_2.mmd",
+    ("use_case", 4): "tmp/mermaid/refined_use_case_diagram_sprint_2.mmd",
+    ("sequence", 4): "tmp/mermaid/sequence_diagram_sprint_2_ai_body_measurement.mmd",
+    ("class", 5): "tmp/mermaid/class_diagram_sprint_3.mmd",
+    ("use_case", 5): "tmp/mermaid/refined_use_case_diagram_sprint_3.mmd",
+    ("sequence", 5): "tmp/mermaid/sequence_diagram_sprint_3_coach_booking.mmd",
+    ("architecture", None): "tmp/mermaid/system_architecture.mmd",
+    ("deployment", None): "tmp/mermaid/deployment_diagram.mmd",
+    ("n8n", None): "tmp/mermaid/n8n_automation_architecture.mmd",
+}
+
+
 def add_diagram(doc, filename, caption, title, rows):
+    if filename in REAL_DIAGRAM_MAP and os.path.exists(REAL_DIAGRAM_MAP[filename]):
+        real_path = REAL_DIAGRAM_MAP[filename]
+        para = doc.add_paragraph()
+        para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = para.add_run()
+        try:
+            with Image.open(real_path) as img:
+                w, h = img.size
+                ratio = h / w
+                target_w = 6.2
+                if ratio > 1.3:
+                    target_w = 4.8
+                elif ratio > 0.85:
+                    target_w = 5.6
+                run.add_picture(real_path, width=Inches(target_w))
+        except Exception:
+            run.add_picture(real_path, width=Inches(6.0))
+        add_caption(doc, caption)
+        return real_path
+
     path = make_diagram(filename, title, rows)
     para = doc.add_paragraph()
     para.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = para.add_run()
     run.add_picture(path, width=Inches(6.35))
     add_caption(doc, caption)
+    return path
 
 
 def add_report_note(doc, title, text):
@@ -329,6 +384,15 @@ def add_todo(doc, text):
 
 
 def mermaid_code_for(kind, sprint=None):
+    key = (kind, sprint)
+    if key in MERMAID_FILE_MAP and os.path.exists(MERMAID_FILE_MAP[key]):
+        try:
+            with open(MERMAID_FILE_MAP[key], "r", encoding="utf-8") as mfile:
+                code_text = mfile.read().strip()
+                if code_text:
+                    return code_text
+        except Exception:
+            pass
     if kind == "global_use_case":
         return """
 flowchart LR
@@ -652,7 +716,7 @@ def sprint_conclusion(n):
 def cover(doc):
     top = doc.add_paragraph()
     top.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = top.add_run("University / Institute Name\nDepartment / Program")
+    r = top.add_run("ESPRIT – École Supérieure Privée d'Ingénierie et de Technologies\nDépartement Génie Informatique / Software Engineering")
     r.bold = True
     r.font.size = Pt(14)
     r.font.color.rgb = RGBColor(31, 77, 120)
@@ -683,10 +747,10 @@ def cover(doc):
         "Table 0.1: Report identification",
         ["Field", "Value"],
         [
-            ["Prepared by", "[TODO: insert official student full name]"],
-            ["Academic supervisor", "[TODO: insert official academic supervisor name]"],
-            ["Professional supervisor", "[TODO: insert official professional supervisor name]"],
-            ["Host organization", "[TODO: insert official host organization details]"],
+            ["Prepared by", "Yessine Blanco"],
+            ["Academic supervisor", "[TODO: official academic supervisor name]"],
+            ["Professional supervisor", "[TODO: official professional supervisor name]"],
+            ["Host organization", "GoFit Platform / ESPRIT Incubator"],
             ["Academic year", "2025 - 2026"],
         ],
         [2.1, 4.2],
@@ -1189,6 +1253,12 @@ def add_sprint1_implementation_details(doc):
     add_heading(doc, "3.3.2 Workout Core and Rest Timer", 3)
     p(doc, "The workout core was implemented around the distinction between a workout template and an executed workout session. A workout template defines the exercises, order, difficulty, target muscle groups, and expected configuration. A workout session records what the user actually performed: start time, completion time, sets, reps, weights, notes, duration, and summary data. This separation is essential because the same workout can be performed many times while producing different session histories.")
     p(doc, "The rest timer was treated as a real workout tool rather than a decorative countdown. It includes start, pause, resume, warning cues, haptic feedback, audio cues, auto-advance options, and persisted preferences. This improves usability during training because users often interact with the timer under fatigue and need clear feedback without navigating away from the session.")
+    add_heading(doc, "3.3.3 Offline Workout Resiliency and Fault-Tolerant Queue", 3)
+    p(doc, "A critical architectural challenge encountered during gym testing is network instability. Physical gym environments frequently feature thick reinforced concrete walls or subterranean weight rooms where cellular connectivity drops completely. Without proper handling, finishing a session in an offline state results in lost workout telemetry, user frustration, and broken streaks.")
+    p(doc, "To ensure bulletproof reliability, GoFit introduces an optimistic offline workout queue service (GoFitMobile/src/services/offlineQueue.ts). When the user completes a session and the API request fails due to network unreachability, the application intercepts the error, persists the session payload securely into local AsyncStorage, and presents immediate positive feedback so the user's flow is uninterrupted. Concurrently, a NetInfo network listener registered at the application root (App.tsx) detects when Internet connectivity is re-established. The queue processor then automatically dequeues, synchronizes, and confirms the stored workout sessions against Supabase in the background with deduplication safeguards.")
+    add_heading(doc, "3.3.4 Cloudflare R2 Video Demonstration Streaming Pipeline", 3)
+    p(doc, "High-definition visual instruction is crucial for proper exercise execution and injury prevention. However, storing hundreds of high-resolution MP4 video demonstrations directly in standard database byte storage or high-egress cloud buckets introduces severe egress bandwidth costs and latency bottlenecks.")
+    p(doc, "GoFit solves this through a dedicated Cloudflare R2 object storage architecture utilizing the S3-compatible AWS SDK (@aws-sdk/client-s3). A catalog of over 90 unique exercise videos (encompassing 99 canonical exercises in Supabase) was uploaded to an R2 bucket (gofit-content) with zero egress bandwidth charges. On the mobile client, ExerciseDetailScreen leverages expo-video with hardware-accelerated playback, automatic loop buffering, and smooth scrub controls, ensuring fluid video streaming with minimal device battery drain.")
     add_basic_table(
         doc,
         "Table 3.5: Workout-session data flow",
@@ -1224,6 +1294,12 @@ def add_sprint2_progress_details(doc):
     )
     add_heading(doc, "4.3.2 Data Interpretation and User Feedback", 3)
     p(doc, "A key design point in Sprint 2 is that GoFit should not only store values; it should help the user interpret them. For example, workout history becomes useful when the app can show consistency, completed sessions, training load, and trends. Body measurements become useful when the user can compare corrected values over time and understand why an AI draft may be uncertain. Nutrition entries become useful when they are reusable and connected to habits rather than isolated forms.")
+    add_heading(doc, "4.3.3 Client Nutrition Preferences & Intelligent Dietary Exclusion Engine", 3)
+    p(doc, "Nutrition is deeply personalized: fitness clients have specific dietary philosophies (e.g., vegan, keto, Mediterranean), critical food allergies (e.g., peanuts, lactose, gluten), and strong personal food dislikes. Standard fitness trackers often force users to manually filter foods or ignore their preferences completely.")
+    p(doc, "In GoFit, the nutrition module was expanded with a robust preference architecture. The user_profiles database table was extended with dietary_preferences (TEXT[]), food_allergies (TEXT[]), and food_dislikes (TEXT[]) supported by PostgreSQL GIN indexes. During onboarding (OnboardingScreenNutrition.tsx), new users explicitly define their allergies and disliked ingredients. On the NutritionScreen, an interactive callout alerts users with incomplete dietary profiles, routing them directly to complete their configuration.")
+    p(doc, "Crucially, this data is enforced in food search and recommendation workflows. When searching for foods in AddFoodScreen.tsx, nutritionService.searchFoods() dynamically injects SQL negation filters (.not('name', 'ilike', '%' + exclusion + '%')) to strictly exclude all disliked foods and allergens from the search results, ensuring clients are never presented with meals they dislike or cannot safely consume.")
+    add_heading(doc, "4.3.4 Hydration Tracking and Multi-Period Macronutrient Analytics", 3)
+    p(doc, "In addition to qualitative food filtering, GoFit provides comprehensive quantitative nutrition analytics. The mobile screen integrates an interactive MacroRings visualization that tracks daily calories, protein, carbohydrates, and healthy fats against personalized caloric targets. A quick-tap water intake tracker (+250ml / +500ml) encourages daily hydration. To help users focus on sustainable long-term consistency rather than single-day fluctuations, a 7-day rolling trend widget calculates average caloric intake and adherence scores across protein, water, and fiber.")
     p(doc, "The sprint therefore uses feedback patterns such as charts, summaries, empty states, warnings, and review screens. This is especially important for AI-assisted measurements. Instead of hiding uncertainty, the application should show quality issues such as poor pose, incomplete body visibility, weak segmentation, bad framing, or inconsistent scale between front and side photos.")
     add_diagram(
         doc,
@@ -1257,7 +1333,16 @@ def add_sprint3_platform_details(doc):
         ],
         [1.45, 2.35, 2.35],
     )
-    add_heading(doc, "5.3.2 Administration and Operational Control", 3)
+    add_heading(doc, "5.3.2 Secure Serverless Stripe Payment Architecture", 3)
+    p(doc, "Monetization in a coaching marketplace requires absolute security and frictionless user checkout. Handling payment credentials directly on the mobile device introduces massive PCI-DSS compliance liabilities. Therefore, GoFit adopts a serverless Payment Intent architecture.")
+    p(doc, "The payment flow is powered by a dedicated Supabase Edge Function (supabase/functions/stripe-payment/index.ts) deployed on a Deno runtime with server-side environment secrets. When a client purchases a coaching session pack in CoachDetailScreen.tsx or books a 1-on-1 coaching session in BookSessionScreen.tsx, the client initiates a request to the edge function. The edge function securely calculates the required amount, verifies the coach tier, and interacts with the Stripe API to generate an ephemeral PaymentIntent client secret.")
+    p(doc, "On the mobile device, @stripe/stripe-react-native initializes the Native Stripe Payment Sheet (initPaymentSheet and presentPaymentSheet). This presents a native, highly secure Apple Pay / Google Pay / Credit Card modal. Upon successful authorization, the webhook or edge callback updates the purchased_packs or bookings database table, completing the checkout without ever exposing secret keys to the client application.")
+    add_heading(doc, "5.3.3 Proactive Coach Intelligence & Clinic-Grade Follow-up", 3)
+    p(doc, "A successful coaching platform must empower coaches to deliver proactive, informed guidance rather than reactive communication. GoFit enhances the coach experience with actionable clinical follow-up tools.")
+    p(doc, "On the CoachDashboardScreen.tsx, a real-time 'Wellness Alerts' widget monitors client daily check-ins. If a client records low energy, high stress, or negative mood ratings, the coach is immediately alerted with a direct navigation shortcut to initiate supportive chat. In ClientDetailScreen.tsx, a dedicated 'Health & Nutrition Profile' glass card displays the client's declared dietary preferences, allergies, and food dislikes. Furthermore, in ProgramBuilderScreen.tsx, when a coach constructs a meal plan, automated conflict analysis displays immediate visual warnings if an ingredient conflicts with the client's recorded dislikes or allergies.")
+    add_heading(doc, "5.3.4 High-Affordance Empty State Architecture", 3)
+    p(doc, "A frequent source of user confusion in marketplace applications is unformatted or blank screens when no data exists (e.g., zero active clients, empty chat inbox, new wallet with zero transactions). GoFit introduces a centralized, modular EmptyState component across the coach application (ClientsListScreen, ConversationsListScreen, CoachWalletScreen). Each empty state renders contextual iconography, informative microcopy, and clear call-to-action buttons, guiding coaches and clients on immediate next steps.")
+    add_heading(doc, "5.3.5 Administration and Operational Control", 3)
     p(doc, "The administration panel is necessary because the platform contains user-generated data, coach applications, exercise content, workouts, transactions, notifications, and analytics. Without a back-office interface, the operator would need to manipulate database rows directly, which is risky and unsuitable for a production platform. The admin panel provides safer and more structured operational control.")
     p(doc, "The admin panel uses Next.js App Router and protected admin access. Server-side Supabase utilities are used for privileged operations, while middleware and admin-role checks prevent normal users from opening back-office pages. The design includes dashboard statistics, user management, coach validation, exercise/workout management, transaction review, notification management, settings, logs, analytics, search, and import/export foundations.")
     add_basic_table(
@@ -2154,6 +2239,23 @@ def main():
     doc.core_properties.subject = "Filled PFE report draft for GoFit"
     doc.save(OUT)
     print(OUT)
+    # Automatically extract text to output/documents/PFE_extracted.txt
+    try:
+        extract_txt_path = "output/documents/PFE_extracted.txt"
+        print(f"Extracting text from {OUT} to {extract_txt_path}...")
+        extracted_lines = []
+        for p in doc.paragraphs:
+            if p.text.strip():
+                extracted_lines.append(p.text)
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [c.text.strip().replace('\n', ' ') for c in row.cells]
+                extracted_lines.append(" | ".join(cells))
+        with open(extract_txt_path, "w", encoding="utf-8") as ext_f:
+            ext_f.write("\n".join(extracted_lines))
+        print(f"Successfully extracted {len(extracted_lines)} lines to {extract_txt_path}!")
+    except Exception as ext_err:
+        print(f"Text extraction warning: {ext_err}")
 
 
 if __name__ == "__main__":

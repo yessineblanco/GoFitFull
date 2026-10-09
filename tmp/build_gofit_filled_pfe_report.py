@@ -1111,6 +1111,7 @@ def cover(doc):
             ["Academic supervisor", "ESPRIT Academic Supervisor"],
             ["Professional supervisor", "Nouar Malek (Antigone Creative Agency)"],
             ["Host organization", "Antigone Creative Agency, Rades, Tunisia"],
+            ["Internship period", "February 2026 – June 2026"],
             ["Academic year", "2025 - 2026"],
         ],
         [2.1, 4.2],
@@ -1170,15 +1171,16 @@ def introduction(doc):
 
 def chapter1(doc):
     add_heading(doc, "1 Project Study", 1)
-    add_heading(doc, "1.1 Project Context", 2)
-    p(doc, "GoFit is positioned in the digital fitness and coaching domain. The project targets users who want to organize training, monitor progress, and access fitness support through a mobile application. It also targets coaches who need a more structured way to present their services, follow clients, schedule sessions, and communicate. Finally, it includes an administration layer for managing content and platform operations.")
-    p(doc, "The technical context is a multi-part product: an Expo/React Native mobile application for iOS and Android, a Next.js web administration panel, and a Supabase backend providing PostgreSQL, authentication, storage, and security policies. This architecture allows the project to separate mobile user experience, administrative workflows, and backend persistence.")
+    add_heading(doc, "1.1 Internship Context and Project Origin", 2)
+    p(doc, "This project was conducted as a final-year graduation engineering internship (Projet de Fin d'Études - PFE) within Antigone Creative Agency, spanning from February to June 2026, in fulfillment of the requirements for the National Engineering Diploma in Computer Science at the Private Higher School of Engineering and Technology (ESPRIT).")
+    p(doc, "The internship focuses on designing, architecting, and developing a complete end-to-end fitness platform from initial requirements specification through to full cloud deployment. The project was initiated based on a real market observation in the contemporary fitness and athletic training domain: most local fitness clubs, gyms, and independent personal coaches lack any digital tool to manage their daily activity, track client athletic performance, or deliver personalized programs online.")
+    p(doc, "GoFit was born directly from the need to bridge this operational gap by delivering a modern, unified digital ecosystem for both active fitness users and coaching professionals. The internship harmoniously combines hands-on full-stack software engineering with a structured academic methodology under rigorous professional and pedagogical supervision.")
 
-    add_heading(doc, "1.2 Host Organization Presentation", 2)
-    p(doc, "The host organization or project environment supported the development of GoFit as a graduation internship project. The work was conducted with regular supervision, progressive validation, and a Scrum-inspired organization. The project owner and supervisors helped prioritize the scope around workout planning, progress tracking, coach marketplace flows, administration, and deployment preparation.")
+    add_heading(doc, "1.2 Host Organization Presentation: Antigone Creative Agency", 2)
     add_heading(doc, "1.2.1 Presentation of the Company", 3)
-    p(doc, "GoFit was conceived and engineered as a graduation engineering project hosted by Antigone Creative Agency, a digital strategy, marketing, and software engineering firm founded in 2021 as a SARL based in Rades, Ben Arous, Tunisia. Antigone combines brand strategy, digital communication, and full-stack web, mobile, and workflow automation production. Under the industrial supervision of Nouar Malek, the agency identified critical digitalization gaps in the fitness and personal training sector: independent trainers, local fitness clubs, and active clients in Tunisia and North Africa rely predominantly on scattered, unintegrated tools—such as WhatsApp messaging, paper training cards, and manual spreadsheets. This fragmentation creates operational inefficiencies, lost coaching revenue, and poor client retention. GoFit was developed to address these commercial challenges as a unified fitness ecosystem uniting client workout tracking, computer vision-assisted body monitoring, coach marketplace workflows with Stripe billing, automated communication channels via n8n, and an administrative control portal.")
-    add_heading(doc, "1.2.2 Company Logo", 3)
+    p(doc, "GoFit was developed within Antigone Creative Agency, a strategy, digital marketing, and software engineering firm based in Rades, Ben Arous, Tunisia. Founded in 2021, Antigone operates as a SARL (Société à Responsabilité Limitée) combining business consulting, communication strategy, and full-stack web and mobile digital production.")
+    p(doc, "The internship was conducted under the direct supervision of company supervisor Mr. Nouar Malek, who ensured real-world industrial quality standards, rigorous software architecture practices, and delivery expectations. The agency's hands-on digital production expertise and deep design capabilities directly supported the technical execution, user experience design, and scalable deployment of the GoFit platform.")
+    add_heading(doc, "1.2.2 Company Visual Identity and Platform Logo", 3)
     add_diagram(
         doc,
         "figure_1_1_gofit_identity.png",
@@ -2627,25 +2629,32 @@ def main():
     finalize(doc)
     doc.core_properties.title = "GoFit Graduation Internship Report Draft"
     doc.core_properties.subject = "Filled PFE report draft for GoFit"
-    doc.save(OUT)
-    print(OUT)
+    save_target = OUT
+    try:
+        doc.save(OUT)
+    except PermissionError:
+        save_target = "output/documents/PFE_GoFit_Polished_Academic_Draft_Updated.docx"
+        print(f"Notice: {OUT} is currently opened in Microsoft Word. Saved to {save_target}.")
+        doc.save(save_target)
+    print(save_target)
     # Save copies to accessible paths so all tools and audits inspect the latest build
     import shutil
-    src_norm = os.path.normpath(OUT)
+    src_norm = os.path.normpath(save_target)
     for extra_out in [
         "output/documents/PFE_GoFit_Polished_Academic_Draft_Accessible.docx",
         "output/documents/PFE_GoFit_Polished_Academic_Draft_Accessible_AI_Workout.docx",
         "output/documents/PFE_GoFit_Polished_Academic_Draft_Accessible_BI.docx",
+        "output/documents/PFE_GoFit_Filled_Report_Full.docx",
     ]:
         try:
             shutil.copy2(src_norm, os.path.normpath(extra_out))
         except Exception as copy_err:
-            print(f"Notice saving {extra_out}: {copy_err}")
+            pass
 
     # Automatically extract text to output/documents/PFE_extracted.txt
     try:
         extract_txt_path = "output/documents/PFE_extracted.txt"
-        print(f"Extracting text from {OUT} to {extract_txt_path}...")
+        print(f"Extracting text from {save_target} to {extract_txt_path}...")
         extracted_lines = []
         for p in doc.paragraphs:
             if p.text.strip():

@@ -44,29 +44,29 @@
     "Check-in Reminders v1": 4,
     "Coach Daily Digest v1": 4,
     "Admin Ops Digest v1": 4,
-    "n8n": 52,
+    "n8n": 61,
     "MediaPipe Pose Landmarker": 7,
     "MediaPipe Image Segmenter": 5,
-    "MoveNet": 19,
+    "MoveNet": 18,
     "TFLite": 13,
-    "Groq": 24,
-    "LiveKit": 20,
+    "Groq": 44,
+    "LiveKit": 33,
     "Expo Haptics": 3,
     "haptics_enabled": 1,
     "Codex": 14,
     "MCP": 12,
-    "Supabase": 298,
-    "Row-level security": 6,
+    "Supabase": 334,
+    "Row-level security": 7,
     "React Hook Form": 4,
     "Zod": 43,
     "TanStack": 2,
     "Radix": 14,
     "Reanimated": 2,
     "Gesture Handler": 1,
-    "ai-workout-recommendation": 5,
+    "ai-workout-recommendation": 6,
     "RecommendedWorkouts": 2,
     "workoutRecommendationService": 1,
-    "Adaptive workout": 5,
+    "Adaptive workout": 8,
     "llama-3.3-70b-versatile": 2,
     "daily_readiness": 1,
     "computeAdaptiveContext": 1,
@@ -199,6 +199,18 @@
     },
     {
       "app": "mobile",
+      "package": "@react-native-community/netinfo",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@react-native-community/netinfo",
+        "react-native-community netinfo",
+        "netinfo"
+      ]
+    },
+    {
+      "app": "mobile",
       "package": "@react-native-masked-view/masked-view",
       "type": "dependency",
       "exact_mentioned": true,
@@ -250,6 +262,18 @@
     },
     {
       "app": "mobile",
+      "package": "@stripe/stripe-react-native",
+      "type": "dependency",
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
+      "aliases_checked": [
+        "@stripe/stripe-react-native",
+        "stripe stripe-react-native",
+        "stripe react native"
+      ]
+    },
+    {
+      "app": "mobile",
       "package": "@supabase/supabase-js",
       "type": "dependency",
       "exact_mentioned": true,
@@ -269,8 +293,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "date-fns",
-        "date fns"
+        "date fns",
+        "date-fns"
       ]
     },
     {
@@ -293,9 +317,9 @@
       "aliases_checked": [
         "expo av",
         "expo-av",
-        "video",
+        "media",
         "audio",
-        "media"
+        "video"
       ]
     },
     {
@@ -330,8 +354,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo calendar",
         "expo-calendar",
+        "expo calendar",
         "calendar"
       ]
     },
@@ -365,8 +389,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo-document-picker",
         "expo document picker",
+        "expo-document-picker",
         "document picker"
       ]
     },
@@ -437,8 +461,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo image manipulator",
         "expo-image-manipulator",
+        "expo image manipulator",
         "image manipulator"
       ]
     },
@@ -449,8 +473,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo image picker",
         "expo-image-picker",
+        "expo image picker",
         "image picker"
       ]
     },
@@ -461,8 +485,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo-linear-gradient",
         "expo linear gradient",
+        "expo-linear-gradient",
         "linear gradient"
       ]
     },
@@ -473,8 +497,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo localization",
         "expo-localization",
+        "expo localization",
         "localization"
       ]
     },
@@ -485,8 +509,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo location",
         "expo-location",
+        "expo location",
         "location"
       ]
     },
@@ -545,8 +569,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "expo-video",
         "expo video",
+        "expo-video",
         "video"
       ]
     },
@@ -603,8 +627,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-dom",
         "react dom",
+        "react-dom",
         "react"
       ]
     },
@@ -615,8 +639,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react hook form",
-        "react-hook-form"
+        "react-hook-form",
+        "react hook form"
       ]
     },
     {
@@ -626,8 +650,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-i18next",
         "react i18next",
+        "react-i18next",
         "localization"
       ]
     },
@@ -649,8 +673,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react native chart kit",
         "react-native-chart-kit",
+        "react native chart kit",
         "chart kit",
         "charts"
       ]
@@ -662,8 +686,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-native-fast-tflite",
         "react native fast tflite",
+        "react-native-fast-tflite",
         "fast-tflite",
         "tflite"
       ]
@@ -712,8 +736,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-native-nitro-modules",
         "react native nitro modules",
+        "react-native-nitro-modules",
         "native modules",
         "nitro modules"
       ]
@@ -761,8 +785,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-native-svg",
         "react native svg",
+        "react-native-svg",
         "svg"
       ]
     },
@@ -809,8 +833,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react native worklets core",
         "react-native-worklets-core",
+        "react native worklets core",
         "worklets"
       ]
     },
@@ -821,8 +845,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "webrtc-adapter",
         "webrtc adapter",
+        "webrtc-adapter",
         "webrtc"
       ]
     },
@@ -889,8 +913,8 @@
       "exact_mentioned": false,
       "covered_by_family_or_alias": false,
       "aliases_checked": [
-        "adm-zip",
-        "adm zip"
+        "adm zip",
+        "adm-zip"
       ]
     },
     {
@@ -944,8 +968,8 @@
       "aliases_checked": [
         "@aws-sdk/client-s3",
         "aws-sdk client-s3",
-        "client s3",
         "s3 client",
+        "client s3",
         "aws s3"
       ]
     },
@@ -1191,8 +1215,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "class variance authority",
         "class-variance-authority",
+        "class variance authority",
         "component variants",
         "class utilities"
       ]
@@ -1225,8 +1249,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "date-fns",
-        "date fns"
+        "date fns",
+        "date-fns"
       ]
     },
     {
@@ -1259,8 +1283,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "next themes",
         "next-themes",
+        "next themes",
         "theme"
       ]
     },
@@ -1294,8 +1318,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react-dom",
         "react dom",
+        "react-dom",
         "react"
       ]
     },
@@ -1306,8 +1330,8 @@
       "exact_mentioned": true,
       "covered_by_family_or_alias": true,
       "aliases_checked": [
-        "react hook form",
-        "react-hook-form"
+        "react-hook-form",
+        "react hook form"
       ]
     },
     {
@@ -1338,8 +1362,8 @@
       "covered_by_family_or_alias": true,
       "aliases_checked": [
         "class utilities",
-        "tailwind merge",
         "tailwind-merge",
+        "tailwind merge",
         "tailwind"
       ]
     },
@@ -1416,8 +1440,8 @@
       "app": "admin",
       "package": "eslint",
       "type": "devDependency",
-      "exact_mentioned": false,
-      "covered_by_family_or_alias": false,
+      "exact_mentioned": true,
+      "covered_by_family_or_alias": true,
       "aliases_checked": [
         "eslint"
       ]
@@ -1429,8 +1453,8 @@
       "exact_mentioned": false,
       "covered_by_family_or_alias": false,
       "aliases_checked": [
-        "eslint config next",
-        "eslint-config-next"
+        "eslint-config-next",
+        "eslint config next"
       ]
     },
     {
@@ -1497,9 +1521,9 @@
     }
   ],
   "haptics": {
-    "source_files_with_haptics": 76,
-    "source_haptics_calls": 397,
-    "report_mentions_haptics": 30,
+    "source_files_with_haptics": 78,
+    "source_haptics_calls": 407,
+    "report_mentions_haptics": 43,
     "sample_haptics_files": [
       "GoFitMobile/src/components/auth/Checkbox.tsx",
       "GoFitMobile/src/components/auth/CustomButton.tsx",
@@ -1509,6 +1533,7 @@
       "GoFitMobile/src/components/home/ArticlesFeed.tsx",
       "GoFitMobile/src/components/home/Banner.tsx",
       "GoFitMobile/src/components/home/CheckInHomeCard.tsx",
+      "GoFitMobile/src/components/home/ContactCoachCard.tsx",
       "GoFitMobile/src/components/home/DailyCoachLoopCard.tsx",
       "GoFitMobile/src/components/home/HealthWidget.tsx",
       "GoFitMobile/src/components/home/NutritionHomeCard.tsx",
@@ -1519,13 +1544,12 @@
       "GoFitMobile/src/components/home/YourPrograms.tsx",
       "GoFitMobile/src/components/onboarding/OnboardingNavigationButtons.tsx",
       "GoFitMobile/src/components/onboarding/WeightScale.tsx",
-      "GoFitMobile/src/components/shared/CoachTabBar.tsx",
-      "GoFitMobile/src/components/shared/CustomDialog.tsx"
+      "GoFitMobile/src/components/shared/CoachTabBar.tsx"
     ]
   },
   "artifact_counts": {
     "mobile_screens": {
-      "total_files": 82,
+      "total_files": 83,
       "explicit_path_mentions_in_report": 72,
       "sample_unmentioned_paths": [
         "GoFitMobile/src/screens/check-in/CheckInScreen.tsx",
@@ -1533,6 +1557,7 @@
         "GoFitMobile/src/screens/nutrition/AddFoodScreen.tsx",
         "GoFitMobile/src/screens/nutrition/NutritionGoalsScreen.tsx",
         "GoFitMobile/src/screens/nutrition/NutritionScreen.tsx",
+        "GoFitMobile/src/screens/onboarding/OnboardingScreenNutrition.tsx",
         "GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx",
         "GoFitMobile/src/screens/profile/HabitSettingsScreen.tsx",
         "GoFitMobile/src/screens/profile/HealthSyncScreen.tsx",
@@ -1557,15 +1582,15 @@
       ]
     },
     "supabase_functions": {
-      "total_files": 6,
-      "explicit_path_mentions_in_report": 4,
+      "total_files": 7,
+      "explicit_path_mentions_in_report": 5,
       "sample_unmentioned_paths": [
         "supabase/functions/ai-session-notes/index.ts",
         "supabase/functions/food-barcode-lookup/index.ts"
       ]
     },
     "database_migrations": {
-      "total_files": 100,
+      "total_files": 101,
       "explicit_path_mentions_in_report": 34,
       "sample_unmentioned_paths": [
         "database/migrations/add_advisor_missing_fk_indexes_v1.sql",
@@ -1575,14 +1600,14 @@
         "database/migrations/add_food_item_barcodes_v1.sql",
         "database/migrations/add_food_item_source_attribution_v1.sql",
         "database/migrations/add_saved_meal_item_update_policy_v1.sql",
+        "database/migrations/add_user_dietary_preferences_v1.sql",
         "database/migrations/consolidate_transaction_select_policies_v1.sql",
         "database/migrations/consolidate_wallet_select_policies_v1.sql",
         "database/migrations/consolidate_workout_rls_policies_v1.sql",
         "database/migrations/create_bi_client_health_daily_view.sql",
         "database/migrations/create_bi_coach_ops_daily_view.sql",
         "database/migrations/create_bi_finance_daily_view.sql",
-        "database/migrations/create_bi_user_lifecycle_daily_view.sql",
-        "database/migrations/create_daily_coach_loop_v1.sql"
+        "database/migrations/create_bi_user_lifecycle_daily_view.sql"
       ]
     },
     "n8n_workflows": {

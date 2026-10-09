@@ -23,29 +23,29 @@ Report audited: `C:/Users/yessi/Desktop/work/GoFit/output/documents/PFE_GoFit_Po
 - Check-in Reminders v1: 4
 - Coach Daily Digest v1: 4
 - Admin Ops Digest v1: 4
-- n8n: 52
+- n8n: 61
 - MediaPipe Pose Landmarker: 7
 - MediaPipe Image Segmenter: 5
-- MoveNet: 19
+- MoveNet: 18
 - TFLite: 13
-- Groq: 24
-- LiveKit: 20
+- Groq: 44
+- LiveKit: 33
 - Expo Haptics: 3
 - haptics_enabled: 1
 - Codex: 14
 - MCP: 12
-- Supabase: 298
-- Row-level security: 6
+- Supabase: 334
+- Row-level security: 7
 - React Hook Form: 4
 - Zod: 43
 - TanStack: 2
 - Radix: 14
 - Reanimated: 2
 - Gesture Handler: 1
-- ai-workout-recommendation: 5
+- ai-workout-recommendation: 6
 - RecommendedWorkouts: 2
 - workoutRecommendationService: 1
-- Adaptive workout: 5
+- Adaptive workout: 8
 - llama-3.3-70b-versatile: 2
 - daily_readiness: 1
 - computeAdaptiveContext: 1
@@ -71,9 +71,9 @@ Report audited: `C:/Users/yessi/Desktop/work/GoFit/output/documents/PFE_GoFit_Po
 
 Dependency coverage is evaluated at family/alias level because the report describes libraries academically rather than as a raw package-lock dump.
 - admin dependency family-covered=True: 34
-- admin devDependency family-covered=False: 5
-- admin devDependency family-covered=True: 4
-- mobile dependency family-covered=True: 62
+- admin devDependency family-covered=False: 4
+- admin devDependency family-covered=True: 5
+- mobile dependency family-covered=True: 64
 - mobile devDependency family-covered=False: 4
 - mobile devDependency family-covered=True: 4
 
@@ -87,16 +87,16 @@ Dependency coverage is evaluated at family/alias level because the report descri
 
 ## Haptics Probe
 
-- Source files using haptics: 76
-- Haptics calls found: 397
-- Report mentions of haptic/haptics: 30
+- Source files using haptics: 78
+- Haptics calls found: 407
+- Report mentions of haptic/haptics: 43
 
 ## Project Artifact Path Mentions
 
 This is a secondary sanity check. A feature can be covered even when every source path is not printed in the report.
-- mobile_screens: 72 explicit path mentions out of 82 files.
+- mobile_screens: 72 explicit path mentions out of 83 files.
 - mobile_navigation: 7 explicit path mentions out of 7 files.
 - admin_pages: 52 explicit path mentions out of 57 files.
-- supabase_functions: 4 explicit path mentions out of 6 files.
-- database_migrations: 34 explicit path mentions out of 100 files.
+- supabase_functions: 5 explicit path mentions out of 7 files.
+- database_migrations: 34 explicit path mentions out of 101 files.
 - n8n_workflows: 0 explicit path mentions out of 5 files.

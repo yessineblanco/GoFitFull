@@ -469,7 +469,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-md bg-muted p-3">
                   <p className="text-2xl font-bold">{dbStats.totalUsers}</p>
-                  <p className="text-xs text-muted-foreground">Total Users</p>
+                  <p className="text-xs text-muted-foreground">User profiles</p>
                 </div>
                 <div className="rounded-md bg-muted p-3">
                   <p className="text-2xl font-bold">{dbStats.totalCoaches}</p>

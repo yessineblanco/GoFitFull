@@ -1,0 +1,27 @@
+--- before/main.tex
++++ after/main.tex
+@@ -1344,18 +1344,17 @@
+ A key design point in Sprint 2 is that GoFit should not only store values; it should help the user interpret them. For example, workout history becomes useful when the app can show consistency, completed sessions, training load, and trends. Body measurements become useful when the user can compare corrected values over time and understand why an AI draft may be uncertain. Nutrition entries become useful when they are reusable and connected to habits rather than isolated forms.
+ 
+ 
+-\subsection{Client Nutrition Preferences \& Intelligent Dietary Exclusion Engine}
+-
+-Nutrition is deeply personalized: fitness clients have specific dietary philosophies (e.g., vegan, keto, Mediterranean), critical food allergies (e.g., peanuts, lactose, gluten), and strong personal food dislikes. Standard fitness trackers often force users to manually filter foods or ignore their preferences completely.
++\subsection{Client Nutrition Preferences and Name-Based Food Filtering}
++
++GoFit records dietary preferences, declared allergy terms and disliked foods to support food selection. The search implementation uses the recorded allergy and dislike terms as name-based exclusions; ingredient-level analysis and controlled validation would be needed to establish broader exclusion coverage.
+ 
+ 
+ In GoFit, the nutrition module was expanded with a robust preference architecture. The user\_profiles database table was extended with dietary\_preferences (TEXT[]), food\_allergies (TEXT[]), and food\_dislikes (TEXT[]) supported by PostgreSQL GIN indexes. During onboarding \seqsplit{(OnboardingScreenNutrition.tsx),} new users explicitly define their allergies and disliked ingredients. On the NutritionScreen, an interactive callout alerts users with incomplete dietary profiles, routing them directly to complete their configuration.
+ 
+ 
+-Crucially, this data is enforced in food search and recommendation workflows. When searching for foods in AddFoodScreen.tsx, \seqsplit{nutritionService.searchFoods()} dynamically injects SQL negation filters
+-
+-
+-(.not('name', 'ilike', '\%' + exclusion + '\%')) to strictly exclude all disliked foods and allergens from the search results, ensuring clients are never presented with meals they dislike or cannot safely consume.
++In the inspected food-search path, \texttt{AddFoodScreen} combines the saved allergy and dislike terms and passes them to \texttt{nutritionService.searchFoods}. For each non-empty term, the service adds a case-insensitive negated match against the food catalog's \texttt{name} field. This mechanism excludes names matching the supplied patterns; it does not inspect ingredient lists or establish the allergen content of a product. Ingredients absent from a product name and alternative terminology can therefore remain undetected. This search implementation alone does not establish equivalent filtering throughout recommendation workflows.
++
++The feature is consequently described as name-based food filtering. It cannot establish that every returned item is suitable for a declared allergy. The controlled exclusion scenario remains pending in the Sprint 2 validation matrix, consistently with the limitations recorded for FR-05 in Table~\ref{tab:implementation-evidence}.
+ 
+ 
+ \subsection{Hydration Tracking and Multi-Period Macronutrient Analytics}

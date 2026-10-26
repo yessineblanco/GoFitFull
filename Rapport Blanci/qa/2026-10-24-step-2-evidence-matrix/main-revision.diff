@@ -1,0 +1,42 @@
+--- main.tex approved Step 1
++++ main.tex Step 2 matrix
+@@ -2236,7 +2236,39 @@
+ 
+ \noindent\textbullet\enspace External integrations: Groq, Stripe, LiveKit, Cloudflare R2, and Open Food Facts appear in implementation or configuration paths. Operational status, payment settlement, media delivery, video interoperability, and response-time claims require their own execution evidence.\par
+ 
++\subsection{Implementation Evidence Matrix}
++\label{sec:implementation-evidence}
++
++Table~\ref{tab:implementation-evidence} maps the eight functional requirements defined in Sprint 0 to the inspected implementation and the retained October 2026 evidence. Implementation extent and verification are separate: an identified screen or service is evidence of a code path, while a successful scenario requires its own execution record. A partial target denotes a known difference between the stated requirement and the inspected path. No row certifies the complete functional domain as implemented and validated.
++
++The detailed index in \path{qa/2026-10-24-step-2-evidence-matrix/matrix.md}, supported by its machine-readable \path{qa/2026-10-24-step-2-evidence-matrix/matrix.json}, records source files, line anchors, file hashes, QA case identifiers and limitations. M01--M20 are local audit references rather than new requirement or backlog identifiers. C, H, A, P and S refer to the evidence package defined in the following QA subsection. Source presence alone does not establish that a local SQL script or integration has been deployed; payment deployment and provider results are supported only by their separate retained follow-ups.
++
++\begingroup
++\footnotesize
++\setlength{\tabcolsep}{3pt}
++\renewcommand{\arraystretch}{1.20}
++\setlength{\LTpre}{5pt}
++\setlength{\LTpost}{10pt}
++\begin{longtable}{|L{1.15cm}|L{3.35cm}|L{2.05cm}|L{3.95cm}|L{4.10cm}|}
++\caption{Functional requirements, implementation extent and retained evidence}\label{tab:implementation-evidence} \\
++\hline
++\rowcolor{entetetab}
++Requirement & Inspected implementation scope & Implementation extent & Supporting verification & Limitations \\ \hline
++FR-01 & Authentication/recovery services, six-screen onboarding, profile and nutrition-preference editors & Partial target & M01--M02; existing client/coach session relaunch and approved-coach routing; profile views; editor/model regressions & Full equipment/fitness-level questionnaire absent from the inspected onboarding path. Fresh registration/recovery and recent editor/contrast native retests remain pending. \\ \hline
++FR-02 & Exercise catalog/search/filter paths; custom workout create/edit/delete and configured prescriptions & Partial target & M03--M04; C: catalog/detail and disposable workout CRUD; mocked summary regressions & All filters/media and boundary validation incomplete. Dedicated reorder and target-load controls not located in the inspected builder. Summary correction awaits Android. \\ \hline
++FR-03 & Weights/completion snapshots, configured reps, rest-timer code and AsyncStorage completion-update retry & Partial target & M05--M06; session/queue source inspected; C: SESSION-01--07 blocked & Independent performed-repetition/RPE input absent from the inspected path. No controlled locked-device timer or offline reconciliation; queue requires an existing remote session. \\ \hline
++FR-04 & Progress/record views, weight editing, photo services and body-capture/estimation/review code & Paths identified; AI integration foundation & M07--M08; C: existing charts, records, photo detail and measurement history; camera-denial observation & Fresh photo/biometric persistence, inference/edit-save and independent accuracy comparisons incomplete. Platform-limited native integration does not establish iOS support. \\ \hline
++FR-05 & Nutrition search/logs/totals/goals, saved meals, barcode lookup and name-based exclusions & Paths identified & M09; C: food search and disposable log add/remove; narrower saved-meal/goal/permission observations & Actual barcode/provider lookup, reuse/edit and controlled exclusion cases unverified. Name matching does not establish comprehensive allergen exclusion. \\ \hline
++FR-06 & Coach discovery/reviews, pack checkout, availability/reservation and communication integration paths & Mixed: scoped payments verified; other paths identified & M10--M13; P: Android EUR129/12-credit pack; S: EUR60 session API/admin capture, replay and conflict checks; list/entry observations & Native standalone booking and two-party communication pending. Pack-credit booking branch, encrypted-messaging guarantees, payment recovery/refunds/payouts and production behavior not certified. \\ \hline
++FR-07 & Coach roster/progress/notes/check-ins, workout/meal program model/services and client-context briefing & Partial target & M14--M16; H: roster/detail/private-note CRUD and scoped query/streak corrections; lists/validation/empty states & Populated scheduling/program assignment and fresh AI generation unverified. Briefing concerns pre-session client context rather than completed-consultation synthesis. Template service presence does not prove complete reachable UI. \\ \hline
++FR-08 & Role-protected admin routes, catalog CRUD, coach-review API, transactions, audit and BI paths & Paths identified; scoped operations verified & M17--M18; A: selected role checks/disposable CRUD; audit fixes; payment references; profile-count reconciliation; CSV/saved views & Actual approval/rejection/document verification, destructive account operations, every BI calculation and larger account listings remain unverified or partial. Audit insertion is not certified atomic. \\ \hline
++\end{longtable}
++\endgroup
++
++The matrix also indexes adaptive workout recommendations (M19) and operational workflows/notification delivery (M20) as supplementary capabilities discussed in the report, without inventing additional numbered requirements. Their source artifacts exist, but reachable recommendation generation and fresh scheduled delivery remain unverified. The matrix records evidence boundaries; the separate AI/security claims audit and the reconciliation of sprint artifacts remain subsequent review tasks. All later corrections and checks are dated as October follow-up work, rather than attributed retrospectively to the internship period.
++
+ \subsection{Automated Checks and Evidence-Based QA Status}
++\label{sec:qa-evidence}
+ 
+ The following matrix distinguishes implemented workflows from verified outcomes and outstanding checks. Its evidence comes from the follow-up audit and corrections conducted on 22--24 October 2026, after the February--June 2026 internship period. These later results describe the inspected development version; they do not establish that the same implementation or validation outcomes existed at the end of the internship. Earlier sprint-level validation tables require separate reconciliation and must not be read as independently verified results on the strength of this follow-up.
+ 

@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-25",
+  "sourceSha256": "536e82b5ef3d0d5e4d693336fa728a5c69b0e00a77e986d5e6a0fa5dd2f6c900",
+  "files": [
+    {
+      "file": "README.md",
+      "sha256": "44fd5ee341932caf7cdb3927d42d15325fba4b684d3c03b19e50dfd851aecc07"
+    },
+    {
+      "file": "main-before.txt",
+      "sha256": "11458a14fe43687b1f9cdd094ea1cae50acbd6780d5212f6cdabf87ff32d5f88"
+    },
+    {
+      "file": "main-revision.diff",
+      "sha256": "314f023f11592325b592b1891a8438ced0c55041f7b05286e4d395da5dc6bc3c"
+    },
+    {
+      "file": "source-check.json",
+      "sha256": "04c29a1bc1348454edeb2589643b75ed9cee99921b9220191c45db26d47decdb"
+    },
+    {
+      "file": "verification.json",
+      "sha256": "ddff9a932f1e60151473cc207ec790a88166ca395bda7fa66c0fa789a35b0e0a"
+    },
+    {
+      "file": "compiler-final.json",
+      "sha256": "c13c50ff1e51f6d6f07ceb25e6723d0b63e61ccfe16b0f0d06445d6cab8cb903"
+    },
+    {
+      "file": "render/main.pdf",
+      "sha256": "f422fa47f0d0729ca18bc7c5e05fc68de8f0d564d5622b99d75a5d09aeb41337"
+    },
+    {
+      "file": "render/compiler-result.json",
+      "sha256": "ce8c2cf8215f39b7d90da74efa100b4324317e3682d729668f5c13e9380d4a80"
+    }
+  ]
+}

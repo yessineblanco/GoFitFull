@@ -246,4 +246,5 @@ export type ProgressStackParamList = {
   Nutrition: undefined;
   AddFood: { mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack'; date?: string };
   NutritionGoals: undefined;
+  NutritionProfile: undefined;
 };

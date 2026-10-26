@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { getScaledFontSize } from '@/store/textSizeStore';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getTextSecondaryColor } from '@/utils/colorUtils';
 import { GradientBackground } from '@/components/shared/GradientBackground';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'EditProfile'>;
@@ -93,16 +93,16 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
       fontFamily: 'Barlow_600SemiBold',
     },
     optionTextSelected: {
-      color: theme.colors.primary,
+      color: isDark ? theme.colors.primary : BRAND_WHITE,
     },
     optionDesc: {
       fontSize: getScaledFontSize(12),
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
       fontFamily: 'Barlow_400Regular',
       marginTop: 4,
     },
     optionDescSelected: {
-      color: 'rgba(132, 196, 65, 0.8)',
+      color: getTextSecondaryColor(isDark),
     },
     checkmarkText: {
       color: '#030303',
@@ -233,7 +233,7 @@ export const EditProfileScreen: React.FC<EditProfileScreenProps> = ({ navigation
                 value={age}
                 onChangeText={setAge}
                 placeholder={t('profileFields.enterAge')}
-                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                placeholderTextColor={getTextSecondaryColor(isDark)}
                 keyboardType="numeric"
                 maxLength={3}
               />

@@ -10,6 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { ProgressStackParamList } from '@/types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, ChevronRight, Settings2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,7 +40,7 @@ function fmtHeader(iso: string): string {
 
 export default function NutritionScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<StackNavigationProp<ProgressStackParamList, 'Nutrition'>>();
   const { isDark } = useThemeStore();
   const { profile } = useProfileStore();
   const {
@@ -184,7 +186,7 @@ export default function NutritionScreen() {
             style={[styles.alertCard, { backgroundColor: glass, borderColor: border }]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              navigation.navigate('OnboardingNutrition');
+              navigation.navigate('NutritionProfile');
             }}
           >
             <View style={{ flex: 1 }}>

@@ -1,0 +1,49 @@
+# Raw device/account QA stays local. Selected, privacy-reviewed report images
+# are versioned separately in figures/screenshots/.
+/qa/*
+!/qa/README.md
+!/qa/content-review-completion-2026-10-24.md
+!/qa/2026-10-24-compiler-repair/
+!/qa/2026-10-24-report-screenshots/
+!/qa/2026-10-24-step-1-conclusions/
+!/qa/2026-10-24-step-2-evidence-matrix/
+!/qa/2026-10-24-step-3-claims/
+!/qa/2026-10-24-step-4-sprint-artifacts/
+!/qa/2026-10-24-step-5-supervisor/
+!/qa/2026-10-24-step-6-chapter6/
+!/qa/2026-10-25-cover-template/
+!/qa/2026-10-25-screenshot-expansion/
+!/qa/2026-10-25-visual-review/
+!/qa/2026-10-26-academic-pass-01-food-filtering/
+!/qa/2026-10-26-academic-pass-02-video-playback/
+
+# Duplicate builds, raw inspection images, source snapshots and compiler caches
+/qa/**/render/
+/qa/**/pages/
+/qa/**/main-before.txt
+/qa/**/inspect-*.jpg
+/qa/**/inspection-*.jpg
+/qa/**/image1.png
+/qa/**/image2.png
+/qa/**/*.log
+/qa/**/render-output.txt
+/qa/**/aux-generation/
+/qa/**/biber-download/
+/figures/test.png
+/figures/source/sequence-palette-preview.png
+
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv

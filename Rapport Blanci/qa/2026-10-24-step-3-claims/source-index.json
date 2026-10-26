@@ -1,0 +1,170 @@
+[
+  {
+    "topic": "MediaPipe platform path",
+    "path": "GoFitMobile/src/services/bodyMeasurementService.ts",
+    "line": 394,
+    "anchor": "async function runPrimaryPose(",
+    "sha256": "950852e2847b5e294eca3189b683761d36fbac3f56d49eb552bf16c832b8bf9d",
+    "excerpt": "}\n\nasync function runPrimaryPose(imageUri: string, debug: MeasurementDebug, phase: 'front' | 'side'): Promise<PoseRun> {\n  if (Platform.OS !== 'android') {\n    return runMoveNet(imageUri);\n  }\n\n  try {"
+  },
+  {
+    "topic": "iOS native stub",
+    "path": "GoFitMobile/modules/mediapipe-pose-landmarker/ios/MediaPipePoseLandmarkerModule.swift",
+    "line": 11,
+    "anchor": "not implemented yet",
+    "sha256": "259f4c648eed7376912d48487703d307569b7effe7357199356abbb2a5f47f9a",
+    "excerpt": "        domain: \"MediaPipePoseLandmarker\",\n        code: 1,\n        userInfo: [NSLocalizedDescriptionKey: \"MediaPipe Pose Landmarker iOS bridge is not implemented yet for \\(uri)\"]\n      )\n    }\n\n    AsyncFunction(\"analyzeSegmentationFromImage\") { (uri: String) in\n      throw NSError("
+  },
+  {
+    "topic": "Measurement review/save",
+    "path": "GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx",
+    "line": 454,
+    "anchor": "from('body_measurements').insert",
+    "sha256": "a86afd1f7cab77575cea5bdee91dd70fb9a6161c5734027e6139eae29b1c8650",
+    "excerpt": "    setSaving(true);\n    try {\n      const { error } = await supabase.from('body_measurements').insert({\n        user_id: user.id,\n        height_cm: heightCm,\n        chest_cm: corrected.chest,\n        waist_cm: corrected.waist,\n        hip_cm: corrected.hip,"
+  },
+  {
+    "topic": "Local segmentation",
+    "path": "GoFitMobile/src/services/bodySegmentationService.ts",
+    "line": 68,
+    "anchor": "const MODEL_NAME",
+    "sha256": "d5aa655090ddf3828d76da6536a4091031df58809453cce7acee09a32254e3cd",
+    "excerpt": "};\n\nconst MODEL_NAME = 'MediaPipe Image Segmenter (selfie_segmenter.tflite)';\nconst INPUT_SIZE = 256;\nconst SAMPLE_SIZE = 32;\n/**\n * Native MediaPipe Image Segmenter (Android Expo module) returns masks from\n * the Tasks runtime, which knows how to execute MediaPipe's custom ops."
+  },
+  {
+    "topic": "Historical debug notes",
+    "path": "docs/troubleshooting/BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md",
+    "line": 314,
+    "anchor": "Android phone-test result, checked 2026-04-20:",
+    "sha256": "e1a638e467a82dfaacda57fac359ddcbfe1f1b4376e4c9c8880be5c4cfc41e9e",
+    "excerpt": "- If building from GitHub/remote instead of the current local workspace, push `3c3a3c1` first because GitHub does not have the `.easignore` location fix yet.\n\nAndroid phone-test result, checked 2026-04-20:\n\n- MediaPipe is working in the installed Android dev-client build.\n- The debug comparison panel appears inside the body measurement pose debug overlay.\n- Front image result: `33 pts | 1 pose`, score about `0.99`, core `9/9`, inference about `38 ms`.\n- Side image result: `33 pts | 1 pose`, score about `0.98`, core `9/9`, inference about `65 ms`."
+  },
+  {
+    "topic": "Offline queue",
+    "path": "GoFitMobile/src/services/offlineQueue.ts",
+    "line": 53,
+    "anchor": "async syncAll(",
+    "sha256": "d85d3d26195cf742e2bb3752269431fe8808554c81f669d8e4469a80d9b9c888",
+    "excerpt": "\n  /** Attempt to sync all queued workouts to the server. Returns count of synced items. */\n  async syncAll(): Promise<number> {\n    const state = await NetInfo.fetch();\n    if (!state.isConnected) {\n      logger.info('[OfflineQueue] No connection, skipping sync');\n      return 0;\n    }"
+  },
+  {
+    "topic": "Completion enqueue",
+    "path": "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx",
+    "line": 855,
+    "anchor": "offlineQueueService.enqueue",
+    "sha256": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+    "excerpt": "      if (!netState.isConnected) {\n        try {\n          await offlineQueueService.enqueue({\n            sessionId: sessionId!,\n            userId: user!.id,\n            updates: {\n              completed_at: new Date().toISOString(),\n              duration_minutes: Math.max(0, Math.floor("
+  },
+  {
+    "topic": "Connectivity retry",
+    "path": "GoFitMobile/App.tsx",
+    "line": 198,
+    "anchor": "offlineQueueService.syncAll",
+    "sha256": "7902863a0fe86ce5df0eda7d5a11b1e4a5955de5f533f6d2da9033c80d418800",
+    "excerpt": "    const unsubscribe = NetInfo.addEventListener((state) => {\n      if (state.isConnected) {\n        offlineQueueService.syncAll().then((count) => {\n          if (count > 0) {\n            logger.info(`[OfflineQueue] Auto-synced ${count} workout(s) on reconnect`);\n          }\n        });\n      }"
+  },
+  {
+    "topic": "Chat content",
+    "path": "GoFitMobile/src/services/chat.ts",
+    "line": 155,
+    "anchor": "async sendMessage(",
+    "sha256": "752ac4d78c7bd333e4a3673a565d6bb6160a15ea8e50d30f34b696ed4e95f426",
+    "excerpt": "  },\n\n  async sendMessage(conversationId: string, senderId: string, content: string, type: 'text' | 'image' | 'file' | 'voice' = 'text', mediaUrl?: string): Promise<Message | null> {\n    try {\n      const { data, error } = await supabase\n        .from('messages')\n        .insert({\n          conversation_id: conversationId,"
+  },
+  {
+    "topic": "Notification preview",
+    "path": "GoFitMobile/src/services/chat.ts",
+    "line": 182,
+    "anchor": "const notifBody",
+    "sha256": "752ac4d78c7bd333e4a3673a565d6bb6160a15ea8e50d30f34b696ed4e95f426",
+    "excerpt": "          : conv.client_id;\n        if (recipientUserId && recipientUserId !== senderId) {\n          const notifBody = content.length > 50 ? `${content.slice(0, 50)}...` : content;\n          await notificationInboxService.createNotification({\n            user_id: recipientUserId,\n            type: 'new_message',\n            title: 'New message',\n            body: notifBody,"
+  },
+  {
+    "topic": "Native/web local storage",
+    "path": "GoFitMobile/src/utils/secureStorage.ts",
+    "line": 17,
+    "anchor": "const IS_WEB = Platform.OS === 'web'",
+    "sha256": "9ec65f6fb34c3224ab9e203a9a4e3c6b556b3deba923cc18b379c29e2a0963c5",
+    "excerpt": "import { logger } from '@/utils/logger';\n\nconst IS_WEB = Platform.OS === 'web';\n\nconst CHUNK_SIZE = 2000; // Stay safely under 2048 byte limit\nconst CHUNK_COUNT_KEY_SUFFIX = '_chunk_count';\n\n/**"
+  },
+  {
+    "topic": "Session adapter",
+    "path": "GoFitMobile/src/config/supabase.ts",
+    "line": 44,
+    "anchor": "storage: SecureStorageAdapter",
+    "sha256": "acf0665bfa04c4cbf3a4c93d43b401e8f97c3514031e11b56d774b0f30db385e",
+    "excerpt": "    supabase = createClient(supabaseUrl, supabaseAnonKey, {\n      auth: {\n        storage: SecureStorageAdapter, // Use secure storage for tokens\n        autoRefreshToken: true,\n        persistSession: true,\n        detectSessionInUrl: false,\n      },\n    });"
+  },
+  {
+    "topic": "Video timing bypass",
+    "path": "GoFitMobile/src/services/videoCall.ts",
+    "line": 5,
+    "anchor": "const SKIP_CALL_TIME_WINDOW_FOR_TESTING",
+    "sha256": "d215795e0bec1cc16f8a5092af55056538d2f578b81b3461a6a61919b00ee476",
+    "excerpt": "\n/** Set to `false` before release: restores join only within `windowMinutes` of the session. */\nconst SKIP_CALL_TIME_WINDOW_FOR_TESTING = true;\n\nexport const videoCallService = {\n  async generateToken(roomName: string, participantName: string, participantId: string): Promise<{ token: string; url: string } | null> {\n    try {\n      const { data, error } = await supabase.functions.invoke('generate-video-token', {"
+  },
+  {
+    "topic": "Video token handler",
+    "path": "supabase/functions/generate-video-token/index.ts",
+    "line": 9,
+    "anchor": "const { room_name, participant_name, participant_id }",
+    "sha256": "97b566f18d67ad22f66c77778c58cab0359ddcaae81fb47c2f8a07980b11150b",
+    "excerpt": "\n  try {\n    const { room_name, participant_name, participant_id } = await req.json();\n\n    if (!room_name || !participant_name) {\n      return new Response(\n        JSON.stringify({ error: 'room_name and participant_name are required' }),\n        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },"
+  },
+  {
+    "topic": "Payment handler identity",
+    "path": "supabase/functions/stripe-payment/index.ts",
+    "line": 19,
+    "anchor": "db.auth.getUser(token)",
+    "sha256": "3e8404a16f91b156180f133b6cb22babaacf27da8f34da410c1ab651c96bf4e1",
+    "excerpt": "      auth: { persistSession: false, autoRefreshToken: false },\n    });\n    const { data: auth, error: authError } = await db.auth.getUser(token);\n    if (authError || !auth.user) return reply({ error: \"Sign in to make a payment\" }, 401);\n    const key = Deno.env.get(\"STRIPE_SECRET_KEY\");\n    if (!key) return reply({ error: \"Payments are unavailable\" }, 503);\n    const stripe = new Stripe(key, { apiVersion: \"2023-10-16\" });\n    const body = await req.json();"
+  },
+  {
+    "topic": "Server pack price",
+    "path": "supabase/functions/stripe-payment/index.ts",
+    "line": 26,
+    "anchor": "body.action === \"create_pack\"",
+    "sha256": "3e8404a16f91b156180f133b6cb22babaacf27da8f34da410c1ab651c96bf4e1",
+    "excerpt": "    const body = await req.json();\n\n    if (body.action === \"create_pack\") {\n      const { data: pack, error } = await db.from(\"session_packs\")\n        .select(\"id,coach_id,price,currency,session_count,is_active\")\n        .eq(\"id\", body.packId).eq(\"is_active\", true).single();\n      if (error || !pack) return reply({ error: \"Pack is unavailable\" }, 400);\n      const amount = Math.round(Number(pack.price) * 100);"
+  },
+  {
+    "topic": "Standalone capture",
+    "path": "supabase/functions/stripe-payment/index.ts",
+    "line": 119,
+    "anchor": "body.action === \"fulfill_session\"",
+    "sha256": "3e8404a16f91b156180f133b6cb22babaacf27da8f34da410c1ab651c96bf4e1",
+    "excerpt": "    }\n\n    if (body.action === \"fulfill_session\" || body.action === \"cancel_session\") {\n      if (typeof body.paymentIntentId !== \"string\" || !/^pi_[A-Za-z0-9]+$/.test(body.paymentIntentId)) {\n        return reply({ error: \"Invalid payment reference\" }, 400);\n      }\n      let intent = await stripe.paymentIntents.retrieve(body.paymentIntentId);\n      if (intent.metadata.checkoutKind !== \"session\" || intent.metadata.clientId !== auth.user.id) {"
+  },
+  {
+    "topic": "Pack-credit separate branch",
+    "path": "GoFitMobile/src/services/bookings.ts",
+    "line": 187,
+    "anchor": "supabase.rpc('deduct_session'",
+    "sha256": "3493a22e8061593bb4226007c984b0fcb0d300e72764d311c57054727175ee28",
+    "excerpt": "\n      if (input.pack_purchase_id) {\n        await supabase.rpc('deduct_session', { p_pack_id: input.pack_purchase_id });\n      }\n\n      const { data: coachRow } = await supabase.from('coach_profiles').select('user_id').eq('id', input.coach_id).single();\n      if (coachRow?.user_id) {\n        await notificationInboxService.createNotification({"
+  },
+  {
+    "topic": "Provider context",
+    "path": "supabase/functions/ai-session-notes/index.ts",
+    "line": 132,
+    "anchor": "Private coach notes:",
+    "sha256": "e3da0bb70a13fffc6191521677f7145a0f76269f4d89720709a93070856e367b",
+    "excerpt": "      `Client profile: ${JSON.stringify(clientProfile || {})}`,\n      `Recent completed sessions: ${JSON.stringify(sessions || [])}`,\n      `Private coach notes: ${JSON.stringify(notes || [])}`,\n    ].join('\\n');\n\n    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {\n      method: 'POST',\n      headers: {"
+  },
+  {
+    "topic": "Briefing cache",
+    "path": "supabase/functions/ai-session-notes/index.ts",
+    "line": 82,
+    "anchor": ".from('ai_session_notes')",
+    "sha256": "e3da0bb70a13fffc6191521677f7145a0f76269f4d89720709a93070856e367b",
+    "excerpt": "    if (!force) {\n      const { data: cached, error: cacheError } = await supabase\n        .from('ai_session_notes')\n        .select('id, summary, context, generated_by, created_at, expires_at')\n        .eq('coach_id', coachProfile.id)\n        .eq('client_id', clientId)\n        .gt('expires_at', new Date().toISOString())\n        .order('created_at', { ascending: false })"
+  },
+  {
+    "topic": "Meal-warning matching",
+    "path": "GoFitMobile/src/screens/coach-app/ProgramBuilderScreen.tsx",
+    "line": 211,
+    "anchor": "const getMealWarning",
+    "sha256": "d90e0edabf0dcb74984114ad3a810d4d55ff33095e29e194360d62e5004ea601",
+    "excerpt": "  };\n\n  const getMealWarning = useCallback((mealName: string) => {\n    if (!selectedClient || !mealName) return null;\n    const nameLower = mealName.toLowerCase();\n    \n    if (selectedClient.food_allergies?.some(a => nameLower.includes(a.toLowerCase()))) {\n      return `Warning: Contains allergy`;"
+  }
+]

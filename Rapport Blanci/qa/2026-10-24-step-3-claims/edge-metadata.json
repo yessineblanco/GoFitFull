@@ -1,0 +1,44 @@
+[
+  {
+    "name": "send-push-notification",
+    "version": 8,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "generate-video-token",
+    "version": 8,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "body-measurements",
+    "version": 14,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "ai-workout-recommendation",
+    "version": 5,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "ai-session-notes",
+    "version": 3,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "food-barcode-lookup",
+    "version": 3,
+    "status": "ACTIVE",
+    "verify_jwt": true
+  },
+  {
+    "name": "stripe-payment",
+    "version": 5,
+    "status": "ACTIVE",
+    "verify_jwt": false
+  }
+]

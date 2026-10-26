@@ -151,7 +151,7 @@ export function WorkoutForm({ workout, workoutExercises, isEditing = false }: Wo
           sets: e.sets,
           reps: e.reps,
           rest_time: e.rest_time,
-          day: isSplit ? e.day : null,
+          day: isSplit ? e.day : 1,
           exercise_order: index,
         })),
       };

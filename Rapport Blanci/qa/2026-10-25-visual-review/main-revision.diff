@@ -1,0 +1,478 @@
+--- before/main.tex
++++ after/main.tex
+@@ -22,12 +22,12 @@
+ \usepackage{caption}
+ \usepackage{chngcntr}
+ \usepackage{fancyhdr,tocloft,pdflscape}
+-\usepackage[none]{hyphenat}
++\usepackage{hyphenat}
+ \usepackage[hidelinks]{hyperref}
+ \definecolor{navyblue}{HTML}{003566}
+ \definecolor{entetetab}{HTML}{E8EEF4}
+ \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
++\newcolumntype{L}[1]{>{\RaggedRight\hyphenpenalty=50\exhyphenpenalty=50\arraybackslash\hspace{0pt}}p{#1}}
+ \setstretch{1.15}
+ \justifying
+ \setlist[itemize]{topsep=8pt,itemsep=6pt,parsep=4pt,partopsep=6pt}
+@@ -79,8 +79,8 @@
+ \renewcommand{\cfttoctitlefont}{\color{navyblue}\normalfont\bfseries\Huge}
+ \renewcommand{\cftlottitlefont}{\color{navyblue}\normalfont\bfseries\Huge}
+ \setlength{\cftbeforetabskip}{0pt}
+-\renewcommand{\cfttabfont}{\small}
+-\renewcommand{\cfttabpagefont}{\small}
++\renewcommand{\cfttabfont}{\footnotesize}
++\renewcommand{\cfttabpagefont}{\footnotesize}
+ \renewcommand{\cftdotsep}{1.5}
+ \makeatletter
+ \let\prism@starttoc\@starttoc
+@@ -159,7 +159,7 @@
+ 
+ 
+ \renewcommand{\contentsname}{Table Of Contents}
+-\clearpage\tableofcontents\clearpage\listoftables\clearpage\listoffigures\clearpage
++\clearpage\tableofcontents\clearpage\begingroup\setstretch{1}\listoftables\endgroup\clearpage\listoffigures\clearpage
+ \chapter*{General Introduction}
+ 
+ 
+@@ -289,6 +289,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Criterion & Traditional methodology & Agile methodology \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Criterion & Traditional methodology & Agile methodology \\ \hline
++\endhead
+ Planning & Most planning is completed before implementation starts. & Planning is refined continuously sprint by sprint. \\ \hline
+ Change management & Changes are costly and often delayed. & Changes can be integrated into the backlog. \\ \hline
+ Delivery & The product is delivered near the end of the project. & Working increments are delivered regularly. \\ \hline
+@@ -312,6 +317,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Criterion & Scrum & Kanban \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Criterion & Scrum & Kanban \\ \hline
++\endhead
+ Cadence & Time-boxed sprints with planning and review. & Continuous flow without fixed sprint boundaries. \\ \hline
+ Roles & Product Owner, Scrum Master, and Development Team. & No mandatory roles. \\ \hline
+ Artifacts & Product backlog, sprint backlog, increment. & Visual board and work-in-progress limits. \\ \hline
+@@ -372,6 +382,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Actor & Role Classification & Description of Responsibilities \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Actor & Role Classification & Description of Responsibilities \\ \hline
++\endhead
+ Mobile user/athlete (client) & Primary Human Actor & Uses the mobile application to manage personal profiles, customize workouts, execute active training sessions with rest timing, record progress biometrics, browse approved coach profiles, purchase session packs, book consultations, and communicate via chat. \\ \hline
+ Coach & Primary Human Actor & Completes a coach profile for platform review, manages client rosters, assigns personalized training programs, creates session packs, defines calendar availability, and participates in 1-on-1 consultations. \\ \hline
+ Administrator & Primary Human Actor & Uses the web administration panel to oversee user accounts, review and approve coach profiles, curate exercise catalogs, inspect financial records and available activity logs, and monitor platform analytics. \\ \hline
+@@ -441,6 +456,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Role & Assigned person & Responsibility \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Role & Assigned person & Responsibility \\ \hline
++\endhead
+ Product Owner & Supervisor/project owner & Prioritizes needs and validates the business value of GoFit features. \\ \hline
+ Scrum Master & Student/supervisor & Organizes sprint rhythm, removes blockers, and tracks progress. \\ \hline
+ Development Team & Student/team members & Designs, implements, tests, and documents the mobile app, backend, and admin panel. \\ \hline
+@@ -464,6 +484,11 @@
+ \hline
+ \rowcolor{entetetab}
+ ID & Epic/User story & Priority & Planned sprint \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++ID & Epic/User story & Priority & Planned sprint \\ \hline
++\endhead
+ PB-01 & As a user, I want secure authentication and onboarding. & High & Sprint 1 \\ \hline
+ PB-02 & As a user, I want to create, schedule, and execute workouts. & High & Sprint 1 \\ \hline
+ PB-03 & As a user, I want an exercise library and workout history. & High & Sprint 1 \\ \hline
+@@ -491,6 +516,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Module & Main features & Implementation elements \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Module & Main features & Implementation elements \\ \hline
++\endhead
+ Authentication and onboarding & Registration, login, session persistence, password reset, protected navigation, onboarding screens, profile creation, goals, units, preferences, and role-aware flows. & Supabase Auth, Expo Secure Store, auth store, protected navigators, user profiles table, onboarding \_ state. \\ \hline
+ Workout planning and execution & Exercise library, custom workouts, native workouts, day splits, workout builder, session tracking, sets, reps, weights, duration, workout summary, and history. & Exercises, workouts, workout exercises, \_ workout sessions, workout services, \_ Zustand stores, active-session screens. \\ \hline
+ Enhanced rest timer & Start, pause, resume, warning intervals, haptic feedback, audio cues, auto-advance settings, persistent timer preferences, and background-aware behavior. & Timer preferences, mobile UI controls, audio/haptic APIs, workout session integration. \\ \hline
+@@ -601,6 +631,11 @@
+ \hline
+ \rowcolor{entetetab}
+ ID US & As & User Story & Id task & Task & Estimation (pts) \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++ID US & As & User Story & Id task & Task & Estimation (pts) \\ \hline
++\endhead
+ US-3.1 & User & Create account, log in securely, and complete 4-step onboarding questionnaire (goals, experience, equipment) & T3.1.1 & Model UserProfile schema, Supabase Auth GoTrue JWT integration, and onboarding state machine. & 3 \\ \hline
+ US-3.1 & User & Create account, log in securely, and complete 4-step onboarding questionnaire (goals, experience, equipment) & T3.1.2 & Implement AuthScreen, OnboardingScreen with multi-step questionnaire, and Zustand authStore. & 5 \\ \hline
+ US-3.1 & User & Create account, log in securely, and complete 4-step onboarding questionnaire (goals, experience, equipment) & T3.1.3 & Test GoTrue authentication, token refresh in SecureStore, and protected navigation redirection. & 3 \\ \hline
+@@ -664,6 +699,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Execute workout session \\ \hline
+ Primary actor & Mobile user \\ \hline
+ Preconditions & The user is authenticated and a workout template or custom workout exists. \\ \hline
+@@ -713,6 +753,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Authenticate and complete onboarding \\ \hline
+ Primary actor & Mobile user \\ \hline
+ Preconditions & The mobile application is installed; user possesses email credentials or an existing account. \\ \hline
+@@ -789,6 +834,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Architectural Tier & Technical Responsibility & Inspected artifacts for this scope \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Architectural Tier & Technical Responsibility & Inspected artifacts for this scope \\ \hline
++\endhead
+ Presentation \& Routing & Organizes authentication, onboarding and workout interaction. & AuthNavigator.tsx, OnboardingNavigator.tsx and WorkoutSessionScreen.tsx. \\ \hline
+ Client State Management & Organizes reusable application state. & authStore.ts, profileStore.ts, workoutsStore.ts, timerStore.ts and uiStore.ts. \\ \hline
+ Domain Services & Implements authentication, workout data operations and completion retry. & services/auth.ts, services/workouts.ts and services/offlineQueue.ts. \\ \hline
+@@ -940,13 +990,18 @@
+ \caption{Sprint validation matrix}\label{tab:pdf-42-21} \\
+ \hline
+ \rowcolor{entetetab}
+-Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endhead
+ S1-T01 & Authentication & Existing-account sign-in & Existing test account & Sign in; reopen app & Protected client route & Observed scoped access & Partial & M01; C AUTH-01--04; fresh registration and refresh not verified \\ \hline
+ S1-T02 & Onboarding & Fresh six-screen profile save & New client fixture & Complete full form; read back & Answers persisted remotely & Fresh flow not run & Pending & M02; saved-profile views do not validate new onboarding \\ \hline
+ S1-T03 & Workout session & Weights and completion save & Existing remote session & Record weights; finish; read back & Existing session updated & Full completion not retained & Pending & M05; no RPE or separate WorkoutSet table \\ \hline
+-S1-T04 & Rest timer & Countdown and background alerts & Active workout & Complete set; lock; observe & Countdown and configured feedback & Informal user confirmation only & Pending & M05; QA-02 lacks retained timing/background evidence \\ \hline
++S1-T04 & Rest timer & Countdown and background alerts & Active workout & Complete set; lock; observe & Countdown and configured feedback & Informal user confirmation only & Pending & M05; QA-02 lacks retained timing\slash{}background evidence \\ \hline
+ S1-T05 & Offline queue & Existing-session completion replay & Remote session; disconnected & Finish; reconnect; compare row & Queued UPDATE replayed once & Not exercised with readback & Pending & M06; final QA-03 \\ \hline
+-S1-T06 & Exercise media & Play exercise demonstration & Network and media URL & Open detail; start playback & Playable demonstration & Detail/media observations partial & Partial & M03; C EXERCISE-01--04; smoothness/decoding not measured \\ \hline
++S1-T06 & Exercise media & Play exercise demonstration & Network and media URL & Open detail; start playback & Playable demonstration & Detail\slash{}media observations partial & Partial & M03; C EXERCISE-01--04; smoothness\slash{}decoding not measured \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -995,6 +1050,11 @@
+ \hline
+ \rowcolor{entetetab}
+ ID US & As & User Story & Id task & Task \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++ID US & As & User Story & Id task & Task \\ \hline
++\endhead
+ US-4.1 & User & Capture front/side photos and obtain AI-assisted body measurements using on-device MediaPipe CV & T4.1.1 & Model BodyMeasurement entity, MediaPipe 33 pose landmarks mapping, and height anchor ratio formulas. \\ \hline
+ US-4.1 & User & Capture front/side photos and obtain AI-assisted body measurements using on-device MediaPipe CV & T4.1.2 & Implement CameraCaptureScre en, MediaPipe BlazePose \& Selfie Segmentation processing, and MeasurementRevie wScreen. \\ \hline
+ US-4.1 & User & Capture front/side photos and obtain AI-assisted body measurements using on-device MediaPipe CV & T4.1.3 & Test landmark detection confidence thresholds, low-lighting warnings, and editable manual override sheet. \\ \hline
+@@ -1063,6 +1123,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Generate AI-assisted body measurements \\ \hline
+ Primary actor & Mobile user \\ \hline
+ Preconditions & A valid height is available from the user profile, camera permission is granted for capture, and the installed build supports the required on-device inference modules. Saving additionally requires an authenticated user. \\ \hline
+@@ -1116,6 +1181,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Track daily nutrition and macro targets \\ \hline
+ Primary actor & Mobile user \\ \hline
+ Preconditions & The user is authenticated and backend access is available. Barcode scanning requires camera permission. Nutrition goals may already exist or be initialized with defaults; dietary preferences are optional. \\ \hline
+@@ -1189,6 +1259,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Module & Objective & Important states \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Module & Objective & Important states \\ \hline
++\endhead
+ Exercise library & Allow users to browse and understand available exercises. & Search result, filter result, detail screen, no-result state, loading state. \\ \hline
+ Workout calendar/history & Help users see planned and completed training. & Scheduled workout, completed workout, missed day, empty calendar, history detail. \\ \hline
+ Progress dashboard & Summarize evolution over time. & Charts with data, first-use empty state, metric selector, date-range filtering. \\ \hline
+@@ -1302,6 +1377,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Model/artifact & Role in GoFit & Input/output & Status and reason \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Model/artifact & Role in GoFit & Input/output & Status and reason \\ \hline
++\endhead
+ MoveNet Lightning (.tflite) & Initial on-device pose detection and fallback path. & Resized 192 x 192 RGB image; 17 body keypoints with confidence scores. & Implemented through \seqsplit{react-native-fast-tflite.} Useful as a lightweight baseline, but limited for body measurement because 17 keypoints do not describe torso outline or body depth. \\ \hline
+ MediaPipe Pose Landmarker Full (pose landmarker full.tas \_ \_ & Main candidate for richer body-pose analysis. & Image input; 33 normalized landmarks, optional world landmarks, & Implemented in the local Expo native module on Android. It improves body \\ \hline
+ k) &  & visibility/presence scores, pose count, and inference time. & coverage over MoveNetand supports better pose-quality checks. \\ \hline
+@@ -1351,6 +1431,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Feature group & Examples & Purpose \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Feature group & Examples & Purpose \\ \hline
++\endhead
+ User scale & Declared height in centimeters, person height in pixels, scale incm/px, height-span fraction. & Converts image measurements into approximate real-world dimensions and detects bad framing. \\ \hline
+ Pose quality & Front and side pose model source, mean landmark score, visible core keypoints, body center, top and bottom normalized positions. & Checks whether the user is visible, centered, and sufficiently detected. \\ \hline
+ Front geometry & Front shoulder width, hip width, estimated waist width, chest/waist/hip mask widths. & Measures visible body widths from the front photo. \\ \hline
+@@ -1406,6 +1491,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Component & Current status & Remaining work \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Component & Current status & Remaining work \\ \hline
++\endhead
+ MoveNet pose fallback & Implemented in TypeScript service through \seqsplit{react-native-fast-tflite} and bundled model asset. & Keep as fallback and compare against MediaPipe outputs. \\ \hline
+ MediaPipe pose Android module & Implemented with bundled pose landmarker full.task, EXIF \_ \_ rotation handling, 33 landmarks, world landmarks, pose count, and inference time. & Complete parity and production testing across iOS and Android release builds. \\ \hline
+ MediaPipe image segmentation & Implemented in native module with selfie segmenter.tflite, \_ confidence/category masks, labels, and quality scores. & Improve segmentation quality gates and verify on more body types, clothes, lighting, and camera setups. \\ \hline
+@@ -1452,11 +1542,16 @@
+ \caption{Sprint validation matrix}\label{tab:pdf-64-30} \\
+ \hline
+ \rowcolor{entetetab}
+-Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endhead
+ S2-T01 & Catalog & Search and equipment filters & Populated catalog & Search; select filters & Matching exercises & Browsing passed; filters partial & Partial & M03; C LIBRARY-01--02, EXERCISE-01--04 \\ \hline
+ S2-T02 & Progress & Charts and aggregates & Saved session history & Open charts; compare totals & Metrics match source records & Controls viewed; arithmetic incomplete & Partial & M07; C PROGRESS-01--03 \\ \hline
+ S2-T03 & Measurements & Fresh capture, review and save & Camera; height; reference values & Capture pair; edit; save & Reviewed draft persisted & Fresh workflow not retained & Pending & M08; final QA-04; debug notes are narrower \\ \hline
+-S2-T04 & Exclusions & Name exclusion search & Controlled preference fixture & Search known included/excluded names & Expected name matches omitted & Controlled fixture not run & Pending & M09; no allergen-safety result \\ \hline
++S2-T04 & Exclusions & Name exclusion search & Controlled preference fixture & Search known included\slash{}excluded names & Expected name matches omitted & Controlled fixture not run & Pending & M09; no allergen-safety result \\ \hline
+ S2-T05 & Barcode & Lookup and meal logging & Camera; known product & Scan; resolve; log serving & Product and meal persisted & Permission denial only observed & Pending & M09; C NUTRITION-07; positive lookup unverified \\ \hline
+ S2-T06 & AI workout & Generate, review and save & Reachable recommendation entry & Request; inspect; accept; reopen & Valid saved recommendation & Entry blocked on tested account & Pending & M19; C AI-01--03; final QA-05 \\ \hline
+ \end{longtable}
+@@ -1507,6 +1602,11 @@
+ \hline
+ \rowcolor{entetetab}
+ ID US & As & User Story & Id task & Task \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++ID US & As & User Story & Id task & Task \\ \hline
++\endhead
+ US-5.1 & Client & Search accredited coaches, purchase session packs via Stripe, and book 1-on-1 coaching consultations & T5.1.1 & Model CoachProfile, SessionPack, PurchasedPack, and Booking entities with Stripe checkout schema. \\ \hline
+ US-5.1 & Client & Search accredited coaches, purchase session packs via Stripe, and book 1-on-1 coaching consultations & T5.1.2 & Implement CoachMarketplaceSc reen, CoachProfileScreen, Stripe PaymentSheet integration, and BookingCalendarScr een. \\ \hline
+ US-5.1 & Client & Search accredited coaches, purchase session packs via Stripe, and book 1-on-1 coaching consultations & T5.1.3 & Test Stripe payment intent creation, webhook idempotent fulfillment, and slot collision prevention. \\ \hline
+@@ -1595,6 +1695,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Purchase a session pack or pay for a direct booking \\ \hline
+ Primary actor & Mobile user (Client) \\ \hline
+ Preconditions & The client is authenticated, a coach and pack or session time have been selected, and Stripe client/server configuration is available. A standalone session requires an approved coach, a positive hourly rate, the saved duration and a valid Europe/Berlin availability slot. \\ \hline
+@@ -1656,6 +1761,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Field & Description \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Field & Description \\ \hline
++\endhead
+ Use case & Approve a coach profile from the administration panel \\ \hline
+ Primary actor & Administrator \\ \hline
+ Preconditions & The administrator is authenticated and the account's \texttt{user\_profiles.is\_admin} flag permits administrative access. The selected approval path concerns a pending coach profile and requires working backend configuration. \\ \hline
+@@ -1722,6 +1832,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Feature & Client-side value & Coach-side value \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Feature & Client-side value & Coach-side value \\ \hline
++\endhead
+ Coach discovery & Find coaches by profile, expertise, and services. & Increase visibility and attract clients. \\ \hline
+ Coach onboarding & Improves trust by requiring complete coach data. & Allows coach to create a professional presence. \\ \hline
+ Session packs & Buy or use grouped coaching sessions. & Sell structured services and track remaining sessions. \\ \hline
+@@ -2074,6 +2189,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Domain & Database/service evidence & Metrics covered & Known limit in v1 \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Domain & Database/service evidence & Metrics covered & Known limit in v1 \\ \hline
++\endhead
+ Finance & bi finance daily view; \_ \_ \seqsplit{admin-panel/lib/bi-finance.ts;} \seqsplit{FinanceCurrencyDetailCar} d. & Gross pack sales, pack count, ledger signals, currency summaries, coach/package filters. & Net revenue, refunds, payout reconciliation, and full accounting remain deferred. \\ \hline
+ User lifecycle & bi user lifecycle daily \_ \_ \_ view; \seqsplit{admin-panel/lib/bi-user-lifecycle.ts;} \seqsplit{LifecycleActivationDetailCa} rd. & Signup, first workout activation, first booking activation, activity windows, DAU/WAU/MAU. & Coach filters do not scope lifecycle cohorts in v1; lifecycle may include non-client profiles where relevant. \\ \hline
+ Workout cohort retention & bi-user-lifecycle cohort helper; RetentionCohortCard. & Signup-to-workout retention by cohort period. & Cohorts depend on available historical workout data. \\ \hline
+@@ -2137,6 +2257,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Input/rule & Source table or code & Role in recommendation \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Input/rule & Source table or code & Role in recommendation \\ \hline
++\endhead
+ User profile & user profiles: goal, activity level, \_ \_ age, gender & Anchors the workout to the user's declared objective and fitness context. \\ \hline
+ Recent training history & workout sessions joined with \_ workouts; last 8 completed sessions & Avoids recommending workouts without considering what the user recently trained and when. \\ \hline
+ Readiness snapshot & daily readiness; computeReadiness \_ in readiness.ts & Uses score, level, and recommendation text to reduce, maintain, or increase training volume. \\ \hline
+@@ -2170,6 +2295,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Feature & Input context & Generated output & Safety/control \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Feature & Input context & Generated output & Safety/control \\ \hline
++\endhead
+ AI coach/session briefing & Booking, client profile, recent completed sessions, private coach notes, recent check-ins. & Concise pre-session briefing for coach preparation. & Coach-only context, authentication checks, instruction not to invent injuries or diagnoses. \\ \hline
+ n8n AI Session Prep v1 & Confirmed bookings in the next 24 hours, client profile, recent sessions, coach notes, and check-ins retrieved from Supabase. & Stored ai session notes \_ \_ row and coach notification with data.kind = ai session ready. \_ \_ & Unexpired-note guard avoids duplicate briefings; service-role key remains in n8n; Groq key is used only by this workflow. \\ \hline
+ n8n Booking Reminders v1 & Confirmed bookings starting within the next 60 minutes and mappedcoach/client recipients. & Client and coach notification rows with data.kind = booking starting soon. \_ \_ & Duplicate guard uses booking, recipient role, and reminder window. \\ \hline
+@@ -2194,13 +2324,18 @@
+ \caption{Sprint validation matrix}\label{tab:pdf-85-41} \\
+ \hline
+ \rowcolor{entetetab}
+-Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+-S3-T01 & Coach onboarding & Fresh coach submission & Dedicated new coach & Complete profile; upload; submit & Pending review profile & Existing approved role inspected & Pending & M10, M17; fresh upload/submission not run \\ \hline
+-S3-T02 & Pack payment & EUR sandbox purchase & Configured sandbox; active offer & Pay; fulfil; replay; inspect admin & One purchase and correct credits & Android EUR129 / 12 credits & Scoped pass & M11; P; October follow-up, not sprint-period proof \\ \hline
+-S3-T03 & Pack booking & Reserve using existing credits & Pack and available coach slot & Book; compare credit/calendar & One booking and one deduction & Credit-redemption path unverified & Pending & M12; standalone S API checks do not prove this branch \\ \hline
+-S3-T04 & Video & Two-party consultation & Authorized booking; two devices & Join; exchange media; reconnect & Authorized bidirectional media & No retained two-party call & Pending & M13; authorization/time-window gaps in Step 3 \\ \hline
+-S3-T05 & Coach review & Approve pending profile & Admin; controlled pending coach & Inspect existing links; confirm & Approved profile; wallet trigger & Confirmation/cancel only tested & Partial & M18; A COACH-02--04; no signed-URL or notification proof \\ \hline
+-S3-T06 & Automation & Scheduled AI briefing & Running scheduler; test booking & Trigger; inspect output/delivery & New briefing with execution trail & No retained fresh run & Pending & M16, M20; exports and old inbox are insufficient \\ \hline
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Test ID & Feature & Scenario & Preconditions & Steps & Expected & Actual & Status & Evidence \\ \hline
++\endhead
++S3-T01 & Coach onboarding & Fresh coach submission & Dedicated new coach & Complete profile; upload; submit & Pending review profile & Existing approved role inspected & Pending & M10, M17; fresh upload\slash{}submission not run \\ \hline
++S3-T02 & Pack payment & EUR sandbox purchase & Configured sandbox; active offer & Pay; fulfil; replay; inspect admin & One purchase and correct credits & Android EUR129 \slash{} 12 credits & Scoped pass & M11; P; October follow-up, not sprint-period proof \\ \hline
++S3-T03 & Pack booking & Reserve using existing credits & Pack and available coach slot & Book; compare credit\slash{}calendar & One booking and one deduction & Credit-redemption path unverified & Pending & M12; standalone S API checks do not prove this branch \\ \hline
++S3-T04 & Video & Two-party consultation & Authorized booking; two devices & Join; exchange media; reconnect & Authorized bidirectional media & No retained two-party call & Pending & M13; authorization\slash{}time-window gaps in Step 3 \\ \hline
++S3-T05 & Coach review & Approve pending profile & Admin; controlled pending coach & Inspect existing links; confirm & Approved profile; wallet trigger & Confirmation\slash{}cancel only tested & Partial & M18; A COACH-02--04; no signed-URL or notification proof \\ \hline
++S3-T06 & Automation & Scheduled AI briefing & Running scheduler; test booking & Trigger; inspect output\slash{}delivery & New briefing with execution trail & No retained fresh run & Pending & M16, M20; exports and old inbox are insufficient \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -2222,6 +2357,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Story & Product / requirement & Evidence index & Model, interaction and validation boundary \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Story & Product / requirement & Evidence index & Model, interaction and validation boundary \\ \hline
++\endhead
+ US-3.1 & PB-01; FR-01 & M01--02 & Account/profile; auth and onboarding sequences; S1-T01--02 \\ \hline
+ US-3.2 & PB-02--03; FR-02 & M03--04 & Workout prescriptions; builder completion not fully exercised \\ \hline
+ US-3.3 & PB-02; FR-03 & M05 & Embedded snapshots; online session sequence; S1-T03--04 \\ \hline
+@@ -2242,6 +2382,7 @@
+ \phantomsection
+ \section*{Conclusion}
+ 
++\enlargethispage{\baselineskip}
+ This chapter described marketplace, follow-up, communication and administrative paths within the cumulative domain model. The October native pack purchase and standalone API capture provide scoped sandbox evidence; they do not validate pack-credit redemption, production recovery or coach payouts. Two-party video, fresh scheduled briefing execution and complete coach-review side effects remain unverified. The next chapter consolidates architecture, deployment targets and the implementation evidence with these limitations intact.
+ 
+ 
+@@ -2404,6 +2545,11 @@
+ \hline
+ \rowcolor{entetetab}
+ Component & Role & Security/validation concern \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Component & Role & Security/validation concern \\ \hline
++\endhead
+ Supabase Auth & Manages identity, sessions, password reset, and protected access. & Check session handling, role mapping, and logout/session expiration behavior. \\ \hline
+ PostgreSQL database & Stores users, workouts, sessions, measurements, coaches, bookings, packs, messages, programs, and admin data. & Validate foreign keys, migrations, indexes, and data consistency. \\ \hline
+ RLS policies & Restrict row access according to user, coach, and administrator roles. & Test user-scoped, coach-scoped, and admin-scoped queries with different accounts. \\ \hline
+@@ -2526,14 +2672,19 @@
+ \hline
+ \rowcolor{entetetab}
+ Requirement & Inspected implementation scope & Implementation extent & Supporting verification & Limitations \\ \hline
+-FR-01 & Authentication/recovery services, six-screen onboarding, profile and nutrition-preference editors & Partial target & M01--M02; existing client/coach session relaunch and approved-coach routing; profile views; editor/model regressions & Full equipment/fitness-level questionnaire absent from the inspected onboarding path. Fresh registration/recovery and recent editor/contrast native retests remain pending. \\ \hline
+-FR-02 & Exercise catalog/search/filter paths; custom workout create/edit/delete and configured prescriptions & Partial target & M03--M04; C: catalog/detail and disposable workout CRUD; mocked summary regressions & All filters/media and boundary validation incomplete. Dedicated reorder and target-load controls not located in the inspected builder. Summary correction awaits Android. \\ \hline
+-FR-03 & Weights/completion snapshots, configured reps, rest-timer code and AsyncStorage completion-update retry & Partial target & M05--M06; session/queue source inspected; C: SESSION-01--07 blocked & Independent performed-repetition/RPE input absent from the inspected path. No controlled locked-device timer or offline reconciliation; queue requires an existing remote session. \\ \hline
+-FR-04 & Progress/record views, weight editing, photo services and body-capture/estimation/review code & Paths identified; AI integration foundation & M07--M08; C: existing charts, records, photo detail and measurement history; camera-denial observation & Fresh photo/biometric persistence, inference/edit-save and independent accuracy comparisons incomplete. Platform-limited native integration does not establish iOS support. \\ \hline
+-FR-05 & Nutrition search/logs/totals/goals, saved meals, barcode lookup and name-based exclusions & Paths identified & M09; C: food search and disposable log add/remove; narrower saved-meal/goal/permission observations & Actual barcode/provider lookup, reuse/edit and controlled exclusion cases unverified. Name matching does not establish comprehensive allergen exclusion. \\ \hline
+-FR-06 & Coach discovery/reviews, pack checkout, availability/reservation and communication integration paths & Mixed: scoped payments verified; other paths identified & M10--M13; P: Android EUR129/12-credit pack; S: EUR60 session API/admin capture, replay and conflict checks; list/entry observations & Native standalone booking and two-party communication pending. Pack-credit booking branch, encrypted-messaging guarantees, payment recovery/refunds/payouts and production behavior not certified. \\ \hline
+-FR-07 & Coach roster/progress/notes/check-ins, workout/meal program model/services and client-context briefing & Partial target & M14--M16; H: roster/detail/private-note CRUD and scoped query/streak corrections; lists/validation/empty states & Populated scheduling/program assignment and fresh AI generation unverified. Briefing concerns pre-session client context rather than completed-consultation synthesis. Template service presence does not prove complete reachable UI. \\ \hline
+-FR-08 & Role-protected admin routes, catalog CRUD, coach-review API, transactions, audit and BI paths & Paths identified; scoped operations verified & M17--M18; A: selected role checks/disposable CRUD; audit fixes; payment references; profile-count reconciliation; CSV/saved views & Actual approval/rejection/document verification, destructive account operations, every BI calculation and larger account listings remain unverified or partial. Audit insertion is not certified atomic. \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Requirement & Inspected implementation scope & Implementation extent & Supporting verification & Limitations \\ \hline
++\endhead
++FR-01 & Authentication\slash{}recovery services, six-screen onboarding, profile and nutrition-preference editors & Partial target & M01--M02; existing client\slash{}coach session relaunch and approved-coach routing; profile views; editor\slash{}model regressions & Full equipment\slash{}fitness-level questionnaire absent from the inspected onboarding path. Fresh registration\slash{}recovery and recent editor\slash{}contrast native retests remain pending. \\ \hline
++FR-02 & Exercise catalog\slash{}search\slash{}filter paths; custom workout create\slash{}edit\slash{}delete and configured prescriptions & Partial target & M03--M04; C: catalog\slash{}detail and disposable workout CRUD; mocked summary regressions & All filters\slash{}media and boundary validation incomplete. Dedicated reorder and target-load controls not located in the inspected builder. Summary correction awaits Android. \\ \hline
++FR-03 & Weights\slash{}completion snapshots, configured reps, rest-timer code and AsyncStorage completion-update retry & Partial target & M05--M06; session\slash{}queue source inspected; C: SESSION-01--07 blocked & Independent performed-repetition\slash{}RPE input absent from the inspected path. No controlled locked-device timer or offline reconciliation; queue requires an existing remote session. \\ \hline
++FR-04 & Progress\slash{}record views, weight editing, photo services and body-capture\slash{}estimation\slash{}review code & Paths identified; AI integration foundation & M07--M08; C: existing charts, records, photo detail and measurement history; camera-denial observation & Fresh photo\slash{}biometric persistence, inference\slash{}edit-save and independent accuracy comparisons incomplete. Platform-limited native integration does not establish iOS support. \\ \hline
++FR-05 & Nutrition search\slash{}logs\slash{}totals\slash{}goals, saved meals, barcode lookup and name-based exclusions & Paths identified & M09; C: food search and disposable log add\slash{}remove; narrower saved-meal\slash{}goal\slash{}permission observations & Actual barcode\slash{}provider lookup, reuse\slash{}edit and controlled exclusion cases unverified. Name matching does not establish comprehensive allergen exclusion. \\ \hline
++FR-06 & Coach discovery\slash{}reviews, pack checkout, availability\slash{}reservation and communication integration paths & Mixed: scoped payments verified; other paths identified & M10--M13; P: Android EUR129\slash{}12-credit pack; S: EUR60 session API\slash{}admin capture, replay and conflict checks; list\slash{}entry observations & Native standalone booking and two-party communication pending. Pack-credit booking branch, encrypted-messaging guarantees, payment recovery\slash{}refunds\slash{}payouts and production behavior not certified. \\ \hline
++FR-07 & Coach roster\slash{}progress\slash{}notes\slash{}check-ins, workout\slash{}meal program model\slash{}services and client-context briefing & Partial target & M14--M16; H: roster\slash{}detail\slash{}private-note CRUD and scoped query\slash{}streak corrections; lists\slash{}validation\slash{}empty states & Populated scheduling\slash{}program assignment and fresh AI generation unverified. Briefing concerns pre-session client context rather than completed-consultation synthesis. Template service presence does not prove complete reachable UI. \\ \hline
++FR-08 & Role-protected admin routes, catalog CRUD, coach-review API, transactions, audit and BI paths & Paths identified; scoped operations verified & M17--M18; A: selected role checks\slash{}disposable CRUD; audit fixes; payment references; profile-count reconciliation; CSV\slash{}saved views & Actual approval\slash{}rejection\slash{}document verification, destructive account operations, every BI calculation and larger account listings remain unverified or partial. Audit insertion is not certified atomic. \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -2560,13 +2711,18 @@
+ \hline
+ \rowcolor{entetetab}
+ Test ID & Feature Area & Validation Scenario & Preconditions & Execution Steps & Expected Result & Observed Outcome & Status & Retained Evidence \\ \hline
+-QA-01 & Authentication and onboarding & Registration, profile setup and session persistence & Existing client/coach accounts; disposable account needed for registration & Relaunch existing QA apps; fresh registration not executed & Existing session retained; new-account setup verified separately & Existing sessions resumed; approved-coach routing retested. Fresh onboarding, token-storage details and refresh not established & Partial & C: AUTH-01/02/04; H: AUTH-03/04/05 \\ \hline
+-QA-02 & Workout timer & Locked-device rest timer, sound and vibration & Controlled workout fixture and unlocked/locked-device observations & Planned: log sets; start 90-second timer; lock device; record expiry behavior & Timer, sound and vibration follow the specified behavior & User reported operation; no retained controlled reproduction of the complete scenario & Not verified & C: SESSION-03/04; no controlled timer trace retained \\ \hline
+-QA-03 & Offline synchronization & Offline logging and reconnection & Disposable workout and captured queue/network state & Planned: log offline; finish; reconnect; compare queue and saved rows & Intended entries reconciled without loss or duplication & No retained end-to-end reconciliation, queue dump or timestamp comparison & Not verified & C: SESSION-07; no offline trace retained \\ \hline
+-QA-04 & Body measurements & Capture, inference and draft review & Required captures and calibration; independent references for accuracy & Planned: capture inputs; run analysis; retain output and review state & Draft generated; accuracy evaluated separately against references & History/permission observations do not prove new inference or measurement accuracy; no supported numerical outcome & Not verified & C: MEASUREMENT-01--05; no retained inference/accuracy result \\ \hline
+-QA-05 & AI recommendations & Reachable generation and output review & Eligible account and configured backend & Reach recommendation entry; retain response and timing if executed & Structured workout with catalog-backed exercises & Tested account has session history and cannot reach the inspected recommendation entry; generation/timing unverified & Not verified & C: AI-01--03; no generation response retained \\ \hline
+-QA-06 & Sandbox payments and booking & Pack purchase and standalone paid session & Stripe sandbox; approved coach; configured availability & Android 12-credit pack purchase; separate API session capture, replay and conflict checks & Verified payment linked to credits or booking; occupied slot refused & EUR129 pack/12 credits saved on Android; EUR60 session saved via API/admin. Same-account competing requests tested; native session checkout pending & Partial & P: native pack/readback; S: eight API and 13 database checks \\ \hline
+-QA-07 & Administrative access & Selected protected pages and APIs & Admin, anonymous context and authenticated non-admin coach & Open dashboard; request selected users/settings APIs under each tested role & Admin admitted; anonymous API 401; non-admin API 403; page redirect & Admin dashboard opened; anonymous and coach refusals/redirects confirmed for tested routes & Scoped pass & A: AUTH-01--04 and linked access traces \\ \hline
++\endfirsthead
++\hline
++\rowcolor{entetetab}
++Test ID & Feature Area & Validation Scenario & Preconditions & Execution Steps & Expected Result & Observed Outcome & Status & Retained Evidence \\ \hline
++\endhead
++QA-01 & Authentication and onboarding & Registration, profile setup and session persistence & Existing client\slash{}coach accounts; disposable account needed for registration & Relaunch existing QA apps; fresh registration not executed & Existing session retained; new-account setup verified separately & Existing sessions resumed; approved-coach routing retested. Fresh onboarding, token-storage details and refresh not established & Partial & C: AUTH-01\slash{}02\slash{}04; H: AUTH-03\slash{}04\slash{}05 \\ \hline
++QA-02 & Workout timer & Locked-device rest timer, sound and vibration & Controlled workout fixture and unlocked\slash{}locked-device observations & Planned: log sets; start 90-second timer; lock device; record expiry behavior & Timer, sound and vibration follow the specified behavior & User reported operation; no retained controlled reproduction of the complete scenario & Not verified & C: SESSION-03\slash{}04; no controlled timer trace retained \\ \hline
++QA-03 & Offline synchronization & Offline logging and reconnection & Disposable workout and captured queue\slash{}network state & Planned: log offline; finish; reconnect; compare queue and saved rows & Intended entries reconciled without loss or duplication & No retained end-to-end reconciliation, queue dump or timestamp comparison & Not verified & C: SESSION-07; no offline trace retained \\ \hline
++QA-04 & Body measurements & Capture, inference and draft review & Required captures and calibration; independent references for accuracy & Planned: capture inputs; run analysis; retain output and review state & Draft generated; accuracy evaluated separately against references & History\slash{}permission observations do not prove new inference or measurement accuracy; no supported numerical outcome & Not verified & C: \seqsplit{MEASUREMENT}-01--05; no retained inference\slash{}accuracy result \\ \hline
++QA-05 & AI recommendations & Reachable generation and output review & Eligible account and configured backend & Reach recommendation entry; retain response and timing if executed & Structured workout with catalog-backed exercises & Tested account has session history and cannot reach the inspected recommendation entry; generation\slash{}timing unverified & Not verified & C: AI-01--03; no generation response retained \\ \hline
++QA-06 & Sandbox payments and booking & Pack purchase and standalone paid session & Stripe sandbox; approved coach; configured availability & Android 12-credit pack purchase; separate API session capture, replay and conflict checks & Verified payment linked to credits or booking; occupied slot refused & EUR129 pack\slash{}12 credits saved on Android; EUR60 session saved via API\slash{}admin. Same-account competing requests tested; native session checkout pending & Partial & P: native pack\slash{}readback; S: eight API and 13 database checks \\ \hline
++QA-07 & Administrative access & Selected protected pages and APIs & Admin, anonymous context and authenticated non-admin coach & Open dashboard; request selected users\slash{}settings APIs under each tested role & Admin admitted; anonymous API 401; non-admin API 403; page redirect & Admin dashboard opened; anonymous and coach refusals\slash{}redirects confirmed for tested routes & Scoped pass & A: AUTH-01--04 and linked access traces \\ \hline
+ QA-08 & Daily digest & Scheduled workflow and fresh push delivery & Active workflow, controlled bookings and delivery receipts & Planned: trigger scheduled digest; retain execution and device receipt & Correct summary delivered with checked duplicate handling & Workflow artifacts and historical inbox items inspected; no fresh scheduled run, receipt or duplicate test retained & Not verified & H: DASH-02; no supported execution ID or push receipt \\ \hline
+ \end{longtable}
+ \endgroup

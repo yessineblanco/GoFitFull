@@ -31,7 +31,7 @@ import * as Location from 'expo-location';
 import { useCoachStore } from '@/store/coachStore';
 import { useBookingsStore } from '@/store/bookingsStore';
 import { usePacksStore } from '@/store/packsStore';
-import { checkInsService } from '@/services/checkIns';
+import { checkInsService, type CoachLowCheckIn } from '@/services/checkIns';
 import { useAuthStore } from '@/store/authStore';
 import { useProfileStore } from '@/store/profileStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -183,7 +183,8 @@ export const CoachDashboardScreen: React.FC = () => {
   const [atRiskPacks, setAtRiskPacks] = useState<
     { clientId: string; name: string; sessionsLeft: number }[]
   >([]);
-  const [lowCheckIns, setLowCheckIns] = useState<any[]>([]);
+  const [lowCheckIns, setLowCheckIns] = useState<CoachLowCheckIn[]>([]);
+  const [lowCheckInsError, setLowCheckInsError] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const enterAnim = useRef(new Animated.Value(0)).current;
@@ -299,13 +300,18 @@ export const CoachDashboardScreen: React.FC = () => {
   const load = useCallback(async () => {
     if (!profile?.id) return;
     try {
-      const [_, __, ___, lowCheckInsRes] = await Promise.all([
+      await Promise.all([
         loadCoachBookings(profile.id),
         loadMyPacks(profile.id),
         useWalletStore.getState().loadEarningsSummary(),
-        checkInsService.getRecentLowCheckInsForCoach(profile.id),
+        checkInsService.getRecentLowCheckInsForCoach(profile.id).then(responses => {
+          setLowCheckIns(responses);
+          setLowCheckInsError(false);
+        }).catch(() => {
+          setLowCheckIns([]);
+          setLowCheckInsError(true);
+        }),
       ]);
-      setLowCheckIns(lowCheckInsRes || []);
       const bookings = useBookingsStore.getState().coachBookings;
       const packs = usePacksStore.getState().myPacks;
       const earnings = useWalletStore.getState().earningsSummary;
@@ -629,6 +635,12 @@ export const CoachDashboardScreen: React.FC = () => {
                 <ChevronRight size={22} color={textMuted} strokeWidth={2} />
               </GlassPanel>
               {/* Wellness Alerts */}
+              {lowCheckInsError && (
+                <TouchableOpacity onPress={() => void load()} accessibilityRole="button" style={{ marginTop: 8, padding: 12 }}>
+                  <Text style={{ color: textPri }}>Unable to load wellness alerts.</Text>
+                  <Text style={{ color: textMuted }}>Tap to retry</Text>
+                </TouchableOpacity>
+              )}
               {lowCheckIns.length > 0 && (
                 <View style={{ marginTop: 8 }}>
                   <Text style={{ fontFamily: 'Barlow_600SemiBold', fontSize: getResponsiveFontSize(14), color: textPri, marginBottom: 12 }}>
@@ -639,14 +651,14 @@ export const CoachDashboardScreen: React.FC = () => {
                       key={checkIn.id}
                       isDark={isDark}
                       style={[s.insightCard, { marginBottom: 8, borderColor: '#FF4B4B' }]}
-                      onPress={() => nav.navigate('ClientManagement', { screen: 'ClientDetail', params: { clientId: checkIn.client_id, clientName: checkIn.user_profiles?.display_name || 'Client' } })}
+                      onPress={() => nav.getParent()?.navigate('Clients', { screen: 'ClientDetail', params: { clientId: checkIn.client_id, clientName: checkIn.client_name || 'Client' } })}
                     >
                       <View style={[s.insightIconWell, { backgroundColor: 'rgba(255, 75, 75, 0.15)' }]}>
                         <Flame size={20} color="#FF4B4B" strokeWidth={2.2} />
                       </View>
                       <View style={[s.insightBody, { marginLeft: 12 }]}>
                         <Text style={[s.insightTitle, { color: textPri }]} numberOfLines={1}>
-                          {checkIn.user_profiles?.display_name || 'Client'}
+                          {checkIn.client_name || 'Client'}
                         </Text>
                         <Text style={[s.insightMeta, { color: '#FF4B4B' }]} numberOfLines={1}>
                           Low mood or energy reported recently

@@ -9,12 +9,15 @@ import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useBookingsStore } from '@/store/bookingsStore';
 import { useAuthStore } from '@/store/authStore';
-import type { AvailabilitySlot } from '@/services/bookings';
+import { bookingsService, type AvailabilitySlot } from '@/services/bookings';
+import { getSessionStartTimes } from '@/utils/sessionDuration';
+import { getNextBookingDate, overlapsBookedTime } from '@/utils/bookingTime';
 import { getResponsiveFontSize } from '@/utils/responsive';
 import { useTranslation } from 'react-i18next';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { useStripe } from '@stripe/stripe-react-native';
 import { supabase } from '@/config/supabase';
+import { getStripePublishableKey } from '@/config/stripe';
 
 const PRIMARY_GREEN = '#B4F04E';
 const DAY_KEYS = ['daySunday', 'dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday'] as const;
@@ -25,7 +28,7 @@ export const BookSessionScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const { availability, loadingAvailability, loadAvailability, createBooking } = useBookingsStore();
+  const { availability, loadingAvailability, loadAvailability, loadClientBookings } = useBookingsStore();
 
   const coachId = route.params?.coachId;
   const coachName = route.params?.coachName || 'Coach';
@@ -34,11 +37,32 @@ export const BookSessionScreen: React.FC = () => {
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
   const [selectedHour, setSelectedHour] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState(60);
+  const [sessionAmount, setSessionAmount] = useState(0);
+  const [busySlots, setBusySlots] = useState<{ scheduled_at: string; duration_minutes: number }[]>([]);
+  const [loadingDuration, setLoadingDuration] = useState(true);
+  const [durationError, setDurationError] = useState(false);
+  const [durationRetry, setDurationRetry] = useState(0);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   useEffect(() => {
     if (coachId) loadAvailability(coachId);
   }, [coachId]);
+
+  useEffect(() => {
+    let active = true;
+    setLoadingDuration(true);
+    setDurationError(false);
+    setSelectedHour(null);
+    Promise.all([bookingsService.getSessionTerms(coachId), bookingsService.getBusySessionTimes(coachId)]).then(([terms, busy]) => {
+      if (active) { setSessionDuration(terms.duration); setSessionAmount(terms.amount); setBusySlots(busy); }
+    }).catch(() => {
+      if (active) setDurationError(true);
+    }).finally(() => {
+      if (active) setLoadingDuration(false);
+    });
+    return () => { active = false; };
+  }, [coachId, durationRetry]);
 
   const availableDays = useMemo(() => {
     const days = new Set(availability.map((s) => s.day_of_week));
@@ -50,50 +74,36 @@ export const BookSessionScreen: React.FC = () => {
     return availability.filter((s) => s.day_of_week === selectedDay);
   }, [availability, selectedDay]);
 
-  const generateHours = (startTime: string, endTime: string): string[] => {
-    const hours: string[] = [];
-    const [sh, sm] = startTime.split(':').map(Number);
-    const [eh, em] = endTime.split(':').map(Number);
-    let current = sh * 60 + sm;
-    const end = eh * 60 + em;
-    while (current < end) {
-      const h = Math.floor(current / 60);
-      const m = current % 60;
-      hours.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
-      current += 60;
-    }
-    return hours;
-  };
-
-  const getNextDateForDay = (dayOfWeek: number): Date => {
-    const now = new Date();
-    const today = now.getDay();
-    let daysAhead = dayOfWeek - today;
-    if (daysAhead <= 0) daysAhead += 7;
-    const date = new Date(now);
-    date.setDate(date.getDate() + daysAhead);
-    return date;
-  };
-
   const handleBook = async () => {
-    if (!selectedDay || !selectedHour || !user?.id || !coachId) return;
+    if (selectedDay === null || !selectedHour || !user?.id || !coachId || loadingDuration || durationError) return;
+    if (!getStripePublishableKey()) {
+      dialogManager.error(t('payments.unavailableTitle'), t('payments.unavailableMessage'));
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setBooking(true);
 
+    let paymentIntentId: string | null = null;
+    let confirmed = false;
     try {
+      const terms = await bookingsService.getSessionTerms(coachId);
+      if (terms.duration !== sessionDuration || terms.amount !== sessionAmount) {
+        throw new Error('This coach changed their session price or duration. Please select a new time.');
+      }
       // 1. Fetch Payment Intent from Edge Function
       const { data, error } = await supabase.functions.invoke('stripe-payment', {
         body: {
-          amount: 50, // Hardcoded for this MVP, should fetch coach's hourly_rate
-          currency: 'usd',
-          metadata: { coachId, clientId: user.id },
+          action: 'create_session', coachId,
+          scheduledAt: getNextBookingDate(selectedDay, selectedHour).toISOString(),
+          durationMinutes: sessionDuration, expectedAmount: sessionAmount,
         },
       });
 
       if (error || !data?.clientSecret) {
-        throw new Error('Failed to initialize payment');
+        throw new Error('Unable to reserve this time. Please reload and choose an available session.');
       }
 
+      paymentIntentId = data.paymentIntentId;
       // 2. Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         merchantDisplayName: 'GoFit',
@@ -119,23 +129,22 @@ export const BookSessionScreen: React.FC = () => {
         return; // Don't proceed to booking
       }
 
-      // 4. Payment Success - Create Booking
-      const date = getNextDateForDay(selectedDay);
-      const [h, m] = selectedHour.split(':').map(Number);
-      date.setHours(h, m, 0, 0);
-
-      await createBooking({
-        coach_id: coachId,
-        client_id: user.id,
-        scheduled_at: date.toISOString(),
-        duration_minutes: 60,
-      });
+      // The server captures the authorized card only while our slot remains reserved.
+      await bookingsService.confirmPaidSession(data.paymentIntentId);
+      confirmed = true;
+      await loadClientBookings(user.id);
 
       dialogManager.success(t('common.success'), t('booking.bookingCreated'));
       navigation.goBack();
     } catch (err: any) {
       dialogManager.error(t('common.error'), err.message || t('booking.failedToBook'));
     } finally {
+      if (paymentIntentId && !confirmed) {
+        try {
+          await supabase.functions.invoke('stripe-payment', { body: { action: 'cancel_session', paymentIntentId } });
+        } catch { /* An unconfirmed reservation expires on the server. */ }
+      }
+      if (!confirmed) setDurationRetry(retry => retry + 1);
       setBooking(false);
     }
   };
@@ -155,7 +164,14 @@ export const BookSessionScreen: React.FC = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      {loadingAvailability ? (
+      {durationError ? (
+        <View style={styles.centered}>
+          <Text style={styles.emptyTitle}>Unable to load session price or availability</Text>
+          <TouchableOpacity onPress={() => setDurationRetry(retry => retry + 1)}>
+            <Text style={styles.emptySubtitle}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : loadingAvailability || loadingDuration ? (
         <View style={styles.centered}><ActivityIndicator size="large" color={PRIMARY_GREEN} /></View>
       ) : availability.length === 0 ? (
         <View style={styles.centered}>
@@ -166,6 +182,7 @@ export const BookSessionScreen: React.FC = () => {
       ) : (
         <ScrollView style={styles.scroll} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]} showsVerticalScrollIndicator={false}>
           <Text style={styles.sectionLabel}>{t('booking.selectSlot')}</Text>
+          <Text style={styles.slotRange}>€{sessionAmount.toFixed(2)} · {sessionDuration} min · Europe/Berlin</Text>
 
           <View style={styles.daysRow}>
             {availableDays.map((day) => (
@@ -182,7 +199,10 @@ export const BookSessionScreen: React.FC = () => {
           {selectedDay !== null && slotsForDay.length > 0 && (
             <View style={styles.timeSection}>
               {slotsForDay.map((slot, idx) => {
-                const hours = generateHours(slot.start_time, slot.end_time);
+                const hours = getSessionStartTimes(slot.start_time, slot.end_time, sessionDuration).filter(hour => {
+                  try { return !overlapsBookedTime(getNextBookingDate(selectedDay, hour), sessionDuration, busySlots); }
+                  catch { return false; }
+                });
                 return (
                   <View key={idx}>
                     <Text style={styles.slotRange}>{slot.start_time} - {slot.end_time}</Text>

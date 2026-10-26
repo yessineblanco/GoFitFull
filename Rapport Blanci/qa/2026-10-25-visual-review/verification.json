@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-25",
+  "pagesBefore": 138,
+  "pagesAfter": 135,
+  "overviewPagesReviewed": 135,
+  "detailedInspection": "Problem tables, index, cover/accented text, Chapter 5 ending, dashboard and selected diagram assets",
+  "overfullWarnings": 0,
+  "unresolvedReferences": 0,
+  "listOfTablesEntries": 39,
+  "listOfTablesPages": 1,
+  "screenshotsRetained": 44,
+  "adminScreenshotsPages": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107
+  ],
+  "builtInFinalCompile": "success",
+  "remainingPresentationLimits": [
+    "Figure-only pages and short chapter/bibliography endings retain white space; no forced shrinking of figures",
+    "Nine-column matrices remain dense at scriptsize, now without overlapping cell text"
+  ],
+  "qaVerdictsUnchanged": true,
+  "sourceSha256": "536e82b5ef3d0d5e4d693336fa728a5c69b0e00a77e986d5e6a0fa5dd2f6c900",
+  "pdfSha256": "f422fa47f0d0729ca18bc7c5e05fc68de8f0d564d5622b99d75a5d09aeb41337"
+}

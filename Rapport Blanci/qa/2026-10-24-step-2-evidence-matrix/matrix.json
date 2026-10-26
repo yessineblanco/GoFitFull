@@ -1,0 +1,1417 @@
+{
+  "date": "2026-10-24",
+  "step": 2,
+  "status": "approved_by_user",
+  "recordCount": 20,
+  "supplementaryRecords": 2,
+  "numberedRequirementCoverage": [
+    "FR-01",
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-05",
+    "FR-06",
+    "FR-07",
+    "FR-08"
+  ],
+  "method": "Actual source inspection plus retained QA artifacts; no new application/backend execution",
+  "implementationStatusDefinitions": {
+    "Implemented paths": "Relevant source paths identified; full requirement satisfaction not inferred.",
+    "Partial target": "An inspected path differs from or omits a stated target capability.",
+    "Integration foundation": "Integration source exists; complete execution remains unverified.",
+    "Scoped implementation verified": "A narrowly named scenario has retained execution evidence; stated limits still apply.",
+    "Artifacts present": "Versioned exports/instructions do not establish a running deployment."
+  },
+  "records": [
+    {
+      "id": "M01",
+      "requirement": "FR-01",
+      "capability": "Authentication and existing-account routing",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Sign-in, registration, password-recovery services and existing-account routing are present.",
+      "retainedVerification": "Android client/coach session relaunch and supplied coach/admin access observations are retained.",
+      "limitations": "Fresh registration/recovery, verification emails, token-storage guarantees and refresh behavior were not established by relaunch.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/auth.ts",
+          "line": 30,
+          "anchor": "async signIn(",
+          "sha256": "2b35359ba1a2a7f01cdc80bb89101d0ee326566e2b59d28177165dada85748f1",
+          "excerpt": "   * ```\n   */\n  async signIn(email: string, password: string) {\n    const { data, error } = await supabase.auth.signInWithPassword({\n      email,\n      password,\n    });"
+        },
+        {
+          "path": "GoFitMobile/src/services/auth.ts",
+          "line": 117,
+          "anchor": "async forgotPassword(",
+          "sha256": "2b35359ba1a2a7f01cdc80bb89101d0ee326566e2b59d28177165dada85748f1",
+          "excerpt": "   * ```\n   */\n  async forgotPassword(email: string) {\n    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {\n      redirectTo: 'gofit://reset-password', // Required but not used when using OTP\n    });\n    "
+        },
+        {
+          "path": "GoFitMobile/src/store/coachStore.ts",
+          "line": 28,
+          "anchor": "hasCompletedCoachOnboarding:",
+          "sha256": "5c9445239651684ae76873be6b9da71ccae458ac46dbe4230333cba6ff346ad2",
+          "excerpt": "  clearCoachData: () => void;\n\n  hasCompletedCoachOnboarding: (userId: string | null) => boolean;\n  setCoachOnboardingCompleted: (userId: string) => Promise<void>;\n  setOnboardingData: (data: Partial<CoachOnboardingData>) => void;\n  getOnboardingData: () => Partial<CoachOnboardingData>;\n  clearOnboardingData: () => void;"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AUTH-01",
+          "recordedStatus": "Pass",
+          "observation": "Existing signed-in client session reached Home and loaded the existing profile; login entry was performed by the user before this inspection."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AUTH-02",
+          "recordedStatus": "Pass",
+          "observation": "Force-stopped QA package and relaunched it. After selecting Metro server in the development launcher, the persisted session returned to authenticated Home without credentials. This tests development build session persistence, not standalone release startup."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AUTH-03",
+          "recordedStatus": "Blocked",
+          "observation": "Regular signed-in account preserved. Did not sign out, reset password or send verification email; no disposable credentials supplied."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AUTH-04",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account; user requires preservation of profile values. No disposable registration account supplied."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "AUTH-02",
+          "recordedStatus": "Pass",
+          "observation": "Used Coach Sign In with supplied credentials. Authenticated coach user reached coach onboarding; authentication itself succeeded. Password was not retained in evidence."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "AUTH-03",
+          "recordedStatus": "Pass",
+          "observation": "Fixed and retested on Android: existing approved coach reaches dashboard after the temporary local onboarding marker was removed. Second cold start also succeeds; marker independently verified absent. Pending/rejected/no-profile/error paths covered by store tests; no new real account registered."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "AUTH-04",
+          "recordedStatus": "Pass",
+          "observation": "After force-stop and relaunch, authenticated coach session persisted and dashboard opened with temporary onboarding marker absent. Tested through Metro development launcher, not standalone release startup."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "AUTH-05",
+          "recordedStatus": "Blocked",
+          "observation": "Existing coach profile preserved. Did not submit replacement onboarding or create a new account."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUTH-01",
+          "recordedStatus": "Pass",
+          "observation": "Provided credentials authenticated through the real login form and reached the protected dashboard. Password was not written to evidence."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-23-coach/fixes/AUTH-03/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M02",
+      "requirement": "FR-01",
+      "capability": "Onboarding and profile preferences",
+      "implementationStatus": "Partial target",
+      "sourceScope": "Six-screen onboarding captures measurements, personal details, goal and nutrition fields; profile editors and a nutrition-only patch route exist.",
+      "retainedVerification": "Existing profile/settings views and mocked nutrition-editor/modeled contrast corrections have evidence.",
+      "limitations": "The inspected onboarding lacks the full equipment/fitness-level questionnaire in FR-01. Fresh onboarding and recent editor/contrast native retests remain pending.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/navigation/OnboardingNavigator.tsx",
+          "line": 49,
+          "anchor": "name=\"OnboardingNutrition\"",
+          "sha256": "fbe84861b519d9e789e31fd0676abd96e93fc29d12fa22060adeccefae8cf171",
+          "excerpt": "      <Stack.Screen name=\"OnboardingPersonalDetails\" component={OnboardingScreenPersonalDetails} />\n      <Stack.Screen name=\"Onboarding4\" component={OnboardingScreen4} />\n      <Stack.Screen name=\"OnboardingNutrition\" component={OnboardingScreenNutrition} />\n    </Stack.Navigator>\n  );\n};\n"
+        },
+        {
+          "path": "GoFitMobile/src/screens/onboarding/OnboardingScreenNutrition.tsx",
+          "line": 49,
+          "anchor": "saveOnboardingData",
+          "sha256": "726cba50a9196d50cf83c5a0c58da2f7979b272325f372cf7f41782b2d04db7b",
+          "excerpt": "    try {\n      try {\n        await userProfileService.saveOnboardingData(user.id, {\n          weight: onboardingData.weight || 0,\n          weightUnit: onboardingData.weightUnit || 'kg',\n          height: onboardingData.height || 0,\n          heightUnit: onboardingData.heightUnit || 'cm',"
+        },
+        {
+          "path": "GoFitMobile/src/screens/nutrition/NutritionProfileScreen.tsx",
+          "line": 62,
+          "anchor": "const save = async",
+          "sha256": "0eecca14bcb8108211e6a13133e6dca90167686468db2e07914e4a943e4a5d2e",
+          "excerpt": "  useEffect(() => { void load(); }, [load]);\n\n  const save = async () => {\n    if (!initial || !draft || loading || saving || !user?.id) return;\n    const updates: Partial<UserProfile> = {};\n    for (const { key } of fields) {\n      if (draft[key] !== initial[key]) {"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SETTINGS-01",
+          "recordedStatus": "Pass",
+          "observation": "Profile rendered with existing account values; no profile values edited."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SETTINGS-02",
+          "recordedStatus": "Partial",
+          "observation": "Account Information displays existing name/email and password-change entry. Did not edit name, trigger verification email, or change password."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SETTINGS-03",
+          "recordedStatus": "Partial",
+          "observation": "24 October source correction: nutrition banner targets registered signed-in NutritionProfile route. New editor loads existing nutrition fields, discards unsaved drafts and submits only edited nutrition fields through the existing profile store. Six mocked component regressions and all 129 mobile tests pass. No regular-account writes or new device screenshots; actual Android route/render/persistence retest pending. Original navigation-error evidence retained."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SETTINGS-04",
+          "recordedStatus": "Pass",
+          "observation": "Unit preferences opened with existing Kilogram and Centimeter selected. Read-only view verified; conversion and saving were not exercised."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SETTINGS-08",
+          "recordedStatus": "Partial",
+          "observation": "24 October source correction: theme-aware description/selected foregrounds in Theme, Goals, Edit Profile and Units, plus the age placeholder. Ten screen/mode combinations and contrast-calculation reference test pass; modeled text contrast is at least 4.5:1 for the checked nodes/surfaces. All 146 mobile tests pass. No real theme/profile changes or new native screenshots; Android visual acceptance remains pending. Original toggle/restore failure captures retained."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-22/fixes/SETTINGS-03/README.md",
+        "qa/2026-10-22/fixes/SETTINGS-08/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M03",
+      "requirement": "FR-02",
+      "capability": "Exercise catalog, search and filters",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Exercise retrieval/search, muscle/equipment selection and exercise detail paths exist.",
+      "retainedVerification": "Native catalog, category and detail observations passed; search/filter/media observations are partial.",
+      "limitations": "All filter combinations, catalog completeness and playback/provider failures were not verified.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/workouts.ts",
+          "line": 79,
+          "anchor": "async getExercises(",
+          "sha256": "1d4d9a79f134c17ca18d4bec34d478cee08ee5bfa17d9696a1c8d5b636a8018a",
+          "excerpt": "   * Get all exercises from the exercise library\n   */\n  async getExercises(): Promise<Exercise[]> {\n    try {\n      const { data, error } = await supabase\n        .from('exercises')\n        .select('*')"
+        },
+        {
+          "path": "GoFitMobile/src/services/workouts.ts",
+          "line": 162,
+          "anchor": "async searchExercises(",
+          "sha256": "1d4d9a79f134c17ca18d4bec34d478cee08ee5bfa17d9696a1c8d5b636a8018a",
+          "excerpt": "   * Search exercises by name or category\n   */\n  async searchExercises(query: string): Promise<Exercise[]> {\n    try {\n      const { data, error } = await supabase\n        .from('exercises')\n        .select('*')"
+        },
+        {
+          "path": "GoFitMobile/src/screens/library/ExerciseSelectionScreen.tsx",
+          "line": 55,
+          "anchor": "muscle",
+          "sha256": "108790c755a0ce88fee126d98f6c963ba91d4b4534fa9f9586a5dc2aae0bba7e",
+          "excerpt": "    name: string;\n    category: string;\n    muscle_groups?: string[];\n    equipment?: string[];\n    difficulty?: string;\n    image?: string;\n    default_sets?: number;"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-01",
+          "recordedStatus": "Pass",
+          "observation": "Native catalog loaded named workout cards. Catalog completeness was not independently enumerated."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-02",
+          "recordedStatus": "Pass",
+          "observation": "Strength filter replaced the initial Stress Reduction Circuit card with Bro Split (5-Day)."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "EXERCISE-01",
+          "recordedStatus": "Partial",
+          "observation": "Reachable ExerciseSelection UI offers muscle categories and exercise rows; no search field observed there. Selected Biceps and Bicep Curl successfully. A separate exercise search workflow was not exposed/tested."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "EXERCISE-02",
+          "recordedStatus": "Partial",
+          "observation": "Biceps category returned two exercises and selection worked. No equipment filter was exposed in the reachable selection screen; equipment filtering remains unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "EXERCISE-03",
+          "recordedStatus": "Pass",
+          "observation": "Exercise detail opened from the assigned program and displayed prescription, muscle group, media and an explicit missing-instructions state."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "EXERCISE-04",
+          "recordedStatus": "Partial",
+          "observation": "Video eventually rendered frames and a 5-second timeline; inline play/pause and fullscreen entry were reachable. Center Play tap had no visible response while upper-edge tap worked; fullscreen control visibility remains problematic. No native ExoPlayer/AndroidRuntime errors captured."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M04",
+      "requirement": "FR-02",
+      "capability": "Custom workout prescriptions",
+      "implementationStatus": "Partial target",
+      "sourceScope": "Create/update/delete persist configured sets, reps, rest and array order; builder adds/removes entries. Summaries now count loaded entries without invented duration.",
+      "retainedVerification": "A disposable one-exercise client workout was created, edited and removed. Summary regressions use mocked data.",
+      "limitations": "Dedicated reorder interaction and target-load prescription were not located in this builder; this does not exclude other paths. Validation and native summary retests remain incomplete.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/workouts.ts",
+          "line": 355,
+          "anchor": "async createCustomWorkout(",
+          "sha256": "1d4d9a79f134c17ca18d4bec34d478cee08ee5bfa17d9696a1c8d5b636a8018a",
+          "excerpt": "   * Create a new custom workout\n   */\n  async createCustomWorkout(\n    userId: string,\n    workout: {\n      name: string;\n      difficulty?: string;"
+        },
+        {
+          "path": "GoFitMobile/src/screens/library/WorkoutBuilderScreen.tsx",
+          "line": 142,
+          "anchor": "const removeExercise",
+          "sha256": "5750718379631c3393c47d4ed6f7316e6517db8e15d1f1530e0009c96b528f80",
+          "excerpt": "  };\n\n  const removeExercise = (id: string) => {\n    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);\n    setExercises(prev => prev.filter((ex: ExerciseConfig) => ex.id !== id));\n  };\n"
+        },
+        {
+          "path": "GoFitMobile/src/screens/library/WorkoutDetailScreen.tsx",
+          "line": 78,
+          "anchor": "summaryLoaded",
+          "sha256": "08bf58e9a70375c8b791ff01d653aa1852d07476351557323898c6697974eb2c",
+          "excerpt": "  const [exercisesByDay, setExercisesByDay] = React.useState<Record<number, typeof exercises>>({});\n  const [loading, setLoading] = React.useState(true);\n  const [summaryLoaded, setSummaryLoaded] = React.useState(false);\n  const [detectedWorkoutType, setDetectedWorkoutType] = React.useState<'native' | 'custom' | null>(null);\n  const [expandedDay, setExpandedDay] = React.useState<number | null>(1);\n  // Removed unneeded refs for tabs\n  const fadeAnim = React.useRef(new Animated.Value(1)).current;"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-03",
+          "recordedStatus": "Partial",
+          "observation": "24 October source correction: detail total counts loaded prescription entries across all days; loading/missing results no longer imply zero. Detail and quick preview replace fixed 45 min with Not estimated. Six mocked detail regression tests and all 135 mobile tests pass. Existing 36 workouts and 101 prescriptions retain prior full-row hashes. Android detail/preview rendering is pending; no new device screenshots or data writes. Earlier failure captures retained."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-05",
+          "recordedStatus": "Partial",
+          "observation": "Blank name Save did not navigate or create a workout. Other invalid exercise numeric boundaries remain untested."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-06",
+          "recordedStatus": "Pass",
+          "observation": "Selected Biceps/Bicep Curl and created QA_ONLY_20261023 with one exercise through the UI. New card appeared."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-07",
+          "recordedStatus": "Pass",
+          "observation": "Edited only QA workout sets from 3 to 2; reopened detail showed Bicep Curl, 2 sets, 12 reps, 60s."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "LIBRARY-08",
+          "recordedStatus": "Pass",
+          "observation": "Confirmed deletion of QA_ONLY_20261023 only. Card disappeared; original Wk and R cards remained. No test workout session was started."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-22/fixes/LIBRARY-03/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M05",
+      "requirement": "FR-03",
+      "capability": "Active workout and rest timer",
+      "implementationStatus": "Partial target",
+      "sourceScope": "Session snapshots retain configured reps, per-set weights/completion flags; timer/audio/haptic control code exists.",
+      "retainedVerification": "Controlled execution cases remain blocked. Earlier user operation reports are distinct from a retained locked-device trace.",
+      "limitations": "No independent performed-repetition or RPE input in the inspected path. Timing/completion/persistence require controlled execution; existing TypeScript errors include this screen.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx",
+          "line": 531,
+          "anchor": "const updateWeight",
+          "sha256": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+          "excerpt": "\n  // Update weight for a set\n  const updateWeight = (exerciseIndex: number, setIndex: number, weight: string) => {\n    setExercises(prev => {\n      const updated = [...prev];\n      const weightValue = weight === '' ? null : parseFloat(weight);\n      updated[exerciseIndex].weights[setIndex] = weightValue;"
+        },
+        {
+          "path": "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx",
+          "line": 599,
+          "anchor": "// Start rest timer",
+          "sha256": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+          "excerpt": "  };\n\n  // Start rest timer\n  const startRestTimer = (seconds: number, autoAdvanceToNextExercise = false) => {\n    setRestTimerState({ isResting: true, restTimer: seconds });\n    autoAdvanceRef.current = autoAdvanceToNextExercise;\n"
+        },
+        {
+          "path": "GoFitMobile/src/services/workouts.ts",
+          "line": 726,
+          "anchor": "async createWorkoutSession(",
+          "sha256": "1d4d9a79f134c17ca18d4bec34d478cee08ee5bfa17d9696a1c8d5b636a8018a",
+          "excerpt": "   * These fields are now fetched from the workouts table via workout_id\n   */\n  async createWorkoutSession(\n    userId: string,\n    session: {\n      workout_id?: string;\n      workout_name: string; // Kept for backward compatibility, but not inserted into DB"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-01",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-02",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-03",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-04",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-05",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-06",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M06",
+      "requirement": "FR-03",
+      "capability": "Offline completion recovery",
+      "implementationStatus": "Partial target",
+      "sourceScope": "AsyncStorage stores completion payloads for existing session IDs; connectivity handling retries session updates.",
+      "retainedVerification": "Source inspected; no retained offline/reconnect reconciliation run.",
+      "limitations": "Completion-update retry does not establish unrestricted offline creation, per-set journaling or loss/duplicate/conflict guarantees.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/offlineQueue.ts",
+          "line": 23,
+          "anchor": "async enqueue(",
+          "sha256": "d85d3d26195cf742e2bb3752269431fe8808554c81f669d8e4469a80d9b9c888",
+          "excerpt": "export const offlineQueueService = {\n  /** Save a workout completion payload to the local queue */\n  async enqueue(item: Omit<QueuedWorkout, 'id' | 'queuedAt'>): Promise<void> {\n    const queue = await this.getQueue();\n    const entry: QueuedWorkout = {\n      ...item,\n      id: `${item.sessionId}_${Date.now()}`,"
+        },
+        {
+          "path": "GoFitMobile/src/services/offlineQueue.ts",
+          "line": 53,
+          "anchor": "async syncAll(",
+          "sha256": "d85d3d26195cf742e2bb3752269431fe8808554c81f669d8e4469a80d9b9c888",
+          "excerpt": "\n  /** Attempt to sync all queued workouts to the server. Returns count of synced items. */\n  async syncAll(): Promise<number> {\n    const state = await NetInfo.fetch();\n    if (!state.isConnected) {\n      logger.info('[OfflineQueue] No connection, skipping sync');\n      return 0;"
+        },
+        {
+          "path": "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx",
+          "line": 855,
+          "anchor": "offlineQueueService.enqueue",
+          "sha256": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+          "excerpt": "      if (!netState.isConnected) {\n        try {\n          await offlineQueueService.enqueue({\n            sessionId: sessionId!,\n            userId: user!.id,\n            updates: {\n              completed_at: new Date().toISOString(),"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "SESSION-07",
+          "recordedStatus": "Blocked",
+          "observation": "Regular account preservation: WorkoutSessionScreen.tsx:422 states session creation auto-completes existing incomplete sessions. No disposable account supplied; no session started, set logged or workout result saved. Timer, completion, history and offline session claims remain unverified."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M07",
+      "requirement": "FR-04",
+      "capability": "Progress history and photo gallery",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Statistics/consistency, saved biometrics, weight editing and photo listing/upload/delete paths exist.",
+      "retainedVerification": "Existing chart controls, records, gallery/detail and saved-measurement views were inspected.",
+      "limitations": "Fresh photo upload/removal, new biometric persistence and every aggregate calculation remain unverified or partial.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/screens/progress/WorkoutStatisticsScreen.tsx",
+          "line": 1273,
+          "anchor": "WorkoutStatisticsScreen",
+          "sha256": "514b1d1d6444f6332e644b9d34f7c0043b1aa1f7d5b698b23480275219725215",
+          "excerpt": "// --- Main Screen Component ---\n\nexport default function WorkoutStatisticsScreen() {\n  const navigation = useNavigation<any>();\n  const insets = useSafeAreaInsets();\n  const { user } = useAuthStore();\n  const { isDark } = useThemeStore();"
+        },
+        {
+          "path": "GoFitMobile/src/services/progressPhotos.ts",
+          "line": 81,
+          "anchor": "export async function addProgressPhoto",
+          "sha256": "8894d9f69c84caa1b8d6482976a62924129d2dac1d3663814e12a86e96795aea",
+          "excerpt": "}\n\nexport async function addProgressPhoto(\n  userId: string,\n  localUri: string,\n  category: ProgressPhotoCategory,\n  photoDate: string,"
+        },
+        {
+          "path": "GoFitMobile/src/screens/profile/EditWeightHeightScreen.tsx",
+          "line": 37,
+          "anchor": "EditWeightHeightScreen",
+          "sha256": "e6f32510e16249560dcd6dd52e31f7cdf398f317f2fc09bb9536d4707bfaa577",
+          "excerpt": "type RouteProps = RouteProp<ProfileStackParamList, 'EditWeightHeight'>;\n\ninterface EditWeightHeightScreenProps {\n  navigation: NavigationProp;\n  route: RouteProps;\n}\n"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PROGRESS-01",
+          "recordedStatus": "Partial",
+          "observation": "Dashboard loaded lifetime volume, records, consistency and saved body measurements. The next milestone remains 100,000 lbs despite displayed volume exceeding that value; source sets nextMilestone = 100000 at WorkoutStatisticsScreen.tsx:1010. Existing numerical history not independently validated."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PROGRESS-02",
+          "recordedStatus": "Pass",
+          "observation": "Total Volume Load chart initially selected October 2026; tapping May changed highlighted bar and label to May 2026. Selected October again afterward. Calculated amounts not independently reconciled with underlying history."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PROGRESS-03",
+          "recordedStatus": "Pass",
+          "observation": "Opened a personal record detail and returned; opened consistency detail with streak, monthly and yearly activity. Read-only navigation succeeded; calculations not independently reconciled with all raw sessions."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PHOTOS-01",
+          "recordedStatus": "Pass",
+          "observation": "Progress Photos opened the private timeline and existing dated photo."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PHOTOS-02",
+          "recordedStatus": "Pass",
+          "observation": "Opened existing photo detail; image, date and Front label rendered. No photo modified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "PHOTOS-03",
+          "recordedStatus": "Blocked",
+          "observation": "No designated QA photo supplied. Existing personal gallery preserved; did not upload an unrelated image as workout evidence."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-01",
+          "recordedStatus": "Pass",
+          "observation": "Read existing measurement summary and expanded history in Progress; opened Body measurements screen showing saved values and recent scans. No values changed. New scan review is separate."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M08",
+      "requirement": "FR-04",
+      "capability": "AI-assisted body-measurement drafts",
+      "implementationStatus": "Integration foundation",
+      "sourceScope": "Capture/review, pose/segmentation, height-based estimation, quality/debug fields exist in source.",
+      "retainedVerification": "Saved history and camera-denial handling observed; fresh inference/edit-save/reference comparisons blocked.",
+      "limitations": "No supported numerical accuracy outcome. Native MediaPipe is platform-limited; iOS and fresh end-to-end inference need separate verification.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/screens/profile/BodyMeasurementScreen.tsx",
+          "line": 32,
+          "anchor": "analyzeBodySegmentation",
+          "sha256": "a86afd1f7cab77575cea5bdee91dd70fb9a6161c5734027e6139eae29b1c8650",
+          "excerpt": "  validateMeasurementCapture,\n} from '@/services/bodyMeasurementService';\nimport { analyzeBodySegmentation, type BodySegmentationDebug, type SegmentationImageDebug } from '@/services/bodySegmentationService';\nimport {\n  appendMeasurementLog,\n  clearMeasurementLog,\n  formatMeasurementLogForShare,"
+        },
+        {
+          "path": "GoFitMobile/src/services/bodyMeasurementService.ts",
+          "line": 394,
+          "anchor": "async function runPrimaryPose(",
+          "sha256": "950852e2847b5e294eca3189b683761d36fbac3f56d49eb552bf16c832b8bf9d",
+          "excerpt": "}\n\nasync function runPrimaryPose(imageUri: string, debug: MeasurementDebug, phase: 'front' | 'side'): Promise<PoseRun> {\n  if (Platform.OS !== 'android') {\n    return runMoveNet(imageUri);\n  }\n"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-01",
+          "recordedStatus": "Pass",
+          "observation": "Read existing measurement summary and expanded history in Progress; opened Body measurements screen showing saved values and recent scans. No values changed. New scan review is separate."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-02",
+          "recordedStatus": "Partial",
+          "observation": "Start front photo requested Android camera permission; denying it produced Camera access is required for on-device measurements. Allow/capture path not yet tested."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-03",
+          "recordedStatus": "Blocked",
+          "observation": "Requires physical front/side capture with the user positioned correctly; not performed remotely. Existing scans are not evidence of a newly executed inference test."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-04",
+          "recordedStatus": "Blocked",
+          "observation": "No new QA scan result exists to edit/save. Existing measurement values preserved."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "MEASUREMENT-05",
+          "recordedStatus": "Blocked",
+          "observation": "No paired tape measurements and repeatable new scans supplied. No accuracy percentage can be concluded from saved confidence scores."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M09",
+      "requirement": "FR-05",
+      "capability": "Nutrition, saved meals, barcode and exclusions",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Food search/log totals/goals, saved-meal operations, barcode lookup and preference/allergy name exclusions exist.",
+      "retainedVerification": "Banana search and disposable food add/remove passed; meal templates, goal views and scanner denial have narrower evidence.",
+      "limitations": "Actual barcode recognition/provider lookup, reuse/edit and controlled exclusion fixtures remain incomplete. Name matching is not comprehensive allergen-safety evidence.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/nutrition.ts",
+          "line": 115,
+          "anchor": "async searchFoods(",
+          "sha256": "0dba58e07f0796e08500a9f63f98d2f55bc92d40c3e7249d81e57073e2e30367",
+          "excerpt": "\nclass NutritionService {\n  async searchFoods(query: string, limit = 50, exclusions: string[] = []): Promise<FoodItem[]> {\n    const q = query.trim();\n    if (q.length < 1) return [];\n\n    let queryBuilder = supabase"
+        },
+        {
+          "path": "GoFitMobile/src/services/nutrition.ts",
+          "line": 165,
+          "anchor": "async lookupFoodByBarcode(",
+          "sha256": "0dba58e07f0796e08500a9f63f98d2f55bc92d40c3e7249d81e57073e2e30367",
+          "excerpt": "  }\n\n  async lookupFoodByBarcode(barcode: string): Promise<FoodItem | null> {\n    const local = await this.findFoodByBarcode(barcode);\n    if (local) return local;\n\n    const { data, error } = await supabase.functions.invoke<BarcodeLookupResponse>('food-barcode-lookup', {"
+        },
+        {
+          "path": "GoFitMobile/src/screens/nutrition/AddFoodScreen.tsx",
+          "line": 95,
+          "anchor": "const exclusions =",
+          "sha256": "760be9b21f6efd18a18429d12815db40628c5a3d0d90a15b1a8714854342c98f",
+          "excerpt": "      setSearching(true);\n      try {\n        const exclusions = [\n          ...(profile?.food_dislikes || []),\n          ...(profile?.food_allergies || [])\n        ];\n        const rows = await nutritionService.searchFoods(debounced, 50, exclusions);"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-01",
+          "recordedStatus": "Partial",
+          "observation": "Nutrition and weekly summary loaded, but the initial selected day was Wed 21 Oct while Home and the phone were Thu 22 Oct. The forward-day control selected the correct local day. Source initializes selectedDate from UTC toISOString()."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-02",
+          "recordedStatus": "Pass",
+          "observation": "Searched banana through the client UI; catalog returned the matching food with serving size and macros."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-03",
+          "recordedStatus": "Partial",
+          "observation": "Zero servings did not submit or leave the serving form. A valid one-serving entry submitted. Other invalid boundaries not yet exercised; invalid input displayed no explanatory message."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-04",
+          "recordedStatus": "Pass",
+          "observation": "Added one banana to the previously empty 22 October breakfast: totals became 105 kcal, protein 1 g and carbs 27 g. Deleted only this new entry through confirmation. Settled screen returned to empty breakfast, 0 kcal and 0/7 days tracked. Existing goals preserved."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-05",
+          "recordedStatus": "Partial",
+          "observation": "Created a meal template from the new one-banana QA log; template appeared under Saved Meals with 1 item / 105 kcal. Deleted only this template and then its QA food log; empty baseline and zero totals restored. Template reuse and editing not exercised."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-06",
+          "recordedStatus": "Partial",
+          "observation": "Scanner entry requested camera permission; denying it displayed a clear message and retained manual search. No physical barcode supplied; recognition and catalog lookup unverified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "NUTRITION-07",
+          "recordedStatus": "Pass",
+          "observation": "Daily goals opened with existing calories, macros, fiber and water values. Returned without saving."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M10",
+      "requirement": "FR-06",
+      "capability": "Coach discovery and reviews",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Marketplace/details and rating/review retrieval paths exist.",
+      "retainedVerification": "Marketplace and coach details opened; availability observations are partial.",
+      "limitations": "Approval labels do not independently establish professional accreditation or authentic reviews. Review submission/all filters not executed.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/marketplace.ts",
+          "line": 210,
+          "anchor": "async getCoachReviews(",
+          "sha256": "1f79a377d435962e4a19aa8186506cf9f13cd1960d2db6592707e0c83f3bf667",
+          "excerpt": "  },\n\n  async getCoachReviews(coachId: string, limit: number = 10, offset: number = 0): Promise<CoachReview[]> {\n    try {\n      const { data: reviews, error } = await supabase\n        .from('coach_reviews')\n        .select('id, coach_id, client_id, rating, comment, created_at')"
+        },
+        {
+          "path": "GoFitMobile/src/screens/marketplace/CoachDetailScreen.tsx",
+          "line": 287,
+          "anchor": "reviews.map(",
+          "sha256": "edca4211fff0b7e97f5784f512dde5272abe3d62972f179382a959c8b72218ef",
+          "excerpt": "            <Text style={styles.noReviews}>{t('marketplace.noReviews')}</Text>\n          ) : (\n            reviews.map((review) => (\n              <View key={review.id} style={styles.reviewCard}>\n                <View style={styles.reviewHeader}>\n                  <View style={styles.reviewStars}>\n                    {Array.from({ length: 5 }).map((_, i) => ("
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-01",
+          "recordedStatus": "Pass",
+          "observation": "Marketplace rendered two coach records with rates, specialties and review/session counts. Search and every filter not exhaustively tested."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-02",
+          "recordedStatus": "Pass",
+          "observation": "Selected coach opened profile with rate, about, specialties, cancellation label and session pack. Did not modify coach data."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-03",
+          "recordedStatus": "Partial",
+          "observation": "Booking availability screen opened; selecting Monday exposed hourly slots and selecting 09:00 exposed Book Session. Two identical 09:00-17:00 blocks rendered; underlying records not independently checked. No booking submitted."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M11",
+      "requirement": "FR-06",
+      "capability": "Sandbox pack purchase and credits",
+      "implementationStatus": "Scoped implementation verified",
+      "sourceScope": "Native checkout uses server-priced EUR pack intent and verified fulfillment with paid snapshot/reference/credits.",
+      "retainedVerification": "One Android EUR129/12-credit sandbox purchase, saved row, admin display and actual replay verified.",
+      "limitations": "Not a complete payment certification: recovery/webhooks, declines/3DS, refunds, payouts and release/iOS remain unverified. Older blocked payment rows do not override the narrower dated follow-up.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/screens/marketplace/CoachDetailScreen.tsx",
+          "line": 57,
+          "anchor": "const handlePurchasePack",
+          "sha256": "edca4211fff0b7e97f5784f512dde5272abe3d62972f179382a959c8b72218ef",
+          "excerpt": "  }, [coachId, loadCoachDetail, loadReviews, loadCoachPacks]);\n\n  const handlePurchasePack = async (pack: any) => {\n    if (!user?.id || !coachId) return;\n    if (!getStripePublishableKey()) {\n      dialogManager.error(t('payments.unavailableTitle'), t('payments.unavailableMessage'));\n      return;"
+        },
+        {
+          "path": "GoFitMobile/src/services/sessionPacks.ts",
+          "line": 152,
+          "anchor": "async purchasePack(",
+          "sha256": "5ef8f59eed486ebf05bba1727aaae4e66f411964627284e4972a0656ee48afa9",
+          "excerpt": "  },\n\n  async purchasePack(paymentIntentId: string): Promise<void> {\n    try {\n      const { data, error } = await supabase.functions.invoke('stripe-payment', {\n        body: { action: 'fulfill_pack', paymentIntentId },\n      });"
+        },
+        {
+          "path": "supabase/functions/stripe-payment/index.ts",
+          "line": 45,
+          "anchor": "body.action === \"fulfill_pack\"",
+          "sha256": "3e8404a16f91b156180f133b6cb22babaacf27da8f34da410c1ab651c96bf4e1",
+          "excerpt": "    }\n\n    if (body.action === \"fulfill_pack\") {\n      if (typeof body.paymentIntentId !== \"string\" || !/^pi_[A-Za-z0-9]+$/.test(body.paymentIntentId)) {\n        return reply({ error: \"Invalid payment reference\" }, 400);\n      }\n      const intent = await stripe.paymentIntents.retrieve(body.paymentIntentId);"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-07",
+          "recordedStatus": "Pass",
+          "observation": "24 October pack-only retest: Android Stripe TEST card payment EUR129 completed. Server verified succeeded/owner/captured amount and saved one purchase with 12/12 sessions, Stripe reference, paid amount/currency and sandbox flag. Admin Transactions displays the same record as Sandbox paid; live-payment total excludes it. Actual confirmation replay returned the same purchase ID; exactly one payment row. Sandbox purchase intentionally retained; original eight purchases and 17 bookings unchanged. Standalone session payment/booking integration, webhooks/recovery, refunds and payouts remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "TX-01",
+          "recordedStatus": "Pass",
+          "observation": "24 October follow-up: Transactions combines nine pack purchases with one API-tested standalone session payment. The confirmed 60-minute session shows EUR60.00, Sandbox paid, a matching Stripe ID and 26 October 12:00 Berlin start. The earlier EUR129 sandbox pack remains visible. Replay preserves one session booking and paid timestamp. Sandbox amounts are excluded from this page live EUR total (0.00). Paid-session completion protection was corrected and verified in rolled-back database tests after explicit deployment approval. Android session checkout, refunds and other finance dashboards remain unverified."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M12",
+      "requirement": "FR-06",
+      "capability": "Availability and standalone paid booking",
+      "implementationStatus": "Scoped implementation verified",
+      "sourceScope": "Saved duration/Berlin availability feed server quote/reservation, manual capture, overlap and payment-field protection.",
+      "retainedVerification": "EUR60/60-minute session capture/readback/admin/replay verified by API; eight live API cases and 13 rollback database checks retained.",
+      "limitations": "Native checkout and two-client native conflicts pending. Pack-credit createBooking/deduct_session is a separate branch whose atomicity is not established by this test. Recovery/production checks incomplete.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/bookings.ts",
+          "line": 81,
+          "anchor": "async getSessionTerms(",
+          "sha256": "3493a22e8061593bb4226007c984b0fcb0d300e72764d311c57054727175ee28",
+          "excerpt": "\nexport const bookingsService = {\n  async getSessionTerms(coachId: string): Promise<{ duration: number; amount: number }> {\n    const { data, error } = await supabase.from('coach_profiles')\n      .select('default_session_duration,hourly_rate').eq('id', coachId).single();\n    if (error) throw error;\n    if (!isSessionDuration(data?.default_session_duration) || !Number.isFinite(Number(data?.hourly_rate)) || Number(data?.hourly_rate) <= 0) {"
+        },
+        {
+          "path": "GoFitMobile/src/services/bookings.ts",
+          "line": 168,
+          "anchor": "async createBooking(",
+          "sha256": "3493a22e8061593bb4226007c984b0fcb0d300e72764d311c57054727175ee28",
+          "excerpt": "  // --- Bookings ---\n\n  async createBooking(input: CreateBookingInput): Promise<Booking | null> {\n    try {\n      const { data, error } = await supabase\n        .from('bookings')\n        .insert({"
+        },
+        {
+          "path": "supabase/functions/stripe-payment/index.ts",
+          "line": 92,
+          "anchor": "body.action === \"create_session\"",
+          "sha256": "3e8404a16f91b156180f133b6cb22babaacf27da8f34da410c1ab651c96bf4e1",
+          "excerpt": "    }\n\n    if (body.action === \"create_session\") {\n      const { data: booking, error } = await db.rpc(\"reserve_paid_session\", {\n        p_client_id: auth.user.id, p_coach_id: body.coachId, p_scheduled_at: body.scheduledAt,\n        p_duration_minutes: body.durationMinutes, p_expected_amount: body.expectedAmount,\n      });"
+        },
+        {
+          "path": "database/migrations/20261024122314_verified_session_payments.sql",
+          "line": 55,
+          "anchor": "reserve_paid_session",
+          "sha256": "761a22654ae455f8a22a78bf396f422fa8a520b9e6c7eb82a5c05a26fd7971d0",
+          "excerpt": "REVOKE ALL ON FUNCTION public.protect_session_payment_fields() FROM PUBLIC, anon, authenticated;\n\nCREATE FUNCTION public.reserve_paid_session(\n  p_client_id uuid, p_coach_id uuid, p_scheduled_at timestamptz,\n  p_duration_minutes integer, p_expected_amount numeric\n) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$\nDECLARE"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROFILE-03",
+          "recordedStatus": "Pass",
+          "observation": "Saved-duration correction implemented with user-approved schema/booking changes. Android saved 45, retained it after cold restart, and client booking UI displayed fitting 45-minute slots. Restored 60; all 17 existing booking rows and other coach values unchanged except expected updated_at/new column. Database constraints/trigger verified with rolled-back fixtures. This pass covers duration, not all settings; real payment remains unvalidated."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CAL-03",
+          "recordedStatus": "Partial",
+          "observation": "Past list expands to six completed/cancelled booking entries. No future session exists to check full upcoming detail/cancellation flow; no booking modified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-06",
+          "recordedStatus": "Partial",
+          "observation": "Bookings screen loaded three past confirmed appointments. Join Call was incorrectly available on all three; no appointment changed."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-09",
+          "recordedStatus": "Blocked",
+          "observation": "No dedicated test coach/booking supplied. Booking or cancellation could notify a real participant or alter regular account records."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-24-session-payments/README.md",
+        "qa/2026-10-23-coach/fixes/PROFILE-03/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M13",
+      "requirement": "FR-06",
+      "capability": "Messaging and consultation media",
+      "implementationStatus": "Integration foundation",
+      "sourceScope": "Chat persistence/realtime and video/token-service paths exist; video is a related consultation extension.",
+      "retainedVerification": "Conversation lists/entry states inspected; two-party message/call execution blocked.",
+      "limitations": "Exchange/attachments, call sound/video/reconnect, room authorization and encryption guarantees need separate evidence. No successful consultation or end-to-end encryption is certified.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/chat.ts",
+          "line": 155,
+          "anchor": "async sendMessage(",
+          "sha256": "752ac4d78c7bd333e4a3673a565d6bb6160a15ea8e50d30f34b696ed4e95f426",
+          "excerpt": "  },\n\n  async sendMessage(conversationId: string, senderId: string, content: string, type: 'text' | 'image' | 'file' | 'voice' = 'text', mediaUrl?: string): Promise<Message | null> {\n    try {\n      const { data, error } = await supabase\n        .from('messages')\n        .insert({"
+        },
+        {
+          "path": "GoFitMobile/src/services/chat.ts",
+          "line": 249,
+          "anchor": "subscribeToMessages(",
+          "sha256": "752ac4d78c7bd333e4a3673a565d6bb6160a15ea8e50d30f34b696ed4e95f426",
+          "excerpt": "  },\n\n  subscribeToMessages(\n    conversationId: string,\n    callback: (message: Message) => void,\n    onStatus?: (status: string) => void\n  ) {"
+        },
+        {
+          "path": "GoFitMobile/src/services/videoCall.ts",
+          "line": 8,
+          "anchor": "async generateToken(",
+          "sha256": "d215795e0bec1cc16f8a5092af55056538d2f578b81b3461a6a61919b00ee476",
+          "excerpt": "\nexport const videoCallService = {\n  async generateToken(roomName: string, participantName: string, participantId: string): Promise<{ token: string; url: string } | null> {\n    try {\n      const { data, error } = await supabase.functions.invoke('generate-video-token', {\n        body: { room_name: roomName, participant_name: participantName, participant_id: participantId },\n      });"
+        },
+        {
+          "path": "supabase/functions/generate-video-token/index.ts",
+          "line": 3,
+          "anchor": "serve(",
+          "sha256": "97b566f18d67ad22f66c77778c58cab0359ddcaae81fb47c2f8a07980b11150b",
+          "excerpt": "import { corsHeaders } from '../_shared/cors.ts';\n\nDeno.serve(async (req) => {\n  if (req.method === 'OPTIONS') {\n    return new Response('ok', { headers: corsHeaders });\n  }\n"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-10",
+          "recordedStatus": "Pass",
+          "observation": "Conversation list loaded an existing coach conversation, dated voice-message preview and search field. No messages sent or existing conversation modified."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-11",
+          "recordedStatus": "Blocked",
+          "observation": "No approved test recipient/coach session. No messages sent to existing contacts."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-12",
+          "recordedStatus": "Partial",
+          "observation": "Join Call entry is visible on past bookings. Source videoCall.ts:5 sets SKIP_CALL_TIME_WINDOW_FOR_TESTING=true and line40 bypasses the intended window. Did not join a real coach room or create a room record."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-13",
+          "recordedStatus": "Blocked",
+          "observation": "No consenting second test participant or valid test booking available. Two-way media quality and reconnection unverified."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CHAT-04",
+          "recordedStatus": "Blocked",
+          "observation": "No controlled second participant. Did not send messages/attachments or certify real-time delivery, read receipts or notifications."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CAL-06",
+          "recordedStatus": "Blocked",
+          "observation": "No future confirmed test booking/call room. Did not join or create a video room for a real client. Existing shared time-window bypass remains a source concern, not a successful call."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CAL-07",
+          "recordedStatus": "Blocked",
+          "observation": "Two-party video/audio requires a controlled booking and second participant/device. Neither supplied; not validated."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M14",
+      "requirement": "FR-07",
+      "capability": "Coach roster, progress, notes and check-ins",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Client-management/progress/private-note and check-in schedule/response services exist.",
+      "retainedVerification": "Roster/detail/private-note CRUD and scoped progress/query corrections have retained observations.",
+      "limitations": "Populated check-ins, schedule submission and full photo access need controlled fixtures; empty-state passes are not full coaching-workflow validation.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/clientManagement.ts",
+          "line": 55,
+          "anchor": "async getCoachClients(",
+          "sha256": "ace23febb5b9cf2820b33acb4d5fec90df6638c87568720426eb006a0e293dc8",
+          "excerpt": "\nexport const clientManagementService = {\n  async getCoachClients(coachId: string): Promise<CoachClient[]> {\n    try {\n      const { data, error } = await supabase.rpc('get_coach_clients', { p_coach_id: coachId });\n      if (error) throw error;\n      const clients = (data || []).map((row: any) => ({"
+        },
+        {
+          "path": "GoFitMobile/src/services/checkIns.ts",
+          "line": 90,
+          "anchor": "async getClientCheckInState(",
+          "sha256": "635773f5dc4cbec81951452adedef3523d6eee0a9e61b8b3025b3bba0b2bfbf1",
+          "excerpt": "\nclass CheckInsService {\n  async getClientCheckInState(scheduleId?: string): Promise<ClientCheckInState> {\n    const {\n      data: { user },\n    } = await supabase.auth.getUser();\n    if (!user) throw new Error('Not authenticated');"
+        },
+        {
+          "path": "GoFitMobile/src/screens/coach-app/ClientNotesScreen.tsx",
+          "line": 22,
+          "anchor": "ClientNotesScreen",
+          "sha256": "0b883a5f6be879e4c5fba74c951bc4aaa382cd1ff31d7d8b00cbdb91fc75adfc",
+          "excerpt": "const PRIMARY_GREEN = '#B4F04E';\n\nexport const ClientNotesScreen: React.FC = () => {\n  const navigation = useNavigation<any>();\n  const route = useRoute<any>();\n  const insets = useSafeAreaInsets();\n  const { t } = useTranslation();"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-01",
+          "recordedStatus": "Pass",
+          "observation": "Client list loaded four existing clients; returning after note cleanup retained the list."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-03",
+          "recordedStatus": "Pass",
+          "observation": "Existing client detail loaded nutrition fields and empty program/booking states. No existing values modified."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-04",
+          "recordedStatus": "Pass",
+          "observation": "Corrected 24 October: list badge describes pack status instead of hardcoded 0 Day Streak. Deployed progress RPC counts distinct consecutive UTC completion days through today/yesterday, with original access checks/ACL preserved. Android and authenticated API show original client Current streak 0, total 10. Eight rollback-only SQL cases pass; all 196 workout rows unchanged. Separate client-role streak implementation remains outside this retest."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-06",
+          "recordedStatus": "Pass",
+          "observation": "QA-only private note created, survived app restart, edited and deleted. Empty baseline restored in UI and authenticated readback. Delete confirmation incorrectly calls the note a pack; wording defect retained separately."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-07",
+          "recordedStatus": "Partial",
+          "observation": "Check-ins screen displayed off/no responses. Authenticated readback confirms zero schedules and responses for this coach. Populated response rendering and averages remain untested; dashboard query failure is separately DASH-04."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "CLIENT-08",
+          "recordedStatus": "Blocked",
+          "observation": "Did not enable/schedule a check-in for a real client. Frequency controls save immediately and may expose a new check-in on the client home screen."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-23-coach/fixes/DASH-04/README.md",
+        "qa/2026-10-23-coach/fixes/CLIENT-04/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M15",
+      "requirement": "FR-07",
+      "capability": "Workout/meal programs and assignment",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Program model supports workout/meal/both per-day data; create/update/template services and builder/list screens exist.",
+      "retainedVerification": "Lists, new-program validation and client assigned-program view have scoped records.",
+      "limitations": "Controlled populated creation/edit/assignment not completed. Template/cleanup UI reachability must be established; a service method does not prove a full editor or delivered notification.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/programs.ts",
+          "line": 22,
+          "anchor": "export interface ProgramDay",
+          "sha256": "a66ba357460f7c285e89904746ecd8f761a4d63bfce560187157ee6f6f7b5749",
+          "excerpt": "}\n\nexport interface ProgramDay {\n  day_number: number;\n  exercises?: ProgramExercise[];\n  meals?: ProgramMeal[];\n}"
+        },
+        {
+          "path": "GoFitMobile/src/services/programs.ts",
+          "line": 103,
+          "anchor": "async create(",
+          "sha256": "a66ba357460f7c285e89904746ecd8f761a4d63bfce560187157ee6f6f7b5749",
+          "excerpt": "  },\n\n  async create(input: CreateProgramInput): Promise<CustomProgram | null> {\n    try {\n      const { data, error } = await supabase\n        .from('custom_programs')\n        .insert({"
+        },
+        {
+          "path": "GoFitMobile/src/services/programs.ts",
+          "line": 144,
+          "anchor": "async duplicateAsTemplate(",
+          "sha256": "a66ba357460f7c285e89904746ecd8f761a4d63bfce560187157ee6f6f7b5749",
+          "excerpt": "  },\n\n  async duplicateAsTemplate(programId: string): Promise<CustomProgram | null> {\n    try {\n      const original = await this.getById(programId);\n      if (!original) return null;\n"
+        },
+        {
+          "path": "GoFitMobile/src/screens/coach-app/ProgramBuilderScreen.tsx",
+          "line": 30,
+          "anchor": "ProgramBuilderScreen",
+          "sha256": "d90e0edabf0dcb74984114ad3a810d4d55ff33095e29e194360d62e5004ea601",
+          "excerpt": "type ProgramType = 'workout' | 'meal' | 'both';\n\nexport const ProgramBuilderScreen: React.FC = () => {\n  const navigation = useNavigation<any>();\n  const route = useRoute<any>();\n  const insets = useSafeAreaInsets();\n  const { t } = useTranslation();"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROGRAM-01",
+          "recordedStatus": "Pass",
+          "observation": "Programs list loaded a clear empty state. Empty baseline retained after discarded exercise draft."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROGRAM-02",
+          "recordedStatus": "Blocked",
+          "observation": "No existing coach program to open/update. Did not assign a new program to a real client."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROGRAM-03",
+          "recordedStatus": "Pass",
+          "observation": "New builder requires title and client; empty and title-only drafts could not save. Exercise picker loaded and added an exercise to local draft; draft discarded and list remained empty. Persisted program creation not tested."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROGRAM-04",
+          "recordedStatus": "Blocked",
+          "observation": "Empty program list provides no source program for duplicate action. New form exposes no template toggle; no UI deletion path found for program fixtures. Template creation/duplication not executed."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "PROGRAM-05",
+          "recordedStatus": "Blocked",
+          "observation": "Program save would assign to and notify a real client. No dedicated client fixture supplied; no assignment sent."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "COACHING-05",
+          "recordedStatus": "Pass",
+          "observation": "Assigned program list opened and the selected program rendered its days, exercises, prescribed sets/reps, rest values and Start Day action. Execution is a separate case."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M16",
+      "requirement": "FR-07",
+      "capability": "Coach-facing AI context briefing",
+      "implementationStatus": "Partial target",
+      "sourceScope": "Client-specific cached briefing service and pre-session prompt use profile, workout history and notes.",
+      "retainedVerification": "Source and historical briefing-related inbox observations; no fresh generation/quality result retained.",
+      "limitations": "This differs from required post-session consultation synthesis; it does not establish processing of a completed consultation or advice quality.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/services/aiSessionNotes.ts",
+          "line": 14,
+          "anchor": "async generateBriefing(",
+          "sha256": "08d8d8d51cfa13340f2ab3e346d5c308187565ef03c56d40efc55e732c495cc5",
+          "excerpt": "\nexport const aiSessionNotesService = {\n  async generateBriefing(clientId: string, force = false): Promise<AISessionNote> {\n    const { data, error } = await supabase.functions.invoke('ai-session-notes', {\n      body: { client_id: clientId, force },\n    });\n"
+        },
+        {
+          "path": "supabase/functions/ai-session-notes/index.ts",
+          "line": 120,
+          "anchor": "Create a concise pre-session briefing",
+          "sha256": "e3da0bb70a13fffc6191521677f7145a0f76269f4d89720709a93070856e367b",
+          "excerpt": "\n    const prompt = [\n      'Create a concise pre-session briefing for a fitness coach.',\n      'Use only the data provided. Do not invent injuries, diagnoses, or private facts.',\n      'Write in plain text with short sections:',\n      '1. Recent training',\n      '2. Consistency and load',"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "DASH-02",
+          "recordedStatus": "Partial",
+          "observation": "Inbox loaded historical digest, upcoming-session and AI-briefing notifications. No new notification triggered or delivery verified."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": false
+    },
+    {
+      "id": "M17",
+      "requirement": "FR-08",
+      "capability": "Admin access and catalog operations",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Profile-role proxy, user/coach pages, server-side catalog CRUD and approved atomic workout-save RPC paths exist.",
+      "retainedVerification": "Role checks/disposable CRUD and deletion-audit/audit-API retests are retained.",
+      "limitations": "Selected checks do not certify every policy/endpoint. User deletion/role changes, bulk/media and all failure paths remain incomplete.",
+      "sources": [
+        {
+          "path": "admin-panel/proxy.ts",
+          "line": 5,
+          "anchor": "export async function proxy(",
+          "sha256": "64fa115be9fa65bdea5ceeed4012c5912a8437d5fd2c7c5911882cfd1122723d",
+          "excerpt": "import { getAdminRouteKind } from \"@/lib/admin-access\";\n\nexport async function proxy(request: NextRequest) {\n  let supabaseResponse = NextResponse.next({\n    request,\n  });\n"
+        },
+        {
+          "path": "admin-panel/app/api/workouts/route.ts",
+          "line": 7,
+          "anchor": "export async function POST(",
+          "sha256": "3f8354f81595bba78fab07d545cf23bfa306e53dc4922b5781de134c39368c8a",
+          "excerpt": "import { workoutInputSchema } from \"@/lib/workout-input\";\n\nexport async function POST(request: NextRequest) {\n  try {\n    const parsed = workoutInputSchema.safeParse(await request.json());\n    if (!parsed.success) {\n      return NextResponse.json("
+        },
+        {
+          "path": "admin-panel/app/api/exercises/[id]/route.ts",
+          "line": 124,
+          "anchor": "export async function DELETE(",
+          "sha256": "15d90e5995d4e16ead5c80824605af0c29f47520689318c50274f6182edf19a0",
+          "excerpt": "}\n\nexport async function DELETE(\n  request: NextRequest,\n  { params }: { params: Promise<{ id: string }> }\n) {\n  try {"
+        },
+        {
+          "path": "admin-panel/app/api/audit-logs/route.ts",
+          "line": 5,
+          "anchor": "export async function GET(",
+          "sha256": "1efe2b0127b225b1b89d4c8924da0427e88b2aa3741850218a22a04a613ec532",
+          "excerpt": "import { getErrorMessage } from \"@/lib/errors\";\n\nexport async function GET(request: NextRequest) {\n  try {\n    const { searchParams } = new URL(request.url);\n    const limit = parseInt(searchParams.get(\"limit\") || \"100\");\n    const offset = parseInt(searchParams.get(\"offset\") || \"0\");"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUTH-01",
+          "recordedStatus": "Pass",
+          "observation": "Provided credentials authenticated through the real login form and reached the protected dashboard. Password was not written to evidence."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUTH-02",
+          "recordedStatus": "Pass",
+          "observation": "A separate unauthenticated browser context was redirected from /dashboard to /login?redirectTo=%2Fdashboard. Final login response is HTTP 200 after redirect."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUTH-03",
+          "recordedStatus": "Pass",
+          "observation": "Eight GET endpoints rejected an unauthenticated context with HTTP 401, including users, settings, exercises, workouts, coaches, transactions, audit logs and finance export."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUTH-04",
+          "recordedStatus": "Pass",
+          "observation": "Follow-up with supplied coach credentials: authenticated non-admin session received HTTP 403 from users/settings APIs and dashboard redirected to not_admin login. Tested through installed Supabase SSR client and actual middleware; not the admin login form. Temporary session signed out with local scope."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "EX-04",
+          "recordedStatus": "Pass",
+          "observation": "Created QA_ONLY_ADMIN_20261023, Chest / Beginner / Bodyweight, through UI. Listing count increased from 99 to 100 and showed 3 x 10 reps."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "EX-05",
+          "recordedStatus": "Pass",
+          "observation": "Renamed only QA record with _EDITED suffix and changed sets to 2. Reloaded catalog displayed 2 x 10 reps."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "EX-06",
+          "recordedStatus": "Pass",
+          "observation": "Confirmed deletion naming only QA exercise; catalog returned to 99 records and QA search had no matches."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "WORK-03",
+          "recordedStatus": "Pass",
+          "observation": "Corrected and retested on 24 October: default Single Day creation returns HTTP 201 and saves one exercise with day 1. Failed creation with nonexistent exercise returns 400 and leaves no orphan workout. Temporary QA workout deleted; original rows preserved. Baseline failure retained in fixes/WORK-05/baseline-cases.json."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "WORK-05",
+          "recordedStatus": "Pass",
+          "observation": "Corrected and retested on 24 October: one transactional RPC saves parent and exercise replacements together. UI edit/reload retains sets 4, reps 12,10,8 and rest 0. Forced foreign-key insertion failure returns 400 and preserves full original parent/exercise rows. Eleven rollback-only SQL scenarios pass. Baseline failure retained in fixes/WORK-05/baseline-cases.json."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "USER-05",
+          "recordedStatus": "Blocked",
+          "observation": "Existing accounts preserved. No role changed, user deleted, invitation sent or account created."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUDIT-02",
+          "recordedStatus": "Pass",
+          "observation": "24 October correction verified: successful single-exercise DELETE saves one attributed DELETE_EXERCISE event with deleted-row name/category; repeated deletion returns 404 without another event; anonymous deletion returns 401. All 99 original exercise rows preserved. Earlier failure captures remain historical. Best-effort logging is not atomic."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "AUDIT-03",
+          "recordedStatus": "Pass",
+          "observation": "24 October correction: removed unresolved embedded Auth-user relationship and resolved distinct page actors server-side. Eight actual API/browser checks pass: default rows/count, deletion filter and attribution, pagination, empty result, anonymous 401, coach 403, page consistency, unchanged audit rows. No schema or business-data writes; local development server only. Historical 500/PGRST200 evidence retained."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-23-admin/fixes/WORK-05/README.md",
+        "qa/2026-10-23-admin/fixes/AUDIT-02/README.md",
+        "qa/2026-10-23-admin/fixes/AUDIT-03/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M18",
+      "requirement": "FR-08",
+      "capability": "Review, financial inspection and analytics",
+      "implementationStatus": "Implemented paths",
+      "sourceScope": "Coach status route, transaction/audit views, profile-count dashboard, CSV and saved-view paths exist.",
+      "retainedVerification": "Review confirmation/cancel, payment mode/reference, account/profile label reconciliation, CSV and saved-view operations have scoped checks.",
+      "limitations": "Actual approval/rejection, document verification, all BI arithmetic, refunds/payouts and large Auth listing remain unverified. Transactions sandbox exclusion does not certify other aggregates.",
+      "sources": [
+        {
+          "path": "admin-panel/app/api/coaches/route.ts",
+          "line": 5,
+          "anchor": "export async function PATCH(",
+          "sha256": "f35134cee663fd45f283e19b68b291fe0b8b1155cebcb81e0648b091657c43a1",
+          "excerpt": "import { getErrorMessage } from \"@/lib/errors\";\n\nexport async function PATCH(request: NextRequest) {\n  try {\n    await verifyAdminAccess();\n\n    const body = await request.json();"
+        },
+        {
+          "path": "admin-panel/app/api/transactions/route.ts",
+          "line": 24,
+          "anchor": "export async function GET(",
+          "sha256": "0e907c903b1b75804370a84de137bbb73337018e53a88cbb088dba192bbab836",
+          "excerpt": "}\n\nexport async function GET() {\n  try {\n    const adminClient = createAdminClient();\n\n    const { data: purchases, error } = await adminClient"
+        },
+        {
+          "path": "admin-panel/lib/analytics.ts",
+          "line": 332,
+          "anchor": "export async function getEngagementMetrics(",
+          "sha256": "e09ce939497623910fa6016afb5ec0cd873b2fbb18f596206988e5582ae4fd6a",
+          "excerpt": "}\n\nexport async function getEngagementMetrics(): Promise<EngagementMetrics> {\n  const adminClient = createAdminClient();\n  const now = new Date();\n\n  const [dau, wau, mau, totalResult] = await Promise.all(["
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "COACH-02",
+          "recordedStatus": "Pass",
+          "observation": "Opened approval and rejection dialogs for the pending application, then cancelled each; counts remained unchanged."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "COACH-03",
+          "recordedStatus": "Blocked",
+          "observation": "No designated disposable coach application. Did not approve/reject/revoke an existing profile or trigger its notification."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "COACH-04",
+          "recordedStatus": "Partial",
+          "observation": "Coach page loaded, but no CV/document links were available for the inspected records. No signed-document download or certification verification was tested."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "TX-01",
+          "recordedStatus": "Pass",
+          "observation": "24 October follow-up: Transactions combines nine pack purchases with one API-tested standalone session payment. The confirmed 60-minute session shows EUR60.00, Sandbox paid, a matching Stripe ID and 26 October 12:00 Berlin start. The earlier EUR129 sandbox pack remains visible. Replay preserves one session booking and paid timestamp. Sandbox amounts are excluded from this page live EUR total (0.00). Paid-session completion protection was corrected and verified in rolled-back database tests after explicit deployment approval. Android session checkout, refunds and other finance dashboards remain unverified."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-03",
+          "recordedStatus": "Pass",
+          "observation": "24 October scoped reconciliation: dashboard and Settings label 10 as User profiles; User Management explains its 15 registered sign-in accounts, including five without a saved profile. Profile-growth terminology and workout-activity descriptions corrected; mixed-population percentages removed. Six real browser/API checks pass and profile rows remain unchanged. Queries unchanged; larger Auth listing/pagination and other BI calculations not certified. Historical failure captures retained."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-04",
+          "recordedStatus": "Pass",
+          "observation": "Authenticated GET of the 7-day finance export returned HTTP 200 and CSV column headers. No populated-row reconciliation or browser download interaction claimed."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-05",
+          "recordedStatus": "Pass",
+          "observation": "Saved QA_ONLY_VIEW_20261023 for 30D with scheduling Off; it appeared, then deletion returned to 0/6 saved views. Applying a view and scheduling delivery were not exercised."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-06",
+          "recordedStatus": "Partial",
+          "observation": "Threshold cards and client/coach risk lists render; raw data, formulas and classifications were not independently reconciled for every user."
+        }
+      ],
+      "artifacts": [
+        "qa/2026-10-23-admin/fixes/DASH-03/README.md",
+        "qa/2026-10-24-session-payments/README.md"
+      ],
+      "supplementary": false
+    },
+    {
+      "id": "M19",
+      "requirement": "Supplementary",
+      "capability": "Adaptive workout recommendation",
+      "implementationStatus": "Integration foundation",
+      "sourceScope": "Empty-history recommendation entry and Edge generation function exist.",
+      "retainedVerification": "Regular account history blocked generation/review/save; no timing result retained.",
+      "limitations": "Additional report capability, not a new numbered FR. Reachable generation/output/save/reopen need controlled execution; no 720-ms result is supported.",
+      "sources": [
+        {
+          "path": "GoFitMobile/src/screens/home/HomeScreen.tsx",
+          "line": 135,
+          "anchor": "!loading && sessions.length === 0",
+          "sha256": "aa19b6d503f057a7ae138beaa55f49d333fd067101657730ec46a214c6aab997",
+          "excerpt": "        <HealthWidget />\n\n        {!loading && sessions.length === 0 ? (\n          <RecommendedWorkouts />\n        ) : (\n          <TopWorkouts key={`workouts-${refreshKey}`} />\n        )}"
+        },
+        {
+          "path": "supabase/functions/ai-workout-recommendation/index.ts",
+          "line": 189,
+          "anchor": "serve(",
+          "sha256": "e32f0169a7272fd75ef879827b08a1634138fc43d667ec92cf900a3f7869035b",
+          "excerpt": "};\n\nDeno.serve(async (req) => {\n  if (req.method === 'OPTIONS') {\n    return new Response('ok', { headers: corsHeaders });\n  }\n"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AI-01",
+          "recordedStatus": "Blocked",
+          "observation": "HomeScreen exposes RecommendedWorkouts only when loading is false and session history is empty. This regular account has history and displays Recent Activity instead. No history was deleted and no hidden state or privileged API was used to bypass this UI condition."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AI-02",
+          "recordedStatus": "Blocked",
+          "observation": "HomeScreen exposes RecommendedWorkouts only when loading is false and session history is empty. This regular account has history and displays Recent Activity instead. No history was deleted and no hidden state or privileged API was used to bypass this UI condition."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AI-03",
+          "recordedStatus": "Blocked",
+          "observation": "HomeScreen exposes RecommendedWorkouts only when loading is false and session history is empty. This regular account has history and displays Recent Activity instead. No history was deleted and no hidden state or privileged API was used to bypass this UI condition."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": true
+    },
+    {
+      "id": "M20",
+      "requirement": "Supplementary",
+      "capability": "Operational workflows and notification delivery",
+      "implementationStatus": "Artifacts present",
+      "sourceScope": "Five n8n exports, start instructions and notification-service code are present.",
+      "retainedVerification": "Historical inbox display observed; no retained fresh scheduled run/provider receipt/duplicate-delivery result.",
+      "limitations": "Cross-cutting support, not a new numbered FR. Exports do not prove active hosting, secrets, cron operation or production delivery.",
+      "sources": [
+        {
+          "path": "docs/automation/n8n/README.md",
+          "line": 3,
+          "anchor": "portable n8n workflow exports",
+          "sha256": "9cfde6af1bc88f2335dca6a762dc39e61402c60c66fe1bb0c333708572942221",
+          "excerpt": "# GoFit n8n Automations\n\nThis folder contains portable n8n workflow exports for GoFit operational automations.\n\nThe v1 default is self-hosted n8n Community Edition because it is the practical free path. n8n Cloud is easier to start with, but should be treated as a trial or paid hosted option.\n\n## Secrets"
+        },
+        {
+          "path": "docs/automation/n8n/workflows/coach-daily-digest-v1.json",
+          "line": 18,
+          "anchor": "scheduleTrigger",
+          "sha256": "57c5d2e163afcf2984155b356ea1f77393766a4f00246df77ef7301102f6e1f2",
+          "excerpt": "      \"id\": \"coach-digest-schedule-trigger-v1\",\n      \"name\": \"Daily Coach Digest\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        120,\n        420"
+        },
+        {
+          "path": "GoFitMobile/src/services/pushNotification.ts",
+          "line": 5,
+          "anchor": "async send(",
+          "sha256": "88deb1da45f769a27a4f5589eb5378644b8fe5dc87c985ee9881a823f54e801b",
+          "excerpt": "\nexport const pushNotificationService = {\n  async send(params: {\n    user_id: string;\n    title: string;\n    body?: string;\n    data?: Record<string, unknown>;"
+        }
+      ],
+      "qaCases": [
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "HOME-04",
+          "recordedStatus": "Partial",
+          "observation": "Notification inbox rendered an existing dated notification. No new event or push-delivery test was triggered."
+        },
+        {
+          "ledger": "qa/2026-10-22/results.json",
+          "case": "AUTOMATION-01",
+          "recordedStatus": "Blocked",
+          "observation": "Repository contains n8n workflow JSON definitions in docs/automation/n8n/workflows. No connected n8n execution history/runtime provided; definitions do not prove scheduled runs. Did not invoke workflows that could send real notifications."
+        },
+        {
+          "ledger": "qa/2026-10-23-coach/results.json",
+          "case": "DASH-02",
+          "recordedStatus": "Partial",
+          "observation": "Inbox loaded historical digest, upcoming-session and AI-briefing notifications. No new notification triggered or delivery verified."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-07",
+          "recordedStatus": "Blocked",
+          "observation": "No notification was sent. No designated delivery test or separate recipient supplied."
+        },
+        {
+          "ledger": "qa/2026-10-23-admin/results.json",
+          "case": "DASH-08",
+          "recordedStatus": "Blocked",
+          "observation": "Did not enable delivery schedules or invoke cron. Existing workflow definitions do not establish successful execution."
+        }
+      ],
+      "artifacts": [],
+      "supplementary": true
+    }
+  ]
+}

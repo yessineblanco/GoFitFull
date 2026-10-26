@@ -1,0 +1,223 @@
+[
+  {
+    "topic": "Working-environment scope",
+    "old": "The implementation, local simulation, containerized orchestration, and deployment of the multi-tier GoFit platform required a high-performance engineering environment spanning developer workstations, mobile testing hardware, virtualized emulators, and cloud hosting infrastructure. The following subsections detail the material specifications and software toolchain utilized throughout the development lifecycle.",
+    "new": "This section identifies the local development environment, the retained test-device context and the principal runtime dependencies. It distinguishes observed execution from configuration and deployment targets.",
+    "originalLine": 1840,
+    "revisedLine": 1840
+  },
+  {
+    "topic": "Hardware evidence boundary",
+    "old": "The development, local simulation, containerized orchestration, and compilation of the GoFit mobile and web ecosystems were conducted on a dedicated high-performance workstation supplemented by mobile testing devices and cloud services.",
+    "new": "The October audit used a local Windows workspace and separate Android QA development packages. The available records do not independently establish exact internship workstation specifications or a completed emulator test campaign.",
+    "originalLine": 1844,
+    "revisedLine": 1844
+  },
+  {
+    "topic": "Material table scope",
+    "old": "\\caption{Hardware and material environment specifications}",
+    "new": "\\caption{Development and test environments supported by retained evidence}",
+    "originalLine": 1854,
+    "revisedLine": 1854
+  },
+  {
+    "topic": "Material table columns",
+    "old": "Hardware/Device & Technical Specifications & Operational Role in GoFit Project",
+    "new": "Environment & Retained observation & Interpretation and limits",
+    "originalLine": 1856,
+    "revisedLine": 1856
+  },
+  {
+    "topic": "Unsupported workstation specifications",
+    "old": "Development Workstation & 13th Gen Intel(R) Core(TM) i7- 13650HX (14 cores/20 threads: 6 P-cores up to 4.90 GHz, 8 E-cores up to 3.60 GHz), 24 GB DDR5 4800 MHz Dual-Channel RAM, 512 GB PCIe 4.0 NVMe SSD, Windows 11 Pro 64-bit (Build 26H2) & Full-stack development, Expo Metro bundler, Next.js Node.js server, Docker n8n container runtime, and local compilation.",
+    "new": "Local development workspace & Windows filesystem; retained Metro and local Next.js QA records & Supports the recorded development checks. Processor, memory, disk specification and Windows release were not independently verified.",
+    "originalLine": 1857,
+    "revisedLine": 1857
+  },
+  {
+    "topic": "Remove unsupported emulator campaign",
+    "old": "Android Emulator & Google Pixel 7 Virtual Device running Android 14.0 (API Level 34, Google APIs ARM64/x86 64 translation, 4 \\_ GB virtual RAM) & Simulating cross-resolution responsiveness, deep linking, background timers, audio ducking, and permission dialogs. \\\\ \\hline\n",
+    "new": "",
+    "originalLine": 1858
+  },
+  {
+    "topic": "Correct device context",
+    "old": "Physical Android Device & Physical Android Smartphone running Android 14, USB debugging, ARM64-v8a architecture, physical camera sensor & Hardware-accelerated MediaPipe BlazePose and Selfie Segmentation camera testing, \\seqsplit{realaccelerometer/gyroscope,} and haptics.",
+    "new": "Physical Android QA device & Samsung SM-S928B; Android 17/API 37; development packages & Context for the retained October observations. Wireless debugging and development builds do not certify release startup, fresh measurement inference or locked-device timer behavior.",
+    "originalLine": 1859,
+    "revisedLine": 1858
+  },
+  {
+    "topic": "Declared TypeScript versions versus check results",
+    "old": "TypeScript & TypeScript 5.3+ (Strict Mode enabled) & Static type safety across mobile applications, web admin panel, and Deno Edge Functions.",
+    "new": "TypeScript & Mobile manifest: \\texttt{\\string~5.9.2}; admin manifest: \\texttt{\\string^5}; strict enabled in both client configurations & Static checking is configured. The retained mobile check has 12 diagnostics; the administrative check passed. These settings do not prove runtime correctness or a Deno check.",
+    "originalLine": 1880,
+    "revisedLine": 1879
+  },
+  {
+    "topic": "Replace stale payment baseline",
+    "old": "Stripe integration & Native PaymentSheet SDK and PaymentIntent Edge Function & Checkout followed by separate client-triggered application writes; verified fulfilment and payout settlement are not established by this path.",
+    "new": "Stripe integration & Native SDK 0.50.3 in the mobile manifest; PaymentIntent Edge Function & Server-priced EUR checkout and verified fulfilment. Android pack and standalone API/admin sandbox evidence have distinct scopes; recovery, refunds and payouts remain unverified.",
+    "originalLine": 1887,
+    "revisedLine": 1886
+  },
+  {
+    "topic": "Remove unsupported Git version and hosting tier",
+    "old": "Git \\& GitHub & Git 2.45+, GitHub Enterprise Repository & Distributed version control, branch-based feature tracking, and collaborative code reviews. \\\\ \\hline\n",
+    "new": "",
+    "originalLine": 1889
+  },
+  {
+    "topic": "Remove unsupported IDE inventory",
+    "old": "Visual Studio Code/Antigravity & VS Code/Google Antigravity Advanced Agentic IDE & Agentic pair programming, schema design, linting, debugging, and report generation. \\\\ \\hline\n",
+    "new": "",
+    "originalLine": 1890
+  },
+  {
+    "topic": "Single toolchain reference",
+    "old": "The software toolchain combines cross-platform mobile runtimes, reactive web frameworks, serverless edge computing, on-device machine learning, workflow automation engines, and version control infrastructure.",
+    "new": "Table~\\ref{tab:pdf-88-43} records selected manifest declarations and inspected integration roles. A package declaration identifies a dependency target, rather than a successful build or executed feature. Native integration and validation limits are described with the corresponding architecture and QA evidence.",
+    "originalLine": 1866,
+    "revisedLine": 1865
+  },
+  {
+    "topic": "Consolidate duplicate mobile architecture inventory",
+    "old": "\\subsection{GoFit Mobile Application Architecture}\n\nThe mobile application is structured as a layered client application. Screens and reusable components are responsible for presentation, navigation manages access to feature areas, Zustand stores hold cross-screen state, service modules centralize data access, and infrastructure clients communicate with Supabase or local native modules. This separation reduces coupling between user interface code and persistence logic.\n\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Mobile architecture responsibilities}\\label{tab:pdf-93-44} \\\\\n\\hline\n\\rowcolor{entetetab}\nLayer & Responsibility & Examples in GoFit \\\\ \\hline\nPresentation & Display screens, forms, lists, charts, timers, and feedback states. & Authentication screens, workout screens, progress screens, coach marketplace screens. \\\\ \\hline\nNavigation & Route users according to authentication, onboarding, role, and feature context. & Auth navigator, onboarding flow, client app area, coach app area, detail screens. \\\\ \\hline\nState management & Store reusable client state and synchronize UI updates. & Auth store, workout store, profile state, timer preferences, progress state. \\\\ \\hline\nDomain services & Encapsulate API calls, persistence logic, and feature-specific operations. & Workout service, progress service, body measurement service, coach/booking services. \\\\ \\hline\nNative/AI modules & Execute device-specific or performance-sensitive functionality. & Camera capture, MediaPipe native module, MoveNet fallback, segmentation analysis. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\n",
+    "new": "The mobile responsibilities summarized above are selected boundaries rather than mandatory call chains: screen code can access configured clients directly, stores coordinate some shared state, and native inference remains device-specific. The detailed workout, authentication, measurement and nutrition sequences provide the operation-level persistence boundaries.\n\n",
+    "originalLine": 1956,
+    "revisedLine": 1953
+  },
+  {
+    "topic": "Align access-check description with retained QA",
+    "old": "The admin panel should be validated with at least two account types: an administrator account that can access management screens and a normal account that must be blocked or redirected. This distinction is important because the panel can manage sensitive platform data such as coach validation status, user records, exercise content, transactions, and notifications.",
+    "new": "The retained administrative QA includes selected administrator, unauthenticated and non-admin access checks. These scoped results are summarized in Section~\\ref{sec:qa-evidence}; they do not certify every route, policy or destructive operation.",
+    "originalLine": 1985,
+    "revisedLine": 1960
+  },
+  {
+    "topic": "Tighten BI description and metric limits",
+    "old": "The BI architecture follows a protected data-to-dashboard pipeline. PostgreSQL views such as bi\\_finance\\_daily, \\seqsplit{bi\\_user\\_lifecycle\\_daily,} bi\\_coach\\_ops\\_daily, and bi\\_client\\_health\\_daily prepare canonical daily metrics. TypeScript service modules in the admin panel read those views and normalize the results into dashboard contracts. React components then display summary cards, trend panels, risk\n\n\nqueues, cohort tables, finance details, and threshold alerts. API routes under /api/bi provide exports, saved views, snapshots, and scheduled digest execution.\n\n\nThe BI layer is deliberately separated from normal CRUD pages. CRUD pages manage individual records, while BI pages aggregate and interpret platform behavior. This separation reduces duplication and makes it clearer which parts of the panel are operational management and which parts are decision-support analytics. The v1 BI scope is also explicit: finance is gross-pack-sales oriented, lifecycle and cohort metrics depend on available history, risk queues are operational signals, and all BI access must remain admin-protected.\n\n\n",
+    "new": "The BI service modules read daily metric views, including \\texttt{bi\\_finance\\_daily}, \\texttt{bi\\_user\\_lifecycle\\_daily}, \\texttt{bi\\_coach\\_ops\\_daily} and \\texttt{bi\\_client\\_health\\_daily}, then prepare dashboard data. Routes under \\texttt{/api/bi} support exports, saved views, snapshots and digest-related operations. These are source-defined responsibilities; selected CSV, saved-view and population-label checks do not validate every aggregate or scheduled route.\n\nThe finance scope is primarily gross pack sales. Available history constrains lifecycle/cohort interpretation, and risk queues are operational indicators. The sandbox exclusion verified for the Transactions live total does not certify every BI finance aggregate; card payments, wallet ledger entries and coach payouts must remain distinct.\n\n",
+    "originalLine": 1990,
+    "revisedLine": 1965
+  },
+  {
+    "topic": "Consolidate Codex, MCP and complete-toolchain repetition",
+    "old": "\\subsection{AI-Assisted Development Methodology}\n\nGoFit was not developed only with traditional manual coding tools. The project also used AI-assisted software-engineering tools during analysis, implementation support, debugging, documentation, and report construction. This aspect must be documented because the internship concerns both the final GoFit platform and the way the platform was produced. The use of AI assistants changed the workflow: instead of only searching manually through files and documentation, the developer could ask targeted questions, compare implementation alternatives, generate structured drafts, and verify project evidence faster.\n\n\nCodex was used as the main AI coding assistant. It worked inside the local GoFit workspace and had access to the repository files, terminal commands, generated documentation, and selected project tools. Codex helped inspect the mobile application, admin panel, database migrations, Supabase functions, n8n workflows, AI research notes, and academic documents. Its role was not to replace the developer; its role was to accelerate understanding, propose changes, identify missing documentation, summarize repository evidence, and generate drafts that were then reviewed and corrected.\n\n\nA typical Codex-assisted workflow followed four steps. First, the developer described the objective, such as documenting the AI body-measurement pipeline or improving a sprint section. Second, Codex inspected the repository using command-line search and file reads. Third, Codex proposed or generated a concrete artifact, such as a report section, table, diagram draft, test plan, or code change. Fourth, the result was checked by running scripts, reading diffs, verifying generated files, and comparing claims against the repository. This human-in-the-loop process is important because AI-generated content can be incomplete, outdated, or too generic if it is not grounded in real project files.\n\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Codex usage during the GoFit project}\\label{tab:pdf-95-46} \\\\\n\\hline\nProject phase & How Codex was used & Human validation \\\\ \\hline\nRequirements and scope analysis & Summarized existing documents, identified actors, extracted feature lists, and transformed project notes into functional and non-functional requirements. & Requirements were compared with project files, feature inventory, and supervisor expectations. \\\\ \\hline\nArchitecture and design & Helped connect mobile, admin, Supabase, Edge Functions, n8n, AI models, and external services into coherent architecture explanations and diagrams. & Architecture claims were checked against repository folders, database migrations, and implementation notes. \\\\ \\hline\nImplementation support & Suggested implementation plans, reviewed code organization, identified related files, and helped reason about bugs or integration risks. & The developer decided what to apply, ran commands, inspected diffs, and avoided uncontrolled changes. \\\\ \\hline\nAI feature documentation & Connected body-measurement code, MediaPipe module details, segmentation research, validation notes, and LLM automation workflows. & Model names, limitations, and statuses were checked against the source files and troubleshooting documents. \\\\ \\hline\nTesting and QA planning & Generated test matrices, validation checklists, and structural document audits. & Tests and audits were executed locally when possible; limitations were documented when tools were unavailable. \\\\ \\hline\nPFE report writing & Generated the report structure, expanded chapter content, produced tables, created diagram drafts, and rebuilt the DOCX artifact. & The report was rebuilt, audited structurally, and revised based on missing project-process details. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\n\\subsection{MCPs and Connected Tooling Used to Stay Up to Date}\n\nThe project also used connected tools and MCP-style integrations. MCP, or Model Context Protocol, is useful because it allows an AI assistant to interact with controlled external contexts instead of relying only on static model memory. In practice, this means the assistant can inspect local files, run commands, consult project documentation, use document-generation tools, and connect to specialized services when available. This was important for GoFit because the technology stack evolves quickly: Expo, React Native, Next.js, Supabase, AI tooling, and deployment workflows can change between academic years.\n\n\nThe MCP and plugin-based workflow helped keep the work closer to the current technical state. For example, official documentation and local repository files were preferred over memory when describing frameworks, Supabase behavior, OpenAI/Codex usage, and document generation. Local commands were used to inspect the real project instead of inventing features. Document tooling was used to generate and audit the Word report. Supabase and automation-related context was used to describe backend workflows, database artifacts, Edge Functions, and n8n flows more accurately.\n\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{MCP and connected tools used in the project workflow}\\label{tab:pdf-96-47} \\\\\n\\hline\nTool/connector type & Purpose & Example contribution to the report or project \\\\ \\hline\nLocal filesystem and terminal tools & Inspect repository files, search code, run scripts, check generated artifacts, and verify counts. & Used to read GoFitMobile, admin-panel, database, docs, and n8n workflow files before writing report sections. \\\\ \\hline\nOfficial documentation/web lookup & Verify current technology information when framework behavior or product details may have changed. & Used as a principle for up-to-date descriptions of fast-moving tools such as Expo, Supabase, Next.js, OpenAI/Codex, and AI APIs. \\\\ \\hline\nDocuments tooling & Create, edit, audit, and regenerate DOCX deliverables. & Used to generate the PFE report, add accessibility metadata, mark table headers, and validate DOCX structure. \\\\ \\hline\nSupabase-related tooling & Reason about backend services, migrations, RLS, Edge Functions, database tables, and security boundaries. & Supported sections on authentication, PostgreSQL, storage, realtime, RLS, service-role isolation, and backend architecture. \\\\ \\hline\nBrowser/app inspection tools & Check local or web interfaces when visual or runtime verification is required. & Useful for validating frontend behavior, screenshots, documentation pages, and current technology references. \\\\ \\hline\nAutomation tooling & Inspect or execute n8n workflows and Docker-based automation environments when needed. & Supported documentation of AI session preparation, admin digest automation, and service-role workflow execution. \\\\ \\hline\nPDF/document readers & Use the uploaded example report for structural inspiration without copying its content. & Helped reproduce the academic organization, front matter, chapter order, tables, figures, and report style. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\nMCP methodology: MCPs were not treated as automatic truth sources. They were used to access controlled context: local files, official documentation, generated documents, database-related material, and automation artifacts. Final claims still required human review and consistency checks.\n\n\n\\subsection{Complete Toolchain Used to Build GoFit}\n\nThe following table summarizes the main tools used to create GoFit. It includes product technologies, development tools, AI assistants, automation services, and documentation tools. This list is useful because the PFE evaluates not only the final application but also the engineering environment used to produce it.\n\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Complete development and production toolchain}\\label{tab:pdf-97-48} \\\\\n\\hline\n\\rowcolor{entetetab}\nCategory & Tools & Use in the project \\\\ \\hline\nMobile development & Expo SDK, React Native, TypeScript, React Navigation, Zustand, Expo Camera, Expo Secure Store. & Build the cross-platform mobile app, navigation flows, state management, authentication persistence, camera/photo capture, andclient/coach screens. \\\\ \\hline\nWeb administration & Next.js App Router, TypeScript, Tailwind CSS, shadcn-style UI components. & Build the admin panel, protected routes, dashboards, management pages, forms, analytics, and operational interfaces. \\\\ \\hline\nBackend and database & Supabase Auth, PostgreSQL, RLS, Storage, Realtime, Edge Functions, SQL migrations. & Provide authentication, persistent data, security policies, media storage, realtime communication, and privileged backend operations. \\\\ \\hline\nAI and computer vision & MoveNet Lightning, TensorFlow Lite, MediaPipe Pose Landmarker, MediaPipe Image Segmenter, local Expo native module. & Implement AI-assisted body measurement using pose detection, segmentation, feature extraction, and statistical estimation. \\\\ \\hline\nLLM and automation & Groq API, n8n workflows, Supabase service-role REST calls. & Generate adaptive workout recommendations, coach session briefings, AI session notes, and admin operations digests. \\\\ \\hline\nCommunication and external services & Expo Push, LiveKit, \\seqsplit{optionalhosting/storage} providers. & Support notifications, video-call token flows, media/storage extension, and remote coaching features. \\\\ \\hline\nDevelopment assistance & Codex, MCP/tool connectors, terminal commands, repository search, document-generation scripts. & Accelerate analysis, implementation support, debugging, report writing, current-doc lookup, and artifact generation. \\\\ \\hline\nQuality and documentation & Git, Python docx scripts, accessibility audit, generated diagrams, project documentation files. & Version work, generate the DOCX report, audit structure, \\seqsplit{maintainarchitecture/feature/sprint} notes, and prepare submission artifacts. \\\\ \\hline\nDeployment preparation & EAS Build, Next.js-compatible hosting, Supabase project configuration, environment variables. & Prepare mobile builds, web hosting, backend deployment, secret separation, and production release steps. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\nAcademic transparency: The report should clearly state that AI assistants supported development and documentation, but they did not replace human implementation responsibility. All generated code,\n\n\ndiagrams, report text, and technical claims must be checked against the repository and corrected when inaccurate.\n\n\n",
+    "new": "\\subsection{Development Assistance and Review Procedure}\n\nAI assistants, including Codex, supported repository inspection, implementation proposals, debugging, diagram drafts and report revision. Connected tools provided file, browser and selected backend context. These tools supplied material for review rather than proof that a feature was implemented, deployed or tested.\n\nThe review procedure compared generated claims with source files, examined changes and retained the relevant execution artifacts when checks were performed. Missing execution evidence remains explicit in the QA matrix. Generated documentation and mock-based tests cannot establish native behavior, provider outcomes or historical sprint completion.\n\nThe present report is maintained in LaTeX. Earlier document-generation scripts are part of the drafting history; their existence does not verify the current report's content or the application. Responsibility for accepting the implementation and academic claims remains with the author.\n\n",
+    "originalLine": 2038,
+    "revisedLine": 2008
+  },
+  {
+    "topic": "Automation source versus execution",
+    "old": "GoFit includes an automation layer implemented with n8n workflow exports located in \\seqsplit{docs/automation/n8n/workflows.} These workflows are part of the product because they perform scheduled operational work that would otherwise require manual monitoring by coaches or administrators. The n8n layer is separate from the mobile application and the admin panel: it runs in a trusted automation environment, calls Supabase through REST endpoints, and creates persistent rows in the database.",
+    "new": "Five n8n exports in \\path{../docs/automation/n8n/workflows} define scheduled briefing, reminder and digest operations using backend REST calls. They require a separate privileged runtime. The exports establish intended queries and writes, without establishing active hosting or successful scheduled execution.",
+    "originalLine": 2135,
+    "revisedLine": 2018
+  },
+  {
+    "topic": "Remove unverified runtime configuration claims",
+    "old": "The v1 automation design uses self-hosted n8n Community Edition as the practical free option. Runtime secrets are injected through environment variables. SUPABASE\\_URL identifies the backend project, \\seqsplit{SUPABASE\\_SERVICE\\_ROLE\\_KEY} allows controlled server-side access, and GROQ\\_API\\_KEY is required only by the AI Session Prep workflow. These secrets must never be committed to the repository, placed in mobile code, or exposed in client-side admin bundles.",
+    "new": "The accompanying Docker quick-start documents a self-hosted runtime and environment-variable configuration. The service-role credential belongs in that server boundary; the Groq credential is needed by AI Session Prep. Configuration instructions do not establish that secrets were securely provisioned or that a container is running.",
+    "originalLine": 2138,
+    "revisedLine": 2021
+  },
+  {
+    "topic": "Automation table caption scope",
+    "old": "\\caption{n8n workflows implemented in GoFit}",
+    "new": "\\caption{Configured n8n workflow logic in the supplied exports}",
+    "originalLine": 2152,
+    "revisedLine": 2035
+  },
+  {
+    "topic": "Automation table columns scope",
+    "old": "Workflow & Trigger & Data read & Actions performed & Guard/control",
+    "new": "Workflow & Configured trigger & Data read & Defined actions & Source guard/control",
+    "originalLine": 2154,
+    "revisedLine": 2037
+  },
+  {
+    "topic": "Replace repetitive n8n checklist table with specific limits",
+    "old": "\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{n8n security, limits, and evidence requirements}\\label{tab:pdf-100-50} \\\\\n\\hline\n\\rowcolor{entetetab}\nTopic & Design decision & Reason/evidence to attach \\\\ \\hline\nSecret management & SUPABASE SERVICE ROLE KEY and \\_ \\_ \\_ GROQ API KEY stay inside the n8n \\_ \\_ runtime environment. & Prevents privileged keys from being bundled into the mobile app, admin client, .env.example, or workflow JSON. \\\\ \\hline\nService-role access & Workflows use service-role access only from trusted automation infrastructure. & Needed for scheduled background work while keeping normal app access protected by RLS. \\\\ \\hline\nAI boundary & AI Session Prep calls Groq directly from n8n instead of calling the ai-session-notes Edge Function. & The Edge Function is designed for authenticated coach actions; the automation flow is a scheduled server-side job. \\\\ \\hline\nNotification strategy & v1 workflows create in-app notification rows rather than sending push notifications directly. & Push delivery needs token, retry, throttling, and failure handling before being automated safely. \\\\ \\hline\nClient privacy & Clients do not read ai session notes \\_ \\_ through normal app access. & The table is coach-facing and protected by coach-only authenticated access rules. \\\\ \\hline\nTime handling & Daily and due-date workflows use UTC in v1. & Timezone-aware scheduling can be added after user/coach timezone preferences are finalized. \\\\ \\hline\nIdempotency & Each workflow checks existing rows before inserting new notifications or notes. & Manual verification must show that a second run does not create duplicates. \\\\ \\hline\nReport evidence & Final report should attach workflow canvas screenshots, run summaries, and Supabase rows for each workflow. & Evidence proves that workflows are implemented and not only planned. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\n",
+    "new": "The exported workflows create in-app notification records rather than direct push deliveries. UTC comparisons and existing-row checks implement the documented scheduling and duplicate guards, without establishing concurrency-safe exactly-once execution. Runtime authorization, client visibility of coach briefings and secret handling require their own deployment checks. No fresh scheduled run, replay-under-concurrency result or provider delivery receipt is retained.\n\n",
+    "originalLine": 2163,
+    "revisedLine": 2046
+  },
+  {
+    "topic": "Retained automation identifier: an ai session notes \\_ \\_ row",
+    "old": "an ai session notes \\_ \\_ row",
+    "new": "an \\texttt{ai\\_session\\_notes} row",
+    "originalLine": 2155,
+    "revisedLine": 2038
+  },
+  {
+    "topic": "Retained automation identifier: data.kind = ai session ready. \\_ \\_",
+    "old": "data.kind = ai session ready. \\_ \\_",
+    "new": "\\texttt{data.kind = ai\\_session\\_ready}.",
+    "originalLine": 2155,
+    "revisedLine": 2038
+  },
+  {
+    "topic": "Retained automation identifier: samecoach/client",
+    "old": "samecoach/client",
+    "new": "same coach/client",
+    "originalLine": 2155,
+    "revisedLine": 2038
+  },
+  {
+    "topic": "Retained automation identifier: data.kind = booking starting so \\_ ",
+    "old": "data.kind = booking starting so \\_ \\_ on.",
+    "new": "\\texttt{data.kind = booking\\_starting\\_soon}.",
+    "originalLine": 2156,
+    "revisedLine": 2039
+  },
+  {
+    "topic": "Retained automation identifier: Enabled check in schedules, \\_ \\_ c",
+    "old": "Enabled check in schedules, \\_ \\_ current UTCdate/time, and check in responses \\_ \\_ for the day.",
+    "new": "Enabled \\texttt{check\\_in\\_schedules}, current UTC date/time and \\texttt{check\\_in\\_responses} for the day.",
+    "originalLine": 2157,
+    "revisedLine": 2040
+  },
+  {
+    "topic": "Retained automation identifier: data.kind = check in due. \\_ \\_",
+    "old": "data.kind = check in due. \\_ \\_",
+    "new": "\\texttt{data.kind = check\\_in\\_due}.",
+    "originalLine": 2157,
+    "revisedLine": 2040
+  },
+  {
+    "topic": "Retained automation identifier: an admin notifications \\_ row",
+    "old": "an admin notifications \\_ row",
+    "new": "an \\texttt{admin\\_notifications} row",
+    "originalLine": 2159,
+    "revisedLine": 2042
+  },
+  {
+    "topic": "Retained automation identifier: automation failures \\_ count remain",
+    "old": "automation failures \\_ count remains 0 in \\_ v1",
+    "new": "\\texttt{automation\\_failures\\_count} remains 0 in v1",
+    "originalLine": 2159,
+    "revisedLine": 2042
+  },
+  {
+    "topic": "Consolidate mobile-library and haptic-coverage tables",
+    "old": "\\subsection{Libraries, Dependencies, and Device Feedback}\n\nA complete PFE report should not describe GoFit only through screens and database tables. The implementation also depends on a large set of libraries that provide navigation, state management, forms, validation, media capture, haptic feedback, animations, charts, video calls, localization, notifications, artificial intelligence, and administration-table behavior. The following tables summarize the main libraries identified from the mobile and admin package files and explain how they support the product.\n\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Mobile libraries and implementation roles}\\label{tab:pdf-101-51} \\\\\n\\hline\nLibrary/family & Used for & Examples in GoFit \\\\ \\hline\nExpo SDK and React Native & Cross-platform mobile runtime, native APIs, Android/iOS builds, and shared TypeScript UI. & Main GoFitMobile application, Expo dev client, camera access, file/document picker, image picker, splash screen, status bar, and EAS build preparation. \\\\ \\hline\nReact Navigation & Stack, tab, and role-aware navigation between client, coach, authentication, onboarding, and detail screens. & Auth flow, onboarding flow, client app tabs, coach app tabs, profile/settings screens, marketplace details, booking, programs, and workout session routes. \\\\ \\hline\nZustand and persisted state & Lightweight state management for reusable mobile state. & Auth/session state, workout state, timer preferences, bookings, calendar, chat, coach/client data, health, language, marketplace, packs, programs, theme, text size, nutrition, daily coach, and wallet state. \\\\ \\hline\nSupabase JavaScript client & Authenticated access to Supabase Auth, PostgreSQL, Storage, Realtime, and Edge Functions. & User profiles, workouts, sessions, coach marketplace, bookings, packs, chat, notifications, AI session notes, barcode lookup, video-token generation, and push notification relay. \\\\ \\hline\nExpo Secure Store and Async Storage & Secure session persistence and local preference persistence. & Auth tokens, user session continuity, persisted preferences, and local app state that must survive app restarts. \\\\ \\hline\nExpo Notifications and push helpers & Local notification scheduling, notification permissions, push-token registration, and notification inbox integration. & Workout reminders, weekly progress reports, achievement/test notifications, push-token registration, notification preferences, and transactional notification rows. \\\\ \\hline\nExpo Haptics & Physical feedback for taps, selections, timer events, success states, warning states, and error states. & Auth buttons, onboarding controls, home cards, rest timer, workout session actions, body measurement, nutrition logging, booking, chat, coach programs, coach packs, settings, and profile actions. \\\\ \\hline\nExpo Camera, Image Picker, Image Manipulator, Image, File System & Photo capture, photo selection, image processing, and file access. & Progress photos, body-measurement capture, coach CV/certification upload flows, and image-based AI preparation. \\\\ \\hline\nMedia and native AI libraries & On-device or native computer-vision support. & \\seqsplit{react-native-fast-tflite,} MediaPipe native module, MoveNet/TFLite fallback, segmentation analysis, pose landmarks, and measurement estimator support. \\\\ \\hline\nLiveKit and WebRTC libraries & Realtime video-call support between coaches and clients. & LiveKit React Native, Expo plugin, WebRTC bridge, video token function, and video-call screen. \\\\ \\hline\nForms, validation, localization, and UI helpers & Typed input handling, validation, translation, icons, charts, dates, gestures, animations, and SVG rendering. & React Hook Form, Zod, i18next/react-i18next, lucide-react-native, \\seqsplit{react-native-chart-kit,} date-fns, gesture handler, reanimated, vector icons, SVG, safe-area, screens, and worklets. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\nThe administration portal uses Next.js 16.1.3 with the App Router, combining React Server Components with client-side interactive tables powered by TanStack React Table and forms validated through React Hook Form and Zod schemas. The user interface uses Tailwind CSS with shadcn/Radix UI components, while charting and time-series analytics use Recharts and date-fns, with Lucide React icons. Server-side Supabase SSR clients handle administrative authentication; privileged adapters support protected data operations. Sonner provides toast notifications and next-themes supports light and dark UI themes.\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Haptics and tactile feedback coverage}\\label{tab:pdf-103-53} \\\\\n\\hline\n\\rowcolor{entetetab}\nFeature area & Feedback type & Implementation detail \\\\ \\hline\nRest timer and workout session & Light, medium, heavy impact, success feedback, and countdown feedback. & The timer preference includes haptics enabled; useRestTimer, \\_ EnhancedRestTimer, TimerModal,and WorkoutSessionScreen call haptic helpers for timer actions, countdown thresholds, set completion, and workout milestones. \\\\ \\hline\nAuthentication and onboarding & Light impact and selection feedback. & Welcome buttons, social buttons, checkboxes, onboarding navigation, weight selector, and personal details flows use Expo Haptics to make taps and selections feel responsive. \\\\ \\hline\nHome dashboard and quick actions & Light or medium impact, plus success feedback where relevant. & Home cards for articles, health, check-ins, nutrition, daily coach loop, recommended workouts, quick actions, programs, top workouts, and top trainers use haptics for card presses and action confirmations. \\\\ \\hline\nProgress and body measurement & Light/medium impact, warning feedback, and success feedback. & Progress photos, photo detail, workout statistics, body-measurement capture, AI scan warnings, and successful measurement saves use tactile confirmation. \\\\ \\hline\nNutrition and check-ins & Light/medium impact, selection feedback, and success notification feedback. & Nutrition dashboard, food adding, nutrition goals, barcode/food actions, and check-in submission use haptics to distinguish selection, confirmation, and completion events. \\\\ \\hline\nProfile and settings & Light impact, selection feedback, success feedback, and error feedback. & Text size, units, language, account information, height/weight editing, habits, notification settings, bookings/reviews, health sync, and preferences use haptics to support settings changes and save/error states. \\\\ \\hline\nCoach marketplace and booking & Light/medium impact and warning feedback. & Marketplace browsing, coach detail, booking slot selection, client views, calendar interactions, availability, session packs, and booking decisions provide tactile response on important actions. \\\\ \\hline\nCoach app communication and management & Light/medium impact andsuccess/error feedback. & Coach dashboard navigation, clientlist/detail, notes, check-ins, calendar, profile/settings, chat, conversations, programs, program builder, packs, certifications, and CV upload use haptics for action acknowledgement. \\\\ \\hline\nDesign principle & Feedback is assistive, not decorative. & Light feedback is used for \\seqsplit{ordinarytaps/selections,} medium/heavy feedback for stronger actions or timer thresholds, and notification feedback for success, warning, or error states. Haptics should remain configurable where the feature exposes preferences. \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\n",
+    "new": "\\subsection{Device Feedback and Validation Scope}\n\nThe session screen contains haptic calls for set completion and selected actions; timer configuration also exposes feedback preferences. Such calls establish an intended device interaction, not observed vibration timing or locked-device delivery. The controlled timer scenario remains unverified in Section~\\ref{sec:qa-evidence}. Package families and platform boundaries are summarized once in Table~\\ref{tab:pdf-88-43}; a dependency inventory does not demonstrate complete feature coverage.\n\n",
+    "originalLine": 2195,
+    "revisedLine": 2058
+  },
+  {
+    "topic": "Date historical migration count",
+    "old": "Earlier read-only inspection found 60 registered migration entries and 40 public tables in the healthy project;",
+    "new": "The 21 October metadata snapshot in \\path{deployment-verification.md} recorded 60 migration entries and 40 public tables; later payment migrations have their separate dated evidence. This earlier count is not a current complete migration inventory, and",
+    "originalLine": 2270,
+    "revisedLine": 2083
+  },
+  {
+    "topic": "Remove stale future-review statement",
+    "old": "The matrix records evidence boundaries. AI/security claims are qualified in the technical discussions and the retained claims review; reconciliation of sprint artifacts remains a separate review task.",
+    "new": "The matrix records evidence boundaries. AI/security claims are qualified in the retained claims review, and the sprint-artifact cross-reference identifies the subsequent reconciliation.",
+    "originalLine": 2305,
+    "revisedLine": 2118
+  }
+]

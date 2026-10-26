@@ -1,0 +1,9 @@
+[
+  {
+    "audit": {
+      "public_tables": 40,
+      "rls_disabled_tables": null,
+      "message_content_type": "text"
+    }
+  }
+]

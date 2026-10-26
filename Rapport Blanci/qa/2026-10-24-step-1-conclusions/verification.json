@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-24",
+  "step": 1,
+  "status": "approved_by_user",
+  "step2Started": true,
+  "authoritativeFile": "Rapport Blanci/main.tex",
+  "originalSha256": "bf6bb00f6b7e13c33c3f56e9c993d8dae167c36191d892dd6db0acab3d83a401",
+  "revisedSha256": "81812a07802cc6f926d4e32e1bfdc61fd50e111a72353319979232e2b92fe3c8",
+  "unchangedBeforeFinalQASection": true,
+  "bibliographyAndDocumentEndUnchanged": true,
+  "qaRows": 8,
+  "qaStatuses": {
+    "Partial": 2,
+    "Not verified": 5,
+    "Scoped pass": 1
+  },
+  "evidencePathsResolved": 7,
+  "ledgerCounts": {
+    "client": {
+      "Pass": 30,
+      "Blocked": 24,
+      "Partial": 23
+    },
+    "coach": {
+      "Pass": 22,
+      "Blocked": 12,
+      "Partial": 11
+    },
+    "admin": {
+      "Pass": 35,
+      "Blocked": 6,
+      "Partial": 6
+    }
+  },
+  "mobileTests": 146,
+  "mobileSuites": 25,
+  "adminTests": 34,
+  "mobileTypecheckPreExistingErrors": 12,
+  "sessionApiChecks": 8,
+  "sessionDatabaseChecks": 13,
+  "latexCompilationRun": false,
+  "applicationTestsRerun": false,
+  "method": "Content/evidence checks only; existing test artifacts inspected, not re-executed",
+  "changedLocations": [
+    {
+      "change": "replace",
+      "originalStart": 2239,
+      "originalEnd": 2239,
+      "revisedStart": 2239,
+      "revisedEnd": 2239
+    },
+    {
+      "change": "replace",
+      "originalStart": 2241,
+      "originalEnd": 2241,
+      "revisedStart": 2241,
+      "revisedEnd": 2245
+    },
+    {
+      "change": "replace",
+      "originalStart": 2251,
+      "originalEnd": 2251,
+      "revisedStart": 2255,
+      "revisedEnd": 2255
+    },
+    {
+      "change": "replace",
+      "originalStart": 2254,
+      "originalEnd": 2262,
+      "revisedStart": 2258,
+      "revisedEnd": 2266
+    },
+    {
+      "change": "insert",
+      "originalStart": 2265,
+      "originalEnd": 2264,
+      "revisedStart": 2269,
+      "revisedEnd": 2273
+    },
+    {
+      "change": "replace",
+      "originalStart": 2269,
+      "originalEnd": 2269,
+      "revisedStart": 2278,
+      "revisedEnd": 2280
+    },
+    {
+      "change": "replace",
+      "originalStart": 2274,
+      "originalEnd": 2274,
+      "revisedStart": 2285,
+      "revisedEnd": 2285
+    },
+    {
+      "change": "replace",
+      "originalStart": 2277,
+      "originalEnd": 2277,
+      "revisedStart": 2288,
+      "revisedEnd": 2288
+    },
+    {
+      "change": "replace",
+      "originalStart": 2280,
+      "originalEnd": 2280,
+      "revisedStart": 2291,
+      "revisedEnd": 2291
+    },
+    {
+      "change": "replace",
+      "originalStart": 2286,
+      "originalEnd": 2286,
+      "revisedStart": 2297,
+      "revisedEnd": 2299
+    }
+  ],
+  "knownRemainingWork": [
+    "Earlier sprint validation tables require later reconciliation",
+    "Broader AI/security claims and implementation evidence matrix are later checklist steps",
+    "Native and integration QA still incomplete"
+  ],
+  "crlfPreserved": true,
+  "evidenceCaseReferencesChecked": [
+    "SESSION-03",
+    "SESSION-04",
+    "SESSION-07",
+    "MEASUREMENT-01",
+    "MEASUREMENT-05",
+    "AI-01",
+    "AI-02",
+    "AI-03"
+  ],
+  "approval": {
+    "date": "2026-10-24",
+    "message": "proceed",
+    "context": "Reply to the explicit request to approve Step 1 before Step 2"
+  }
+}

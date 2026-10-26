@@ -86,6 +86,9 @@ export default async function UsersPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">User Management</h2>
       </div>
+      <p className="text-sm text-muted-foreground">
+        Registered sign-in accounts, including accounts without a saved profile.
+      </p>
 
       <UserSearchFilter users={users} />
     </div>

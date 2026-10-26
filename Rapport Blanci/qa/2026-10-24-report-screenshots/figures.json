@@ -1,0 +1,105 @@
+[
+  {
+    "label": "fig:ui-client-entry",
+    "caption": "Interface captures: onboarding introduction, existing-account Home and workout catalog (October development build).",
+    "assets": [
+      "figures/screenshots/client-onboarding-introduction.png",
+      "figures/screenshots/client-home-after-relaunch.png",
+      "figures/screenshots/client-workout-catalog.png"
+    ]
+  },
+  {
+    "label": "fig:ui-workout-configuration",
+    "caption": "Interface captures: exercise detail and workout configuration; execution checks remain separate.",
+    "assets": [
+      "figures/screenshots/client-exercise-detail.png",
+      "figures/screenshots/client-workout-builder.png"
+    ]
+  },
+  {
+    "label": "fig:ui-progress-nutrition",
+    "caption": "Interface captures: progress display, nutrition diary and food-serving selection (October QA).",
+    "assets": [
+      "figures/screenshots/client-progress-chart.png",
+      "figures/screenshots/client-nutrition-dashboard.png",
+      "figures/screenshots/client-food-serving.png"
+    ]
+  },
+  {
+    "label": "fig:ui-measurement-boundary",
+    "caption": "Interface excerpts: measurement guidance and handled camera denial; no successful scan is claimed.",
+    "assets": [
+      "figures/screenshots/measurement-guidance-excerpt.png",
+      "figures/screenshots/measurement-permission-result.png"
+    ]
+  },
+  {
+    "label": "fig:ui-coaching-availability",
+    "caption": "Interface captures: coach discovery, recurring availability and the restored session-duration preference.",
+    "assets": [
+      "figures/screenshots/client-coach-discovery.png",
+      "figures/screenshots/coach-availability.png",
+      "figures/screenshots/coach-saved-duration.png"
+    ]
+  },
+  {
+    "label": "fig:ui-coach-workspace",
+    "caption": "Interface captures: coach calendar, unsubmitted program form and disposable private note.",
+    "assets": [
+      "figures/screenshots/coach-calendar.png",
+      "figures/screenshots/coach-program-form.png",
+      "figures/screenshots/coach-disposable-note.png"
+    ]
+  },
+  {
+    "label": "fig:ui-sandbox-pack",
+    "caption": "Sandbox interface captures: EUR129 test checkout and successful pack-purchase confirmation; no live charge is shown.",
+    "assets": [
+      "figures/screenshots/sandbox-eur-checkout.png",
+      "figures/screenshots/sandbox-pack-success.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-paid-records",
+    "caption": "Administrative transaction excerpt: EUR60 standalone session and EUR129 pack marked sandbox-paid; identity columns omitted.",
+    "assets": [
+      "figures/screenshots/admin-sandbox-payment-records.png"
+    ]
+  },
+  {
+    "label": "fig:ui-conversation-empty",
+    "caption": "Interface capture: coach message-list empty state; successful messaging/video evidence remains pending.",
+    "assets": [
+      "figures/screenshots/coach-message-empty-state.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-exercises",
+    "caption": "Administrative interface: exercise catalog, search/filter controls and management actions in the local QA environment.",
+    "assets": [
+      "figures/screenshots/admin-exercise-catalog.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-workout",
+    "caption": "Administrative interface: disposable workout fixture reopened after editing; this test record was subsequently removed.",
+    "assets": [
+      "figures/screenshots/admin-disposable-workout-editor.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-approval-audit",
+    "caption": "Administrative excerpts: coach-approval confirmation (cancelled) and exercise-deletion audit entries; unrelated identity/network columns omitted.",
+    "assets": [
+      "figures/screenshots/admin-approval-dialog.png",
+      "figures/screenshots/admin-exercise-audit-excerpt.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-dashboard",
+    "caption": "Administrative dashboard capture: user-profile count and operational BI overview after the label correction.",
+    "assets": [
+      "figures/screenshots/admin-dashboard.png"
+    ]
+  }
+]

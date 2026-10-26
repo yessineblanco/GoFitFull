@@ -1,0 +1,30 @@
+[
+  {
+    "file": "build_matrix.py",
+    "sha256": "5d74f45e34463fa3609794bd62e941659b46c662a4fb547c74855d79b07826ea"
+  },
+  {
+    "file": "main-before.txt",
+    "sha256": "81812a07802cc6f926d4e32e1bfdc61fd50e111a72353319979232e2b92fe3c8"
+  },
+  {
+    "file": "main-revision.diff",
+    "sha256": "ff151af9421547c47359c6cdd95af37e620cd7b58ba0ec6080865b762411be10"
+  },
+  {
+    "file": "matrix.json",
+    "sha256": "51598c161620042a4dbc71609dafb0f5b714cf4ce09adc9a2647d8b0325e067a"
+  },
+  {
+    "file": "matrix.md",
+    "sha256": "3cc94e720235c14d2d77da28d196a54b186c12f7841eb3178d55ac2d77b5bcea"
+  },
+  {
+    "file": "README.md",
+    "sha256": "b9f6d23cbe344e8db683a2326b58da090c170d335b43e5673779a85179f1e0d0"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "78cbda6ae13da3ca8c20d0a252598cae3f80f958a66e1abd4fbaeaf3c40a8c66"
+  }
+]

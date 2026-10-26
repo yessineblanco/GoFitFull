@@ -1,0 +1,562 @@
+{
+  "global_use_case": {
+    "actors": [
+      "Client",
+      "Coach",
+      "Administrator"
+    ],
+    "goals": [
+      {
+        "key": "sign_in",
+        "label": "Sign in",
+        "x": 6,
+        "y": 8.6,
+        "w": 3.0,
+        "h": 0.72
+      },
+      {
+        "key": "profile",
+        "label": "Manage fitness profile",
+        "x": 4.2,
+        "y": 7.1,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "workouts",
+        "label": "Plan and execute workouts",
+        "x": 4.2,
+        "y": 5.7,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "tracking",
+        "label": "Track progress and nutrition",
+        "x": 4.2,
+        "y": 4.3,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "coaching_client",
+        "label": "Use coaching services",
+        "x": 4.2,
+        "y": 2.9,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "coach_profile",
+        "label": "Manage coaching profile",
+        "x": 7.8,
+        "y": 7.1,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "clients_programs",
+        "label": "Manage clients and programs",
+        "x": 7.8,
+        "y": 5.7,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "coaching_coach",
+        "label": "Deliver coaching services",
+        "x": 7.8,
+        "y": 4.3,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "accounts_approvals",
+        "label": "Manage accounts and coach approvals",
+        "x": 7.8,
+        "y": 2.9,
+        "w": 3.1,
+        "h": 0.72
+      },
+      {
+        "key": "catalogs_reports",
+        "label": "Maintain catalogs and review reports",
+        "x": 7.8,
+        "y": 1.5,
+        "w": 3.1,
+        "h": 0.72
+      }
+    ],
+    "associations": [
+      [
+        "Client",
+        "profile"
+      ],
+      [
+        "Client",
+        "workouts"
+      ],
+      [
+        "Client",
+        "tracking"
+      ],
+      [
+        "Client",
+        "coaching_client"
+      ],
+      [
+        "Coach",
+        "coach_profile"
+      ],
+      [
+        "Coach",
+        "clients_programs"
+      ],
+      [
+        "Coach",
+        "coaching_coach"
+      ],
+      [
+        "Administrator",
+        "accounts_approvals"
+      ],
+      [
+        "Administrator",
+        "catalogs_reports"
+      ],
+      [
+        "Client",
+        "sign_in"
+      ],
+      [
+        "Coach",
+        "sign_in"
+      ],
+      [
+        "Administrator",
+        "sign_in"
+      ]
+    ]
+  },
+  "use_case_sprint1": {
+    "actors": [
+      "Client"
+    ],
+    "goals": [
+      {
+        "key": "register_sign_in",
+        "label": "Register / sign in",
+        "x": 6.7,
+        "y": 8.3,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "onboarding",
+        "label": "Complete client onboarding",
+        "x": 6.7,
+        "y": 7.166666666666667,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "profile",
+        "label": "Manage fitness profile",
+        "x": 6.7,
+        "y": 6.033333333333333,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "browse_workouts",
+        "label": "Browse workouts",
+        "x": 6.7,
+        "y": 4.9,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "create_workout",
+        "label": "Create custom workouts",
+        "x": 6.7,
+        "y": 3.7666666666666666,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "execute_workout",
+        "label": "Execute workout sessions",
+        "x": 6.7,
+        "y": 2.6333333333333337,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "timer_preferences",
+        "label": "Configure the rest timer",
+        "x": 6.7,
+        "y": 1.5,
+        "w": 4.7,
+        "h": 0.76
+      }
+    ],
+    "associations": [
+      [
+        "Client",
+        "register_sign_in"
+      ],
+      [
+        "Client",
+        "onboarding"
+      ],
+      [
+        "Client",
+        "profile"
+      ],
+      [
+        "Client",
+        "browse_workouts"
+      ],
+      [
+        "Client",
+        "create_workout"
+      ],
+      [
+        "Client",
+        "execute_workout"
+      ],
+      [
+        "Client",
+        "timer_preferences"
+      ]
+    ]
+  },
+  "use_case_sprint2": {
+    "actors": [
+      "Client"
+    ],
+    "goals": [
+      {
+        "key": "exercise_library",
+        "label": "Browse exercise library",
+        "x": 6.7,
+        "y": 9.0,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "progress",
+        "label": "Review fitness progress",
+        "x": 6.7,
+        "y": 7.928571428571429,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "measurements",
+        "label": "Obtain and review measurement drafts",
+        "x": 6.7,
+        "y": 6.857142857142858,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "nutrition",
+        "label": "Log meals and set targets",
+        "x": 6.7,
+        "y": 5.785714285714286,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "barcode",
+        "label": "Find food by barcode",
+        "x": 6.7,
+        "y": 4.714285714285714,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "dietary_preferences",
+        "label": "Manage dietary preferences",
+        "x": 6.7,
+        "y": 3.6428571428571432,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "recommendations",
+        "label": "Request workout recommendations",
+        "x": 6.7,
+        "y": 2.571428571428571,
+        "w": 4.7,
+        "h": 0.76
+      },
+      {
+        "key": "reminders",
+        "label": "Configure reminders",
+        "x": 6.7,
+        "y": 1.5,
+        "w": 4.7,
+        "h": 0.76
+      }
+    ],
+    "associations": [
+      [
+        "Client",
+        "exercise_library"
+      ],
+      [
+        "Client",
+        "progress"
+      ],
+      [
+        "Client",
+        "measurements"
+      ],
+      [
+        "Client",
+        "nutrition"
+      ],
+      [
+        "Client",
+        "barcode"
+      ],
+      [
+        "Client",
+        "dietary_preferences"
+      ],
+      [
+        "Client",
+        "recommendations"
+      ],
+      [
+        "Client",
+        "reminders"
+      ]
+    ]
+  },
+  "use_case_sprint3": {
+    "actors": [
+      "Client",
+      "Coach",
+      "Administrator"
+    ],
+    "goals": [
+      {
+        "key": "messaging",
+        "label": "Exchange messages",
+        "x": 6,
+        "y": 11.1,
+        "w": 3.2,
+        "h": 0.72
+      },
+      {
+        "key": "video",
+        "label": "Participate in video calls",
+        "x": 6,
+        "y": 9.85,
+        "w": 3.2,
+        "h": 0.72
+      },
+      {
+        "key": "discover",
+        "label": "Discover coaches",
+        "x": 4.2,
+        "y": 8.3,
+        "w": 3.2,
+        "h": 0.64
+      },
+      {
+        "key": "purchase",
+        "label": "Purchase session packs",
+        "x": 4.2,
+        "y": 7.370000000000001,
+        "w": 3.2,
+        "h": 0.64
+      },
+      {
+        "key": "book",
+        "label": "Book coaching sessions",
+        "x": 4.2,
+        "y": 6.44,
+        "w": 3.2,
+        "h": 0.64
+      },
+      {
+        "key": "assigned_programs",
+        "label": "View assigned programs",
+        "x": 4.2,
+        "y": 5.510000000000001,
+        "w": 3.2,
+        "h": 0.64
+      },
+      {
+        "key": "submit_checkins",
+        "label": "Submit check-ins",
+        "x": 4.2,
+        "y": 4.58,
+        "w": 3.2,
+        "h": 0.64
+      },
+      {
+        "key": "coach_profile",
+        "label": "Complete coach profile",
+        "x": 7.8,
+        "y": 8.3,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "availability",
+        "label": "Manage availability",
+        "x": 7.8,
+        "y": 7.550000000000001,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "packs",
+        "label": "Manage session packs",
+        "x": 7.8,
+        "y": 6.800000000000001,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "clients_programs",
+        "label": "Manage clients / programs",
+        "x": 7.8,
+        "y": 6.050000000000001,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "review_checkins",
+        "label": "Review client check-ins",
+        "x": 7.8,
+        "y": 5.300000000000001,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "ai_briefing",
+        "label": "Request / read AI briefing",
+        "x": 7.8,
+        "y": 4.550000000000001,
+        "w": 3.2,
+        "h": 0.61
+      },
+      {
+        "key": "accounts",
+        "label": "Manage user accounts",
+        "x": 6,
+        "y": 3.1,
+        "w": 5.0,
+        "h": 0.6
+      },
+      {
+        "key": "approve_coaches",
+        "label": "Approve coach profiles",
+        "x": 6,
+        "y": 2.3,
+        "w": 5.0,
+        "h": 0.6
+      },
+      {
+        "key": "catalogs",
+        "label": "Maintain exercise / workout catalogs",
+        "x": 6,
+        "y": 1.5,
+        "w": 5.0,
+        "h": 0.6
+      },
+      {
+        "key": "reports",
+        "label": "Review platform reports",
+        "x": 6,
+        "y": 0.7,
+        "w": 5.0,
+        "h": 0.6
+      }
+    ],
+    "associations": [
+      [
+        "Client",
+        "messaging"
+      ],
+      [
+        "Coach",
+        "messaging"
+      ],
+      [
+        "Client",
+        "video"
+      ],
+      [
+        "Coach",
+        "video"
+      ],
+      [
+        "Client",
+        "discover"
+      ],
+      [
+        "Client",
+        "purchase"
+      ],
+      [
+        "Client",
+        "book"
+      ],
+      [
+        "Client",
+        "assigned_programs"
+      ],
+      [
+        "Client",
+        "submit_checkins"
+      ],
+      [
+        "Coach",
+        "coach_profile"
+      ],
+      [
+        "Coach",
+        "availability"
+      ],
+      [
+        "Coach",
+        "packs"
+      ],
+      [
+        "Coach",
+        "clients_programs"
+      ],
+      [
+        "Coach",
+        "review_checkins"
+      ],
+      [
+        "Coach",
+        "ai_briefing"
+      ],
+      [
+        "Administrator",
+        "accounts"
+      ],
+      [
+        "Administrator",
+        "approve_coaches"
+      ],
+      [
+        "Administrator",
+        "catalogs"
+      ],
+      [
+        "Administrator",
+        "reports"
+      ]
+    ]
+  }
+}

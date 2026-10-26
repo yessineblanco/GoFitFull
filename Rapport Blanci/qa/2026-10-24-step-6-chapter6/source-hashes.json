@@ -1,0 +1,23 @@
+{
+  "GoFitMobile/package.json": "81fe957a2c932b5e454c2f886530f518b9d9e153e93168be003d66ace857264f",
+  "GoFitMobile/tsconfig.json": "04874487b787fe8ceb7ac513a3e9df420bea2799c48ab651795488deeee51631",
+  "GoFitMobile/eas.json": "fd47431176bca17e25d1872eded73f13472400acef3f124745ea6b9c4c591b76",
+  "admin-panel/package.json": "6901dc81a32d42c5439df4b1d5e9ea23e507ea71dabd5c32be41328381859d46",
+  "admin-panel/tsconfig.json": "be18523b23b78b6e1a876ddd107d330f0168bddf09d751b57e0b5edce69c66f3",
+  "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+  "GoFitMobile/src/store/timerStore.ts": "4a2fc323d5484477c0db09c6d7fe3c32e1333db2ca18eac72b6084d59fab6a31",
+  "admin-panel/lib/bi-finance.ts": "7b09657130316027d41e1231b50707d4381882f06234a2d9acaebbbd9e896682",
+  "admin-panel/lib/bi-user-lifecycle.ts": "90e5daefba7592397eb49062ba0b488ecebbdb36a642fa585ecbe018b821215e",
+  "admin-panel/lib/bi-coach-ops.ts": "662aa20c3719e51631b6d17735264c39fe36b2189012679986752e6d44a44f40",
+  "admin-panel/lib/bi-client-health.ts": "5317262007c88f4f0415d88a5ab38707514cfbeb2be00ca183e264b703d3cccf",
+  "docs/automation/n8n/README.md": "9cfde6af1bc88f2335dca6a762dc39e61402c60c66fe1bb0c333708572942221",
+  "Rapport Blanci/deployment-verification.md": "9428a700d395f2428a55dc62cebf335fcd9c5b40560a8699c32e8adad66386c1",
+  "Rapport Blanci/qa/2026-10-22/results.json": "3d8e3f1c69b4d12cee3067fac7e2430874c5a93617a5d5c2c2d06fa8ba7e28ef",
+  "Rapport Blanci/qa/2026-10-22/fixes/SETTINGS-08/verification.json": "0204f1e5fa455c3b095e296f8d6cf7404cd4d9885adbb4f4d99796bff7c57305",
+  "Rapport Blanci/qa/2026-10-23-admin/fixes/DASH-03/verification.json": "b56fdc8655de4c3ce8c0487c5c021d75b2be8194477ee653110bbc73683e0cf5",
+  "docs/automation/n8n/workflows/admin-ops-digest-v1.json": "13efd377807b5684ec4d3de112c4bbf369c48d5334c02be01a1d3153cedfcb71",
+  "docs/automation/n8n/workflows/ai-session-prep-v1.json": "fc9261705e3015c36976a841a9a758b3bf53de462977d591f40097ba26d68d5c",
+  "docs/automation/n8n/workflows/booking-reminders-v1.json": "7a89caedd9f309d5fed596c857bbc8acde099a8d0f49846109d9294f184afc10",
+  "docs/automation/n8n/workflows/check-in-reminders-v1.json": "a74c52c29d1010e74d463aa55f5777decfbc7e8fa632912809401ed74f216df4",
+  "docs/automation/n8n/workflows/coach-daily-digest-v1.json": "57c5d2e163afcf2984155b356ea1f77393766a4f00246df77ef7301102f6e1f2"
+}

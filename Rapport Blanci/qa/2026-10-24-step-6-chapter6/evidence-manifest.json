@@ -1,0 +1,42 @@
+[
+  {
+    "file": "compiler-final.json",
+    "sha256": "f6135d9f754c7528f4605578db154486abfde31c4ece540f363353f8dc1a7953"
+  },
+  {
+    "file": "corrections.json",
+    "sha256": "ebbd191c9d110b76d2ed4bdef2fd0956bd3d96d615d758486b8a493fed857044"
+  },
+  {
+    "file": "main-before.txt",
+    "sha256": "343c61ae7c59c1efd4a75859b69dce0e600764bf4e277828ee37578c5d2f4598"
+  },
+  {
+    "file": "main-revision.diff",
+    "sha256": "1daefdc18b8b91c8770d013ea2a92c7a0914c8d276282cc0896a51ff8fc42604"
+  },
+  {
+    "file": "README.md",
+    "sha256": "a1d5fcf118ee1c0f08ef526e0ce163dbccbe432182df7c1bbc8ced8b685c79f8"
+  },
+  {
+    "file": "revise.py",
+    "sha256": "f5673fe76084760cbe0c7ad10297c98beb6efff8789390322149c27521d05891"
+  },
+  {
+    "file": "source-hashes.json",
+    "sha256": "2233f9d1c73fba11694ffc98efe8b7e88a2871c575f68a5e946ad9bfe5dfcbef"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "3a138363d4a2f7244ba8e012b17a5e83d3edef502906e286cdc8e2545bbea385"
+  },
+  {
+    "file": "verify.py",
+    "sha256": "5fc47052a7bef46c213e2fc14ac0a9cd8ce1fe21791f4ecff3c3acf71b2c2998"
+  },
+  {
+    "file": "workflow-structure.json",
+    "sha256": "8b735d8f2ab61be8191393a1f7b7b683104ac89e0ac83aa00d6cfadaead21df6"
+  }
+]

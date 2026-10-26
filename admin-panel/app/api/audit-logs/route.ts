@@ -14,14 +14,7 @@ export async function GET(request: NextRequest) {
 
     let query = adminClient
       .from("admin_audit_logs")
-      .select(`
-        *,
-        admin_user:admin_user_id (
-          id,
-          email,
-          user_metadata
-        )
-      `)
+      .select("*")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -43,6 +36,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Auth users are not a public-schema relationship. Resolve only this page's actors.
+    const adminIds = [...new Set((data || []).map((log) => log.admin_user_id))];
+    const admins = new Map(await Promise.all(adminIds.map(async (id) => {
+      const { data: userData, error: userError } = await adminClient.auth.admin.getUserById(id);
+      const user = userData?.user;
+      return [id, !userError && user ? {
+        id: user.id,
+        email: user.email,
+        user_metadata: user.user_metadata,
+      } : null] as const;
+    })));
+    const logs = (data || []).map((log) => ({
+      ...log,
+      admin_user: admins.get(log.admin_user_id) || null,
+    }));
+
     // Get total count
     let countQuery = adminClient
       .from("admin_audit_logs")
@@ -59,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        data: data || [],
+        data: logs,
         total: totalCount || 0,
         limit,
         offset,

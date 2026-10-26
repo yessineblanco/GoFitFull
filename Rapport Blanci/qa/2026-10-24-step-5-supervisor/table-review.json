@@ -1,0 +1,331 @@
+[
+  {
+    "caption": "Comparison between traditional and agile methodologies",
+    "label": "tab:pdf-13-3",
+    "originalLine": 291,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Comparison between Scrum and Kanban",
+    "label": "tab:pdf-14-4",
+    "originalLine": 314,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Identification of actors",
+    "label": "tab:pdf-16-5",
+    "originalLine": 374,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Scrum team",
+    "label": "tab:pdf-18-9",
+    "originalLine": 443,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Product backlog",
+    "label": "tab:pdf-19-10",
+    "originalLine": 466,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Detailed feature modules of GoFit",
+    "label": "tab:pdf-19-11",
+    "originalLine": 493,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Project documentation artifacts",
+    "label": "tab:pdf-27-15",
+    "originalLine": 550,
+    "disposition": "Revised: competing planning artifacts are not execution evidence",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint 1 backlog decomposition",
+    "label": "tab:pdf-29-16",
+    "originalLine": 599,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Execute workout session",
+    "label": "tab:pdf-34-17",
+    "originalLine": 662,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Authenticate and complete onboarding",
+    "label": "tab:pdf-37-18",
+    "originalLine": 711,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint 1 architectural component mapping matrix",
+    "label": "tab:pdf-41-19",
+    "originalLine": 781,
+    "disposition": "Revised: actual artifact names and evidence boundary; generic predecessor already absent",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Workout-session data flow",
+    "label": "tab:pdf-42-20",
+    "originalLine": 827,
+    "disposition": "Removed: redundant and inaccurate workout flow; replaced by existing detailed sequence references",
+    "presentAfterRevision": false
+  },
+  {
+    "caption": "Sprint validation matrix",
+    "label": "tab:pdf-42-21",
+    "originalLine": 850,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint 2 backlog decomposition",
+    "label": "tab:pdf-45-22",
+    "originalLine": 904,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Generate AI-assisted body measurements",
+    "label": "tab:pdf-50-23",
+    "originalLine": 972,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Track daily nutrition and macro targets",
+    "label": "tab:pdf-52-24",
+    "originalLine": 1025,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint 2 user-facing progress modules",
+    "label": "tab:pdf-56-25",
+    "originalLine": 1098,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "AI and computer vision models used in GoFit",
+    "label": "tab:pdf-58-26",
+    "originalLine": 1161,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Body measurement feature vector",
+    "label": "tab:pdf-61-27",
+    "originalLine": 1210,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "AI measurement validation protocol",
+    "label": "tab:pdf-62-28",
+    "originalLine": 1246,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "AI implementation status",
+    "label": "tab:pdf-63-29",
+    "originalLine": 1265,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint validation matrix",
+    "label": "tab:pdf-64-30",
+    "originalLine": 1293,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint 3 backlog decomposition",
+    "label": "tab:pdf-66-31",
+    "originalLine": 1347,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Purchase a session pack or pay for a direct booking",
+    "label": "tab:pdf-71-32",
+    "originalLine": 1435,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Textual description of use case: Approve a coach profile from the administration panel",
+    "label": "tab:pdf-73-33",
+    "originalLine": 1496,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Coach marketplace feature detail",
+    "label": "tab:pdf-76-34",
+    "originalLine": 1562,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Admin-panel operational modules",
+    "label": "tab:pdf-78-35",
+    "originalLine": 1618,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Admin analytics and BI dashboard features",
+    "label": "tab:pdf-79-36",
+    "originalLine": 1649,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Advanced BI data domains and limits",
+    "label": "tab:pdf-80-37",
+    "originalLine": 1672,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "In-app AI workout recommendation workflow",
+    "label": "tab:pdf-81-38",
+    "originalLine": 1712,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Personalization inputs and adaptation rules",
+    "label": "tab:pdf-82-39",
+    "originalLine": 1731,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "LLM and automation features",
+    "label": "tab:pdf-84-40",
+    "originalLine": 1764,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Sprint validation matrix",
+    "label": "tab:pdf-85-41",
+    "originalLine": 1789,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Product, sprint and implementation evidence cross-reference",
+    "label": "tab:sprint-traceability",
+    "originalLine": 1822,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Hardware and material environment specifications",
+    "label": "tab:pdf-88-42",
+    "originalLine": 1869,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Software environment and toolchain",
+    "label": "tab:pdf-88-43",
+    "originalLine": 1891,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Mobile architecture responsibilities",
+    "label": "tab:pdf-93-44",
+    "originalLine": 1983,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Backend and security components",
+    "label": "tab:pdf-94-45",
+    "originalLine": 2028,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Codex usage during the GoFit project",
+    "label": "tab:pdf-95-46",
+    "originalLine": 2071,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "MCP and connected tools used in the project workflow",
+    "label": "tab:pdf-96-47",
+    "originalLine": 2098,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Complete development and production toolchain",
+    "label": "tab:pdf-97-48",
+    "originalLine": 2126,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "n8n workflows implemented in GoFit",
+    "label": "tab:pdf-99-49",
+    "originalLine": 2167,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "n8n security, limits, and evidence requirements",
+    "label": "tab:pdf-100-50",
+    "originalLine": 2185,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Mobile libraries and implementation roles",
+    "label": "tab:pdf-101-51",
+    "originalLine": 2222,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Haptics and tactile feedback coverage",
+    "label": "tab:pdf-103-53",
+    "originalLine": 2248,
+    "disposition": "Retained for separate Step 6 tooling/technical-claim tightening; not certified by this checklist review",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "Functional requirements, implementation extent and retained evidence",
+    "label": "tab:implementation-evidence",
+    "originalLine": 2305,
+    "disposition": "Retained; no obsolete replacement identified in this checklist scope",
+    "presentAfterRevision": true
+  },
+  {
+    "caption": "QA scenarios and evidence status: October 2026 follow-up",
+    "label": "tab:pdf-113-56",
+    "originalLine": 2339,
+    "disposition": "Scenario rows preserved; introduction updated for confirmed internship dates and completed Step 4 reconciliation",
+    "presentAfterRevision": true
+  }
+]

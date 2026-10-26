@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="720pt" height="907.2pt" viewBox="0 0 720 907.2" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-21T13:18:51.063774</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 907.2 
+L 720 907.2 
+L 720 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="line2d_1">
+    <path d="M 68.4 56.16 
+L 68.4 892.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 214.2 56.16 
+L 214.2 892.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_3">
+    <path d="M 360 56.16 
+L 360 892.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_4">
+    <path d="M 505.8 56.16 
+L 505.8 892.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_5">
+    <path d="M 651.6 56.16 
+L 651.6 892.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="patch_2">
+    <path d="M 14.4 12.96 
+L 122.4 12.96 
+L 122.4 56.16 
+L 14.4 56.16 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 160.2 12.96 
+L 268.2 12.96 
+L 268.2 56.16 
+L 160.2 56.16 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 306 12.96 
+L 414 12.96 
+L 414 56.16 
+L 306 56.16 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 451.8 12.96 
+L 559.8 12.96 
+L 559.8 56.16 
+L 451.8 56.16 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 597.6 12.96 
+L 705.6 12.96 
+L 705.6 56.16 
+L 597.6 56.16 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 70.397809 97.2 
+Q 141.300522 97.2 211.252906 97.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 207.252906 95.2 
+L 211.252906 97.2 
+L 207.252906 99.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 216.197809 147.6 
+Q 287.100522 147.6 357.052906 147.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 353.052906 145.6 
+L 357.052906 147.6 
+L 353.052906 149.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 358.002191 198 
+Q 287.099478 198 217.147094 198 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 221.147094 200 
+L 217.147094 198 
+L 221.147094 196 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 21.6 230.4 
+L 698.4 230.4 
+L 698.4 784.8 
+L 21.6 784.8 
+L 21.6 230.4 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #757575; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 216.197809 280.8 
+Q 359.998006 280.8 502.847874 280.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 498.847874 278.8 
+L 502.847874 280.8 
+L 498.847874 282.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 503.802191 331.2 
+Q 432.899478 331.2 362.947094 331.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 366.947094 333.2 
+L 362.947094 331.2 
+L 366.947094 329.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 361.997809 378 
+Q 432.900522 378 502.852906 378 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 498.852906 376 
+L 502.852906 378 
+L 498.852906 380 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 331.2 406.8 
+L 698.4 406.8 
+L 698.4 691.2 
+L 331.2 691.2 
+L 331.2 406.8 
+z
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #757575; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 507.797809 457.2 
+Q 578.700522 457.2 648.652906 457.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.652906 455.2 
+L 648.652906 457.2 
+L 644.652906 459.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 649.602191 511.2 
+Q 578.699478 511.2 508.747094 511.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 512.747094 513.2 
+L 508.747094 511.2 
+L 512.747094 509.2 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 526.840312 567.36 
+Q 517.320547 567.36 508.751111 567.36 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 512.751111 569.36 
+L 508.751111 567.36 
+L 512.751111 565.36 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 503.802191 612 
+Q 432.899478 612 362.947094 612 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 366.947094 614 
+L 362.947094 612 
+L 366.947094 610 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 361.997809 658.8 
+Q 432.900522 658.8 502.852906 658.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 498.852906 656.8 
+L 502.852906 658.8 
+L 498.852906 660.8 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 503.802191 741.6 
+Q 360.001994 741.6 217.152126 741.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 221.152126 743.6 
+L 217.152126 741.6 
+L 221.152126 739.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 212.202191 831.6 
+Q 141.299478 831.6 71.347094 831.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.347094 833.6 
+L 71.347094 831.6 
+L 75.347094 829.6 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="line2d_6">
+    <path d="M 505.8 550.8 
+L 528.84 550.8 
+L 528.84 567.36 
+" clip-path="url(#pa06383d9ed)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(47.465156 31.497363)">Add Food</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(53.441016 42.299121)">screen</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(194.497734 31.497012)">Nutrition</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(198.080156 42.299473)">service</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(337.949297 31.497363)">Supabase</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(340.70625 42.299121)">Data API</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(470.987578 31.497012)">Barcode lookup</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(473.904141 42.299473)">Edge Function</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #243f54" x="651.6" y="36.898242" transform="rotate(-0 651.6 36.898242)">Open Food Facts</text>
+   </g>
+   <g id="text_6">
+    <g id="patch_22">
+     <path d="M 79.562109 92.46 
+L 203.037891 92.46 
+L 203.037891 81.919336 
+L 79.562109 81.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="141.3" y="89.398008" transform="rotate(-0 141.3 89.398008)">lookupFoodByBarcode(code)</text>
+   </g>
+   <g id="text_7">
+    <g id="patch_23">
+     <path d="M 212.680508 142.86 
+L 361.519492 142.86 
+L 361.519492 120.415352 
+L 212.680508 120.415352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(246.412891 128.744854)">SELECT food_items</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(213.700508 138.947178)">by normalized barcode candidates</text>
+   </g>
+   <g id="text_8">
+    <g id="patch_24">
+     <path d="M 227.832422 193.26 
+L 346.367578 193.26 
+L 346.367578 182.719336 
+L 227.832422 182.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="287.1" y="190.198008" transform="rotate(-0 287.1 190.198008)">Catalog match or no match</text>
+   </g>
+   <g id="text_9">
+    <g id="patch_25">
+     <path d="M 26.34 245.030332 
+L 189.662188 245.030332 
+L 189.662188 234.489668 
+L 26.34 234.489668 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="27.36" y="241.96834" transform="rotate(-0 27.36 241.96834)">opt [no match in initial catalog query]</text>
+   </g>
+   <g id="text_10">
+    <g id="patch_26">
+     <path d="M 271.237422 276.06 
+L 448.762578 276.06 
+L 448.762578 265.519336 
+L 271.237422 265.519336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="272.998008" transform="rotate(-0 360 272.998008)">Invoke food-barcode-lookup({ barcode })</text>
+   </g>
+   <g id="text_11">
+    <g id="patch_27">
+     <path d="M 372.330859 326.46 
+L 493.469141 326.46 
+L 493.469141 315.919336 
+L 372.330859 315.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="432.9" y="323.398008" transform="rotate(-0 432.9 323.398008)">Recheck food_items catalog</text>
+   </g>
+   <g id="text_12">
+    <g id="patch_28">
+     <path d="M 373.632422 373.26 
+L 492.167578 373.26 
+L 492.167578 362.719336 
+L 373.632422 362.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="432.9" y="370.198008" transform="rotate(-0 432.9 370.198008)">Catalog match or no match</text>
+   </g>
+   <g id="text_13">
+    <g id="patch_29">
+     <path d="M 335.94 421.430332 
+L 525.946875 421.430332 
+L 525.946875 410.889668 
+L 335.94 410.889668 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="336.96" y="418.36834" transform="rotate(-0 336.96 418.36834)">opt [still no match; provider success shown]</text>
+   </g>
+   <g id="text_14">
+    <g id="patch_30">
+     <path d="M 526.286875 452.46 
+L 631.113125 452.46 
+L 631.113125 430.015352 
+L 526.286875 430.015352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(527.306875 438.344854)">GET product by barcode</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(529.324297 448.547178)">(name and nutriments)</text>
+   </g>
+   <g id="text_15">
+    <g id="patch_31">
+     <path d="M 550.619453 506.46 
+L 606.780547 506.46 
+L 606.780547 495.919336 
+L 550.619453 495.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="578.7" y="503.398008" transform="rotate(-0 578.7 503.398008)">Product data</text>
+   </g>
+   <g id="text_16">
+    <g id="patch_32">
+     <path d="M 533.58 569.222324 
+L 595.700391 569.222324 
+L 595.700391 546.777676 
+L 533.58 546.777676 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(534.6 555.107178)">Normalize</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(534.6 565.309502)">to 100 g basis</text>
+   </g>
+   <g id="text_17">
+    <g id="patch_33">
+     <path d="M 392.137187 607.26 
+L 473.662812 607.26 
+L 473.662812 596.719336 
+L 392.137187 596.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="432.9" y="604.198008" transform="rotate(-0 432.9 604.198008)">INSERT food_items</text>
+   </g>
+   <g id="text_18">
+    <g id="patch_34">
+     <path d="M 396.250391 654.06 
+L 469.549609 654.06 
+L 469.549609 643.519336 
+L 396.250391 643.519336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="432.9" y="650.998008" transform="rotate(-0 432.9 650.998008)">Stored food item</text>
+   </g>
+   <g id="text_19">
+    <g id="patch_35">
+     <path d="M 292.606289 736.86 
+L 427.393711 736.86 
+L 427.393711 726.319336 
+L 292.606289 726.319336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="733.798008" transform="rotate(-0 360 733.798008)">Matched or imported food item</text>
+   </g>
+   <g id="text_20">
+    <g id="patch_36">
+     <path d="M 88.647812 826.86 
+L 193.952187 826.86 
+L 193.952187 816.319336 
+L 88.647812 816.319336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="141.3" y="823.798008" transform="rotate(-0 141.3 823.798008)">Selected product details</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pa06383d9ed">
+   <rect x="0" y="0" width="720" height="907.2"/>
+  </clipPath>
+ </defs>
+</svg>

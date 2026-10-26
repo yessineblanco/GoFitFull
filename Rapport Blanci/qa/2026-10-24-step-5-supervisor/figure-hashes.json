@@ -1,0 +1,134 @@
+[
+  {
+    "path": "figures/global_use_case.png",
+    "sha256": "6901259a55f364c3e67c7d54d6943eab531cede7e7d8be6e8fc45a28a6a3174a"
+  },
+  {
+    "path": "figures/class_diagram_sprint1.png",
+    "sha256": "d1301b1f109ecaf8f45722abba24215be7ace54d4a4c8ad98c151f079c4485d7"
+  },
+  {
+    "path": "figures/use_case_sprint1.png",
+    "sha256": "a3e7255b745857684eea2ea9ac0a9e6b709398c0150198006f529b8cede969a6"
+  },
+  {
+    "path": "figures/seq_workout_ssd.png",
+    "sha256": "c116175e357cdbdb7509e7eb3095eb6f3cbfdb6393114acffebce8597920df42"
+  },
+  {
+    "path": "figures/seq_workout_detailed.png",
+    "sha256": "b27484de37f44ac89206e0d8c5580e7238847eb4627d360657933a7bfa83dd20"
+  },
+  {
+    "path": "figures/seq_workout_offline.png",
+    "sha256": "100ba4695ad387c20a435093805a2511bd6e0254abafc852ebbe29cede69f6d7"
+  },
+  {
+    "path": "figures/seq_auth_ssd.png",
+    "sha256": "8412528ff2c5943fda6bb30728cb3cf3092e216c90debd6bb524215703e7188c"
+  },
+  {
+    "path": "figures/seq_auth_detailed.png",
+    "sha256": "b923c8725aac57b63360dd24d24f2c11bd381ea38ba6b1d6315d16f61a935c03"
+  },
+  {
+    "path": "figures/seq_auth_onboarding.png",
+    "sha256": "bf7f6bf0d4de280b1596a4a2b58531226236764d49234b768b79e2eb4628bf29"
+  },
+  {
+    "path": "figures/class_diagram_sprint1.png",
+    "sha256": "d1301b1f109ecaf8f45722abba24215be7ace54d4a4c8ad98c151f079c4485d7"
+  },
+  {
+    "path": "figures/class_diagram_sprint2.png",
+    "sha256": "ffd0971fd2a34183a9ee285680f6e7652fc1537819f9feca8d97001dc08b94c8"
+  },
+  {
+    "path": "figures/use_case_sprint2.png",
+    "sha256": "964e46b433b94fe9da12ff30b87f71e43c46e550ec7d8da890d5e17a2c50a368"
+  },
+  {
+    "path": "figures/seq_measurement_ssd.png",
+    "sha256": "66f5e54a6db48ddd60f66635459bfc13d497dcbee091088b636b584df4f67405"
+  },
+  {
+    "path": "figures/seq_measurement_detailed.png",
+    "sha256": "04916635083647e3fb3723de374bcb54181462533da767712aed7524542e8485"
+  },
+  {
+    "path": "figures/seq_measurement_save.png",
+    "sha256": "76fc607dfafd52198a792a7298316444e5a38873841df602ae0c53dde4d88046"
+  },
+  {
+    "path": "figures/seq_nutrition_ssd.png",
+    "sha256": "5e10957e567ee0056e0ba0d9ddb11cb5b3a7259b4f4d05e25e5705a476fb46c3"
+  },
+  {
+    "path": "figures/seq_nutrition_detailed.png",
+    "sha256": "d25b82ade2ef224b4bb550f1e92b00cc493494af3285d04fc1a329b83f9ada97"
+  },
+  {
+    "path": "figures/seq_nutrition_logging.png",
+    "sha256": "363707223b46073fc55ebf458b4f16743890480d8bb421da125ccea0e3e2fcd0"
+  },
+  {
+    "path": "figures/class_diagram_sprint3.png",
+    "sha256": "021d2eabea0ac87f440150ced77cdd85260cd4ab10a4c3c35de9e905dc9517af"
+  },
+  {
+    "path": "figures/class_diagram_sprint3_communication.png",
+    "sha256": "79b42568f35e0a7f260c79a50397e1f7d509900225946c88e2cf2df4198510cd"
+  },
+  {
+    "path": "figures/class_diagram_sprint3_followup.png",
+    "sha256": "f1437cba5989d7e1debb0fd01c6986404e9d9dfc1b1ea9bde3d29b4427f39bae"
+  },
+  {
+    "path": "figures/class_diagram_sprint3_finance.png",
+    "sha256": "acecaeab7e6825e5c2602008f33f2cf8cc25e5398deef5cc7b187239c467a9ed"
+  },
+  {
+    "path": "figures/use_case_sprint3.png",
+    "sha256": "f7e1cbd7df1b5b7b8cbc1c1f63a568a8dcd807909084bc10043ebef4cf4ea3f8"
+  },
+  {
+    "path": "figures/seq_booking_ssd.png",
+    "sha256": "72fc11a58f5ed8d6b9fb61a0787729f46293ead015130906728ac2a730a84265"
+  },
+  {
+    "path": "figures/seq_booking_detailed.png",
+    "sha256": "ec7b7c42de25c3ed7e3690c31a632f80d3e86c26bbee3cae191ca3bc8d21b18f"
+  },
+  {
+    "path": "figures/seq_booking_pack_recording.png",
+    "sha256": "7f8b8e94e526920fe58d563006bce05e6b7a35cc986487a098dfdf514161e520"
+  },
+  {
+    "path": "figures/seq_booking_direct.png",
+    "sha256": "1ab867c6f43c402988e796cffd6f7cad1e16fceedc8a26dfe1a1228cffef6591"
+  },
+  {
+    "path": "figures/seq_admin_audit_ssd.png",
+    "sha256": "8aa0ae89501359eb3a599304e0abf389a75d2d9768b159b787fb1a8359f3f752"
+  },
+  {
+    "path": "figures/seq_admin_audit_detailed.png",
+    "sha256": "4ed6d03ece25c673d78b588af8d993ec2e8da22e06e21f1c9cffef132fd9903a"
+  },
+  {
+    "path": "figures/arch_physical.png",
+    "sha256": "7cb27533fc6cb27c927a1a8284c6ce24b5708a63584ecabc6a7e30c94f81265b"
+  },
+  {
+    "path": "figures/arch_logical.png",
+    "sha256": "c8c1ac8a9c285b5228e2a4f1bf6a229e45d4acb812b303028850077e5b218b94"
+  },
+  {
+    "path": "figures/n8n_automation.png",
+    "sha256": "8fd7447cbdfe938d091eb4eb90abe3f3718560e98a04c5513364d45e8318c6b2"
+  },
+  {
+    "path": "figures/deployment_diagram.png",
+    "sha256": "da75eb9754d20f2619d87ac2f86e6db3f5d4690d9d3d1754412c101f8893e058"
+  }
+]

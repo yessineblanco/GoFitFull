@@ -2,84 +2,36 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createAuditLog, AuditActions, getClientIP, getUserAgent, getAdminUserIdFromRequest } from "@/lib/audit";
 import { getErrorMessage } from "@/lib/errors";
-
-interface WorkoutExerciseInput {
-  exercise_id: string;
-  sets?: number;
-  reps?: string;
-  rest_time?: number;
-  day?: number | null;
-  exercise_order?: number;
-}
-
-interface WorkoutRequest {
-  name?: string;
-  difficulty?: string;
-  image_url?: string | null;
-  workout_type?: string;
-  exercises?: WorkoutExerciseInput[];
-}
+import { workoutInputSchema } from "@/lib/workout-input";
 
 export async function POST(request: NextRequest) {
   try {
-    const body: WorkoutRequest = await request.json();
-
-    const { name, difficulty, image_url, workout_type, exercises } = body;
-
-    // Validation
-    if (!name || !exercises || exercises.length === 0) {
+    const parsed = workoutInputSchema.safeParse(await request.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: parsed.error.issues[0]?.message || "Invalid workout" },
         { status: 400 }
       );
     }
 
+    const { exercises, ...fields } = parsed.data;
     const adminClient = createAdminClient();
-
-    // 1. Create the workout
-    const { data: workout, error: workoutError } = await adminClient
-      .from("workouts")
-      .insert({
-        name,
-        difficulty: difficulty || "Beginner",
-        image_url,
-        workout_type: workout_type || "native",
-        user_id: null, // Native workouts have no user_id
-      })
-      .select()
-      .single();
+    // One database call: the parent and all prescriptions commit or roll back together.
+    const { data: workout, error: workoutError } = await adminClient.rpc(
+      "admin_save_native_workout",
+      {
+        p_workout_id: null,
+        p_payload: { ...fields, exercises },
+      }
+    );
 
     if (workoutError) {
-      console.error("Error creating workout:", workoutError);
+      console.error("Error saving workout:", workoutError);
+      const status = workoutError.code === "P0002" ? 404
+        : /^(22|23)/.test(workoutError.code) ? 400 : 500;
       return NextResponse.json(
-        { error: workoutError.message || "Failed to create workout" },
-        { status: 500 }
-      );
-    }
-
-    // 2. Add exercises to the workout
-    const workoutExercises = exercises.map((ex, index) => ({
-      workout_id: workout.id,
-      exercise_id: ex.exercise_id,
-      sets: ex.sets || 3,
-      reps: ex.reps || "10",
-      rest_time: ex.rest_time || 60,
-      day: ex.day || null,
-      exercise_order: ex.exercise_order !== undefined ? ex.exercise_order : index,
-    }));
-
-    const { error: exercisesError } = await adminClient
-      .from("workout_exercises")
-      .insert(workoutExercises);
-
-    if (exercisesError) {
-      // Rollback: delete the workout if exercises failed
-      await adminClient.from("workouts").delete().eq("id", workout.id);
-
-      console.error("Error adding exercises:", exercisesError);
-      return NextResponse.json(
-        { error: exercisesError.message || "Failed to add exercises" },
-        { status: 500 }
+        { error: workoutError.message || "Failed to save workout" },
+        { status }
       );
     }
 

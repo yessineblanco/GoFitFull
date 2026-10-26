@@ -1,0 +1,18 @@
+[
+  {
+    "file": "main-before.txt",
+    "sha256": "bf6bb00f6b7e13c33c3f56e9c993d8dae167c36191d892dd6db0acab3d83a401"
+  },
+  {
+    "file": "main-revision.diff",
+    "sha256": "80a395a284477495d14ab35c4d9b17199044e8458e885207956d82d85bf74687"
+  },
+  {
+    "file": "README.md",
+    "sha256": "2a32965dabb885cc46a973e88d6360f6abcd0c3bb6143b8f7b6cc6d6b7abc1f9"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "5fff00c612b5f7bf92d5569bc145369f5f23c5937c17e797cf9befc1ad4f3e74"
+  }
+]

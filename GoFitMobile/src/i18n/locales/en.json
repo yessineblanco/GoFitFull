@@ -487,7 +487,12 @@
       "done": "Done"
     },
     "exerciseCount": "{{count}} exercises",
-    "exerciseCount_singular": "1 exercise"
+    "exerciseCount_singular": "1 exercise",
+    "exerciseCount_one": "{{count}} exercise",
+    "exerciseCount_other": "{{count}} exercises",
+    "totalExercises": "Total exercises",
+    "durationNotEstimated": "Not estimated",
+    "summaryUnavailable": "Unavailable"
   },
   "home": {
     "welcome": "Good Morning,",
@@ -826,6 +831,7 @@
     "noClientsDesc": "Clients appear after they book a session or purchase a pack",
     "lastSession": "Last session",
     "activePack": "Active pack",
+    "noActivePack": "No active pack",
     "message": "Message",
     "createProgram": "Create Program",
     "viewProgress": "View Progress",
@@ -847,6 +853,8 @@
     "noWorkoutsYet": "No workouts yet",
     "noProgressData": "No progress data available for this client",
     "streak": "Streak",
+    "currentStreak": "Current streak",
+    "streakDayBoundary": "Streak: consecutive UTC workout days through today or yesterday.",
     "totalWorkouts": "Total",
     "consistency": "Consistency",
     "weekAbbr": "wk",
@@ -896,6 +904,10 @@
     "totalReviews": "Reviews",
     "totalSessions": "Sessions Overview",
     "sessionsTotal": "total sessions"
+  },
+  "payments": {
+    "unavailableTitle": "Payments unavailable",
+    "unavailableMessage": "Payments are currently unavailable. Please try again later."
   },
   "videoCall": {
     "connecting": "Connecting to call...",

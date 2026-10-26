@@ -1,0 +1,327 @@
+--- before-screenshots/main.tex
++++ with-screenshots/main.tex
+@@ -159,7 +159,7 @@
+ 
+ 
+ \renewcommand{\contentsname}{Table Of Contents}
+-\clearpage\tableofcontents\clearpage\listoftables\clearpage
++\clearpage\tableofcontents\clearpage\listoftables\clearpage\listoffigures\clearpage
+ \chapter*{General Introduction}
+ 
+ 
+@@ -765,6 +765,10 @@
+ The rest timer engine features circular SVG progress animations, dual audio chimes (expo-av), haptic feedback (expo-haptics), auto-advance upon set completion, and background continuation.
+ 
+ 
++\subsection{Interface Captures and Evidence Scope}
++
++The following interface captures come from the retained October 2026 development-build and local-administration QA. They illustrate visible states and selected follow-up corrections, rather than proving internship-period delivery or complete workflow validation. Cropped excerpts omit unrelated records or identity columns; the original captures and their links to the QA records are retained in the accompanying evidence package. The report distinguishes configured, empty, cancelled, failed and successful states in the relevant captions.
++
+ \subsection{Mobile Foundation and Navigation}
+ 
+ The first implementation challenge was to create a stable mobile foundation that could support both client and coach experiences. The application was structured around authentication screens, onboarding screens, protected app navigators, profile flows, and domain-specific feature stacks. This foundation is important because the rest of the product depends on role-aware routing: a visitor should not reach protected screens, an incomplete profile should be redirected to onboarding, and coach-specific flows should remain separated from standard client flows.
+@@ -791,6 +795,31 @@
+ \end{longtable}
+ \endgroup
+ 
++Figure~\ref{fig:ui-client-entry} illustrates the onboarding introduction, existing-account Home and workout catalog as captured. Reaching Home does not establish completion or remote persistence of the full onboarding form.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-onboarding-introduction.png}
++\par\smallskip{\footnotesize a) Onboarding introduction\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-home-after-relaunch.png}
++\par\smallskip{\footnotesize b) Home after session relaunch\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-workout-catalog.png}
++\par\smallskip{\footnotesize c) Native workout catalog\par}
++\end{minipage}
++\caption{Interface captures: onboarding introduction, existing-account Home and workout catalog (October development build).}
++\label{fig:ui-client-entry}
++\end{figure}
++
+ \subsection{Workout Core and Rest Timer}
+ 
+ The workout core was implemented around the distinction between a workout template and an executed workout session. A workout template defines the exercises, order, difficulty, target muscle groups, and expected configuration. A workout session stores timestamps, duration, notes and exercise snapshots with configured sets/repetitions, entered weights and completion flags. Those snapshots do not independently measure performed repetitions or RPE. This separation is essential because the same workout can be performed many times while producing different session histories.
+@@ -798,6 +827,25 @@
+ 
+ The rest timer was treated as a real workout tool rather than a decorative countdown. It includes start, pause, resume, warning cues, haptic feedback, audio cues, auto-advance options, and persisted preferences. This improves usability during training because users often interact with the timer under fatigue and need clear feedback without navigating away from the session.
+ 
++
++Figure~\ref{fig:ui-workout-configuration} shows an exercise prescription and the workout-builder form. Set, repetition and rest fields describe the prescription; no active-session, timer-expiry or offline result is inferred from these images.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-exercise-detail.png}
++\par\smallskip{\footnotesize a) Exercise detail\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-workout-builder.png}
++\par\smallskip{\footnotesize b) Workout-builder form\par}
++\end{minipage}
++\caption{Interface captures: exercise detail and workout configuration; execution checks remain separate.}
++\label{fig:ui-workout-configuration}
++\end{figure}
+ 
+ \subsection{Offline Workout Resiliency and Fault-Tolerant Queue}
+ 
+@@ -1093,6 +1141,31 @@
+ \end{longtable}
+ \endgroup
+ 
++Figure~\ref{fig:ui-progress-nutrition} combines the visible progress-chart state with nutrition and serving-entry views. The shown zero values and meal-entry form are interface observations; a completed save and aggregate correctness require the associated QA/readback records.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-progress-chart.png}
++\par\smallskip{\footnotesize a) Progress chart state\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-nutrition-dashboard.png}
++\par\smallskip{\footnotesize b) Nutrition diary\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-food-serving.png}
++\par\smallskip{\footnotesize c) Selected food and serving\par}
++\end{minipage}
++\caption{Interface captures: progress display, nutrition diary and food-serving selection (October QA).}
++\label{fig:ui-progress-nutrition}
++\end{figure}
++
+ \subsection{Data Interpretation and User Feedback}
+ 
+ A key design point in Sprint 2 is that GoFit should not only store values; it should help the user interpret them. For example, workout history becomes useful when the app can show consistency, completed sessions, training load, and trends. Body measurements become useful when the user can compare corrected values over time and understand why an AI draft may be uncertain. Nutrition entries become useful when they are reusable and connected to habits rather than isolated forms.
+@@ -1262,6 +1335,25 @@
+ 
+ In conclusion, the AI module is a meaningful technical contribution because it combines on-device inference, native module integration, pose landmarks, segmentation masks, typed feature vectors, statistical estimation, and validation methodology. At the same time, the report must be transparent: GoFit uses AI to assist progress tracking, not to replace professional body measurement.
+ 
++
++Figure~\ref{fig:ui-measurement-boundary} presents cropped measurement guidance and the observed camera-denial response. It supplies no fresh inference, review/save or numerical-accuracy result. A successful measurement draft and an independent accuracy comparison remain missing evidence.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.42\linewidth}
++\centering
++\includegraphics[width=\linewidth,height=8.5cm,keepaspectratio]{figures/screenshots/measurement-guidance-excerpt.png}
++\par\smallskip{\footnotesize a) Capture guidance excerpt\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.42\linewidth}
++\centering
++\includegraphics[width=\linewidth,height=8.5cm,keepaspectratio]{figures/screenshots/measurement-permission-result.png}
++\par\smallskip{\footnotesize b) Permission-denial message\par}
++\end{minipage}
++\caption{Interface excerpts: measurement guidance and handled camera denial; no successful scan is claimed.}
++\label{fig:ui-measurement-boundary}
++\end{figure}
+ 
+ \section{Tests}
+ 
+@@ -1558,6 +1650,54 @@
+ \end{longtable}
+ \endgroup
+ 
++Figures~\ref{fig:ui-coaching-availability} and~\ref{fig:ui-coach-workspace} show selected coaching interfaces. The duration image records the restored 60-minute preference; it does not complete the pending native standalone-payment test. The program form is unsubmitted, the private note is a disposable QA fixture, and the conversation list is empty.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-coach-discovery.png}
++\par\smallskip{\footnotesize a) Client marketplace\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-availability.png}
++\par\smallskip{\footnotesize b) Coach availability\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-saved-duration.png}
++\par\smallskip{\footnotesize c) Saved duration restored to 60 min\par}
++\end{minipage}
++\caption{Interface captures: coach discovery, recurring availability and the restored session-duration preference.}
++\label{fig:ui-coaching-availability}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-calendar.png}
++\par\smallskip{\footnotesize a) Calendar and empty upcoming list\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-program-form.png}
++\par\smallskip{\footnotesize b) Program-creation form\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-disposable-note.png}
++\par\smallskip{\footnotesize c) Disposable QA note\par}
++\end{minipage}
++\caption{Interface captures: coach calendar, unsubmitted program form and disposable private note.}
++\label{fig:ui-coach-workspace}
++\end{figure}
++
+ \subsection{Stripe Payment Integration and Persistence Boundaries}
+ \label{sec:current-payment-boundaries}
+ 
+@@ -1572,6 +1712,36 @@
+ 
+ These are synchronous sandbox scenarios, not a verified webhook/reconciliation system or a production payment certification. Same-reference retry is supported, but resumed-checkout recovery UI, scheduled reconciliation, refunds, payouts, 3DS/declines and iOS/release behavior remain incomplete or unverified. If capture or record completion is interrupted, recovery may require retry or operator review; an automatic refund must not be assumed. The retained payment evidence is identified in the final QA section.
+ 
++Figure~\ref{fig:ui-sandbox-pack} illustrates the retained EUR129 pack sandbox checkout and success dialog. Figure~\ref{fig:ui-admin-paid-records} shows the matching administrative payment-state fields alongside the separate EUR60 standalone-session record. The latter was verified through API/provider checks, not a completed native standalone checkout.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/sandbox-eur-checkout.png}
++\par\smallskip{\footnotesize a) Stripe test-mode checkout\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/sandbox-pack-success.png}
++\par\smallskip{\footnotesize b) Pack-purchase success dialog\par}
++\end{minipage}
++\caption{Sandbox interface captures: EUR129 test checkout and successful pack-purchase confirmation; no live charge is shown.}
++\label{fig:ui-sandbox-pack}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-sandbox-payment-records.png}
++
++\end{minipage}
++\caption{Administrative transaction excerpt: EUR60 standalone session and EUR129 pack marked sandbox-paid; identity columns omitted.}
++\label{fig:ui-admin-paid-records}
++\end{figure}
++
+ \subsection{Coach Check-in and Nutrition Context}
+ 
+ The coach workspace provides client context for fitness follow-up. Its check-in and nutrition views are support tools rather than clinically validated monitoring or medical decision systems.
+@@ -1584,6 +1754,19 @@
+ 
+ A frequent source of user confusion in marketplace applications is unformatted or blank screens when no data exists (e.g., zero active clients, empty chat inbox, new wallet with zero transactions). GoFit introduces a centralized, modular EmptyState component across the coach application (ClientsListScreen, \seqsplit{ConversationsListScreen,} CoachWalletScreen). Each empty state renders contextual iconography, informative microcopy, and clear call-to-action buttons, guiding coaches and clients on immediate next steps.
+ 
++
++Figure~\ref{fig:ui-conversation-empty} illustrates the coach conversation empty state. It is not evidence of a two-party message exchange or a connected video consultation; neither successful communication scenario is illustrated by the retained captures.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-message-empty-state.png}
++\par\smallskip{\footnotesize a) Empty conversation list\par}
++\end{minipage}
++\caption{Interface capture: coach message-list empty state; successful messaging/video evidence remains pending.}
++\label{fig:ui-conversation-empty}
++\end{figure}
+ 
+ \subsection{Administration and Operational Control}
+ 
+@@ -1612,6 +1795,47 @@
+ Settings and analytics & Platform configuration and business indicators. & Prepare the product for scaling and decision-making. \\ \hline
+ \end{longtable}
+ \endgroup
++
++Figures~\ref{fig:ui-admin-exercises} and~\ref{fig:ui-admin-workout} illustrate catalog management and a reloaded disposable workout fixture. Figure~\ref{fig:ui-admin-approval-audit} separates an approval confirmation dialog from exercise-deletion audit records. The coach-approval action was cancelled in the retained test; the audit excerpt concerns exercise deletion and does not establish approval auditing.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-exercise-catalog.png}
++
++\end{minipage}
++\caption{Administrative interface: exercise catalog, search/filter controls and management actions in the local QA environment.}
++\label{fig:ui-admin-exercises}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-disposable-workout-editor.png}
++
++\end{minipage}
++\caption{Administrative interface: disposable workout fixture reopened after editing; this test record was subsequently removed.}
++\label{fig:ui-admin-workout}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-approval-dialog.png}
++\par\smallskip{\footnotesize a) Approval confirmation dialog\par}
++\end{minipage}
++\par\medskip
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-exercise-audit-excerpt.png}
++\par\smallskip{\footnotesize b) Exercise-deletion audit excerpt\par}
++\end{minipage}
++\caption{Administrative excerpts: coach-approval confirmation (cancelled) and exercise-deletion audit entries; unrelated identity/network columns omitted.}
++\label{fig:ui-admin-approval-audit}
++\end{figure}
+ 
+ \subsection{Admin Analytics and Business Intelligence Features}
+ 
+@@ -1669,6 +1893,19 @@
+ 
+ This BI layer is important academically because it shows that GoFit is not only a mobile user interface. The project also studies how operational data can be modeled, aggregated, protected, visualized, exported, and summarized for administrators. The current implementation remains intentionally transparent about v1 limitations so that the report does not exaggerate financial reconciliation, medical interpretation, or filter completeness.
+ 
++
++Figure~\ref{fig:ui-admin-dashboard} shows the corrected profile-count label and BI overview. The displayed totals belong to the test environment and include the stated historical/sandbox limitations; this image does not independently validate all BI calculations.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-dashboard.png}
++
++\end{minipage}
++\caption{Administrative dashboard capture: user-profile count and operational BI overview after the label correction.}
++\label{fig:ui-admin-dashboard}
++\end{figure}
+ 
+ \subsection{In-App AI Workout Recommendation and Personalization}
+ 
+@@ -2055,6 +2292,8 @@
+ Figure~\ref{fig:n8n_automation} follows the supplied workflow exports. Each executable path consists of a Schedule Trigger and one Code node; sticky notes document internal stages rather than adding executable template nodes. Intervals are 60 minutes for AI Session Prep, 15 for Booking Reminders, 240 for Check-in Reminders, and 1,440 for each digest. These intervals do not establish a fixed 08:00 UTC schedule or a weekly trigger. Code performs backend REST queries and writes, applying workflow-specific duplicate checks. AI Session Prep calls Groq directly and persists a briefing; Coach Daily Digest aggregates rule-based signals. Outputs are in-app notification rows or admin-notification rows, with no direct Expo push or Resend email delivery in these exports. Existing-row checks reduce duplicate creation but are not proof of concurrency-safe exactly-once execution. The exports do not specify an active deployment, and successful run evidence remains separate from implementation artifacts.
+ 
+ 
++No successful scheduled-run screenshot is added for automation: the retained artifact is the workflow design in Figure~\ref{fig:n8n_automation}, while execution and delivery evidence remain pending. Similarly, the architecture/deployment views describe their stated targets and metadata rather than serving as screenshots of a published release.
++
+ \subsection{Device Feedback and Validation Scope}
+ 
+ The session screen contains haptic calls for set completion and selected actions; timer configuration also exposes feedback preferences. Such calls establish an intended device interaction, not observed vibration timing or locked-device delivery. The controlled timer scenario remains unverified in Section~\ref{sec:qa-evidence}. Package families and platform boundaries are summarized once in Table~\ref{tab:pdf-88-43}; a dependency inventory does not demonstrate complete feature coverage.

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getErrorMessage } from "@/lib/errors";
+import { getPackPaymentDetails } from "@/lib/pack-payment";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,7 +14,11 @@ interface PurchasedPackTransaction {
   sessions_total: number;
   purchased_at: string;
   status: string;
-  session_packs: { name?: string; price?: number } | null;
+  paid_amount: number | null;
+  paid_currency: string | null;
+  payment_livemode: boolean | null;
+  stripe_payment_id: string | null;
+  session_packs: { name?: string; price?: number; currency?: string } | null;
 }
 
 export async function GET() {
@@ -32,7 +37,11 @@ export async function GET() {
         purchased_at,
         status,
         created_at,
-        session_packs!inner(name, price)
+        paid_amount,
+        paid_currency,
+        payment_livemode,
+        stripe_payment_id,
+        session_packs!inner(name, price, currency)
       `)
       .order("purchased_at", { ascending: false })
       .limit(100);
@@ -45,11 +54,26 @@ export async function GET() {
       );
     }
 
-    if (!purchases || purchases.length === 0) {
-      return NextResponse.json({ transactions: [] }, { status: 200 });
+    const { data: sessions, error: sessionsError } = await adminClient.from("bookings")
+      .select("id,client_id,coach_id,status,scheduled_at,duration_minutes,paid_at,paid_amount,paid_currency,payment_livemode,stripe_payment_id")
+      .eq("payment_status", "paid").is("pack_purchase_id", null)
+      .order("paid_at", { ascending: false }).limit(100);
+    // Keep existing pack records usable while the session migration awaits deployment.
+    const sessionSchemaMissing = sessionsError?.code === "42703" || sessionsError?.code === "PGRST204";
+    if (sessionsError && !sessionSchemaMissing) return NextResponse.json({ error: "Failed to fetch session payments" }, { status: 500 });
+
+    if (!purchases?.length && !sessions?.length) {
+      return NextResponse.json({ transactions: [], sessionPaymentsAvailable: !sessionSchemaMissing }, { status: 200 });
     }
 
-    const transactionRows = purchases as PurchasedPackTransaction[];
+    const transactionRows = [
+      ...(purchases || []).map(p => ({ ...p, kind: "pack" as const })),
+      ...(sessions || []).map(b => ({ ...b, kind: "session" as const,
+        session_packs: { name: "1-on-1 session" }, purchased_at: b.paid_at,
+        sessions_total: 1, sessions_remaining: b.status === "completed" ? 0 : 1,
+      })),
+    ] as (PurchasedPackTransaction & { kind: "pack" | "session"; scheduled_at?: string; duration_minutes?: number })[];
+    transactionRows.sort((a, b) => Date.parse(b.purchased_at) - Date.parse(a.purchased_at));
     const coachIds = [...new Set(transactionRows.map((purchase) => purchase.coach_id))];
 
     const { data: authUsers } = await adminClient.auth.admin.listUsers();
@@ -85,15 +109,18 @@ export async function GET() {
           coachAuth?.email?.split("@")[0] ||
           "Unknown",
         pack_name: pack?.name || "—",
-        amount: pack?.price ?? 0,
+        kind: p.kind,
+        scheduled_at: p.scheduled_at,
+        duration_minutes: p.duration_minutes,
+        ...getPackPaymentDetails(p),
         sessions_total: p.sessions_total,
         sessions_remaining: p.sessions_remaining,
         status: p.status,
         purchased_at: p.purchased_at,
       };
-    });
+    }).slice(0, 100);
 
-    return NextResponse.json({ transactions }, { status: 200 });
+    return NextResponse.json({ transactions, sessionPaymentsAvailable: !sessionSchemaMissing }, { status: 200 });
   } catch (error: unknown) {
     console.error("Error in transactions API:", error);
     return NextResponse.json(

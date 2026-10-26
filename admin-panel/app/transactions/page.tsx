@@ -12,7 +12,13 @@ interface Transaction {
   coach_id: string;
   coach_name: string;
   pack_name: string;
+  kind: "pack" | "session";
+  scheduled_at?: string;
+  duration_minutes?: number;
   amount: number;
+  currency: string;
+  payment_reference: string | null;
+  payment_mode: "live" | "sandbox" | "unverified";
   sessions_total: number;
   sessions_remaining: number;
   status: string;
@@ -22,6 +28,7 @@ interface Transaction {
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sessionPaymentsAvailable, setSessionPaymentsAvailable] = useState(true);
 
   const loadTransactions = async () => {
     setLoading(true);
@@ -30,6 +37,7 @@ export default function TransactionsPage() {
       if (res.ok) {
         const data = await res.json();
         setTransactions(data.transactions || []);
+        setSessionPaymentsAvailable(data.sessionPaymentsAvailable !== false);
       }
     } catch (error) {
       console.error("Failed to load transactions:", error);
@@ -42,7 +50,8 @@ export default function TransactionsPage() {
     loadTransactions();
   }, []);
 
-  const totalVolume = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const totalVolume = transactions.filter(t => t.payment_mode === "live" && t.currency === "EUR")
+    .reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="flex-1 space-y-4 p-4 sm:p-6 lg:p-8 pt-6 page-transition">
@@ -64,12 +73,12 @@ export default function TransactionsPage() {
             <DollarSign className="h-5 w-5" />
             Summary
           </CardTitle>
-          <CardDescription>Read-only monitoring of pack purchases</CardDescription>
+          <CardDescription>Read-only monitoring of pack purchases and paid sessions</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-6">
             <div>
-              <p className="text-sm text-muted-foreground">Total Volume</p>
+              <p className="text-sm text-muted-foreground">Verified live payments (EUR)</p>
               <p className="text-2xl font-bold">€{totalVolume.toFixed(2)}</p>
             </div>
             <div>
@@ -83,7 +92,8 @@ export default function TransactionsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Recent Purchases</CardTitle>
-          <CardDescription>All purchased_packs with client, coach, amount, and date</CardDescription>
+          {!sessionPaymentsAvailable && <p className="text-sm text-muted-foreground">Standalone session payment tracking is not enabled yet.</p>}
+          <CardDescription>Pack and standalone session payments. Sandbox payments are excluded from live totals. Legacy amounts use current pack prices and are unverified.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -100,8 +110,9 @@ export default function TransactionsPage() {
                     <th className="text-left py-3 px-2 font-medium">Date</th>
                     <th className="text-left py-3 px-2 font-medium">Client</th>
                     <th className="text-left py-3 px-2 font-medium">Coach</th>
-                    <th className="text-left py-3 px-2 font-medium">Pack</th>
+                    <th className="text-left py-3 px-2 font-medium">Purchase</th>
                     <th className="text-right py-3 px-2 font-medium">Amount</th>
+                    <th className="text-left py-3 px-2 font-medium">Payment</th>
                     <th className="text-center py-3 px-2 font-medium">Sessions</th>
                     <th className="text-center py-3 px-2 font-medium">Status</th>
                   </tr>
@@ -121,15 +132,24 @@ export default function TransactionsPage() {
                         <div className="text-xs text-muted-foreground">{t.client_email}</div>
                       </td>
                       <td className="py-3 px-2">{t.coach_name}</td>
-                      <td className="py-3 px-2">{t.pack_name}</td>
-                      <td className="py-3 px-2 text-right font-medium">€{t.amount.toFixed(2)}</td>
+                      <td className="py-3 px-2">
+                        <div>{t.pack_name}</div>
+                        {t.kind === "session" && t.scheduled_at && (
+                          <div className="text-xs text-muted-foreground">{new Date(t.scheduled_at).toLocaleString(undefined, { timeZone: "Europe/Berlin" })} (Berlin)</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-right font-medium">{t.currency} {t.amount.toFixed(2)}</td>
+                      <td className="py-3 px-2">
+                        <div>{t.payment_mode === "sandbox" ? "Sandbox · paid" : t.payment_mode === "live" ? "Live · paid" : "Legacy · unverified"}</div>
+                        <div className="text-xs text-muted-foreground break-all">{t.payment_reference || "No payment reference"}</div>
+                      </td>
                       <td className="py-3 px-2 text-center">
-                        {t.sessions_remaining}/{t.sessions_total}
+                        {t.kind === "session" ? `${t.duration_minutes} min` : `${t.sessions_remaining}/${t.sessions_total}`}
                       </td>
                       <td className="py-3 px-2">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                            t.status === "active"
+                            t.status === "active" || t.status === "confirmed"
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                               : t.status === "exhausted"
                               ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"

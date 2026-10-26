@@ -1,0 +1,19 @@
+{
+  "docs/gantt/SPRINT_BREAKDOWN.md": "8e1078f39d897aaa1de7ac3d58b99286c030fe6990eff531009d1d0dba8acadd",
+  "docs/gantt/SCRUM_SPRINT_BREAKDOWN.md": "7c33d913bfa767972cd036229bd5fefbfde5cef5c4e0531ca098ab7cd82c02aa",
+  "docs/gantt/GANTT_SPRINTS.csv": "922d54d162a676284c54ebc26d2529ce04a8688e7efe8168f3ac350cd4fd2020",
+  "docs/gantt/GANTT_SCRUM.csv": "aacb71ea0d2a90800545a6aef13b7944c5d3d6b21626d71f37374e261aa72c3c",
+  "docs/INTERNSHIP_LOGBOOK_SPRINTS_1.1_to_3.3_EN.md": "b85a84c15db428e232a5fd4bde46def65468e6baf796b1c3e7a3e7ad7c3e9825",
+  "tmp/apply_supervisor_revisions.py": "bdb254bc65b90ea3de0c0adc450978eebe342a14a83e14608074af8323389c11",
+  "GoFitMobile/src/navigation/AuthNavigator.tsx": "8a4da62cb838bfd8145bfa4a24aedd6f7afe907668d068c01c07231b976c53cf",
+  "GoFitMobile/src/navigation/OnboardingNavigator.tsx": "fbe84861b519d9e789e31fd0676abd96e93fc29d12fa22060adeccefae8cf171",
+  "GoFitMobile/src/screens/library/WorkoutSessionScreen.tsx": "7a3aeeadd7fa73d8bbc483304e9e6e5c998b0a5cb213bb13c636d2a7e3ca7fc9",
+  "GoFitMobile/src/store/authStore.ts": "89a1f4183772d4b9e2d7c4735ecbff9622af7a7fe51d594c239478fc516d8f0a",
+  "GoFitMobile/src/store/profileStore.ts": "fb3472de3712c9c29043808d3e2cf4c41334b1fde41e48a0e1fff9c0ad023bc2",
+  "GoFitMobile/src/store/workoutsStore.ts": "d49d554b5227906e2933875b5bc32ab474166535e33b6775a571d17f347095df",
+  "GoFitMobile/src/store/timerStore.ts": "4a2fc323d5484477c0db09c6d7fe3c32e1333db2ca18eac72b6084d59fab6a31",
+  "GoFitMobile/src/store/uiStore.ts": "55b91bafa00255aa32bfa52697bb677b040400149db3c1b14867508bb271a688",
+  "GoFitMobile/src/services/auth.ts": "2b35359ba1a2a7f01cdc80bb89101d0ee326566e2b59d28177165dada85748f1",
+  "GoFitMobile/src/services/workouts.ts": "1d4d9a79f134c17ca18d4bec34d478cee08ee5bfa17d9696a1c8d5b636a8018a",
+  "GoFitMobile/src/services/offlineQueue.ts": "d85d3d26195cf742e2bb3752269431fe8808554c81f669d8e4469a80d9b9c888"
+}

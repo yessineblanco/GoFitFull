@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-25",
+  "status": "expanded_compiled_successfully",
+  "builtInCompilerResult": "success",
+  "newCaptures": 19,
+  "totalScreenshotReferences": 44,
+  "newFigureGroups": 10,
+  "totalScreenshotGroups": 23,
+  "adminWalkthroughHeadingAdded": true,
+  "adminDashboardRelocated": true,
+  "adminHeadingLabel": "sec:admin-panel-screens",
+  "rawCapturesPreserved": true,
+  "privacyMasksVerified": true,
+  "qaVerdictsAndRequirementRowsPreserved": true,
+  "appOrBackendChanges": false,
+  "mainSha256": "11458a14fe43687b1f9cdd094ea1cae50acbd6780d5212f6cdabf87ff32d5f88"
+}

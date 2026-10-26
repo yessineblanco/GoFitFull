@@ -44,6 +44,8 @@ export type CheckInResponseInput = {
   notes?: string;
 };
 
+export type CoachLowCheckIn = CheckInResponse & { client_name: string | null };
+
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 const normalizeSchedule = (row: any): CheckInSchedule => ({
@@ -234,14 +236,14 @@ class CheckInsService {
     return (data || []).map(normalizeResponse);
   }
 
-  async getRecentLowCheckInsForCoach(coachId: string): Promise<any[]> {
+  async getRecentLowCheckInsForCoach(coachId: string): Promise<CoachLowCheckIn[]> {
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
     const dateStr = twoDaysAgo.toISOString().split('T')[0];
 
     const { data, error } = await supabase
       .from('check_in_responses')
-      .select('*, user_profiles!client_id(display_name, avatar_url)')
+      .select('*')
       .eq('coach_id', coachId)
       .gte('response_date', dateStr)
       .or('mood.lte.2,energy.lte.2')
@@ -249,10 +251,24 @@ class CheckInsService {
 
     if (error) {
       logger.error('Failed to load low check-ins for coach:', error);
-      return [];
+      throw error;
     }
 
-    return data || [];
+    if (!data?.length) return [];
+    const names = new Map<string, string>();
+    try {
+      const { data: clients, error: clientError } = await supabase.rpc('get_coach_clients', { p_coach_id: coachId });
+      if (clientError) {
+        logger.warn('Failed to load check-in client names:', clientError);
+      } else {
+        for (const client of clients || []) {
+          if (client.display_name) names.set(client.client_id, client.display_name);
+        }
+      }
+    } catch (clientError) {
+      logger.warn('Failed to load check-in client names:', clientError);
+    }
+    return data.map((response: CheckInResponse) => ({ ...response, client_name: names.get(response.client_id) || null }));
   }
 }
 

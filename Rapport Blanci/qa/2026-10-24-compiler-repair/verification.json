@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-24",
+  "status": "compiler_repaired",
+  "biberInstalled": "C:/Users/yessi/.local/bin/biber.exe",
+  "biberVersion": "2.22",
+  "biberStandaloneWorks": true,
+  "biberEditorLaunch": "Windows error 623",
+  "effectiveBackend": "bibtex",
+  "numericStyleAndSortingPreserved": true,
+  "onlySourceChange": "backend=biber to backend=bibtex",
+  "academicTextUnchanged": true,
+  "builtInCompileSuccess": true,
+  "existingEditorPreserved": true,
+  "separatePdfCreated": false,
+  "fullPdfVisualReviewPerformed": false,
+  "mainSha256": "a321359dbfc454b2c7b25bd6821a27554aff1f5bc43164af52011a168b696884"
+}

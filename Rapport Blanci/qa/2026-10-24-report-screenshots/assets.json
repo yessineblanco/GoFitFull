@@ -1,0 +1,202 @@
+[
+  {
+    "asset": "figures/screenshots/client-onboarding-introduction.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-001-onboarding-before-skip.png",
+    "sourceSha256": "e86285ec468f2502ecf33d549b169b8fedec4fc793d9af624b9921493ca9c59c",
+    "cropPixels": null,
+    "assetSha256": "e86285ec468f2502ecf33d549b169b8fedec4fc793d9af624b9921493ca9c59c"
+  },
+  {
+    "asset": "figures/screenshots/client-workout-catalog.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-089-library-native.png",
+    "sourceSha256": "e3b7ffe09cf218887a8586c390097843311187c2bcf4b11d1098a14e5a38ef13",
+    "cropPixels": null,
+    "assetSha256": "e3b7ffe09cf218887a8586c390097843311187c2bcf4b11d1098a14e5a38ef13"
+  },
+  {
+    "asset": "figures/screenshots/client-exercise-detail.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-012-exercise-detail.png",
+    "sourceSha256": "5a5dc50601ad599abe0ab534a34e2890c21c64916c3314838455ba83096891b1",
+    "cropPixels": null,
+    "assetSha256": "5a5dc50601ad599abe0ab534a34e2890c21c64916c3314838455ba83096891b1"
+  },
+  {
+    "asset": "figures/screenshots/client-workout-builder.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-097-builder-form.png",
+    "sourceSha256": "53880bf9e62fcfbef42790acc7c0d63f0f7c3987cb2be10d999c58e9babf8cfa",
+    "cropPixels": null,
+    "assetSha256": "53880bf9e62fcfbef42790acc7c0d63f0f7c3987cb2be10d999c58e9babf8cfa"
+  },
+  {
+    "asset": "figures/screenshots/client-progress-chart.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-172-progress-chart-area.png",
+    "sourceSha256": "37953894033f21d21eed17e85ec55c54d370ecd26ce2d63588b152f0fedb9c8b",
+    "cropPixels": null,
+    "assetSha256": "37953894033f21d21eed17e85ec55c54d370ecd26ce2d63588b152f0fedb9c8b"
+  },
+  {
+    "asset": "figures/screenshots/client-nutrition-dashboard.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-024-nutrition-dashboard.png",
+    "sourceSha256": "00b971e15121e5752b4e25191e422cf1e423ac2f1de9503760f9ce8b85562a9c",
+    "cropPixels": null,
+    "assetSha256": "00b971e15121e5752b4e25191e422cf1e423ac2f1de9503760f9ce8b85562a9c"
+  },
+  {
+    "asset": "figures/screenshots/client-food-serving.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-031-food-added.png",
+    "sourceSha256": "95100bd9d120c1cf6243b1c7fc9c09b63180dd9e198c93c943236e1206a49836",
+    "cropPixels": null,
+    "assetSha256": "95100bd9d120c1cf6243b1c7fc9c09b63180dd9e198c93c943236e1206a49836"
+  },
+  {
+    "asset": "figures/screenshots/measurement-guidance-excerpt.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-058-body-measurement-form.png",
+    "sourceSha256": "6eb0baad69d2ba17c435d2c3ff7cd967a3b15d3c9137d2a1d24d68496171afed",
+    "cropPixels": [
+      0,
+      70,
+      1080,
+      1110
+    ],
+    "assetSha256": "cc944e5f73b9382655a5de5b3886d10a9d3ee51f2b2432b57f7c910f99a5dfcb"
+  },
+  {
+    "asset": "figures/screenshots/measurement-permission-result.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-060-camera-denial-handled.png",
+    "sourceSha256": "2ae06eacbe9a167d14470200ae39a9044be9497f5ef41998360d6c9462834d13",
+    "cropPixels": [
+      55,
+      825,
+      1025,
+      1450
+    ],
+    "assetSha256": "b4f087178f347a2f35fb7a26421cee005c08419343b14a6b9e864382b29d5c77"
+  },
+  {
+    "asset": "figures/screenshots/client-coach-discovery.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-134-coach-marketplace.png",
+    "sourceSha256": "b7564b4232870c9db467da2dd4b229bb0f960cf7ba7c0d029fa42ace4aea45a2",
+    "cropPixels": null,
+    "assetSha256": "b7564b4232870c9db467da2dd4b229bb0f960cf7ba7c0d029fa42ace4aea45a2"
+  },
+  {
+    "asset": "figures/screenshots/coach-calendar.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-099-fixed-return-october.png",
+    "sourceSha256": "1808f56eb1b68aab6fa1c90da7589aff8009ee46cdd560338fe8a23514bd4f2f",
+    "cropPixels": null,
+    "assetSha256": "1808f56eb1b68aab6fa1c90da7589aff8009ee46cdd560338fe8a23514bd4f2f"
+  },
+  {
+    "asset": "figures/screenshots/coach-availability.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-106-availability-preserved-after-fix.png",
+    "sourceSha256": "2a18b95f96ddb6ae2167a4775263d54413f62606bee4f54ed3623451301cdf8b",
+    "cropPixels": null,
+    "assetSha256": "2a18b95f96ddb6ae2167a4775263d54413f62606bee4f54ed3623451301cdf8b"
+  },
+  {
+    "asset": "figures/screenshots/coach-saved-duration.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-117-duration-60-restored.png",
+    "sourceSha256": "c0505c51c5e8bb0c89300b86f8b0d3a0defc1a632d00524f4f0b09ea3bb12603",
+    "cropPixels": null,
+    "assetSha256": "c0505c51c5e8bb0c89300b86f8b0d3a0defc1a632d00524f4f0b09ea3bb12603"
+  },
+  {
+    "asset": "figures/screenshots/coach-program-form.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-069-program-builder-empty.png",
+    "sourceSha256": "d5079f8cf599b228123342db4fd5afada6e94b243e72032b6fb086bbc11df655",
+    "cropPixels": null,
+    "assetSha256": "d5079f8cf599b228123342db4fd5afada6e94b243e72032b6fb086bbc11df655"
+  },
+  {
+    "asset": "figures/screenshots/coach-disposable-note.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-035-note-persisted.png",
+    "sourceSha256": "a0a6d878a0efb91b30a753d0539afabb0a35ff06e5bfa12200ad04b862732b33",
+    "cropPixels": null,
+    "assetSha256": "a0a6d878a0efb91b30a753d0539afabb0a35ff06e5bfa12200ad04b862732b33"
+  },
+  {
+    "asset": "figures/screenshots/coach-message-empty-state.png",
+    "source": "qa/2026-10-23-coach/screenshots/COACH-062-conversations.png",
+    "sourceSha256": "4b1da81cff53cdb9c094860ad2f5e51b62f9d65cf926d3601926bad6c14a05f1",
+    "cropPixels": null,
+    "assetSha256": "4b1da81cff53cdb9c094860ad2f5e51b62f9d65cf926d3601926bad6c14a05f1"
+  },
+  {
+    "asset": "figures/screenshots/sandbox-eur-checkout.png",
+    "source": "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/PACK-005-ready-to-pay.png",
+    "sourceSha256": "94b420b89fa99df09e60fab16eb41d5b861af8418280d9980d3d21ee8aae19fb",
+    "cropPixels": null,
+    "assetSha256": "94b420b89fa99df09e60fab16eb41d5b861af8418280d9980d3d21ee8aae19fb"
+  },
+  {
+    "asset": "figures/screenshots/sandbox-pack-success.png",
+    "source": "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/PACK-007-saved.png",
+    "sourceSha256": "74df4c57119e41cdc4201ed1556b61d3e5471a4086ad7fbd222786201e7c0f43",
+    "cropPixels": null,
+    "assetSha256": "74df4c57119e41cdc4201ed1556b61d3e5471a4086ad7fbd222786201e7c0f43"
+  },
+  {
+    "asset": "figures/screenshots/admin-sandbox-payment-records.png",
+    "source": "qa/2026-10-24-session-payments/screenshots/session-payment-admin.png",
+    "sourceSha256": "9bc6aa55db527f2a53bd396ec875cb6dd68268f6e664163f1ff606978bb095c9",
+    "cropPixels": [
+      820,
+      430,
+      1660,
+      610
+    ],
+    "assetSha256": "2ee07e102121e7c42fec0f1e3790656357afd0838986fa2606c27edbbb5934f2"
+  },
+  {
+    "asset": "figures/screenshots/admin-dashboard.png",
+    "source": "qa/2026-10-23-admin/fixes/DASH-03/screenshots/dashboard-profile-count.png",
+    "sourceSha256": "d6907024dcb7eb846d0ff9164253b9ddeec2f1ccdd5d23c836c6b28163567a65",
+    "cropPixels": null,
+    "assetSha256": "d6907024dcb7eb846d0ff9164253b9ddeec2f1ccdd5d23c836c6b28163567a65"
+  },
+  {
+    "asset": "figures/screenshots/admin-exercise-catalog.png",
+    "source": "qa/2026-10-23-admin/screenshots/ADMIN-010-exercises.png",
+    "sourceSha256": "8ae66d0fc455788b6a67df6e1be669b1b8ac382fd0f2f25a6619176b1ef4cee9",
+    "cropPixels": null,
+    "assetSha256": "8ae66d0fc455788b6a67df6e1be669b1b8ac382fd0f2f25a6619176b1ef4cee9"
+  },
+  {
+    "asset": "figures/screenshots/admin-disposable-workout-editor.png",
+    "source": "qa/2026-10-23-admin/fixes/WORK-05/02-edited-and-reloaded.png",
+    "sourceSha256": "eafc6772c717efecd9db47658b0d86f417798326b9c353c0addb0fe250d7f392",
+    "cropPixels": null,
+    "assetSha256": "eafc6772c717efecd9db47658b0d86f417798326b9c353c0addb0fe250d7f392"
+  },
+  {
+    "asset": "figures/screenshots/admin-approval-dialog.png",
+    "source": "qa/2026-10-23-admin/screenshots/ADMIN-029-coach-approval-confirmation.png",
+    "sourceSha256": "73a025cadb0b94af8670dc4a369a8ec824718314014926a346809424717c64bb",
+    "cropPixels": [
+      465,
+      414,
+      975,
+      595
+    ],
+    "assetSha256": "e7a0e61d356acb549ffaf18490adf6296f0e87b60b47798462d3afd4b4e2ca37"
+  },
+  {
+    "asset": "figures/screenshots/admin-exercise-audit-excerpt.png",
+    "source": "qa/2026-10-23-admin/fixes/AUDIT-03/screenshots/activity-log-api-consistency.png",
+    "sourceSha256": "927b7c5af6b48b6e7a33d0eaf701c9088be3d60f90c40497f2827cccd32e3acc",
+    "cropPixels": [
+      665,
+      285,
+      1405,
+      550
+    ],
+    "assetSha256": "3861e4a44f2348e9d9f626c12d8c6e7bf20b33b6f3dc71a16ca8536234af3f84"
+  },
+  {
+    "asset": "figures/screenshots/client-home-after-relaunch.png",
+    "source": "qa/2026-10-22/screenshots/CLIENT-054-restart-authenticated.png",
+    "sourceSha256": "49b5638bb6af767b4acc11db3bc2c8555958c0e402a178e1344e0abb67fa8a90",
+    "cropPixels": null,
+    "assetSha256": "49b5638bb6af767b4acc11db3bc2c8555958c0e402a178e1344e0abb67fa8a90"
+  }
+]

@@ -479,6 +479,11 @@
     },
     "exerciseCount": "{{count}} exercices",
     "exerciseCount_singular": "1 exercice",
+    "exerciseCount_one": "{{count}} exercice",
+    "exerciseCount_other": "{{count}} exercices",
+    "totalExercises": "Total des exercices",
+    "durationNotEstimated": "Non estimée",
+    "summaryUnavailable": "Indisponible",
     "daySelection": {
       "title": "Sélectionner le jour",
       "selectDayMessage": "Choisissez le jour pour commencer votre entraînement",
@@ -819,6 +824,7 @@
     "noClientsDesc": "Les clients apparaissent après une réservation ou un achat de pack",
     "lastSession": "Dernière séance",
     "activePack": "Pack actif",
+    "noActivePack": "Aucun pack actif",
     "message": "Message",
     "createProgram": "Créer un programme",
     "viewProgress": "Voir la progression",
@@ -840,6 +846,8 @@
     "noWorkoutsYet": "Aucun entraînement pour le moment",
     "noProgressData": "Aucune donnée de progression disponible pour ce client",
     "streak": "Série",
+    "currentStreak": "Série actuelle",
+    "streakDayBoundary": "Série : jours d’entraînement UTC consécutifs jusqu’à aujourd’hui ou hier.",
     "totalWorkouts": "Total",
     "consistency": "Régularité",
     "weekAbbr": "sem",
@@ -889,6 +897,10 @@
     "totalReviews": "Avis",
     "totalSessions": "Aperçu des séances",
     "sessionsTotal": "séances au total"
+  },
+  "payments": {
+    "unavailableTitle": "Paiements indisponibles",
+    "unavailableMessage": "Les paiements sont actuellement indisponibles. Veuillez réessayer plus tard."
   },
   "videoCall": {
     "connecting": "Connexion à l'appel...",

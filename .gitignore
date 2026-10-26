@@ -1,2 +1,10 @@
 Storage/
 .tmp-chrome/
+
+# Local development and review artifacts
+/tmp/
+/supabase/.temp/
+**/__pycache__/
+**/~$*
+/kroki*test.png
+/test_mermaid.svg

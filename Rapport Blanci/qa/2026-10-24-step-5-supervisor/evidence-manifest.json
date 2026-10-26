@@ -1,0 +1,54 @@
+[
+  {
+    "file": "compiler-final.json",
+    "sha256": "c06f74d8ea56d18e59beafe3cb032b6b7c9742acff0ececa505615ce23355f6d"
+  },
+  {
+    "file": "corrections.json",
+    "sha256": "f586ef59789c1c50bca7644d2aee8319c4664e1df97aa76fb0ab92389fc5765f"
+  },
+  {
+    "file": "cumulative-model-check.json",
+    "sha256": "b8e2a46fa9dd504d2d929caae7edfb8e079897805d08aa4d8b6d7769223291a6"
+  },
+  {
+    "file": "figure-hashes.json",
+    "sha256": "32c357c57c9dab1f5d899af1e880f8486656123c2dd7dc34e446505f28454878"
+  },
+  {
+    "file": "main-before.txt",
+    "sha256": "b41aef075abb23f3b6999c4fc3848df96f9db839979a6e634cb13a1cc3db9f8e"
+  },
+  {
+    "file": "main-revision.diff",
+    "sha256": "dbe56c1d9760819a6b0db25a8ad93671758d38ff3803d0c58a1df7802d95c017"
+  },
+  {
+    "file": "planning-evidence.json",
+    "sha256": "faf738cc5f5b89f51fe6e879fe01301cd40992585bb9e8b11ac058c37d0fe5a1"
+  },
+  {
+    "file": "README.md",
+    "sha256": "8954ad8901df85820ed500ca2558da1b83f246489d7bc3c8b819052c7b611939"
+  },
+  {
+    "file": "revise.py",
+    "sha256": "55725adf47e5d49e65971f4e25b947278d67c53d68f8cd00a611e00b52b9ca2d"
+  },
+  {
+    "file": "source-hashes.json",
+    "sha256": "1501109a8707ea96580476d9923dac9e404d44a15fa4adb2a18fea7c11778613"
+  },
+  {
+    "file": "table-review.json",
+    "sha256": "9011a96d67c494945b81555e9922293de077ea2829dc21de3d09b8b5e6ee7019"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "c296465e5dcd9195c8921097aebdb052a109fee6ed8c46659f536b30f7623017"
+  },
+  {
+    "file": "verify.py",
+    "sha256": "4c26118aaec05d61de6db10ca52d393ee3bd95f961341719cb64ce5ee9dd858a"
+  }
+]

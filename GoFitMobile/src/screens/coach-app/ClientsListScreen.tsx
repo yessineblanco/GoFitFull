@@ -14,7 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image as ExpoImage } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Flame, Search, SlidersHorizontal, MoreVertical } from 'lucide-react-native';
+import { Package, Search, SlidersHorizontal, MoreVertical } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useClientManagementStore } from '@/store/clientManagementStore';
@@ -182,7 +182,7 @@ export const ClientsListScreen: React.FC = () => {
     const ac = getColor(item.display_name || '');
     const avatarUri = resolvePublicAvatarUrl(item.profile_picture_url);
     const next = nextByClient.get(item.client_id);
-    const streakActive = item.has_active_pack;
+    const hasActivePack = item.has_active_pack;
 
     return (
       <Animated.View
@@ -225,13 +225,13 @@ export const ClientsListScreen: React.FC = () => {
                   style={[
                     st.streakPill,
                     {
-                      backgroundColor: streakActive ? primaryC : surfaceHi,
+                      backgroundColor: hasActivePack ? primaryC : surfaceHi,
                     },
                   ]}
                 >
-                  <Flame size={12} color={streakActive ? onPrimary : onVar} />
-                  <Text style={[st.streakTxt, { color: streakActive ? onPrimary : onVar }]}>
-                    {streakActive ? t('coachApp.activePack', { defaultValue: 'Active pack' }) : t('coachApp.dayStreak', { count: 0, defaultValue: '0 Day Streak' })}
+                  <Package size={12} color={hasActivePack ? onPrimary : onVar} />
+                  <Text style={[st.streakTxt, { color: hasActivePack ? onPrimary : onVar }]}>
+                    {hasActivePack ? t('clientManagement.activePack') : t('clientManagement.noActivePack')}
                   </Text>
                 </View>
               </View>

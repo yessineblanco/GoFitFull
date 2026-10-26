@@ -1,0 +1,88 @@
+--- before/main.tex
++++ after/main.tex
+@@ -107,38 +107,54 @@
+ \patchcmd{\LT@output}{\vss}{\vskip\z@ plus 1fil minus 1pt}{}{\PackageError{main}{Unable to patch longtable output glue}{Update the compatibility patch for the installed longtable version.}}
+ \patchcmd{\LT@output}{\vss}{\vskip\z@ plus 1fil minus 1pt}{}{\PackageError{main}{Unable to patch longtable output glue}{Update the compatibility patch for the installed longtable version.}}
+ \makeatother
+-% Cover: university and GoFit image/logo intentionally omitted.
++% Cover adapted from the user-supplied ESPRIT English template.
+ \thispagestyle{empty}
+-\vspace*{1.2cm}
+-\begin{center}
+-{\normalfont\scshape\fontsize{16pt}{19pt}\selectfont ESPRIT - École Supérieure Privée d'Ingénierie et de Technologies\par}
+-\vspace{6pt}
+-{\normalfont\fontsize{13pt}{16pt}\selectfont Department of Computer Engineering / Software Engineering\par}
+-\vspace*{2.2cm}
+-{\normalfont\scshape\fontsize{16pt}{19pt}\selectfont Graduation Internship Report\par}
+-\vspace{6pt}{\rule{6cm}{0.8pt}}\par
+-\vspace*{1.7cm}
+-\parbox{0.95\linewidth}{\centering\normalfont\bfseries\fontsize{27pt}{32pt}\selectfont GoFit - Complete Fitness Mobile Application, Coach Marketplace, and Administration Platform\par}
+-\par\vspace{0.7cm}{\rule{9cm}{1.2pt}}\par
+-\vspace*{2.2cm}
+-{\normalfont\bfseries\fontsize{20pt}{24pt}\selectfont Yessine Blanco\par}
+-\vspace*{2.0cm}
+-\begin{minipage}[t]{0.45\linewidth}\centering
+-{\fontsize{13pt}{16pt}\selectfont Academic supervisor\par}\vspace{5pt}
+-{\bfseries\fontsize{14pt}{17pt}\selectfont Wafa Boumaiza\par}
+-\end{minipage}\hfill
+-\begin{minipage}[t]{0.45\linewidth}\centering
+-{\fontsize{13pt}{16pt}\selectfont Professional supervisor\par}\vspace{5pt}
+-{\bfseries\fontsize{14pt}{17pt}\selectfont Nouar Malek\par}
+-\end{minipage}
+-\vspace{0.9cm}\par
+-{\small Host: Antigone Creative Agency, Rades, Tunisia\par}
+-{\small Internship: 26 January 2026 - 26 July 2026\par}
+-\vfill
+-{\rule{\linewidth}{0.7pt}}\par\vspace{8pt}
+-{\normalfont\scshape\fontsize{13pt}{16pt}\selectfont Academic year: 2025 - 2026\par}
+-\vspace{0.8cm}
+-\end{center}
++\begin{tikzpicture}[remember picture,overlay]
++\node[anchor=north west,inner sep=0] at (current page.north west) {\includegraphics[width=\paperwidth,height=\paperheight]{figures/branding/esprit-cover-background.png}};
++\node[anchor=center,inner sep=0,font=\sffamily\bfseries\fontsize{16pt}{19pt}\selectfont] at ($(current page.north west)+(298bp,-151bp)$) {2025 -- 2026};
++\node[anchor=west,inner sep=0,font=\sffamily\bfseries\fontsize{12pt}{15pt}\selectfont] at ($(current page.north west)+(310bp,-336bp)$) {INFORMATION TECHNOLOGY};
++\node[anchor=center,inner sep=0,text width=365bp,align=center,font=\sffamily\bfseries\fontsize{19pt}{23pt}\selectfont] at ($(current page.north west)+(372bp,-423bp)$) {GoFit\\Complete Fitness Mobile Application,\\Coach Marketplace, and\\Administration Platform};
++\node[anchor=north west,inner sep=0,text width=345bp,align=left,font=\sffamily\fontsize{12pt}{16pt}\selectfont] at ($(current page.north west)+(190bp,-505bp)$) {By: \textbf{Yessine Blanco}\\[17pt]Academic supervisor:\\[3pt]\textbf{Wafa Boumaiza}\\[17pt]Corporate Internship Supervisor:\\[3pt]\textbf{Nouar Malek}};
++\node[anchor=center,inner sep=0] at ($(current page.north west)+(380bp,-700bp)$) {\includegraphics[width=185bp,height=55bp,keepaspectratio]{figures/branding/antigone-official-logo.png}};
++\end{tikzpicture}
++\null\clearpage
++
++% Unsigned approval form: replace with the completed, signed scan before submission.
++\thispagestyle{empty}
++\begingroup
++\setstretch{1.1}
++\vspace*{1cm}
++\noindent Je valide le d\'ep\^ot du rapport PFE relatif \`a l'\'etudiant nomm\'e ci-dessous / I validate the submission of the student's report:
++
++\vspace{1cm}
++\noindent Nom \& Pr\'enom / Name \& Surname: \textbf{Yessine Blanco}
++
++\vspace{1.2cm}
++\noindent\begin{tabular}{|p{\dimexpr\linewidth-2\tabcolsep-2\arrayrulewidth\relax}|}
++\hline
++\rule{0pt}{22pt}\textbf{Encadrant Entreprise / Business site Supervisor}\\[10pt]
++Nom \& Pr\'enom / Name \& Surname: \textbf{Nouar Malek}\\[12pt]
++Cachet \& Signature / Stamp \& Signature\\[3cm]
++\hline
++\end{tabular}
++
++\vspace{1cm}
++\noindent\begin{tabular}{|p{\dimexpr\linewidth-2\tabcolsep-2\arrayrulewidth\relax}|}
++\hline
++\rule{0pt}{22pt}\textbf{Encadrant Acad\'emique / Academic Supervisor}\\[10pt]
++Nom \& Pr\'enom / Name \& Surname: \textbf{Wafa Boumaiza}\\[12pt]
++Signature / Signature\\[3cm]
++\hline
++\end{tabular}
++
++\vspace{1.1cm}
++\noindent\textit{Ce formulaire doit \^etre rempli, sign\'e et scann\'e / This form must be completed, signed and scanned.}
++
++\vspace{0.4cm}
++\noindent\textit{Ce formulaire doit \^etre introduit apr\`es la page de garde / This form must be inserted after the cover page.}
++\par\endgroup
++\clearpage
++
+ \chapter*{Acknowledgements}
+ 
+ I express my profound gratitude to my industrial supervisor, Mr. Nouar Malek, for welcoming me into Antigone Creative Agency and providing continuous technical guidance, design inspiration, and commercial context throughout the engineering lifecycle of the GoFit ecosystem.

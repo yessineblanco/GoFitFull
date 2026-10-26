@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="720pt" height="676.8pt" viewBox="0 0 720 676.8" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-21T13:32:54.717554</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 676.8 
+L 720 676.8 
+L 720 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="line2d_1">
+    <path d="M 68.4 68.4 
+L 68.4 662.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 651.6 56.16 
+L 651.6 662.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="patch_2">
+    <path d="M 68.4 6.48 
+C 70.309462 6.48 72.140975 7.238637 73.491169 8.588831 
+C 74.841363 9.939025 75.6 11.770538 75.6 13.68 
+C 75.6 15.589462 74.841363 17.420975 73.491169 18.771169 
+C 72.140975 20.121363 70.309462 20.88 68.4 20.88 
+C 66.490538 20.88 64.659025 20.121363 63.308831 18.771169 
+C 61.958637 17.420975 61.2 15.589462 61.2 13.68 
+C 61.2 11.770538 61.958637 9.939025 63.308831 8.588831 
+C 64.659025 7.238637 66.490538 6.48 68.4 6.48 
+z
+" clip-path="url(#p0e445ff4a7)" style="fill: #ffffff; stroke: #303030; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 588.6 12.96 
+L 714.6 12.96 
+L 714.6 56.16 
+L 588.6 56.16 
+z
+" clip-path="url(#p0e445ff4a7)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 70.397809 93.6 
+Q 359.998988 93.6 648.649838 93.6 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.649838 91.6 
+L 648.649838 93.6 
+L 644.649838 95.6 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 649.602191 140.4 
+Q 360.001012 140.4 71.350162 140.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.350162 142.4 
+L 71.350162 140.4 
+L 75.350162 138.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 70.397809 187.2 
+Q 359.998988 187.2 648.649838 187.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.649838 185.2 
+L 648.649838 187.2 
+L 644.649838 189.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 649.602191 230.4 
+Q 360.001012 230.4 71.350162 230.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.350162 232.4 
+L 71.350162 230.4 
+L 75.350162 228.4 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 21.6 262.8 
+L 698.4 262.8 
+L 698.4 374.4 
+L 21.6 374.4 
+L 21.6 262.8 
+z
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #757575; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 70.397809 306 
+Q 359.998988 306 648.649838 306 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.649838 304 
+L 648.649838 306 
+L 644.649838 308 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 649.602191 349.2 
+Q 360.001012 349.2 71.350162 349.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.350162 351.2 
+L 71.350162 349.2 
+L 75.350162 347.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 70.397809 421.2 
+Q 359.998988 421.2 648.649838 421.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.649838 419.2 
+L 648.649838 421.2 
+L 644.649838 423.2 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 649.602191 468 
+Q 360.001012 468 71.350162 468 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.350162 470 
+L 71.350162 468 
+L 75.350162 466 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 70.397809 514.8 
+Q 359.998988 514.8 648.649838 514.8 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.649838 512.8 
+L 648.649838 514.8 
+L 644.649838 516.8 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 649.602191 576 
+Q 360.001012 576 71.350162 576 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.350162 578 
+L 71.350162 576 
+L 75.350162 574 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="line2d_3">
+    <path d="M 68.4 20.88 
+L 68.4 37.44 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_4">
+    <path d="M 56.16 26.64 
+L 80.64 26.64 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_5">
+    <path d="M 56.88 49.68 
+L 68.4 37.44 
+L 79.92 49.68 
+" clip-path="url(#p0e445ff4a7)" style="fill: none; stroke: #303030; stroke-width: 0.8; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle" x="68.4" y="60.658242" transform="rotate(-0 68.4 60.658242)">Administrator</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #243f54" x="651.6" y="36.898242" transform="rotate(-0 651.6 36.898242)">GoFit admin portal</text>
+   </g>
+   <g id="text_3">
+    <g id="patch_15">
+     <path d="M 280.226836 88.86 
+L 439.773164 88.86 
+L 439.773164 78.319336 
+L 280.226836 78.319336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="85.798008" transform="rotate(-0 360 85.798008)">Open Coach Management (/coaches)</text>
+   </g>
+   <g id="text_4">
+    <g id="patch_16">
+     <path d="M 281.695078 135.66 
+L 438.304922 135.66 
+L 438.304922 125.119336 
+L 281.695078 125.119336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="132.598008" transform="rotate(-0 360 132.598008)">Display coach table (All status filter)</text>
+   </g>
+   <g id="text_5">
+    <g id="patch_17">
+     <path d="M 316.290742 182.46 
+L 403.709258 182.46 
+L 403.709258 171.919336 
+L 316.290742 171.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="179.398008" transform="rotate(-0 360 179.398008)">Select Pending filter</text>
+   </g>
+   <g id="text_6">
+    <g id="patch_18">
+     <path d="M 252.941172 225.66 
+L 467.058828 225.66 
+L 467.058828 215.119336 
+L 252.941172 215.119336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="222.598008" transform="rotate(-0 360 222.598008)">Display pending coach rows and available actions</text>
+   </g>
+   <g id="text_7">
+    <g id="patch_19">
+     <path d="M 26.34 277.430332 
+L 224.108437 277.430332 
+L 224.108437 266.889668 
+L 26.34 266.889668 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="27.36" y="274.36834" transform="rotate(-0 27.36 274.36834)">opt [CV link exists and administrator opens it]</text>
+   </g>
+   <g id="text_8">
+    <g id="patch_20">
+     <path d="M 327.206602 301.26 
+L 392.793398 301.26 
+L 392.793398 290.719336 
+L 327.206602 290.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="298.198008" transform="rotate(-0 360 298.198008)">Select View CV</text>
+   </g>
+   <g id="text_9">
+    <g id="patch_21">
+     <path d="M 284.945664 344.46 
+L 435.054336 344.46 
+L 435.054336 333.919336 
+L 284.945664 333.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="341.398008" transform="rotate(-0 360 341.398008)">Open existing CV URL in a new tab</text>
+   </g>
+   <g id="text_10">
+    <g id="patch_22">
+     <path d="M 283.129453 416.46 
+L 436.870547 416.46 
+L 436.870547 405.919336 
+L 283.129453 405.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="413.398008" transform="rotate(-0 360 413.398008)">Select Approve for a pending coach</text>
+   </g>
+   <g id="text_11">
+    <g id="patch_23">
+     <path d="M 280.878945 463.26 
+L 439.121055 463.26 
+L 439.121055 452.719336 
+L 280.878945 452.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="460.198008" transform="rotate(-0 360 460.198008)">Display approval confirmation dialog</text>
+   </g>
+   <g id="text_12">
+    <g id="patch_24">
+     <path d="M 322.323086 510.06 
+L 397.676914 510.06 
+L 397.676914 499.519336 
+L 322.323086 499.519336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="360" y="506.998008" transform="rotate(-0 360 506.998008)">Confirm approval</text>
+   </g>
+   <g id="text_13">
+    <g id="patch_25">
+     <path d="M 234.988906 571.26 
+L 485.011094 571.26 
+L 485.011094 548.815352 
+L 234.988906 548.815352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(236.008906 557.144854)">Update succeeds: display success and refresh coach table</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(262.894141 567.347178)">(status = approved; verification flag enabled)</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p0e445ff4a7">
+   <rect x="0" y="0" width="720" height="676.8"/>
+  </clipPath>
+ </defs>
+</svg>

@@ -1,0 +1,238 @@
+--- main.tex approved Step 2
++++ main.tex Step 3 claims
+@@ -178,7 +178,7 @@
+     \item \textbf{Chapter 2 (Sprint 0)} defines the system actors, functional requirements, non-functional quality attributes, AI and privacy boundaries, the Product Backlog, sprint scheduling, and the global use case perimeter.
+     \item \textbf{Chapter 3 (Sprint 1)} details the design and implementation of foundational capabilities, including user authentication, onboarding personalization, the categorized exercise library, custom workout template builder, active session tracker with rest timing, and local offline data synchronization.
+     \item \textbf{Chapter 4 (Sprint 2)} focuses on advanced athletic progression tracking, covering longitudinal bodyweight and performance metrics, daily macronutrient logging, and privacy-preserving computer vision workflows for anthropometric evolution.
+-    \item \textbf{Chapter 5 (Sprint 3)} presents the personal coaching marketplace, session pack monetization via secure payment processing, 1-on-1 video consultations, client roster management, and the centralized web administration portal.
++    \item \textbf{Chapter 5 (Sprint 3)} presents the personal coaching marketplace, session pack monetization through payment integration and its validation limits, 1-on-1 video consultations, client roster management, and the centralized web administration portal.
+     \item \textbf{Chapter 6 (Deployment and Closing Phase)} documents the hardware and software engineering environments, physical and logical deployment architectures, automated CI/CD pipelines, and final quality assurance testing.
+ \end{itemize}
+ The report concludes with a general conclusion summarizing the project achievements and discussing future perspectives, followed by bibliographic references and technical appendices.
+@@ -269,7 +269,7 @@
+     \item \textbf{AI and Automation Layer:} Delivers targeted intelligent capabilities without replacing human judgment. It encompasses on-device computer vision models (MediaPipe Pose Landmarker and Selfie Segmentation) for landmark extraction, backend-controlled Groq LPU language-model prompts for workout recommendations and coach session briefing preparation, and automated n8n workflows for scheduled notifications and administrative digests.
+     \item \textbf{Administration Layer:} A responsive web portal developed with Next.js 16.1.3 (App Router) and Tailwind CSS, granting platform administrators operational control over users, coach-profile approvals, exercise and workout catalogs, financial transactions, notifications, system activity logs, and business intelligence analytics.
+     \item \textbf{Backend Layer:} Powered by Supabase, combining a PostgreSQL relational database with Row-Level Security (RLS), GoTrue JWT-based authentication, real-time WebSocket subscriptions, S3-compatible object storage for media and progress photos, and Deno-based Edge Functions for privileged serverless operations.
+-    \item \textbf{External Integration Layer:} Encompasses specialized external service providers isolated behind strict abstraction boundaries, including Expo Push Notification services, LiveKit WebRTC SFU infrastructure for secure 1-on-1 video consultations, Stripe payment APIs, and Groq high-speed inference endpoints.
++    \item \textbf{External Integration Layer:} Includes Expo Push, LiveKit video-token and consultation components, Stripe payment APIs, and Groq inference endpoints. Their integration paths do not establish successful delivery, consultation authorization, payment recovery, or measured response-time guarantees.
+ \end{enumerate}
+ 
+ \section{Adopted Development Methodology and Modeling Language}
+@@ -406,11 +406,11 @@
+ Non-functional requirements specify the architectural qualities, operational constraints, and quality attributes that the platform must satisfy to ensure security, performance, maintainability, and usability:
+ 
+ \begin{itemize}
+-    \item \textbf{NFR-01: Security and Access Governance:} All user authentication is enforced through cryptographically signed JWT tokens issued by Supabase GoTrue. Every PostgreSQL database table enforces Row-Level Security (RLS) policies ensuring that users and coaches access strictly authorized records. Elevated service-role API keys are restricted exclusively to secure serverless Edge Functions and backend workers.
+-    \item \textbf{NFR-02: Performance and Real-Time Responsiveness:} The mobile application maintains 60 FPS UI rendering with local interaction latency below 100 milliseconds. Active workout tracking and rest timer execution operate reliably without UI freezing. The web administration portal leverages server-side rendering and virtualized tables to display large datasets with initial page loads under 1.5 seconds.
+-    \item \textbf{NFR-03: Maintainability, Modularity, and Code Quality:} The codebase enforces a strict separation of concerns, decoupling UI presentation, Zustand state stores, domain services, and database migration scripts. Shared TypeScript interfaces ensure end-to-end type safety across both mobile and web clients.
+-    \item \textbf{NFR-04: Usability, Ergonomics, and Accessibility:} The mobile interface adheres to modern mobile design guidelines, providing accessible color contrast ratios, dynamic text scaling support, multilingual localization (English and French), tactile haptic feedback for key operations, and clear empty-state visual cues.
+-    \item \textbf{NFR-05: Scalability and Extensibility:} The relational schema supports horizontal scalability through relational indexing, foreign key constraints, and modular entity partitioning. The system is architected to readily integrate future exercise modalities, external wearable device APIs, and third-party media providers.
++    \item \textbf{NFR-01: Security and Access Governance:} Protected operations should authenticate callers and enforce record-level authorization. Exposed application tables should use appropriate RLS policies, and privileged credentials should remain in trusted server-side, administration or automation contexts. Enabled RLS and JWT validation are controls to verify, not proof that every policy or handler is correct.
++    \item \textbf{NFR-02: Performance and Real-Time Responsiveness:} The intended targets are smooth mobile rendering, interaction latency below 100 milliseconds and administrative page loading below 1.5 seconds under a defined workload. The earlier 60 FPS objective is a design target. No retained profiling or load-test run establishes these values, background-timer reliability or large-dataset responsiveness.
++    \item \textbf{NFR-03: Maintainability, Modularity, and Code Quality:} Presentation, state, domain services and migrations should remain separated, with shared TypeScript interfaces supporting consistency. Full type safety is an objective rather than an achieved guarantee: the latest mobile project-wide check retains the 12 diagnostics reported in the QA section.
++    \item \textbf{NFR-04: Usability, Ergonomics, and Accessibility:} Interfaces should provide readable contrast, text scaling, English/French localization, feedback and clear empty states. The retained settings contrast checks cover selected styles and modeled surfaces; native visual acceptance and whole-application accessibility are not established.
++    \item \textbf{NFR-05: Scalability and Extensibility:} Modular services, appropriate relational constraints and indexing should support future growth and integrations. Horizontal scalability, deployment capacity and interoperability require explicit workload and integration tests; schema structure alone does not demonstrate them.
+ \end{itemize}
+ 
+ \subsection{AI and Privacy Constraints}
+@@ -418,11 +418,11 @@
+ Because GoFit handles personal biometric data, progress photos, and automated recommendations, the integration of artificial intelligence is governed by strict ethical, architectural, and privacy constraints:
+ 
+ \begin{itemize}
+-    \item \textbf{Human-in-the-Loop Review:} All AI-generated outputs---including computer-vision body measurement estimates, workout recommendations, and post-session coach briefings---are explicitly treated as advisory drafts. No automated inference is permanently committed to the database without explicit human review and confirmation.
++    \item \textbf{Human-in-the-Loop Review:} Measurement drafts are presented for correction before the user saves them, and recommended workouts have a user-save interaction. Coach briefings differ: the backend can cache generated text when requested, before a separate review action. Advisory presentation therefore does not mean that every generated output requires human confirmation before any database write.
+     \item \textbf{Non-Medical Boundary:} GoFit positions all AI features strictly as wellness, fitness, and training aids. The application explicitly disclaims medical diagnostics, clinical body composition evaluations, and medical rehabilitation guidance.
+-    \item \textbf{Context-Scoped Prompts:} Language-model integrations powered by Groq LPU execute exclusively through backend-controlled prompt templates. These templates inject only verified, anonymized user performance metrics and coach notes, preventing open-ended prompt injection or hallucinated advice.
+-    \item \textbf{Privileged Credential Isolation:} Elevated database service-role secrets and third-party API keys (Groq, Stripe, Expo Push) reside exclusively within secure serverless environments and Edge Functions, never bundled within mobile client binaries.
+-    \item \textbf{On-Device Computer Vision Processing:} Pose landmark extraction and segmentation operate on-device via mobile native modules, ensuring biometric images remain under user control without transmitting unencrypted raw frames to external third-party clouds.
++    \item \textbf{Context-Scoped Prompts:} Backend templates constrain the requested output and recommendation code checks exercise identifiers. The briefing request includes selected profile data, workout history and private coach notes sent to Groq; anonymization is not established. Instructions and output checks mitigate some risks but do not prove prevention of prompt injection, hallucinations or unsafe advice.
++    \item \textbf{Privileged Credential Isolation:} Privileged database and provider secrets should remain in trusted backend, administration and n8n environments. The inspected payment/video code reads provider secrets server-side; public client configuration is a separate category. This source review is not a complete audit of compiled binaries, logs, deployment settings or repository history.
++    \item \textbf{On-Device Computer Vision Processing:} The inspected pose/segmentation flow reads local captures and stores reviewed numerical results rather than uploading captures for that inference path. Progress-photo uploads and external language-model requests are separate flows. Local inference does not establish complete privacy, storage-security or cross-platform guarantees.
+ \end{itemize}
+ 
+ Following the comprehensive identification of system actors, functional requirements, and non-functional constraints, the project requires a structured development methodology to organize implementation into manageable, iterative delivery cycles. The subsequent section formalizes the application of Scrum within GoFit, defining the team roles, product backlog decomposition, and sprint distribution.
+@@ -854,7 +854,7 @@
+ S1-T02 & Onboardi ng & New user configure s fitness profile & Authentic ated user without onboardi ng & Fill goals, experienc e level, equipmen t; save & Profile stored in user profi \_ les with complete d flag & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+ S1-T03 & Workout session & User executes workout sets and tracks data & Workout template exists & Start workout; log weight, reps, RPE; finish session & Session row inserted into workout \_ sessions & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+ S1-T04 & Rest timer & Timer triggers countdow n with haptics & Active workout session & Complete set; observe timer countdow n; testpause/res ume & Timer feedback and audio/\allowbreak haptics fire accurately & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S1-T05 & Offline queue & Complete workout in offline airplane mode & Airplane mode enabled; active workout & Finish workout while offline; restore network connectio n & Session buffered in AsyncStor age; auto-synced to Supabase & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S1-T05 & Offline queue & Complete workout in offline airplane mode & Airplane mode enabled; active workout & Finish workout while offline; restore network connectio n & Session buffered in AsyncStor age; auto-synced to Supabase & Not verified & Pending & Final QA-03; no retained offline reconciliation \\ \hline
+ S1-T06 & Video streaming & Stream exercise video from Cloudflare R2 & Active Internet connectio n & Open exercise detail; tap video demo & Video streams smoothly via expo-video with hardware decoding & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+ \end{longtable}
+ \endgroup
+@@ -1145,7 +1145,7 @@
+ 
+ \subsection{Models and Artifacts Used}
+ 
+-The project evolved from a keypoint-only prototype toward a more robust pose-and-segmentation architecture. The first implementation used MoveNet Lightning through \seqsplit{react-native-fast-tflite} because it is lightweight and suitable for on-device inference. Later research and implementation introduced MediaPipe Tasks Vision because its pose landmarker provides richer landmarks and a native Android path for faster and more reliable analysis.
++The project evolved from a keypoint-only prototype toward pose and segmentation integration. MoveNet Lightning is used through the TensorFlow Lite bridge as an initial/fallback path. MediaPipe supplies a richer landmark representation and an Android native integration; improved accuracy or speed relative to the fallback is not established by a controlled comparative benchmark.
+ 
+ 
+ \begingroup
+@@ -1164,7 +1164,7 @@
+ k) &  & visibility/presence scores, pose count, and inference time. & coverage over MoveNetand supports better pose-quality checks. \\ \hline
+ MediaPipe Pose Landmarker Heavy & Potential higher-accuracy candidate. & Same landmark structure as the Full model, with heavier computation. & Not adopted by default. It is reserved for comparison only if Full is accurate enough and device performance remains acceptable. \\ \hline
+ selfie multiclass 256x256. \_ \_ tflite & Experimental segmentation research artifact. & 256 x 256 float image input; 256 x 256 x 6 class output. & Investigated but not treated as the final silhouette model because the body mask was unstable in mirror/direct capture scenarios. \\ \hline
+-MediaPipe Image Segmenter (selfie segmenter.tflite) \_ & Person-mask extraction for segmentation-assisted measurement. & Image input; 256 x 256 confidence masks and category mask forbackground/person. & Integrated in the native MediaPipe module. It provides a cleaner person mask than the earlier multiclass experiment, but it still needs validation and gating. \\ \hline
++MediaPipe Image Segmenter (selfie segmenter.tflite) \_ & Person-mask extraction for segmentation-assisted measurement. & Image input; confidence/category masks for the selected model. & Integrated in the Android native module after the earlier multiclass experiment. Comparative mask quality and effects on measurement error require controlled evaluation. \\ \hline
+ Statistical depth estimator & Converts extracted features into draft circumferences. & Feature vector using height, front widths, side depths, ratios, pose scores, and mask quality indicators. & Used as a pragmatic baseline. It is not a trained medical model; it produces draft progress estimates and must remain editable by the user. \\ \hline
+ Future regression/PCA estimator & Target research direction for stronger measurement prediction. & Labeled dataset of body features and manual/tape measurements. & Planned improvement based on statistical body-\allowbreak measurement literature. It would replace rigid formulas with learned predictors once enough validation data exists. \\ \hline
+ \end{longtable}
+@@ -1217,18 +1217,20 @@
+ \end{longtable}
+ \endgroup
+ 
+-The estimator currently combines geometric measurements with sex-aware statistical depth assumptions. In practical terms, the service uses the user's height and body proportions to estimate a scale, then uses front widths and side/depth information to produce draft circumferences. When segmentation depth passes quality and sanity gates, it can contribute to the estimate; otherwise the service falls back to statistical priors. This prevents a bad mask from producing extremely wrong values.
++The estimator combines geometric features with statistical depth assumptions. Declared height provides a scale, and front/side information contributes to draft circumference estimates. Segmentation contributes only when its quality gates accept the result; otherwise the code uses fallback assumptions. These checks are intended to reduce implausible outputs, but they do not establish numerical error bounds or prevent every incorrect estimate.
+ 
+ 
+ Research notes in the project also identify a stronger long-term direction: use a labeled dataset of photos and manual measurements to train regression, ridge regression, gradient-boosted trees, PCA-based, or body-shape models. Such a model would learn the relationship between extracted features and real measurements instead of relying mainly on hand-built formulas. For the PFE scope, the current implementation is correctly presented as an AI-assisted progress estimator with validation and manual correction.
+ 
+ 
++The current iOS MediaPipe bridge explicitly throws not-implemented errors for pose and segmentation. The pose service selects MoveNet outside Android, but that fallback and shared TypeScript do not establish a working iOS measurement workflow or feature parity. Historical Android debug observations must therefore remain distinct from current Android inference validation, iOS support and release-build testing.
++
+ \subsection{Validation Results and Limitations}
+ 
+-Device tests confirmed that MediaPipe can run inside the Android development client and that the pose model detects one person with high landmark visibility in normal capture conditions. Example observations showed mirror-front captures around 0.99 pose score, side captures around 0.97 to 0.98 in good conditions, and inference times that varied by device and image conditions. Direct capture also worked but may show different inference times and body framing behavior.
+-
+-
+-The main limitation is not pose detection; it is reliable circumference estimation from consumer photos. Early segmentation experiments produced thin or unstable masks in some scans, and earlier formulas generated unstable chest, waist, and hip values. Later statistical-depth experiments were more stable across repeated scans, but the project documentation correctly notes that those values are still draft estimates, not ground truth. Therefore, the application keeps a manual review screen and should store corrected values when the user has measured with a tape.
++A project troubleshooting entry dated 20 April 2026 reports Android development-client debug trials with 33 landmarks, approximate pose scores of 0.99 for a front image and 0.98 for a side image, and approximately 38/65 ms for that particular mirror-image pair. These are historical developer-recorded observations in \path{../docs/troubleshooting/BODY_MEASUREMENT_MEDIAPIPE_POSE_LANDMARKER_SPIKE.md}, not an independently reproduced October test or a population-level benchmark. Pose confidence and individual inference times do not establish circumference accuracy or end-to-end user latency.
++
++
++Reliable circumference estimation remains unverified. Troubleshooting notes describe unstable masks and changing formulas, but no retained paired reference dataset establishes accuracy, repeatability or error distribution for the current version. The October QA inspected history and permission handling without completing a new front/side scan or edited-result save. User correction can improve a saved value, but it must not be counted as accuracy of the original AI estimate.
+ 
+ 
+ \begingroup
+@@ -1245,7 +1247,7 @@
+ Capture conditions & Use good lighting, full body visible, fitted clothes, front photo, side photo at approximately 90 degrees, and consistent distance. & Bad framing, loose clothing, phone occlusion, and angled mirrors must be flagged. \\ \hline
+ AI result & Record the draft AI value before manual correction. & Used to calculate absolute error and identify model weaknesses. \\ \hline
+ Manual correction & Allow the user to edit the values before saving. & Saved corrected values should match the user's real measurement. \\ \hline
+-Fitness-progress target & Use approximate progress targets rather than tailoring or medical targets. & Chest error ideally below 8 cm; waist and hip below 6 cm; shoulder below 5 cm. \\ \hline
++Fitness-progress target & Proposed engineering acceptance targets, not measured accuracy. & Earlier illustrative errors of 8 cm for chest, 6 cm for waist/hip and 5 cm for shoulder require justification and a reference dataset before use as accepted performance criteria. \\ \hline
+ Confidence & Confidence must decrease when pose, segmentation, scale, or repeated-scan stability is weak. & The report should avoid claiming 100 percent confidence for unstable captures. \\ \hline
+ \end{longtable}
+ \endgroup
+@@ -1291,10 +1293,10 @@
+ Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+ S2-T01 & Exercise library & Filter and search exercise library & Exercise catalog populated & Search by muscle group; filter by equipmen t & Matching exercise cards returned with video preview badge & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+ S2-T02 & Progress dashboar d & Render historical training charts & User with 30-day session history & Open ProgressS creen; switch volume /consisten cy tabs & Interactiv e charts render correct aggregate d metrics & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T03 & AI body measure ment & Extract anthropo metric landmark s from photos & Front and side photos; height calibratio n & Capture photos via camera; run MediaPipe inference & Draft circumfer ences computed on-device; review sheet renders & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S2-T03 & AI body measure ment & Extract anthropo metric landmark s from photos & Front and side photos; height calibratio n & Capture photos via camera; run MediaPipe inference & Draft circumfer ences computed on-device; review sheet renders & Not verified & Pending & Final QA-04; historical debug notes do not validate this workflow \\ \hline
+ S2-T04 & Allergen exclusion & Filter out contraindi cated foods automatic ally & User profile has peanut allergy and lactose dislike & Navigate to AddFoodS creen; search for protein foods & Search query injects SQL negation filters; allergen items omitted & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+ S2-T05 & Barcode scanning & Scan packaged food item barcode & Packaged product with UPC barcode & Scan barcode with Expo Camera; query Open Food Facts & Nutritiona l facts retrieved and populated in meal logger & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T06 & Groq AI workout & Generate custom workout based on user fatigue & Authentic ated user; high fatigue readiness & Tap Adaptive workout card on HomeScreen & Groq generates valid JSON workout with catalog exercises & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S2-T06 & Groq AI workout & Generate custom workout based on user fatigue & Authentic ated user; high fatigue readiness & Tap Adaptive workout card on HomeScreen & Groq generates valid JSON workout with catalog exercises & Not verified & Pending & Final QA-05; generation entry blocked on tested account \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -1416,6 +1418,8 @@
+ 
+ \subsubsection{Use case: Purchase a session pack or pay for a direct booking}
+ 
++The following use-case and sequence descriptions retain the earlier checkout baseline examined during the October audit. They are historical source descriptions, not the current corrected payment flow. Section~\ref{sec:current-payment-boundaries} distinguishes the later EUR sandbox implementation and retained execution evidence. Synchronizing these figures with the later implementation remains part of the separate sprint-artifact cross-check.
++
+ \begingroup
+ \footnotesize
+ \setlength{\tabcolsep}{3pt}
+@@ -1430,7 +1434,7 @@
+ Use case & Purchase a session pack or pay for a direct booking \\ \hline
+ Primary actor & Mobile user (Client) \\ \hline
+ Preconditions & The client is authenticated and has selected a coach and an offered pack or an availability time accepted by the booking screen. The selected payment path requires working Stripe client/server configuration and backend access. \\ \hline
+-Postconditions & Following a PaymentSheet result without an error and a successful subsequent database write, either a purchased-pack record is inserted or a direct booking is created. These are alternative actions. Payment processing and application persistence are separate operations, with no atomic fulfilment or automatic refund established by this source path. \\ \hline
++Postconditions & Historical checkout baseline: a successful native-sheet result was followed by a separate client-side application write. Current verified server fulfillment differs; see Section~\ref{sec:current-payment-boundaries}. The baseline table does not establish atomic settlement or refund behavior. \\ \hline
+ Nominal scenario & 1. The client opens a coach profile. 2. The client selects a session pack for purchase, or opens Book Session and selects a day and time. 3. The relevant screen invokes \texttt{stripe-payment} with an amount, USD currency, and metadata. 4. The function requests a PaymentIntent from Stripe and returns its client secret. 5. The screen initializes and presents the native PaymentSheet. 6. If PaymentSheet returns without an error, the screen initiates a separate pack-record insertion or direct-booking creation. 7. After the database operation completes successfully, the screen displays success; the booking screen also navigates back. \\ \hline
+ Alternative scenario & 2.1. Pack purchase submits the displayed pack price and records an active purchased pack with a remaining-session count. 2.2. Direct booking submits a hardcoded USD 50 and creates a 60-minute booking without a pack reference. The booking service can accept a purchased-pack reference and request a session deduction, but the inspected booking screen does not supply that reference; existing-pack redemption is not shown as an integrated UI alternative. \\ \hline
+ Exception scenario & E.1. Intent creation or PaymentSheet initialization fails; the screen displays an error. E.2. PaymentSheet cancellation stops the flow without the later insert; other presentation errors are displayed. E.3. A database write can fail after the payment interaction completed; the screen displays an error without an automatic refund in this flow. E.4. Notification-helper calls after booking insertion do not establish successful delivery. \\ \hline
+@@ -1568,22 +1572,25 @@
+ \endgroup
+ 
+ \subsection{Stripe Payment Integration and Persistence Boundaries}
++\label{sec:current-payment-boundaries}
+ 
+ GoFit separates PaymentIntent creation from the mobile checkout interface. The Stripe secret key is read by the backend function, while the mobile client uses the returned client secret to initialize PaymentSheet. This separation describes the implemented integration and does not, by itself, establish payment compliance, settlement, or production readiness.
+ 
+ 
+-The implementation in \seqsplit{supabase/functions/stripe-payment/index.ts} reads the amount, currency, and metadata supplied by the caller and requests a Stripe PaymentIntent, converting the supplied amount to cents. It does not resolve a trusted pack price or verify a coach pricing tier. CoachDetailScreen supplies the displayed pack price, whereas BookSessionScreen supplies a fixed USD 50 amount. The presence of this function source is separate from evidence of deployment and successful payment execution.
+-
+-
+-On the mobile device, \seqsplit{@stripe/stripe-react-native} initializes and presents PaymentSheet. Available payment methods depend on the checkout and platform configuration; the inspected callers do not establish Apple Pay or Google Pay availability. After checkout returns without an error, the client initiates a separate application-record insertion: a purchased pack from CoachDetailScreen or a booking from BookSessionScreen. No payment webhook implementation is supplied for verified, idempotent fulfilment. Payment and database persistence are therefore separate operations, with server-validated pricing and recovery from mismatched outcomes remaining hardening work. The detailed sequences distinguish pack purchases from direct paid bookings; they do not establish automatic pack consumption by the direct-booking screen.
+-
+-
+-\subsection{Proactive Coach Intelligence \& Clinic-Grade Follow-up}
+-
+-A successful coaching platform must empower coaches to deliver proactive, informed guidance rather than reactive communication. GoFit enhances the coach experience with actionable clinical follow-up tools.
+-
+-
+-On the \seqsplit{CoachDashboardScreen.tsx,} a real-time 'Wellness Alerts' widget monitors client daily check-ins. If a client records low energy, high stress, or negative mood ratings, the coach is immediately alerted with a direct navigation shortcut to initiate supportive chat. In \seqsplit{ClientDetailScreen.tsx,} a dedicated 'Health \& Nutrition Profile' glass card displays the client's declared dietary preferences, allergies, and food dislikes. Furthermore, in \seqsplit{ProgramBuilderScreen.tsx,} when a coach constructs a meal plan, automated conflict analysis displays immediate visual warnings if an ingredient conflicts with the client's recorded dislikes or allergies.
++The corrected October implementation in \path{../supabase/functions/stripe-payment/index.ts} authenticates the caller in the handler and determines pack pricing from the active stored pack. Standalone session pricing uses the stored coach rate and duration in EUR, with server-side availability/reservation checks. Deployed function version 5 retains platform JWT verification disabled but requires a valid user through \texttt{getUser} and action-specific ownership checks in its handler. This differs from the earlier caller-priced USD baseline in the sequence figures.
++
++
++The native sheet is only one stage. Pack fulfillment retrieves provider payment state and verifies owner, amount, currency and metadata before writing credits and the paid snapshot. Standalone sessions use reservation, card authorization, server capture and linked booking completion, with replay and overlap protection. One EUR129/12-credit pack was verified on Android; a separate EUR60/60-minute session was verified through provider/API/admin observations, with the native standalone flow still pending. The separate purchased-pack redemption branch must not be inferred to be an atomic part of this standalone flow.
++
++
++These are synchronous sandbox scenarios, not a verified webhook/reconciliation system or a production payment certification. Same-reference retry is supported, but resumed-checkout recovery UI, scheduled reconciliation, refunds, payouts, 3DS/declines and iOS/release behavior remain incomplete or unverified. If capture or record completion is interrupted, recovery may require retry or operator review; an automatic refund must not be assumed. The retained payment evidence is identified in the final QA section.
++
++\subsection{Coach Check-in and Nutrition Context}
++
++The coach workspace provides client context for fitness follow-up. Its check-in and nutrition views are support tools rather than clinically validated monitoring or medical decision systems.
++
++
++The dashboard requests low check-in responses and provides client-navigation shortcuts; the source and empty-state query retest do not establish immediate alert delivery. Client Detail displays declared nutrition preferences, allergies and dislikes. Program-building checks can flag name matches against recorded preferences, but neither these checks nor the displayed profile establish complete allergen detection or clinical safety.
+ 
+ 
+ \subsection{High-Affordance Empty State Architecture}
+@@ -1782,11 +1789,11 @@
+ \rowcolor{entetetab}
+ Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+ S3-T01 & Coach onboardi ng & Coach submits accreditat ion document s & New coach account & Fill coaching bio; upload certificati ons \& CV; submit & Coach profile transition s to pending status & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T02 & Stripe payment & Purchase session pack via Native Payment Sheet & Client account; coach with active pricing tier & Tap Buy Pack; authorize test card in Stripe modal & PaymentI ntent succeeds; purchase d packs \_ balance credited & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T03 & Session booking & Client books 1-on-1 coaching calendar slot & Client with active pack; coach slot available & Select calendar slot; tap Confirm Booking & Booking created with conflict check; visible on coach calendar & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T04 & LiveKit video call & Initiate real-time video consultati on & Confirme d booking; both parties online & Tap Join Call; Edge Function generates LiveKit token & Two-way WebRTC video room connects with audio/video stream & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S3-T02 & Stripe payment & Purchase session pack via Native Payment Sheet & Client account; coach with active pricing tier & Tap Buy Pack; authorize test card in Stripe modal & PaymentI ntent succeeds; purchase d packs \_ balance credited & Partial & Later sandbox result & Final QA-06; October native pack evidence, not sprint-period proof \\ \hline
++S3-T03 & Session booking & Client books 1-on-1 coaching calendar slot & Client with active pack; coach slot available & Select calendar slot; tap Confirm Booking & Booking created with conflict check; visible on coach calendar & Not verified & Pending & Pack-credit booking not established by standalone API tests \\ \hline
++S3-T04 & LiveKit video call & Initiate real-time video consultati on & Confirme d booking; both parties online & Tap Join Call; Edge Function generates LiveKit token & Two-way WebRTC video room connects with audio/video stream & Not verified & Pending & Two-party media and booking authorization remain unverified \\ \hline
+ S3-T05 & Admin coach review & Admin reviews and approves coach applicatio n & Admin logged into web panel; pending coach & Open /coaches; inspect signed document s; click Approve & Coach status transition s to approved; notificatio n dispatche d & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T06 & n8n AI session prep & Automate d pre-session briefing generatio n & n8n Docker instance; booking in next 24h & Trigger scheduled workflow run & Groq synthesiz es pre-session briefing note for coach & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S3-T06 & n8n AI session prep & Automate d pre-session briefing generatio n & n8n Docker instance; booking in next 24h & Trigger scheduled workflow run & Groq synthesiz es pre-session briefing note for coach & Not verified & Pending & No retained fresh scheduled execution or delivery receipt \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -1974,7 +1981,9 @@
+ 
+ \subsection{Supabase Backend, Data Security, and Realtime Services}
+ 
+-The Supabase backend centralizes authentication, PostgreSQL data, storage, realtime communication, and Edge Functions. Row-level security is a central design decision: each user should access only their own client data, each coach should access only authorized client data, and administrators should access management data through controlled server-side contexts. Service-role keys must remain in trusted backend, admin, or automation environments and must never be bundled into the mobile application.
++The Supabase backend centralizes authentication, PostgreSQL data, storage, realtime communication and Edge Functions. Each client/coach data path should enforce its intended record access, while privileged administration and automation use trusted server-side contexts. Service-role keys must not be bundled into the mobile client.
++
++A read-only check on 24 October 2026 found RLS enabled on all 40 public application tables. This is an observed setting, not proof that every policy, privileged function or API path enforces the intended ownership rules. The security advisor also reported publicly executable and authenticated-role-executable \texttt{SECURITY DEFINER} functions and disabled leaked-password protection; these require review of intended access and configuration rather than being treated as proof of an exploit or a clean security audit.
+ 
+ 
+ \begingroup
+@@ -1997,6 +2006,17 @@
+ n8n automations & Run scheduled or event-driven workflows such as AI session preparation and admin operations digest. & Use service-role access only in controlled environments and log workflow results. \\ \hline
+ \end{longtable}
+ \endgroup
++
++\subsection{Messaging, Video and Storage Security Boundaries}
++
++The inspected chat service inserts the supplied message text directly into the message record and uses realtime subscriptions for updates. It also copies a message preview into notification payloads. No client-side encryption/decryption or participant key-management step was identified in this send path. Protected transport, managed storage and RLS are distinct controls; they do not establish end-to-end encrypted messaging. FR-06's encrypted-messaging wording remains a target requiring a defined threat model and implementation evidence.
++
++The deployed video-token function (version 8) has gateway JWT verification enabled, but its handler accepts room and participant values from the request without binding them to an authenticated booking participant or checking booking status/time. The mobile service also enables a testing bypass of its join-window check. A signed room token and a client-side button therefore do not establish per-booking authorization. These are source/configuration findings; no unauthorized room join was attempted. Two-party media, permission, reconnect and release behavior remain unverified.
++
++Session persistence uses the native SecureStore adapter, while its web fallback uses AsyncStorage; the workout-completion queue separately uses AsyncStorage. These mechanisms must not be grouped into a claim that all local data is encrypted or has equivalent security on every platform. Release-build storage behavior and the complete token lifecycle require their own checks.
++
++The source references, deployed video-source comparison, read-only RLS result and advisor notices are retained in \path{qa/2026-10-24-step-3-claims/README.md}. This claims review does not change backend policies, the token handler or mobile code, and it does not certify the remaining security boundaries.
++
+ 
+ \subsection{AI-Assisted Development Methodology}
+ 
+@@ -2265,7 +2285,7 @@
+ \end{longtable}
+ \endgroup
+ 
+-The matrix also indexes adaptive workout recommendations (M19) and operational workflows/notification delivery (M20) as supplementary capabilities discussed in the report, without inventing additional numbered requirements. Their source artifacts exist, but reachable recommendation generation and fresh scheduled delivery remain unverified. The matrix records evidence boundaries; the separate AI/security claims audit and the reconciliation of sprint artifacts remain subsequent review tasks. All later corrections and checks are dated as October follow-up work, rather than attributed retrospectively to the internship period.
++The matrix also indexes adaptive workout recommendations (M19) and operational workflows/notification delivery (M20) as supplementary capabilities discussed in the report, without inventing additional numbered requirements. Their source artifacts exist, but reachable recommendation generation and fresh scheduled delivery remain unverified. The matrix records evidence boundaries. AI/security claims are qualified in the technical discussions and the retained claims review; reconciliation of sprint artifacts remains a separate review task. All later corrections and checks are dated as October follow-up work, rather than attributed retrospectively to the internship period.
+ 
+ \subsection{Automated Checks and Evidence-Based QA Status}
+ \label{sec:qa-evidence}

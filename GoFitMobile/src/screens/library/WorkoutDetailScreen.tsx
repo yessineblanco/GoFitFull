@@ -75,6 +75,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
   }>>([]);
   const [exercisesByDay, setExercisesByDay] = React.useState<Record<number, typeof exercises>>({});
   const [loading, setLoading] = React.useState(true);
+  const [summaryLoaded, setSummaryLoaded] = React.useState(false);
   const [detectedWorkoutType, setDetectedWorkoutType] = React.useState<'native' | 'custom' | null>(null);
   const [expandedDay, setExpandedDay] = React.useState<number | null>(1);
   // Removed unneeded refs for tabs
@@ -130,6 +131,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
   // Load workout data from database
   React.useEffect(() => {
     const loadWorkout = async () => {
+      setSummaryLoaded(false);
       if (!workoutId) {
         setLoading(false);
         return;
@@ -168,6 +170,7 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
             setExercisesByDay(grouped);
 
             setDetectedWorkoutType(workout.workout_type);
+            setSummaryLoaded(true);
             setLoading(false);
             return;
           }
@@ -904,8 +907,8 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
               <View style={dynamicStyles.infoCardContent}>
                 <Clock size={20} color={BRAND_PRIMARY} />
                 <View style={dynamicStyles.infoCardTextContainer}>
-                  <Text style={dynamicStyles.infoCardLabel}>Duration</Text>
-                  <Text style={dynamicStyles.infoCardValue}>45 min</Text>
+                  <Text style={dynamicStyles.infoCardLabel}>{t('library.workoutSummary.duration')}</Text>
+                  <Text style={dynamicStyles.infoCardValue}>{t('library.durationNotEstimated')}</Text>
                 </View>
               </View>
             </LinearGradient>
@@ -919,8 +922,12 @@ export const WorkoutDetailScreen: React.FC<WorkoutDetailScreenProps> = ({ naviga
               <View style={dynamicStyles.infoCardContent}>
                 <Dumbbell size={20} color={BRAND_PRIMARY} />
                 <View style={dynamicStyles.infoCardTextContainer}>
-                  <Text style={dynamicStyles.infoCardLabel}>Exercises</Text>
-                  <Text style={dynamicStyles.infoCardValue}>8 exercises</Text>
+                  <Text style={dynamicStyles.infoCardLabel}>{t('library.totalExercises')}</Text>
+                  <Text style={dynamicStyles.infoCardValue}>
+                    {loading ? t('common.loading') : summaryLoaded
+                      ? t('library.exerciseCount', { count: exercises.length })
+                      : t('library.summaryUnavailable')}
+                  </Text>
                 </View>
               </View>
             </LinearGradient>

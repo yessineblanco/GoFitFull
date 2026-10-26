@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-26",
+  "onlyTargetSubsectionChanged": true,
+  "qaAndRequirementRowsUnchanged": true,
+  "allFigureReferencesUnchanged": true,
+  "previousFoodFilteringCorrectionPreserved": true,
+  "performanceGuaranteesRemoved": true,
+  "applicationOrBackendChanges": false,
+  "newTestsClaimed": false,
+  "sourceSha256": "fbdd9625a503cded5b726b09505c22e8012070ae080ff8917b2a179743852567",
+  "supportingFiles": [
+    {
+      "file": "GoFitMobile/src/screens/library/ExerciseDetailScreen.tsx",
+      "sha256": "67216fc6c126769f32220f071d0c5d7e94b26c87d14b81431f45c2bea881c535"
+    },
+    {
+      "file": "GoFitMobile/package.json",
+      "sha256": "81fe957a2c932b5e454c2f886530f518b9d9e153e93168be003d66ace857264f"
+    },
+    {
+      "file": "admin-panel/lib/r2.ts",
+      "sha256": "de7780df3cb06535dd18445b670f7764d998d11167a131c4c7f6766805846afb"
+    },
+    {
+      "file": "admin-panel/app/api/upload/route.ts",
+      "sha256": "3d96537494f95b35c57c2449ef2bc2d17fac0a45972e4a26a18387a6c335b4eb"
+    },
+    {
+      "file": "Rapport Blanci/qa/2026-10-22/results.json",
+      "sha256": "3d8e3f1c69b4d12cee3067fac7e2430874c5a93617a5d5c2c2d06fa8ba7e28ef"
+    }
+  ],
+  "compile": "built-in editor success",
+  "visualReview": "edited passage and subsequent table continuation visually inspected; no clipping or overlap observed",
+  "reviewPdfPages": 136,
+  "inspectedPages": [
+    48,
+    49,
+    50
+  ],
+  "unresolvedReferences": []
+}

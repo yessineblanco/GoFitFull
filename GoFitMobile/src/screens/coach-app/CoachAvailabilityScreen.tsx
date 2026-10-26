@@ -18,15 +18,11 @@ import { dialogManager } from '@/components/shared/CustomDialog';
 import { useThemeStore } from '@/store/themeStore';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
+import { stepAvailabilityTime } from '@/utils/availabilityTime';
 
 const PRIMARY_GREEN = '#B4F04E';
 
 const DAY_KEYS = ['daySunday', 'dayMonday', 'dayTuesday', 'dayWednesday', 'dayThursday', 'dayFriday', 'daySaturday'] as const;
-const TIME_OPTIONS: string[] = [];
-for (let h = 6; h <= 22; h++) {
-  TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:00`);
-  TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:30`);
-}
 
 interface LocalSlot {
   day_of_week: number;
@@ -101,9 +97,7 @@ export const CoachAvailabilityScreen: React.FC = () => {
     const daySlots = slots.filter((s) => s.day_of_week === day);
     const otherSlots = slots.filter((s) => s.day_of_week !== day);
     const slot = daySlots[slotIndex];
-    const currentIdx = TIME_OPTIONS.indexOf(slot[field]);
-    const newIdx = Math.max(0, Math.min(TIME_OPTIONS.length - 1, currentIdx + direction));
-    daySlots[slotIndex] = { ...slot, [field]: TIME_OPTIONS[newIdx] };
+    daySlots[slotIndex] = { ...slot, [field]: stepAvailabilityTime(slot[field], direction) };
     setSlots([...otherSlots, ...daySlots]);
   };
 

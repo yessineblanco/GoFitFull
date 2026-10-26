@@ -1,0 +1,200 @@
+[
+  {
+    "id": "S1-T01",
+    "feature": "Authentication",
+    "scenario": "Existing-account sign-in",
+    "precondition": "Existing test account",
+    "steps": "Sign in; reopen app",
+    "expected": "Protected client route",
+    "actual": "Observed scoped access",
+    "status": "Partial",
+    "evidence": "M01; C AUTH-01--04; fresh registration and refresh not verified"
+  },
+  {
+    "id": "S1-T02",
+    "feature": "Onboarding",
+    "scenario": "Fresh six-screen profile save",
+    "precondition": "New client fixture",
+    "steps": "Complete full form; read back",
+    "expected": "Answers persisted remotely",
+    "actual": "Fresh flow not run",
+    "status": "Pending",
+    "evidence": "M02; saved-profile views do not validate new onboarding"
+  },
+  {
+    "id": "S1-T03",
+    "feature": "Workout session",
+    "scenario": "Weights and completion save",
+    "precondition": "Existing remote session",
+    "steps": "Record weights; finish; read back",
+    "expected": "Existing session updated",
+    "actual": "Full completion not retained",
+    "status": "Pending",
+    "evidence": "M05; no RPE or separate WorkoutSet table"
+  },
+  {
+    "id": "S1-T04",
+    "feature": "Rest timer",
+    "scenario": "Countdown and background alerts",
+    "precondition": "Active workout",
+    "steps": "Complete set; lock; observe",
+    "expected": "Countdown and configured feedback",
+    "actual": "Informal user confirmation only",
+    "status": "Pending",
+    "evidence": "M05; QA-02 lacks retained timing/background evidence"
+  },
+  {
+    "id": "S1-T05",
+    "feature": "Offline queue",
+    "scenario": "Existing-session completion replay",
+    "precondition": "Remote session; disconnected",
+    "steps": "Finish; reconnect; compare row",
+    "expected": "Queued UPDATE replayed once",
+    "actual": "Not exercised with readback",
+    "status": "Pending",
+    "evidence": "M06; final QA-03"
+  },
+  {
+    "id": "S1-T06",
+    "feature": "Exercise media",
+    "scenario": "Play exercise demonstration",
+    "precondition": "Network and media URL",
+    "steps": "Open detail; start playback",
+    "expected": "Playable demonstration",
+    "actual": "Detail/media observations partial",
+    "status": "Partial",
+    "evidence": "M03; C EXERCISE-01--04; smoothness/decoding not measured"
+  },
+  {
+    "id": "S2-T01",
+    "feature": "Catalog",
+    "scenario": "Search and equipment filters",
+    "precondition": "Populated catalog",
+    "steps": "Search; select filters",
+    "expected": "Matching exercises",
+    "actual": "Browsing passed; filters partial",
+    "status": "Partial",
+    "evidence": "M03; C LIBRARY-01--02, EXERCISE-01--04"
+  },
+  {
+    "id": "S2-T02",
+    "feature": "Progress",
+    "scenario": "Charts and aggregates",
+    "precondition": "Saved session history",
+    "steps": "Open charts; compare totals",
+    "expected": "Metrics match source records",
+    "actual": "Controls viewed; arithmetic incomplete",
+    "status": "Partial",
+    "evidence": "M07; C PROGRESS-01--03"
+  },
+  {
+    "id": "S2-T03",
+    "feature": "Measurements",
+    "scenario": "Fresh capture, review and save",
+    "precondition": "Camera; height; reference values",
+    "steps": "Capture pair; edit; save",
+    "expected": "Reviewed draft persisted",
+    "actual": "Fresh workflow not retained",
+    "status": "Pending",
+    "evidence": "M08; final QA-04; debug notes are narrower"
+  },
+  {
+    "id": "S2-T04",
+    "feature": "Exclusions",
+    "scenario": "Name exclusion search",
+    "precondition": "Controlled preference fixture",
+    "steps": "Search known included/excluded names",
+    "expected": "Expected name matches omitted",
+    "actual": "Controlled fixture not run",
+    "status": "Pending",
+    "evidence": "M09; no allergen-safety result"
+  },
+  {
+    "id": "S2-T05",
+    "feature": "Barcode",
+    "scenario": "Lookup and meal logging",
+    "precondition": "Camera; known product",
+    "steps": "Scan; resolve; log serving",
+    "expected": "Product and meal persisted",
+    "actual": "Permission denial only observed",
+    "status": "Pending",
+    "evidence": "M09; C NUTRITION-07; positive lookup unverified"
+  },
+  {
+    "id": "S2-T06",
+    "feature": "AI workout",
+    "scenario": "Generate, review and save",
+    "precondition": "Reachable recommendation entry",
+    "steps": "Request; inspect; accept; reopen",
+    "expected": "Valid saved recommendation",
+    "actual": "Entry blocked on tested account",
+    "status": "Pending",
+    "evidence": "M19; C AI-01--03; final QA-05"
+  },
+  {
+    "id": "S3-T01",
+    "feature": "Coach onboarding",
+    "scenario": "Fresh coach submission",
+    "precondition": "Dedicated new coach",
+    "steps": "Complete profile; upload; submit",
+    "expected": "Pending review profile",
+    "actual": "Existing approved role inspected",
+    "status": "Pending",
+    "evidence": "M10, M17; fresh upload/submission not run"
+  },
+  {
+    "id": "S3-T02",
+    "feature": "Pack payment",
+    "scenario": "EUR sandbox purchase",
+    "precondition": "Configured sandbox; active offer",
+    "steps": "Pay; fulfil; replay; inspect admin",
+    "expected": "One purchase and correct credits",
+    "actual": "Android EUR129 / 12 credits",
+    "status": "Scoped pass",
+    "evidence": "M11; P; October follow-up, not sprint-period proof"
+  },
+  {
+    "id": "S3-T03",
+    "feature": "Pack booking",
+    "scenario": "Reserve using existing credits",
+    "precondition": "Pack and available coach slot",
+    "steps": "Book; compare credit/calendar",
+    "expected": "One booking and one deduction",
+    "actual": "Credit-redemption path unverified",
+    "status": "Pending",
+    "evidence": "M12; standalone S API checks do not prove this branch"
+  },
+  {
+    "id": "S3-T04",
+    "feature": "Video",
+    "scenario": "Two-party consultation",
+    "precondition": "Authorized booking; two devices",
+    "steps": "Join; exchange media; reconnect",
+    "expected": "Authorized bidirectional media",
+    "actual": "No retained two-party call",
+    "status": "Pending",
+    "evidence": "M13; authorization/time-window gaps in Step 3"
+  },
+  {
+    "id": "S3-T05",
+    "feature": "Coach review",
+    "scenario": "Approve pending profile",
+    "precondition": "Admin; controlled pending coach",
+    "steps": "Inspect existing links; confirm",
+    "expected": "Approved profile; wallet trigger",
+    "actual": "Confirmation/cancel only tested",
+    "status": "Partial",
+    "evidence": "M18; A COACH-02--04; no signed-URL or notification proof"
+  },
+  {
+    "id": "S3-T06",
+    "feature": "Automation",
+    "scenario": "Scheduled AI briefing",
+    "precondition": "Running scheduler; test booking",
+    "steps": "Trigger; inspect output/delivery",
+    "expected": "New briefing with execution trail",
+    "actual": "No retained fresh run",
+    "status": "Pending",
+    "evidence": "M16, M20; exports and old inbox are insufficient"
+  }
+]

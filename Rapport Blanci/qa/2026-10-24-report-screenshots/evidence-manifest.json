@@ -1,0 +1,70 @@
+[
+  {
+    "file": "assets.json",
+    "sha256": "6e4ff31460477916125e3b507ba4dcca47c48436799a2f25e351b9206bbfac8e"
+  },
+  {
+    "file": "candidates.json",
+    "sha256": "6fd8f6f282ebe6b100b93780f693ff7dda9a6d2177357f1b70ce7265d0ad35aa"
+  },
+  {
+    "file": "compiler-final.json",
+    "sha256": "c13c50ff1e51f6d6f07ceb25e6723d0b63e61ccfe16b0f0d06445d6cab8cb903"
+  },
+  {
+    "file": "figures.json",
+    "sha256": "53c41ddf927d2fa478c26336f6f0db912babed1382e1567c0612dab840ea41a4"
+  },
+  {
+    "file": "insert.py",
+    "sha256": "735853c26a1571a259257dde651d6c22158a492840937e1e230a11430616cece"
+  },
+  {
+    "file": "inspect-additional.jpg",
+    "sha256": "c356180037b5d2826e7e14e69c7f6bd2e2c2decb6bf2d03a78d6e696a84cf07c"
+  },
+  {
+    "file": "inspect-admin-1.jpg",
+    "sha256": "1c5202ca0a3bdec12994d4f086d8107ef6142b0aa337e52ef7e96f6fbfb3ad62"
+  },
+  {
+    "file": "inspect-client-1.jpg",
+    "sha256": "8e6cde84ee4002fb6abad78c63d93c8c379a461272bb91e180495f7ed7432cee"
+  },
+  {
+    "file": "inspect-client-2.jpg",
+    "sha256": "700157fb9e7f95410f9bfb379a45dbd507b8d7b5205dcac0d2b417f5421467a8"
+  },
+  {
+    "file": "inspect-coach-1.jpg",
+    "sha256": "ecf8ba7e0e2bbc94b8ef9e39ef3879507de00d94aa0eac52ce74f8ad92835543"
+  },
+  {
+    "file": "inspect-coach-2.jpg",
+    "sha256": "35a8cdf9d559ce62dc2bc06848ccf42c6c382bf0f0961b495a67d32381ea2354"
+  },
+  {
+    "file": "inspect-payment-1.jpg",
+    "sha256": "36ee45585c458e5cdf6837ce27eb92b96bbf52ddb6edcd189bd4586ee95277e7"
+  },
+  {
+    "file": "inspect.py",
+    "sha256": "ff8ce13685105c02df5a2a6a6bf8d79c30a892572cb5358aa1607ef3f185d8a4"
+  },
+  {
+    "file": "main-before.txt",
+    "sha256": "a321359dbfc454b2c7b25bd6821a27554aff1f5bc43164af52011a168b696884"
+  },
+  {
+    "file": "main-revision.diff",
+    "sha256": "2c22926becbc9695ab9d3b11bd4283df3acb7d88d34c2b0f648ccf7e22c8481d"
+  },
+  {
+    "file": "README.md",
+    "sha256": "e60fff1de41acf8cdd85e7ec98a32b1c65d1dcc10cbd3dd46f999079fd14fc0e"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "9b0138b5aa894dd7c6e2e0a9b8d007860d4f64f566752c03da4fcad2a323c855"
+  }
+]

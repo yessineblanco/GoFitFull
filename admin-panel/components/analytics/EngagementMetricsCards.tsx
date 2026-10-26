@@ -11,26 +11,16 @@ interface EngagementMetricsCardsProps {
 export default function EngagementMetricsCards({
   metrics,
 }: EngagementMetricsCardsProps) {
-  const dauPercentage = metrics.totalUsers > 0 
-    ? ((metrics.dau / metrics.totalUsers) * 100).toFixed(1)
-    : "0";
-  const wauPercentage = metrics.totalUsers > 0
-    ? ((metrics.wau / metrics.totalUsers) * 100).toFixed(1)
-    : "0";
-  const mauPercentage = metrics.totalUsers > 0
-    ? ((metrics.mau / metrics.totalUsers) * 100).toFixed(1)
-    : "0";
-
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+          <CardTitle className="text-sm font-medium">User profiles</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metrics.totalUsers}</div>
-          <p className="text-xs text-muted-foreground">Registered accounts</p>
+          <p className="text-xs text-muted-foreground">Accounts with a saved profile</p>
         </CardContent>
       </Card>
 
@@ -42,7 +32,7 @@ export default function EngagementMetricsCards({
         <CardContent>
           <div className="text-2xl font-bold">{metrics.dau}</div>
           <p className="text-xs text-muted-foreground">
-            {dauPercentage}% of total users
+            Started a workout today
           </p>
         </CardContent>
       </Card>
@@ -55,7 +45,7 @@ export default function EngagementMetricsCards({
         <CardContent>
           <div className="text-2xl font-bold">{metrics.wau}</div>
           <p className="text-xs text-muted-foreground">
-            {wauPercentage}% of total users
+            Started a workout in the last 7 days
           </p>
         </CardContent>
       </Card>
@@ -68,7 +58,7 @@ export default function EngagementMetricsCards({
         <CardContent>
           <div className="text-2xl font-bold">{metrics.mau}</div>
           <p className="text-xs text-muted-foreground">
-            {mauPercentage}% of total users
+            Started a workout in the last 30 days
           </p>
         </CardContent>
       </Card>

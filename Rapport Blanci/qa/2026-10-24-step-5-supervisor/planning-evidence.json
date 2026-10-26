@@ -1,0 +1,210 @@
+{
+  "userConfirmedInternship": {
+    "start": "2026-01-26",
+    "end": "2026-07-26",
+    "reply": "26 January\u201326 July 2026 this one is correct"
+  },
+  "reportSprintToCalendarMappingConfirmed": false,
+  "alternativePlans": {
+    "GANTT_SPRINTS.csv": {
+      "entries": 23,
+      "start": "2026-01-26",
+      "end": "2026-07-26",
+      "sha256": "922d54d162a676284c54ebc26d2529ce04a8688e7efe8168f3ac350cd4fd2020",
+      "rows": [
+        {
+          "Task Name": "Sprint 1.1 - Cahier des charges",
+          "Start Date": "2026-01-26",
+          "End Date": "2026-02-02"
+        },
+        {
+          "Task Name": "Sprint 1.2 - UI/UX Design & Maquettes",
+          "Start Date": "2026-02-02",
+          "End Date": "2026-02-09"
+        },
+        {
+          "Task Name": "Sprint 1.3 - Setup Environnement Dev",
+          "Start Date": "2026-02-09",
+          "End Date": "2026-02-16"
+        },
+        {
+          "Task Name": "Sprint 2.1 - Configuration React Native & Next.js",
+          "Start Date": "2026-02-16",
+          "End Date": "2026-02-23"
+        },
+        {
+          "Task Name": "Sprint 2.2 - Authentification & Profil",
+          "Start Date": "2026-02-23",
+          "End Date": "2026-03-02"
+        },
+        {
+          "Task Name": "Sprint 3.1 - Workout Planner Core",
+          "Start Date": "2026-03-02",
+          "End Date": "2026-03-16"
+        },
+        {
+          "Task Name": "Sprint 3.2 - Biblioth\u00e8que d'Exercices",
+          "Start Date": "2026-03-16",
+          "End Date": "2026-03-30"
+        },
+        {
+          "Task Name": "Sprint 3.3 - Suivi Progression & Notifications",
+          "Start Date": "2026-03-30",
+          "End Date": "2026-04-06"
+        },
+        {
+          "Task Name": "Sprint 4.1 - Int\u00e9gration MediaPipe",
+          "Start Date": "2026-04-06",
+          "End Date": "2026-04-13"
+        },
+        {
+          "Task Name": "Sprint 4.2 - IA Mesures Corporelles",
+          "Start Date": "2026-04-13",
+          "End Date": "2026-04-20"
+        },
+        {
+          "Task Name": "Sprint 4.3 - Tests & Optimisation IA",
+          "Start Date": "2026-04-20",
+          "End Date": "2026-04-27"
+        },
+        {
+          "Task Name": "Sprint 5.1 - Coach Onboarding & Marketplace",
+          "Start Date": "2026-04-27",
+          "End Date": "2026-05-11"
+        },
+        {
+          "Task Name": "Sprint 5.2 - Packs Sessions & Programmes",
+          "Start Date": "2026-05-11",
+          "End Date": "2026-05-18"
+        },
+        {
+          "Task Name": "Sprint 5.3 - Vid\u00e9o Call & Chat",
+          "Start Date": "2026-05-18",
+          "End Date": "2026-05-25"
+        },
+        {
+          "Task Name": "Sprint 6.1 - Panel Admin - Gestion Utilisateurs",
+          "Start Date": "2026-05-25",
+          "End Date": "2026-06-01"
+        },
+        {
+          "Task Name": "Sprint 6.2 - Panel Admin - CRUD & Analytics",
+          "Start Date": "2026-06-01",
+          "End Date": "2026-06-08"
+        },
+        {
+          "Task Name": "Sprint 7.1 - Tests iOS/Android",
+          "Start Date": "2026-06-08",
+          "End Date": "2026-06-15"
+        },
+        {
+          "Task Name": "Sprint 7.2 - Performance & Optimisation",
+          "Start Date": "2026-06-15",
+          "End Date": "2026-06-22"
+        },
+        {
+          "Task Name": "Sprint 7.3 - Bugs Fixes & UX",
+          "Start Date": "2026-06-22",
+          "End Date": "2026-06-29"
+        },
+        {
+          "Task Name": "Sprint 8.1 - Pr\u00e9paration Publication",
+          "Start Date": "2026-06-29",
+          "End Date": "2026-07-06"
+        },
+        {
+          "Task Name": "Sprint 8.2 - Publication Play Store",
+          "Start Date": "2026-07-06",
+          "End Date": "2026-07-13"
+        },
+        {
+          "Task Name": "Sprint 8.3 - Publication App Store",
+          "Start Date": "2026-07-13",
+          "End Date": "2026-07-20"
+        },
+        {
+          "Task Name": "Sprint 8.4 - D\u00e9ploiement Final & Monitoring",
+          "Start Date": "2026-07-20",
+          "End Date": "2026-07-26"
+        }
+      ]
+    },
+    "GANTT_SCRUM.csv": {
+      "entries": 13,
+      "start": "2026-01-26",
+      "end": "2026-07-26",
+      "sha256": "aacb71ea0d2a90800545a6aef13b7944c5d3d6b21626d71f37374e261aa72c3c",
+      "rows": [
+        {
+          "Task Name": "Sprint 1 - Cahier des charges UI/UX Setup",
+          "Start Date": "2026-01-26",
+          "End Date": "2026-02-09"
+        },
+        {
+          "Task Name": "Sprint 2 - Configuration React Native Next.js Authentification",
+          "Start Date": "2026-02-09",
+          "End Date": "2026-02-23"
+        },
+        {
+          "Task Name": "Sprint 3 - Workout Planner Core Profil utilisateur",
+          "Start Date": "2026-02-23",
+          "End Date": "2026-03-09"
+        },
+        {
+          "Task Name": "Sprint 4 - Workout Planner Avanc\u00e9 Calendrier",
+          "Start Date": "2026-03-09",
+          "End Date": "2026-03-23"
+        },
+        {
+          "Task Name": "Sprint 5 - Biblioth\u00e8que Exercices Suivi Progression",
+          "Start Date": "2026-03-23",
+          "End Date": "2026-04-06"
+        },
+        {
+          "Task Name": "Sprint 6 - Int\u00e9gration MediaPipe IA Mesures Corporelles",
+          "Start Date": "2026-04-06",
+          "End Date": "2026-04-20"
+        },
+        {
+          "Task Name": "Sprint 7 - Optimisation IA Coach Onboarding",
+          "Start Date": "2026-04-20",
+          "End Date": "2026-05-04"
+        },
+        {
+          "Task Name": "Sprint 8 - Marketplace Coaches Packs Sessions",
+          "Start Date": "2026-05-04",
+          "End Date": "2026-05-18"
+        },
+        {
+          "Task Name": "Sprint 9 - Vid\u00e9o Call Chat Wallet Paiements",
+          "Start Date": "2026-05-18",
+          "End Date": "2026-06-01"
+        },
+        {
+          "Task Name": "Sprint 10 - Panel Admin Gestion Utilisateurs Coaches",
+          "Start Date": "2026-06-01",
+          "End Date": "2026-06-15"
+        },
+        {
+          "Task Name": "Sprint 11 - Panel Admin CRUD Analytics Tests iOS Android",
+          "Start Date": "2026-06-15",
+          "End Date": "2026-06-29"
+        },
+        {
+          "Task Name": "Sprint 12 - Performance Optimisation Bugs Fixes Pr\u00e9paration Publication",
+          "Start Date": "2026-06-29",
+          "End Date": "2026-07-13"
+        },
+        {
+          "Task Name": "Sprint 13 - Publication Play Store App Store D\u00e9ploiement Final",
+          "Start Date": "2026-07-13",
+          "End Date": "2026-07-26"
+        }
+      ]
+    }
+  },
+  "smallerBreakdownDeclaredCount": 22,
+  "smallerCsvCount": 23,
+  "logbookContainsIdentityPlaceholders": true,
+  "burndownDailySeriesAvailable": false
+}

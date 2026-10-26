@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-24",
+  "status": "screenshots_inserted_compilation_passed",
+  "sourceCaptures": 25,
+  "newFigureGroups": 13,
+  "existingDiagramReferences": 33,
+  "totalGraphicReferences": 58,
+  "earlierQaAndRequirementRowsPreserved": true,
+  "generalConclusionPreserved": true,
+  "sourceHashesAndAssetsVerified": true,
+  "referencesAndLabelsResolve": true,
+  "builtInCompileSuccess": true,
+  "originalCapturesUnchanged": true,
+  "croppingOnlyNoGeneratedUi": true,
+  "separatePdfCreated": false,
+  "allPdfPagesVisuallyReviewed": false,
+  "mainSha256": "d22992b0c93480c88cb83b89c6059f80e4a12082a12eda51fe7573c7712ad18a",
+  "listOfFiguresAdded": true
+}

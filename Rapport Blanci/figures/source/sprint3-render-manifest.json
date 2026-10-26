@@ -1,0 +1,250 @@
+[
+  {
+    "file": "class_diagram_sprint3",
+    "concepts": [
+      "UserAccount",
+      "CoachProfile",
+      "PurchasedPack",
+      "SessionPack",
+      "Booking",
+      "CoachCertification",
+      "CoachAvailability"
+    ],
+    "relationships": [
+      {
+        "source": "UserAccount",
+        "target": "CoachProfile",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..1",
+        "role": "has"
+      },
+      {
+        "source": "UserAccount",
+        "target": "PurchasedPack",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "buys"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "SessionPack",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "offers"
+      },
+      {
+        "source": "SessionPack",
+        "target": "PurchasedPack",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "purchased as"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "PurchasedPack",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "receives"
+      },
+      {
+        "source": "PurchasedPack",
+        "target": "Booking",
+        "source_multiplicity": "0..1",
+        "target_multiplicity": "0..*",
+        "role": "funds"
+      },
+      {
+        "source": "UserAccount",
+        "target": "Booking",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "books"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "Booking",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "receives"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CoachCertification",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "submits"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CoachAvailability",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "defines"
+      }
+    ]
+  },
+  {
+    "file": "class_diagram_sprint3_communication",
+    "concepts": [
+      "UserAccount",
+      "CoachProfile",
+      "Conversation",
+      "CoachClientNote",
+      "Message",
+      "AISessionNote"
+    ],
+    "relationships": [
+      {
+        "source": "UserAccount",
+        "target": "Conversation",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "client in"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "Conversation",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "coach in"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CoachClientNote",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "writes"
+      },
+      {
+        "source": "UserAccount",
+        "target": "CoachClientNote",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "client"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "AISessionNote",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "uses"
+      },
+      {
+        "source": "UserAccount",
+        "target": "AISessionNote",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "client"
+      },
+      {
+        "source": "Conversation",
+        "target": "Message",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "contains"
+      },
+      {
+        "source": "UserAccount",
+        "target": "Message",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "sends"
+      }
+    ]
+  },
+  {
+    "file": "class_diagram_sprint3_followup",
+    "concepts": [
+      "UserAccount",
+      "CoachProfile",
+      "CustomProgram",
+      "CheckInSchedule",
+      "CheckInResponse"
+    ],
+    "relationships": [
+      {
+        "source": "UserAccount",
+        "target": "CustomProgram",
+        "source_multiplicity": "0..1",
+        "target_multiplicity": "0..*",
+        "role": "assigned to"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CheckInSchedule",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "sets"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CustomProgram",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "authors"
+      },
+      {
+        "source": "UserAccount",
+        "target": "CheckInSchedule",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "client"
+      },
+      {
+        "source": "UserAccount",
+        "target": "CheckInResponse",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "submits"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "CheckInResponse",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "receives"
+      }
+    ]
+  },
+  {
+    "file": "class_diagram_sprint3_finance",
+    "concepts": [
+      "UserAccount",
+      "CoachProfile",
+      "AdminAuditLog",
+      "Wallet",
+      "Booking",
+      "Transaction"
+    ],
+    "relationships": [
+      {
+        "source": "UserAccount",
+        "target": "AdminAuditLog",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "acts in"
+      },
+      {
+        "source": "CoachProfile",
+        "target": "Wallet",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..1",
+        "role": "has"
+      },
+      {
+        "source": "Wallet",
+        "target": "Transaction",
+        "source_multiplicity": "1",
+        "target_multiplicity": "0..*",
+        "role": "records"
+      },
+      {
+        "source": "Booking",
+        "target": "Transaction",
+        "source_multiplicity": "0..1",
+        "target_multiplicity": "0..*",
+        "role": "linked to"
+      }
+    ]
+  }
+]

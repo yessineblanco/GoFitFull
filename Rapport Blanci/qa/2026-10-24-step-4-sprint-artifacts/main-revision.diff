@@ -1,0 +1,223 @@
+--- step-3/main.tex
++++ step-4/main.tex
+@@ -616,6 +616,8 @@
+ \end{longtable}
+ \endgroup
+ 
++The backlog is retained as a planning artifact, including its original task identifiers and estimates. The cumulative model and sequences describe the inspected implementation rather than a dated sprint-end snapshot. US-3.2 maps to the Workout--WorkoutExercise--Exercise prescription model; a complete reorder or cloning workflow is not established by the retained QA. US-3.3 maps to WorkoutSession and embedded SessionExerciseSnapshot values, not a persisted WorkoutSet entity. US-3.4 maps to the conditional offline completion sequence, not unrestricted offline creation. Table~\ref{tab:sprint-traceability} connects these deviations and the remaining sprint stories to the evidence matrix.
++
+ \subsection{Sprint Class Diagram}
+ 
+ The backlog records targets whose wording differs from the current implementation. US-3.1's four-step questionnaire is superseded in the inspected navigator by the six-screen flow described above. US-3.3's RPE input and separate WorkoutSet table are not implemented in the inspected session path: weights and completion flags are recorded with configured repetitions in embedded session snapshots. For US-3.4, the implemented queue uses AsyncStorage through a separate offline queue service, with application connectivity handling retrying completion updates to an existing remote session. These paths do not establish SQLite persistence, timestamp conflict resolution, or unrestricted offline session creation. The listed testing tasks remain targets until supported by execution evidence.
+@@ -836,7 +838,7 @@
+ 
+ \section{Sprint Tests}
+ 
+-The following validation matrix avoids declaring success without verification evidence. It defines verifiable preconditions, concrete execution steps, and observable system outcomes.
++This matrix reconciles the original test identifiers with the retained 22--24 October evidence; it is not a recovered sprint-period execution log. Expected outcomes remain test criteria. Partial denotes narrower observations, Pending denotes an unverified full scenario, and Scoped pass applies only to the named sandbox case. M references identify Table~\ref{tab:implementation-evidence} and its detailed index; C, A, P and S identify the evidence package in Section~\ref{sec:qa-evidence}. No missing attachment is replaced by an assumed success.
+ 
+ 
+ \begingroup
+@@ -850,12 +852,12 @@
+ \hline
+ \rowcolor{entetetab}
+ Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+-S1-T01 & Authentic ation & Sign in with valid credential s & Test account exists & Open app; enter email/\allowbreak password; submit & Protected navigator opens with JWT session & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S1-T02 & Onboardi ng & New user configure s fitness profile & Authentic ated user without onboardi ng & Fill goals, experienc e level, equipmen t; save & Profile stored in user profi \_ les with complete d flag & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S1-T03 & Workout session & User executes workout sets and tracks data & Workout template exists & Start workout; log weight, reps, RPE; finish session & Session row inserted into workout \_ sessions & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S1-T04 & Rest timer & Timer triggers countdow n with haptics & Active workout session & Complete set; observe timer countdow n; testpause/res ume & Timer feedback and audio/\allowbreak haptics fire accurately & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S1-T05 & Offline queue & Complete workout in offline airplane mode & Airplane mode enabled; active workout & Finish workout while offline; restore network connectio n & Session buffered in AsyncStor age; auto-synced to Supabase & Not verified & Pending & Final QA-03; no retained offline reconciliation \\ \hline
+-S1-T06 & Video streaming & Stream exercise video from Cloudflare R2 & Active Internet connectio n & Open exercise detail; tap video demo & Video streams smoothly via expo-video with hardware decoding & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
++S1-T01 & Authentication & Existing-account sign-in & Existing test account & Sign in; reopen app & Protected client route & Observed scoped access & Partial & M01; C AUTH-01--04; fresh registration and refresh not verified \\ \hline
++S1-T02 & Onboarding & Fresh six-screen profile save & New client fixture & Complete full form; read back & Answers persisted remotely & Fresh flow not run & Pending & M02; saved-profile views do not validate new onboarding \\ \hline
++S1-T03 & Workout session & Weights and completion save & Existing remote session & Record weights; finish; read back & Existing session updated & Full completion not retained & Pending & M05; no RPE or separate WorkoutSet table \\ \hline
++S1-T04 & Rest timer & Countdown and background alerts & Active workout & Complete set; lock; observe & Countdown and configured feedback & Informal user confirmation only & Pending & M05; QA-02 lacks retained timing/background evidence \\ \hline
++S1-T05 & Offline queue & Existing-session completion replay & Remote session; disconnected & Finish; reconnect; compare row & Queued UPDATE replayed once & Not exercised with readback & Pending & M06; final QA-03 \\ \hline
++S1-T06 & Exercise media & Play exercise demonstration & Network and media URL & Open detail; start playback & Playable demonstration & Detail/media observations partial & Partial & M03; C EXERCISE-01--04; smoothness/decoding not measured \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -919,6 +921,8 @@
+ \end{longtable}
+ \endgroup
+ 
++This backlog records planned scope rather than completed tests. US-4.1 maps to BodyMeasurement and the capture/review/save sequences; the inspected Android path is not evidence of numerical accuracy or equivalent iOS support. US-4.2's NutritionLog and UserDietaryPreferences are planning terms: the implemented model uses MealLog, FoodItem, NutritionGoals and profile collections. Name-based exclusions are distinct from ingredient-safety verification. US-4.3 maps to independent ProgressPhoto records and session-derived statistics; named chart libraries, progression curves and a comparison slider require their own implementation and execution evidence. US-4.4 maps to notification preferences and recommendation services, not a guaranteed notification schedule, streamed response or validated timeout fallback. See Table~\ref{tab:sprint-traceability}.
++
+ \subsection{Sprint Class Diagram}
+ 
+ The Sprint 2 cumulative domain model is presented in two complementary views. Figure~\ref{fig:class_sprint2_foundation} retains all eight concepts and relationships of the Sprint 1 foundation. Figure~\ref{fig:class_sprint2} extends that foundation with body measurements, progress photos, food items, meal logs, nutrition goals, and embedded notification preferences. Earlier profile attributes remain part of the model; the extension view expands only its dietary fields. Each measurement record stores reviewed values and estimation metadata, while progress photos are independent records; no saved photo is required for each AI-assisted measurement. MealLog associates an account with a food item, date, meal category, and serving quantity, from which nutrient totals are calculated. Each account may have at most one NutritionGoals record. Dietary preferences, allergies, and dislikes are profile collections, while notification preferences are optional embedded configuration, distinct from local rest-timer settings. Training statistics are derived from session history, and accepted AI workout recommendations reuse the existing workout model. These views present the principal domain concepts rather than an exhaustive database schema.
+@@ -1277,7 +1281,7 @@
+ 
+ \section{Tests}
+ 
+-The following validation matrix avoids declaring success without verification evidence. It defines verifiable preconditions, concrete execution steps, and observable system outcomes.
++This matrix reconciles the original test identifiers with the retained 22--24 October evidence; it is not a recovered sprint-period execution log. Expected outcomes remain test criteria. Partial denotes narrower observations, Pending denotes an unverified full scenario, and Scoped pass applies only to the named sandbox case. M references identify Table~\ref{tab:implementation-evidence} and its detailed index; C, A, P and S identify the evidence package in Section~\ref{sec:qa-evidence}. No missing attachment is replaced by an assumed success.
+ 
+ 
+ \begingroup
+@@ -1291,12 +1295,12 @@
+ \hline
+ \rowcolor{entetetab}
+ Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+-S2-T01 & Exercise library & Filter and search exercise library & Exercise catalog populated & Search by muscle group; filter by equipmen t & Matching exercise cards returned with video preview badge & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T02 & Progress dashboar d & Render historical training charts & User with 30-day session history & Open ProgressS creen; switch volume /consisten cy tabs & Interactiv e charts render correct aggregate d metrics & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T03 & AI body measure ment & Extract anthropo metric landmark s from photos & Front and side photos; height calibratio n & Capture photos via camera; run MediaPipe inference & Draft circumfer ences computed on-device; review sheet renders & Not verified & Pending & Final QA-04; historical debug notes do not validate this workflow \\ \hline
+-S2-T04 & Allergen exclusion & Filter out contraindi cated foods automatic ally & User profile has peanut allergy and lactose dislike & Navigate to AddFoodS creen; search for protein foods & Search query injects SQL negation filters; allergen items omitted & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T05 & Barcode scanning & Scan packaged food item barcode & Packaged product with UPC barcode & Scan barcode with Expo Camera; query Open Food Facts & Nutritiona l facts retrieved and populated in meal logger & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S2-T06 & Groq AI workout & Generate custom workout based on user fatigue & Authentic ated user; high fatigue readiness & Tap Adaptive workout card on HomeScreen & Groq generates valid JSON workout with catalog exercises & Not verified & Pending & Final QA-05; generation entry blocked on tested account \\ \hline
++S2-T01 & Catalog & Search and equipment filters & Populated catalog & Search; select filters & Matching exercises & Browsing passed; filters partial & Partial & M03; C LIBRARY-01--02, EXERCISE-01--04 \\ \hline
++S2-T02 & Progress & Charts and aggregates & Saved session history & Open charts; compare totals & Metrics match source records & Controls viewed; arithmetic incomplete & Partial & M07; C PROGRESS-01--03 \\ \hline
++S2-T03 & Measurements & Fresh capture, review and save & Camera; height; reference values & Capture pair; edit; save & Reviewed draft persisted & Fresh workflow not retained & Pending & M08; final QA-04; debug notes are narrower \\ \hline
++S2-T04 & Exclusions & Name exclusion search & Controlled preference fixture & Search known included/excluded names & Expected name matches omitted & Controlled fixture not run & Pending & M09; no allergen-safety result \\ \hline
++S2-T05 & Barcode & Lookup and meal logging & Camera; known product & Scan; resolve; log serving & Product and meal persisted & Permission denial only observed & Pending & M09; C NUTRITION-07; positive lookup unverified \\ \hline
++S2-T06 & AI workout & Generate, review and save & Reachable recommendation entry & Request; inspect; accept; reopen & Valid saved recommendation & Entry blocked on tested account & Pending & M19; C AI-01--03; final QA-05 \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -1360,6 +1364,8 @@
+ \end{longtable}
+ \endgroup
+ 
++The original task wording remains a target, not a completion claim. US-5.1 maps to offers, purchases and bookings; the updated sequences below describe the October EUR follow-up rather than proving those corrections existed during the internship. US-5.2 maps to programs, schedules, responses and private notes; no separate ClientCoachAssignment entity is needed by this selected model, and a populated photo-review workflow remains unverified. US-5.3 maps to Conversation, Message and AISessionNote; briefing generation is distinct from post-consultation synthesis. US-5.4 maps to profile-based administrator authorization and selected audit records. The presence of those records does not imply that coach approval emits an audit or notification event. See Table~\ref{tab:sprint-traceability}.
++
+ \subsection{Sprint Class Diagram}
+ 
+ The Sprint 3 backlog states development and verification targets, not completed results. The current payment implementation does not supply the webhook fulfilment targeted by T5.1.3. US-5.3's post-session summaries and proposed VideoSession schema differ from the implemented coach-facing briefing and runtime video-token path; the model below reflects the inspected records. Its use of encrypted messaging remains a security requirement whose scope requires separate verification. Likewise, T5.4.3's signed-document test is a target: the inspected coach-review page opens existing document URLs. No independent professional accreditation, measured video latency, or successful execution of these tests is established by the backlog.
+@@ -1418,7 +1424,7 @@
+ 
+ \subsubsection{Use case: Purchase a session pack or pay for a direct booking}
+ 
+-The following use-case and sequence descriptions retain the earlier checkout baseline examined during the October audit. They are historical source descriptions, not the current corrected payment flow. Section~\ref{sec:current-payment-boundaries} distinguishes the later EUR sandbox implementation and retained execution evidence. Synchronizing these figures with the later implementation remains part of the separate sprint-artifact cross-check.
++The following use case and sequences describe the corrected implementation inspected on 24 October 2026. They replace the earlier client-priced USD checkout baseline and must not be read as evidence of internship-period delivery. Pack purchase and standalone session payment share native PaymentSheet presentation but have different reservation and fulfilment paths. Section~\ref{sec:current-payment-boundaries} distinguishes the retained Android pack evidence from standalone API/provider checks and outstanding native verification.
+ 
+ \begingroup
+ \footnotesize
+@@ -1433,11 +1439,11 @@
+ Field & Description \\ \hline
+ Use case & Purchase a session pack or pay for a direct booking \\ \hline
+ Primary actor & Mobile user (Client) \\ \hline
+-Preconditions & The client is authenticated and has selected a coach and an offered pack or an availability time accepted by the booking screen. The selected payment path requires working Stripe client/server configuration and backend access. \\ \hline
+-Postconditions & Historical checkout baseline: a successful native-sheet result was followed by a separate client-side application write. Current verified server fulfillment differs; see Section~\ref{sec:current-payment-boundaries}. The baseline table does not establish atomic settlement or refund behavior. \\ \hline
+-Nominal scenario & 1. The client opens a coach profile. 2. The client selects a session pack for purchase, or opens Book Session and selects a day and time. 3. The relevant screen invokes \texttt{stripe-payment} with an amount, USD currency, and metadata. 4. The function requests a PaymentIntent from Stripe and returns its client secret. 5. The screen initializes and presents the native PaymentSheet. 6. If PaymentSheet returns without an error, the screen initiates a separate pack-record insertion or direct-booking creation. 7. After the database operation completes successfully, the screen displays success; the booking screen also navigates back. \\ \hline
+-Alternative scenario & 2.1. Pack purchase submits the displayed pack price and records an active purchased pack with a remaining-session count. 2.2. Direct booking submits a hardcoded USD 50 and creates a 60-minute booking without a pack reference. The booking service can accept a purchased-pack reference and request a session deduction, but the inspected booking screen does not supply that reference; existing-pack redemption is not shown as an integrated UI alternative. \\ \hline
+-Exception scenario & E.1. Intent creation or PaymentSheet initialization fails; the screen displays an error. E.2. PaymentSheet cancellation stops the flow without the later insert; other presentation errors are displayed. E.3. A database write can fail after the payment interaction completed; the screen displays an error without an automatic refund in this flow. E.4. Notification-helper calls after booking insertion do not establish successful delivery. \\ \hline
++Preconditions & The client is authenticated, a coach and pack or session time have been selected, and Stripe client/server configuration is available. A standalone session requires an approved coach, a positive hourly rate, the saved duration and a valid Europe/Berlin availability slot. \\ \hline
++Postconditions & On verified pack fulfilment, one purchased-pack record retains the payment reference, paid EUR amount, mode and credits. On verified standalone fulfilment, the reserved booking is confirmed and marked paid after capture. Provider success and database confirmation are separate boundaries; recovery may still require retrying the same reference. \\ \hline
++Nominal scenario & 1. The client opens the coach profile. 2. The client selects a pack or a standalone session time. 3. The screen requests create\_pack or create\_session. 4. The server authenticates the caller and resolves the EUR price; the session branch first reserves the slot. 5. The screen presents PaymentSheet. 6. After a result without an error, it requests server fulfilment using the PaymentIntent reference. 7. The server verifies ownership and provider state, persists the purchase or captures and confirms the reserved session. 8. The screen displays success only after fulfilment returns successfully. \\ \hline
++Alternative scenario & 2.1. Pack checkout uses the active offer price and does not reserve a time. 2.2. Standalone pricing uses hourly rate multiplied by the saved duration divided by 60; the submitted expected amount is checked against the server quote. The card is authorized before capture. 6.1. A fulfilment replay returns the existing result without granting duplicate credits or recapturing a paid session. Pack-credit redemption remains a separate service branch, not the standalone checkout shown here. \\ \hline
++Exception scenario & E.1. Missing configuration, changed terms, unavailable time or reservation conflict prevents checkout. E.2. A cancelled or failed native sheet does not initiate fulfilment; the session screen attempts checkout cancellation. E.3. Expired or cancelled session reservations cannot proceed to capture. E.4. Provider success followed by a persistence failure requires retry with the same reference; no webhook, automatic refund or app-restart recovery is established. E.5. A capture in progress cannot be cancelled by the checkout-cancellation operation. \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -1451,36 +1457,33 @@
+ \begin{figure}[H]
+ \centering
+ \includegraphics[width=0.92\linewidth]{figures/seq_booking_detailed.png}
+-\caption{Technical sequence diagram: Shared PaymentIntent and native PaymentSheet checkout}
++\caption{Technical sequence diagram: Server-priced EUR initialization and native checkout}
+ \label{fig:seq_booking_detailed}
+ \end{figure}
+ 
+-Figure~\ref{fig:seq_booking_ssd} separates two client actions available from a coach profile: purchasing a session pack and paying for a direct booking. Pack purchase does not itself reserve a calendar time or automatically navigate to the booking screen. The direct-booking screen loads recurring coach availability and converts a selected weekday and time into a future date. Its current date helper chooses the following week when the selected weekday is today; its truthiness guard also rejects Sunday, represented by index zero. These implementation limitations constrain the successful path shown rather than establishing a fully validated scheduling experience.
+-
+-Figure~\ref{fig:seq_booking_detailed} shows the shared checkout mechanism when configuration is valid and requests succeed. The initiating mobile screen calls the \texttt{stripe-payment} Edge Function with an amount, currency, and metadata. The function uses its server-side Stripe secret to request a PaymentIntent, multiplying the submitted amount by 100 and rounding it to an integer, then returns the client secret. The screen initializes and presents PaymentSheet through \seqsplit{@stripe/stripe-react-native}. The figure treats the SDK as the native payment UI and omits its internal network exchanges. A result without an error permits the screen to initiate application persistence; it is not a separate backend verification of fulfilment. These checkout calls do not configure Apple Pay or Google Pay, so support for those methods is not asserted here.
+-
+-The amount is supplied by the client rather than resolved from a server-side pack or coach-price lookup in this function. The pack screen sends the displayed price, while BookSessionScreen sends a hardcoded USD 50 regardless of the selected coach's rate. The function also contains a testing branch intended to return mock values when the Stripe secret is missing; that branch is not evidence of a valid Stripe payment or a working checkout configuration. The inspected function does not route funds to a connected coach account, verify an application purchase against a webhook, or create pack and booking records. No \texttt{stripe-webhook} implementation exists in the supplied functions. Server-validated pricing, verified and idempotent fulfilment, and recovery from payment/persistence mismatches remain hardening work rather than completed properties of this path.
++Figure~\ref{fig:seq_booking_ssd} makes the client journey explicit: Coach Profile leads either to a pack purchase or to Book Session, availability selection and standalone checkout. A pack purchase does not itself book a time. The standalone screen loads saved duration, price and busy slots, then rechecks terms before requesting a reservation. The date helper interprets availability in Europe/Berlin and chooses the next occurrence of the selected weekday, including the following week when that weekday is today. Sunday is accepted through an explicit null check. Client-side filtering assists selection; the server remains responsible for reservation and conflict checks.
++
++Figure~\ref{fig:seq_booking_detailed} separates checkout initialization from fulfilment. The Edge Function validates the supplied session token using the authentication service. Pack initialization resolves an active offer and EUR price; standalone initialization calls \texttt{reserve\_paid\_session}, which validates the coach, saved duration, expected price and availability before inserting a pending reservation. Its checkout expiry is at most 15 minutes and no later than the session start. The session PaymentIntent uses manual capture. The native SDK presents PaymentSheet; a return without error triggers a server request rather than a direct client database insert. The selected successful sequences omit SDK-internal network exchanges and most error branches, which remain in the use-case table. Apple Pay and Google Pay are not configured by these calls.
+ 
+ \begin{figure}[H]
+ \centering
+ \includegraphics[width=0.95\linewidth]{figures/seq_booking_pack_recording.png}
+-\caption{Technical sequence diagram: Client-triggered recording of a purchased pack}
++\caption{Technical sequence diagram: Server verification and idempotent pack fulfilment}
+ \label{fig:seq_booking_pack_recording}
+ \end{figure}
+ 
+-Figure~\ref{fig:seq_booking_pack_recording} begins after checkout returns without an error. CoachDetailScreen calls \texttt{sessionPacksService.purchasePack}, which inserts the client, pack, coach, remaining-session count, and active status into \texttt{purchased\_packs} through the Supabase client and Data API. Only after that request succeeds does the screen display purchase success. This caller does not pass a PaymentIntent identifier to the purchase service. A failure between payment interaction and insertion can therefore leave the application record incomplete; neither this service nor the screen implements an automatic refund or webhook-driven recovery.
++Figure~\ref{fig:seq_booking_pack_recording} starts after PaymentSheet returns without an error. The pack service invokes \texttt{fulfill\_pack} with the PaymentIntent reference. The server retrieves the provider record, verifies the authenticated owner, checkout metadata, EUR currency, successful state and received amount, then inserts the purchase with the paid snapshot and credit count. A unique payment reference prevents duplicate credit creation; a matching replay returns the existing purchase. An October Android sandbox purchase and replay support this narrow path, without certifying declines, refunds, payouts or restart recovery.
+ 
+ \begin{figure}[H]
+ \centering
+ \includegraphics[width=0.95\linewidth]{figures/seq_booking_direct.png}
+-\caption{Technical sequence diagram: Direct booking after checkout and notification attempts}
++\caption{Technical sequence diagram: Reserved standalone session, capture and confirmation}
+ \label{fig:seq_booking_direct}
+ \end{figure}
+ 
+-Figure~\ref{fig:seq_booking_direct} follows the direct-booking branch. After checkout, the screen calls the bookings store and service to insert a 60-minute booking with confirmed status and a null \texttt{pack\_purchase\_id}. The service then looks up the coach's account and, when available, awaits an inbox-notification helper before starting a push-send helper without awaiting it. It also starts local reminder scheduling without awaiting completion. These helpers are grouped as notification services in the figure; inbox and push operations use backend APIs, while the reminder helper uses the device notification scheduler. The reminder helper targets 30 minutes before the session and skips a time already in the past. Delivery and scheduling success were not established by inspecting these calls. After the booking service returns, the store prepends the booking to local state and the screen displays success and navigates back.
+-
+-When a different caller supplies a pack reference, the booking service requests \texttt{deduct\_session} only after inserting the booking. Those separate requests are not one atomic booking-and-credit transaction, and the service does not inspect the RPC error result before continuing. The direct-booking screen does not exercise that branch. The selected payment and booking source also provides no automatic charge rollback for a rejected or conflicting reservation. Consequently, the figures describe implemented client orchestration and successful request continuations, not verified production settlement, conflict protection, or end-to-end payment validation.
+-
++Figure~\ref{fig:seq_booking_direct} follows standalone fulfilment after card authorization. The server verifies the owner and provider metadata, then calls \texttt{prepare\_paid\_session\_capture} to validate the reservation and protect it during capture. It captures an authorized intent using an idempotency key, checks the received amount, and calls \texttt{complete\_paid\_session} to mark the booking confirmed and paid. Already-paid replay returns the existing booking. The mobile screen refreshes client bookings before showing success. This corrected branch does not call the older client-side booking insertion and notification orchestration. Notification delivery is therefore not a postcondition established by this sequence. October API/provider and administrator readback evidence supports payment persistence; native standalone checkout remains pending.
++
++The separate \texttt{createBooking} service still supports a purchased-pack reference and calls \texttt{deduct\_session} after insertion. Those requests are not one atomic booking-and-credit operation, and the standalone screen does not use that branch. Wallet transactions remain a different ledger from card purchase and booking payment snapshots. The selected cumulative class diagrams omit most financial attributes for readability: provider references, paid amount/currency/mode and booking payment state are attributes of the existing purchase and booking records, not a new persisted PaymentIntent entity. The diagrams do not establish coach payout settlement or automatic refund processing.
+ 
+ \subsubsection{Use case: Approve a coach profile from the administration panel}
+ 
+@@ -1774,7 +1777,7 @@
+ 
+ \section{Tests}
+ 
+-The following validation matrix avoids declaring success without verification evidence. It defines verifiable preconditions, concrete execution steps, and observable system outcomes.
++This matrix reconciles the original test identifiers with the retained 22--24 October evidence; it is not a recovered sprint-period execution log. Expected outcomes remain test criteria. Partial denotes narrower observations, Pending denotes an unverified full scenario, and Scoped pass applies only to the named sandbox case. M references identify Table~\ref{tab:implementation-evidence} and its detailed index; C, A, P and S identify the evidence package in Section~\ref{sec:qa-evidence}. No missing attachment is replaced by an assumed success.
+ 
+ 
+ \begingroup
+@@ -1788,12 +1791,12 @@
+ \hline
+ \rowcolor{entetetab}
+ Test ID & Feature & Scenario & Precondit ions & Steps & Expected & Actual & Status & Evidence \\ \hline
+-S3-T01 & Coach onboardi ng & Coach submits accreditat ion document s & New coach account & Fill coaching bio; upload certificati ons \& CV; submit & Coach profile transition s to pending status & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T02 & Stripe payment & Purchase session pack via Native Payment Sheet & Client account; coach with active pricing tier & Tap Buy Pack; authorize test card in Stripe modal & PaymentI ntent succeeds; purchase d packs \_ balance credited & Partial & Later sandbox result & Final QA-06; October native pack evidence, not sprint-period proof \\ \hline
+-S3-T03 & Session booking & Client books 1-on-1 coaching calendar slot & Client with active pack; coach slot available & Select calendar slot; tap Confirm Booking & Booking created with conflict check; visible on coach calendar & Not verified & Pending & Pack-credit booking not established by standalone API tests \\ \hline
+-S3-T04 & LiveKit video call & Initiate real-time video consultati on & Confirme d booking; both parties online & Tap Join Call; Edge Function generates LiveKit token & Two-way WebRTC video room connects with audio/video stream & Not verified & Pending & Two-party media and booking authorization remain unverified \\ \hline
+-S3-T05 & Admin coach review & Admin reviews and approves coach applicatio n & Admin logged into web panel; pending coach & Open /coaches; inspect signed document s; click Approve & Coach status transition s to approved; notificatio n dispatche d & Validated & Pass & TODO: attach screensho t or terminal output \\ \hline
+-S3-T06 & n8n AI session prep & Automate d pre-session briefing generatio n & n8n Docker instance; booking in next 24h & Trigger scheduled workflow run & Groq synthesiz es pre-session briefing note for coach & Not verified & Pending & No retained fresh scheduled execution or delivery receipt \\ \hline
++S3-T01 & Coach onboarding & Fresh coach submission & Dedicated new coach & Complete profile; upload; submit & Pending review profile & Existing approved role inspected & Pending & M10, M17; fresh upload/submission not run \\ \hline
++S3-T02 & Pack payment & EUR sandbox purchase & Configured sandbox; active offer & Pay; fulfil; replay; inspect admin & One purchase and correct credits & Android EUR129 / 12 credits & Scoped pass & M11; P; October follow-up, not sprint-period proof \\ \hline
++S3-T03 & Pack booking & Reserve using existing credits & Pack and available coach slot & Book; compare credit/calendar & One booking and one deduction & Credit-redemption path unverified & Pending & M12; standalone S API checks do not prove this branch \\ \hline
++S3-T04 & Video & Two-party consultation & Authorized booking; two devices & Join; exchange media; reconnect & Authorized bidirectional media & No retained two-party call & Pending & M13; authorization/time-window gaps in Step 3 \\ \hline
++S3-T05 & Coach review & Approve pending profile & Admin; controlled pending coach & Inspect existing links; confirm & Approved profile; wallet trigger & Confirmation/cancel only tested & Partial & M18; A COACH-02--04; no signed-URL or notification proof \\ \hline
++S3-T06 & Automation & Scheduled AI briefing & Running scheduler; test booking & Trigger; inspect output/delivery & New briefing with execution trail & No retained fresh run & Pending & M16, M20; exports and old inbox are insufficient \\ \hline
+ \end{longtable}
+ \endgroup
+ 
+@@ -1807,6 +1810,36 @@
+ 
+ Sprint 3 completed the platform dimension of GoFit by adding coach marketplace, coach-client follow-up, administration, and LLM-assisted preparation workflows. This sprint connects users, coaches, administrators, backend services, and automations into a broader operational system. The following chapter therefore focuses on deployment, architecture, security, limitations, and closing considerations.
+ 
++
++\subsection{Cross-sprint artifact traceability}
++
++Table~\ref{tab:sprint-traceability} preserves the existing product and sprint identifiers while connecting them to the inspected domain views, selected sequences and retained evidence. The models are cumulative implementation projections: Sprint 2 retains the Sprint 1 foundation, and Sprint 3 retains both earlier views. They do not reconstruct the database or application at a historical sprint-end date. Use-case associations identify participating roles, not navigation order or passed tests. Exercise browsing occurs in both the Sprint 1 catalog foundation and Sprint 2 progress context; its placement in S2-T01 does not imply a second independent implementation.
++
++\begingroup
++\footnotesize
++\setlength{\tabcolsep}{3pt}
++\renewcommand{\arraystretch}{1.2}
++\begin{longtable}{|L{1.35cm}|L{3.0cm}|L{1.75cm}|L{8.0cm}|}
++\caption{Product, sprint and implementation evidence cross-reference}\label{tab:sprint-traceability} \\
++\hline
++\rowcolor{entetetab}
++Story & Product / requirement & Evidence index & Model, interaction and validation boundary \\ \hline
++US-3.1 & PB-01; FR-01 & M01--02 & Account/profile; auth and onboarding sequences; S1-T01--02 \\ \hline
++US-3.2 & PB-02--03; FR-02 & M03--04 & Workout prescriptions; builder completion not fully exercised \\ \hline
++US-3.3 & PB-02; FR-03 & M05 & Embedded snapshots; online session sequence; S1-T03--04 \\ \hline
++US-3.4 & PB-02--03; FR-03 & M06 & Existing-session offline UPDATE; S1-T05 \\ \hline
++US-4.1 & PB-04; FR-04 & M08 & Measurement record; capture/review/save; S2-T03 \\ \hline
++US-4.2 & PB-04; FR-05 & M09 & MealLog/FoodItem; lookup and logging; S2-T04--05 \\ \hline
++US-4.3 & PB-04; FR-04 & M07 & ProgressPhoto and derived statistics; S2-T02 \\ \hline
++US-4.4 & PB-04; supplementary & M19--20 & Reminder configuration and recommendation source; S2-T06, S3-T06 \\ \hline
++US-5.1 & PB-05; FR-06 & M10--12 & Marketplace/purchase/booking; updated payment sequences; S3-T01--03 \\ \hline
++US-5.2 & PB-05; FR-07 & M14--15 & Programs/check-ins/private notes; scoped coach ledger only \\ \hline
++US-5.3 & PB-05; FR-06--07 & M13, M16 & Messages and AI briefing; no post-call synthesis; S3-T04, S3-T06 \\ \hline
++US-5.4 & PB-06; FR-08 & M17--18 & Admin authorization/audit model; approval sequence; S3-T05 \\ \hline
++\end{longtable}
++\endgroup
++
++This cross-reference is selective, as are the detailed use cases. A story without its own interaction figure still requires evidence for its implemented path; a domain-class association does not replace that evidence. Planned webhook fulfilment, post-consultation synthesis, encrypted messaging, unrestricted offline execution and signed-document review are not established by the current artifacts. Sprint dates, burn-down histories and unsupported chronology require the separate supervisor-checklist review; none is inferred from October source inspection.
+ 
+ \chapter{Deployment and closing phase}
+ 

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-25",
+  "source": "Rapport Blanci/main.tex",
+  "sourceSha256": "11458a14fe43687b1f9cdd094ea1cae50acbd6780d5212f6cdabf87ff32d5f88",
+  "compiler": "built-in desktop editor",
+  "result": "success",
+  "files": [
+    {
+      "file": "main-before.txt",
+      "sha256": "d22992b0c93480c88cb83b89c6059f80e4a12082a12eda51fe7573c7712ad18a"
+    },
+    {
+      "file": "main-revision.diff",
+      "sha256": "282a614e87447a3666f87f19c3d48d57b7700a05ba1104f5f3a58a81fd444753"
+    },
+    {
+      "file": "assets.json",
+      "sha256": "37c8775e0d47648d541ddd19985fcfc09e6cb7285686de4da990301992480865"
+    },
+    {
+      "file": "figures.json",
+      "sha256": "6de2a656f5e31b8b2740b2224764b71c66b195de8a015485a96bfedba87686da"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d9075e8e93aadea579dd380ed5863f2a4742b87dae4592ab08a3a6d1ca222e5e"
+    },
+    {
+      "file": "verification.json",
+      "sha256": "58e284165fef7dcd8ef948fb14748ec7a85774be66b7abaa0fbf42acd17cdd6b"
+    },
+    {
+      "file": "compiler-final.json",
+      "sha256": "c13c50ff1e51f6d6f07ceb25e6723d0b63e61ccfe16b0f0d06445d6cab8cb903"
+    }
+  ]
+}

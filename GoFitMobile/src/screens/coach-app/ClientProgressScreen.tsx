@@ -218,7 +218,7 @@ export const ClientProgressScreen: React.FC = () => {
               <View style={styles.statCard}>
                 <Flame size={24} color={PRIMARY_GREEN} />
                 <Text style={styles.statValue}>{data.streak}</Text>
-                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('clientManagement.streak')}</Text>
+                <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('clientManagement.currentStreak')}</Text>
               </View>
               <View style={styles.statCard}>
                 <Target size={24} color={PRIMARY_GREEN} />
@@ -231,6 +231,10 @@ export const ClientProgressScreen: React.FC = () => {
                 <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{t('clientManagement.consistency')}</Text>
               </View>
             </View>
+
+            <Text style={{ color: colors.textSecondary, fontSize: getResponsiveFontSize(11), marginBottom: 16 }}>
+              {t('clientManagement.streakDayBoundary')}
+            </Text>
 
             {/* Chart */}
             {chartData && chartData.labels.length > 0 && (

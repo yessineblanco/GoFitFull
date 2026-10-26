@@ -1,0 +1,74 @@
+[
+  [
+    "US-3.1",
+    "PB-01; FR-01",
+    "M01--02",
+    "Account/profile; auth and onboarding sequences; S1-T01--02"
+  ],
+  [
+    "US-3.2",
+    "PB-02--03; FR-02",
+    "M03--04",
+    "Workout prescriptions; builder completion not fully exercised"
+  ],
+  [
+    "US-3.3",
+    "PB-02; FR-03",
+    "M05",
+    "Embedded snapshots; online session sequence; S1-T03--04"
+  ],
+  [
+    "US-3.4",
+    "PB-02--03; FR-03",
+    "M06",
+    "Existing-session offline UPDATE; S1-T05"
+  ],
+  [
+    "US-4.1",
+    "PB-04; FR-04",
+    "M08",
+    "Measurement record; capture/review/save; S2-T03"
+  ],
+  [
+    "US-4.2",
+    "PB-04; FR-05",
+    "M09",
+    "MealLog/FoodItem; lookup and logging; S2-T04--05"
+  ],
+  [
+    "US-4.3",
+    "PB-04; FR-04",
+    "M07",
+    "ProgressPhoto and derived statistics; S2-T02"
+  ],
+  [
+    "US-4.4",
+    "PB-04; supplementary",
+    "M19--20",
+    "Reminder configuration and recommendation source; S2-T06, S3-T06"
+  ],
+  [
+    "US-5.1",
+    "PB-05; FR-06",
+    "M10--12",
+    "Marketplace/purchase/booking; updated payment sequences; S3-T01--03"
+  ],
+  [
+    "US-5.2",
+    "PB-05; FR-07",
+    "M14--15",
+    "Programs/check-ins/private notes; scoped coach ledger only"
+  ],
+  [
+    "US-5.3",
+    "PB-05; FR-06--07",
+    "M13, M16",
+    "Messages and AI briefing; no post-call synthesis; S3-T04, S3-T06"
+  ],
+  [
+    "US-5.4",
+    "PB-06; FR-08",
+    "M17--18",
+    "Admin authorization/audit model; approval sequence; S3-T05"
+  ]
+]

@@ -1,0 +1,261 @@
+--- before-expansion/main.tex
++++ expanded/main.tex
+@@ -769,6 +769,8 @@
+ 
+ The following interface captures come from the retained October 2026 development-build and local-administration QA. They illustrate visible states and selected follow-up corrections, rather than proving internship-period delivery or complete workflow validation. Cropped excerpts omit unrelated records or identity columns; the original captures and their links to the QA records are retained in the accompanying evidence package. The report distinguishes configured, empty, cancelled, failed and successful states in the relevant captions.
+ 
++The screenshot walkthrough covers client settings (Figure~\ref{fig:ui-client-settings}), workout creation (Figure~\ref{fig:ui-workout-selection-save}), nutrition (Figure~\ref{fig:ui-nutrition-extended}), coach follow-up (Figure~\ref{fig:ui-coach-followup-extended}) and the administration panel. The dedicated \textit{Administration Panel: Interface Walkthrough} begins on page~\pageref{sec:admin-panel-screens}; its user/coach management, catalog, dashboard and operational captures are separate from the mobile application. The List of Figures provides the individual image-group page numbers.
++
+ \subsection{Mobile Foundation and Navigation}
+ 
+ The first implementation challenge was to create a stable mobile foundation that could support both client and coach experiences. The application was structured around authentication screens, onboarding screens, protected app navigators, profile flows, and domain-specific feature stacks. This foundation is important because the rest of the product depends on role-aware routing: a visitor should not reach protected screens, an incomplete profile should be redirected to onboarding, and coach-specific flows should remain separated from standard client flows.
+@@ -820,6 +822,42 @@
+ \label{fig:ui-client-entry}
+ \end{figure}
+ 
++Figures~\ref{fig:ui-client-settings} and~\ref{fig:ui-client-reminder-settings} illustrate additional client controls. Their captured preferences do not independently establish every save, translation or notification-delivery outcome.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-profile-overview.png}
++\par\smallskip{\footnotesize a) Profile and feature entry points\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-unit-preferences.png}
++\par\smallskip{\footnotesize b) Weight and height units\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-language-options.png}
++\par\smallskip{\footnotesize c) Language selection\par}
++\end{minipage}
++\caption{Client interface walkthrough: profile overview, unit preferences and language selection.}
++\label{fig:ui-client-settings}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-reminder-preferences.png}
++\par\smallskip{\footnotesize a) Notification and reminder preferences\par}
++\end{minipage}
++\caption{Client interface walkthrough: reminder preferences as captured; scheduled delivery is assessed separately.}
++\label{fig:ui-client-reminder-settings}
++\end{figure}
++
+ \subsection{Workout Core and Rest Timer}
+ 
+ The workout core was implemented around the distinction between a workout template and an executed workout session. A workout template defines the exercises, order, difficulty, target muscle groups, and expected configuration. A workout session stores timestamps, duration, notes and exercise snapshots with configured sets/repetitions, entered weights and completion flags. Those snapshots do not independently measure performed repetitions or RPE. This separation is essential because the same workout can be performed many times while producing different session histories.
+@@ -845,6 +883,25 @@
+ \end{minipage}
+ \caption{Interface captures: exercise detail and workout configuration; execution checks remain separate.}
+ \label{fig:ui-workout-configuration}
++\end{figure}
++
++Figure~\ref{fig:ui-workout-selection-save} adds the exercise selector and the created disposable workout card. The fixture was later deleted during QA; its presence demonstrates the recorded creation path, not a complete active-session or offline test.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-exercise-selection.png}
++\par\smallskip{\footnotesize a) Exercise selector\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.31\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-created-workout.png}
++\par\smallskip{\footnotesize b) Created QA workout card\par}
++\end{minipage}
++\caption{Client workout walkthrough: exercise selection and the created disposable workout in the custom catalog.}
++\label{fig:ui-workout-selection-save}
+ \end{figure}
+ 
+ \subsection{Offline Workout Resiliency and Fault-Tolerant Queue}
+@@ -1166,6 +1223,31 @@
+ \label{fig:ui-progress-nutrition}
+ \end{figure}
+ 
++Figure~\ref{fig:ui-nutrition-extended} shows the goal form and the disposable food/saved-meal records from the retained QA. The goal values are displayed preferences rather than individualized dietary advice; saved-meal visibility does not establish every reuse/edit path.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-nutrition-goals.png}
++\par\smallskip{\footnotesize a) Displayed daily targets\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-disposable-food-log.png}
++\par\smallskip{\footnotesize b) Disposable banana log\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-saved-meal.png}
++\par\smallskip{\footnotesize c) Saved-meal entry\par}
++\end{minipage}
++\caption{Client nutrition walkthrough: goal settings, disposable food log and visible saved-meal entry.}
++\label{fig:ui-nutrition-extended}
++\end{figure}
++
+ \subsection{Data Interpretation and User Feedback}
+ 
+ A key design point in Sprint 2 is that GoFit should not only store values; it should help the user interpret them. For example, workout history becomes useful when the app can show consistency, completed sessions, training load, and trends. Body measurements become useful when the user can compare corrected values over time and understand why an AI draft may be uncertain. Nutrition entries become useful when they are reusable and connected to habits rather than isolated forms.
+@@ -1698,6 +1780,54 @@
+ \label{fig:ui-coach-workspace}
+ \end{figure}
+ 
++Figures~\ref{fig:ui-coach-followup-extended} and~\ref{fig:ui-coach-program-pack} expand the coaching views. Client identifiers are masked where present. The program remains an unsubmitted draft, the check-in schedule is displayed without a new submission, and the sample pack is an offer rather than proof of a payout.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-dashboard-clean.png}
++\par\smallskip{\footnotesize a) Dashboard after the query correction\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-client-progress.png}
++\par\smallskip{\footnotesize b) Client progress view\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-checkin-schedule.png}
++\par\smallskip{\footnotesize c) Check-in schedule and empty responses\par}
++\end{minipage}
++\caption{Coach interface walkthrough: dashboard, client progress and displayed check-in scheduling; client identifiers masked.}
++\label{fig:ui-coach-followup-extended}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-configured-program-draft.png}
++\par\smallskip{\footnotesize a) Unsubmitted program draft\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/coach-pack-management.png}
++\par\smallskip{\footnotesize b) Coach session-pack management\par}
++\end{minipage}
++\hspace{0.025\linewidth}
++\begin{minipage}[t]{.29\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/client-assigned-program-detail.png}
++\par\smallskip{\footnotesize c) Existing assigned-program detail\par}
++\end{minipage}
++\caption{Coach/client program walkthrough: configured draft, session-pack offer and an existing assigned-program detail.}
++\label{fig:ui-coach-program-pack}
++\end{figure}
++
+ \subsection{Stripe Payment Integration and Persistence Boundaries}
+ \label{sec:current-payment-boundaries}
+ 
+@@ -1796,6 +1926,44 @@
+ \end{longtable}
+ \endgroup
+ 
++\subsubsection{Administration Panel: Interface Walkthrough}
++\label{sec:admin-panel-screens}
++
++The following browser captures belong to the Next.js administration panel, not the mobile application. The walkthrough begins with the dashboard and continues through user management, coach management, catalog editing and operational records. Captures are from the local October QA environment; identifiers are masked in the user and coach lists. User-account and profile counts describe different populations and must not be conflated.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.96\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-dashboard.png}
++
++\end{minipage}
++\caption{Administrative dashboard capture: user-profile count and operational BI overview after the label correction.}
++\label{fig:ui-admin-dashboard}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.98\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-user-management-masked.png}
++
++\end{minipage}
++\caption{Administration panel: user-account management, role filters and record actions; names and emails masked for the report.}
++\label{fig:ui-admin-users}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.98\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-coach-management-masked.png}
++
++\end{minipage}
++\caption{Administration panel: coach-profile review, status filters and decision controls; personal identifiers masked.}
++\label{fig:ui-admin-coaches}
++\end{figure}
++
+ Figures~\ref{fig:ui-admin-exercises} and~\ref{fig:ui-admin-workout} illustrate catalog management and a reloaded disposable workout fixture. Figure~\ref{fig:ui-admin-approval-audit} separates an approval confirmation dialog from exercise-deletion audit records. The coach-approval action was cancelled in the retained test; the audit excerpt concerns exercise deletion and does not establish approval auditing.
+ 
+ \begin{figure}[H]
+@@ -1835,6 +2003,30 @@
+ \end{minipage}
+ \caption{Administrative excerpts: coach-approval confirmation (cancelled) and exercise-deletion audit entries; unrelated identity/network columns omitted.}
+ \label{fig:ui-admin-approval-audit}
++\end{figure}
++
++Figures~\ref{fig:ui-admin-saved-view} and~\ref{fig:ui-admin-settings-summary} complete the web walkthrough with a disposable saved-view configuration and the corrected profile-count summary. The verified sandbox transaction excerpt remains in Figure~\ref{fig:ui-admin-paid-records}; it is a browser view, not another mobile screen.
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.98\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-saved-view-dialog.png}
++
++\end{minipage}
++\caption{Administration panel: disposable saved BI view shown in its dialog; the QA view was subsequently removed.}
++\label{fig:ui-admin-saved-view}
++\end{figure}
++
++\begin{figure}[H]
++\centering
++\begin{minipage}[t]{.98\linewidth}
++\centering
++\includegraphics[width=\linewidth]{figures/screenshots/admin-database-summary.png}
++
++\end{minipage}
++\caption{Administration panel: settings-page database summary, including the corrected user-profile label; captured totals belong to the QA environment.}
++\label{fig:ui-admin-settings-summary}
+ \end{figure}
+ 
+ \subsection{Admin Analytics and Business Intelligence Features}
+@@ -1896,16 +2088,7 @@
+ 
+ Figure~\ref{fig:ui-admin-dashboard} shows the corrected profile-count label and BI overview. The displayed totals belong to the test environment and include the stated historical/sandbox limitations; this image does not independently validate all BI calculations.
+ 
+-\begin{figure}[H]
+-\centering
+-\begin{minipage}[t]{.96\linewidth}
+-\centering
+-\includegraphics[width=\linewidth]{figures/screenshots/admin-dashboard.png}
+-
+-\end{minipage}
+-\caption{Administrative dashboard capture: user-profile count and operational BI overview after the label correction.}
+-\label{fig:ui-admin-dashboard}
+-\end{figure}
++
+ 
+ \subsection{In-App AI Workout Recommendation and Personalization}
+ 

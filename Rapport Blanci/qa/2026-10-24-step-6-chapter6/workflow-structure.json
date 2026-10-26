@@ -1,0 +1,122 @@
+[
+  {
+    "file": "admin-ops-digest-v1.json",
+    "nodeTypes": [
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote"
+    ],
+    "scheduleRules": [
+      {
+        "interval": [
+          {
+            "field": "minutes",
+            "minutesInterval": 1440
+          }
+        ]
+      }
+    ],
+    "sha256": "13efd377807b5684ec4d3de112c4bbf369c48d5334c02be01a1d3153cedfcb71"
+  },
+  {
+    "file": "ai-session-prep-v1.json",
+    "nodeTypes": [
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote"
+    ],
+    "scheduleRules": [
+      {
+        "interval": [
+          {
+            "field": "minutes",
+            "minutesInterval": 60
+          }
+        ]
+      }
+    ],
+    "sha256": "fc9261705e3015c36976a841a9a758b3bf53de462977d591f40097ba26d68d5c"
+  },
+  {
+    "file": "booking-reminders-v1.json",
+    "nodeTypes": [
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote"
+    ],
+    "scheduleRules": [
+      {
+        "interval": [
+          {
+            "field": "minutes",
+            "minutesInterval": 15
+          }
+        ]
+      }
+    ],
+    "sha256": "7a89caedd9f309d5fed596c857bbc8acde099a8d0f49846109d9294f184afc10"
+  },
+  {
+    "file": "check-in-reminders-v1.json",
+    "nodeTypes": [
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote"
+    ],
+    "scheduleRules": [
+      {
+        "interval": [
+          {
+            "field": "minutes",
+            "minutesInterval": 240
+          }
+        ]
+      }
+    ],
+    "sha256": "a74c52c29d1010e74d463aa55f5777decfbc7e8fa632912809401ed74f216df4"
+  },
+  {
+    "file": "coach-daily-digest-v1.json",
+    "nodeTypes": [
+      "n8n-nodes-base.scheduleTrigger",
+      "n8n-nodes-base.code",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote",
+      "n8n-nodes-base.stickyNote"
+    ],
+    "scheduleRules": [
+      {
+        "interval": [
+          {
+            "field": "minutes",
+            "minutesInterval": 1440
+          }
+        ]
+      }
+    ],
+    "sha256": "57c5d2e163afcf2984155b356ea1f77393766a4f00246df77ef7301102f6e1f2"
+  }
+]

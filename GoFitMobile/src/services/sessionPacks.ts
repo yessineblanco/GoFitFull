@@ -149,16 +149,13 @@ export const sessionPacksService = {
     }
   },
 
-  async purchasePack(clientId: string, packId: string, coachId: string, sessions: number): Promise<void> {
+  async purchasePack(paymentIntentId: string): Promise<void> {
     try {
-      const { error } = await supabase.from('purchased_packs').insert({
-        client_id: clientId,
-        pack_id: packId,
-        coach_id: coachId,
-        sessions_remaining: sessions,
-        status: 'active',
+      const { data, error } = await supabase.functions.invoke('stripe-payment', {
+        body: { action: 'fulfill_pack', paymentIntentId },
       });
       if (error) throw error;
+      if (!data?.purchaseId) throw new Error('Payment confirmation did not save the pack');
     } catch (error) {
       logger.error('Failed to purchase pack:', error);
       throw error;

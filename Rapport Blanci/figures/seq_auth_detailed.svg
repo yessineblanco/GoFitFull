@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="720pt" height="705.6pt" viewBox="0 0 720 705.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-10-21T13:09:27.830410</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 705.6 
+L 720 705.6 
+L 720 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="line2d_1">
+    <path d="M 68.4 56.16 
+L 68.4 691.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_2">
+    <path d="M 214.2 56.16 
+L 214.2 691.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_3">
+    <path d="M 360 56.16 
+L 360 691.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_4">
+    <path d="M 505.8 56.16 
+L 505.8 691.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="line2d_5">
+    <path d="M 651.6 56.16 
+L 651.6 691.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 2.6,2.6; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.65"/>
+   </g>
+   <g id="patch_2">
+    <path d="M 14.4 12.96 
+L 122.4 12.96 
+L 122.4 56.16 
+L 14.4 56.16 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 160.2 12.96 
+L 268.2 12.96 
+L 268.2 56.16 
+L 160.2 56.16 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 306 12.96 
+L 414 12.96 
+L 414 56.16 
+L 306 56.16 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 451.8 12.96 
+L 559.8 12.96 
+L 559.8 56.16 
+L 451.8 56.16 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 597.6 12.96 
+L 705.6 12.96 
+L 705.6 56.16 
+L 597.6 56.16 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: #edf3f7; stroke: #536b7c; stroke-width: 0.8; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 70.397809 97.2 
+Q 141.300522 97.2 211.252906 97.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 207.252906 95.2 
+L 211.252906 97.2 
+L 207.252906 99.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 216.197809 144 
+Q 287.100522 144 357.052906 144 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 353.052906 142 
+L 357.052906 144 
+L 353.052906 146 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 361.997809 201.6 
+Q 432.900522 201.6 502.852906 201.6 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 498.852906 199.6 
+L 502.852906 201.6 
+L 498.852906 203.6 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 503.802191 259.2 
+Q 432.899478 259.2 362.947094 259.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 366.947094 261.2 
+L 362.947094 259.2 
+L 366.947094 257.2 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 331.2 291.6 
+L 698.4 291.6 
+L 698.4 403.2 
+L 331.2 403.2 
+L 331.2 291.6 
+z
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #757575; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 361.997809 338.4 
+Q 505.798006 338.4 648.647874 338.4 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 644.647874 336.4 
+L 648.647874 338.4 
+L 644.647874 340.4 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 649.602191 378 
+Q 505.801994 378 362.952126 378 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 366.952126 380 
+L 362.952126 378 
+L 366.952126 376 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 358.002191 446.4 
+Q 287.099478 446.4 217.147094 446.4 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 221.147094 448.4 
+L 217.147094 446.4 
+L 221.147094 444.4 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 235.240312 509.76 
+Q 225.720547 509.76 217.151111 509.76 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 221.151111 511.76 
+L 217.151111 509.76 
+L 221.151111 507.76 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 212.202191 550.8 
+Q 141.299478 550.8 71.347094 550.8 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.347094 552.8 
+L 71.347094 550.8 
+L 75.347094 548.8 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke-dasharray: 3.145,1.36; stroke-dashoffset: 0; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 89.440313 614.16 
+Q 79.920547 614.16 71.351111 614.16 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+    <path d="M 75.351111 616.16 
+L 71.351111 614.16 
+L 75.351111 612.16 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: round"/>
+   </g>
+   <g id="line2d_6">
+    <path d="M 214.2 493.2 
+L 237.24 493.2 
+L 237.24 509.76 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: square"/>
+   </g>
+   <g id="line2d_7">
+    <path d="M 68.4 597.6 
+L 91.44 597.6 
+L 91.44 614.16 
+" clip-path="url(#pcfb972c3d2)" style="fill: none; stroke: #303030; stroke-width: 0.85; stroke-linecap: square"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(35.367187 31.497363)">Authentication</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(53.441016 42.299121)">screen</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #243f54" x="214.2" y="36.898242" transform="rotate(-0 214.2 36.898242)">Auth store</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(326.702812 31.497012)">Auth service +</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(324.159609 42.299473)">Supabase client</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #243f54" x="505.8" y="36.898242" transform="rotate(-0 505.8 36.898242)">Supabase Auth</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(614.950312 31.497363)">Storage adapter</text>
+    <text style="font-size: 9px; font-family: 'DejaVu Sans'; fill: #243f54" transform="translate(620.722969 42.299121)">(SecureStore)</text>
+   </g>
+   <g id="text_6">
+    <g id="patch_18">
+     <path d="M 91.165937 92.46 
+L 191.434062 92.46 
+L 191.434062 81.919336 
+L 91.165937 81.919336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="141.3" y="89.398008" transform="rotate(-0 141.3 89.398008)">signUp(...) or signIn(...)</text>
+   </g>
+   <g id="text_7">
+    <g id="patch_19">
+     <path d="M 233.563281 139.26 
+L 340.636719 139.26 
+L 340.636719 116.815352 
+L 233.563281 116.815352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(238.420234 125.144854)">authService.signUp(...)</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(234.583281 135.347178)">or authService.signIn(...)</text>
+   </g>
+   <g id="text_8">
+    <g id="patch_20">
+     <path d="M 371.269687 196.86 
+L 494.530312 196.86 
+L 494.530312 174.415352 
+L 371.269687 174.415352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(394.230312 182.744854)">auth.signUp(...) or</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(372.289687 192.947178)">auth.signInWithPassword(...)</text>
+   </g>
+   <g id="text_9">
+    <g id="patch_21">
+     <path d="M 364.187461 254.46 
+L 501.612539 254.46 
+L 501.612539 232.015352 
+L 364.187461 232.015352 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(389.975 240.344854)">User / session result</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(365.207461 250.547178)">(signup session may be absent)</text>
+   </g>
+   <g id="text_10">
+    <g id="patch_22">
+     <path d="M 335.94 306.230332 
+L 494.191406 306.230332 
+L 494.191406 295.689668 
+L 335.94 295.689668 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="336.96" y="303.16834" transform="rotate(-0 336.96 303.16834)">opt [authenticated session returned]</text>
+   </g>
+   <g id="text_11">
+    <g id="patch_23">
+     <path d="M 396.961484 333.66 
+L 614.638516 333.66 
+L 614.638516 323.119336 
+L 396.961484 323.119336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="505.8" y="330.598008" transform="rotate(-0 505.8 330.598008)">Client persists session through adapter.setItem(...)</text>
+   </g>
+   <g id="text_12">
+    <g id="patch_24">
+     <path d="M 442.977031 373.26 
+L 568.622969 373.26 
+L 568.622969 362.719336 
+L 442.977031 362.719336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="505.8" y="370.198008" transform="rotate(-0 505.8 370.198008)">Storage operation completes</text>
+   </g>
+   <g id="text_13">
+    <g id="patch_25">
+     <path d="M 241.508789 441.66 
+L 332.691211 441.66 
+L 332.691211 431.119336 
+L 241.508789 431.119336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="287.1" y="438.598008" transform="rotate(-0 287.1 438.598008)">Authentication result</text>
+   </g>
+   <g id="text_14">
+    <g id="patch_26">
+     <path d="M 241.98 505.670332 
+L 373.136328 505.670332 
+L 373.136328 495.129668 
+L 241.98 495.129668 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: start" x="243" y="502.60834" transform="rotate(-0 243 502.60834)">Update user and session state</text>
+   </g>
+   <g id="text_15">
+    <g id="patch_27">
+     <path d="M 71.232773 546.06 
+L 211.367227 546.06 
+L 211.367227 535.519336 
+L 71.232773 535.519336 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'; text-anchor: middle" x="141.3" y="542.998008" transform="rotate(-0 141.3 542.998008)">Authentication action completes</text>
+   </g>
+   <g id="text_16">
+    <g id="patch_28">
+     <path d="M 96.18 616.022324 
+L 343.124922 616.022324 
+L 343.124922 593.577676 
+L 96.18 593.577676 
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(97.2 601.907178)">Root routing requires a session;</text>
+    <text style="font-size: 8.5px; font-family: 'DejaVu Sans'" transform="translate(97.2 612.109502)">client onboarding shown if local completion flag is absent</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pcfb972c3d2">
+   <rect x="0" y="0" width="720" height="705.6"/>
+  </clipPath>
+ </defs>
+</svg>

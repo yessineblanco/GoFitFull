@@ -29,12 +29,11 @@ import { getBackgroundColor } from '@/utils/colorUtils';
 import { COACH_STITCH, coachStitchOr } from '@/theme/coachStitch';
 import { CoachSubScreenBar } from '@/components/coach/CoachSubScreenBar';
 import { resolvePublicAvatarUrl } from '@/utils/avatarUrl';
+import { getCalendarMonthDays } from '@/utils/calendarMonthDays';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const DAY_MS = 86400000;
 
 function stripTime(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -69,15 +68,7 @@ export const CoachCalendarScreen: React.FC = () => {
     if (profile?.id) loadCoachBookings(profile.id);
   }, [profile?.id]);
 
-  const dayStrip = useMemo(() => {
-    const start = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const end = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
-    const days: Date[] = [];
-    for (let d = new Date(start); d <= end; d = new Date(d.getTime() + DAY_MS)) {
-      days.push(stripTime(d));
-    }
-    return days;
-  }, [cursor]);
+  const dayStrip = useMemo(() => getCalendarMonthDays(cursor), [cursor]);
 
   const bookingsForDay = useCallback(
     (day: Date) => {

@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { useStripe } from '@stripe/stripe-react-native';
 import { supabase } from '@/config/supabase';
+import { getStripePublishableKey } from '@/config/stripe';
 import { sessionPacksService } from '@/services/sessionPacks';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator,
@@ -55,6 +56,10 @@ export const CoachDetailScreen: React.FC = () => {
 
   const handlePurchasePack = async (pack: any) => {
     if (!user?.id || !coachId) return;
+    if (!getStripePublishableKey()) {
+      dialogManager.error(t('payments.unavailableTitle'), t('payments.unavailableMessage'));
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setPurchasingPack(pack.id);
 
@@ -62,9 +67,8 @@ export const CoachDetailScreen: React.FC = () => {
       // 1. Fetch Payment Intent from Edge Function
       const { data, error } = await supabase.functions.invoke('stripe-payment', {
         body: {
-          amount: pack.price,
-          currency: 'usd',
-          metadata: { packId: pack.id, coachId, clientId: user.id },
+          action: 'create_pack',
+          packId: pack.id,
         },
       });
 
@@ -97,7 +101,7 @@ export const CoachDetailScreen: React.FC = () => {
       }
 
       // 4. Payment Success - Create Pack
-      await sessionPacksService.purchasePack(user.id, pack.id, coachId, pack.session_count);
+      await sessionPacksService.purchasePack(data.paymentIntentId);
       
       dialogManager.success(t('common.success'), `Successfully purchased ${pack.name}!`);
     } catch (err: any) {

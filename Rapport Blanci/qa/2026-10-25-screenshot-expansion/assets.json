@@ -1,0 +1,318 @@
+[
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-008-profile.png",
+    "asset": "figures/screenshots/client-profile-overview.png",
+    "sourceSha256": "d5c6e9b1516ab51d698824fdc4b4afa006a390ce75458c463d863c96b3821c86",
+    "assetSha256": "c3a1b533fe69111f98dfb1f76d5dae334169f50e30d1e9299cfd10264e9bed7a",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-110-unit-preferences.png",
+    "asset": "figures/screenshots/client-unit-preferences.png",
+    "sourceSha256": "4bfa96504c4238f3c36a6e730a7486c0049871e4417c3a95cb65496bd895230c",
+    "assetSha256": "580d19ebd1efeb391ffac6b33e17580facf31babd3a37b8536a19d737c9094e0",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-120-language-options.png",
+    "asset": "figures/screenshots/client-language-options.png",
+    "sourceSha256": "da1237ac203a1f2b66b4cd7ee5a28539ba048095fa8a566f223abb93e9c7608a",
+    "assetSha256": "1a4aa226c6fd697e438b6d29598693c9361331609ec9a579f4e70560b155e3d0",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-071-notification-preferences.png",
+    "asset": "figures/screenshots/client-reminder-preferences.png",
+    "sourceSha256": "fa2206383eed5f2a8f39636cd6c70a7d175f36854b19d40f58990fee3c33defc",
+    "assetSha256": "a65d1a2068c00c4efa906008944e6375a2b41fc8c0b467667459b7f361e24f57",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-150-nutrition-goals-readonly.png",
+    "asset": "figures/screenshots/client-nutrition-goals.png",
+    "sourceSha256": "a82d1adf93700b75f7e4ac389f38b0d67bb16c8d26614892829c9bea4ae0ae8f",
+    "assetSha256": "ff5a19d0626e92550df46a7d59ccd9ed8dd8487a941559b828e444f33a836482",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-164-test-meal-saved.png",
+    "asset": "figures/screenshots/client-disposable-food-log.png",
+    "sourceSha256": "597aaf70b9eeb49f58b89015915394cf2edad5706d8c2eb1023523d9ffb03416",
+    "assetSha256": "87a9b3b765f2dffa0d37f0170cd0770399e13fc6bcd68f63b46d3f818247a1ee",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-165-saved-meal-visible.png",
+    "asset": "figures/screenshots/client-saved-meal.png",
+    "sourceSha256": "30d9a7a337461ffc4723512bc3577004e8cce899013431ea557a0a342a68d93f",
+    "assetSha256": "0de35c86be98a9f0ad9c603838c102cf7807361d9cc7c1b649936f7e18ec99fe",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-095-biceps-selection.png",
+    "asset": "figures/screenshots/client-exercise-selection.png",
+    "sourceSha256": "6fca0d38b0e8e65ecae89f64153070c42f7fb1f2f1ceb8ad650a49b7990ee033",
+    "assetSha256": "a760d8cadd6e0be7697c73f30f54830a44f14a8eb5fa27beb64dddb4d5740f67",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-100-created-workout-card.png",
+    "asset": "figures/screenshots/client-created-workout.png",
+    "sourceSha256": "3e3ceca0a59c2efa9fb01ab58baf9eb26071f08a1723dc12728cce61fff4c4b1",
+    "assetSha256": "104506a216e99b50935f0634fecaca9f363fb18e1fdfa47f1726de57690fcfc8",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-22/screenshots/CLIENT-011-assigned-program-detail.png",
+    "asset": "figures/screenshots/client-assigned-program-detail.png",
+    "sourceSha256": "74705f1dba724cdc3989d05c96d547b819d59fb0f9e4d4ec5f126c5bea8a2872",
+    "assetSha256": "8c2ba847af94adc9ebe382386fc43d21368bfc61c2c0ad8b9b33ab39c45386f4",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-23-coach/screenshots/COACH-119-checkins-fix-ready.png",
+    "asset": "figures/screenshots/coach-dashboard-clean.png",
+    "sourceSha256": "78e1692078d051fed59c4de22107c7abb8fb886e10100a6416ce7d9fa5976313",
+    "assetSha256": "c197405a9879b7ad7601237fbf2ed242f2a5cb5ba5bc0d27c083f6a926d58e02",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-23-coach/screenshots/COACH-124-current-streak-corrected.png",
+    "asset": "figures/screenshots/coach-client-progress.png",
+    "sourceSha256": "81143c6955adad25f9237c1259170f86189e71914bfaef143b7ecb25e8379c84",
+    "assetSha256": "7f85838c8987b11de1dee2fa9dfb956a2c458d22a6e1991c9777ce0e21c1553b",
+    "cropPixels": null,
+    "privacyMaskPixels": [
+      [
+        300,
+        110,
+        800,
+        250
+      ]
+    ]
+  },
+  {
+    "source": "qa/2026-10-23-coach/screenshots/COACH-064-session-packs.png",
+    "asset": "figures/screenshots/coach-pack-management.png",
+    "sourceSha256": "4fa2cf0c5c6f491ee526d9dc2458dd59912dd65b39a94a5d222eac931b0896df",
+    "assetSha256": "b76128068559bb2ae7e7ca8e31a06cd7ff4a25c0aa1b7fc81cfdb0440bf85ef3",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-23-coach/screenshots/COACH-072-program-unsaved-exercise.png",
+    "asset": "figures/screenshots/coach-configured-program-draft.png",
+    "sourceSha256": "8f43439ace9ba2da8fc50bbbe47897de2cf48463b449b22ccb0c660ec280c292",
+    "assetSha256": "31ef04e127834d03c4cb93df3b4b3c53743bf5c68e96ac31bff3531d32b8cca6",
+    "cropPixels": null,
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-23-coach/screenshots/COACH-051-client-checkins.png",
+    "asset": "figures/screenshots/coach-checkin-schedule.png",
+    "sourceSha256": "c6524fa424d049874cade91b6e50ffa87165ae04ac2e02df9cc821f4538acbb2",
+    "assetSha256": "bc5b492618274b1ddb0cca4e599704cc9e02237e7aceefceb8f8c07f60235878",
+    "cropPixels": null,
+    "privacyMaskPixels": [
+      [
+        300,
+        110,
+        800,
+        250
+      ]
+    ]
+  },
+  {
+    "source": "qa/2026-10-23-admin/screenshots/ADMIN-022-users-ready.png",
+    "asset": "figures/screenshots/admin-user-management-masked.png",
+    "sourceSha256": "2d2898675693b1cb2d5ed2c7a5bff4110b7c017e0a82438c961ed14cca1604f2",
+    "assetSha256": "562dec2d45accf1f3205e42da2ff7a03567c7b889a66ba12f1d59be60ee156d1",
+    "cropPixels": null,
+    "privacyMaskPixels": [
+      [
+        325,
+        307,
+        612,
+        342
+      ],
+      [
+        625,
+        307,
+        840,
+        342
+      ],
+      [
+        325,
+        376,
+        612,
+        411
+      ],
+      [
+        625,
+        376,
+        840,
+        411
+      ],
+      [
+        325,
+        445,
+        612,
+        480
+      ],
+      [
+        625,
+        445,
+        840,
+        480
+      ],
+      [
+        325,
+        514,
+        612,
+        549
+      ],
+      [
+        625,
+        514,
+        840,
+        549
+      ],
+      [
+        325,
+        583,
+        612,
+        618
+      ],
+      [
+        625,
+        583,
+        840,
+        618
+      ],
+      [
+        325,
+        652,
+        612,
+        687
+      ],
+      [
+        625,
+        652,
+        840,
+        687
+      ],
+      [
+        325,
+        721,
+        612,
+        756
+      ],
+      [
+        625,
+        721,
+        840,
+        756
+      ],
+      [
+        325,
+        790,
+        612,
+        825
+      ],
+      [
+        625,
+        790,
+        840,
+        825
+      ],
+      [
+        325,
+        859,
+        612,
+        894
+      ],
+      [
+        625,
+        859,
+        840,
+        894
+      ],
+      [
+        325,
+        928,
+        612,
+        963
+      ],
+      [
+        625,
+        928,
+        840,
+        963
+      ]
+    ]
+  },
+  {
+    "source": "qa/2026-10-23-admin/screenshots/ADMIN-028-coaches-ready.png",
+    "asset": "figures/screenshots/admin-coach-management-masked.png",
+    "sourceSha256": "c6f073ca4b327cbcc03e8b227de2f956a4c846432b8df18ba5424a38a58dcf4c",
+    "assetSha256": "409abf121970b2638e8531a20f7d2453f90352ceee313d0d875e5a9da6818e45",
+    "cropPixels": null,
+    "privacyMaskPixels": [
+      [
+        290,
+        392,
+        550,
+        437
+      ],
+      [
+        290,
+        452,
+        550,
+        497
+      ],
+      [
+        290,
+        512,
+        550,
+        557
+      ]
+    ]
+  },
+  {
+    "source": "qa/2026-10-23-admin/screenshots/ADMIN-093-saved-view-created.png",
+    "asset": "figures/screenshots/admin-saved-view-dialog.png",
+    "sourceSha256": "4f8462df218725117e8a22c8ecd8c00f56edaade4c8903d463baca7d22ad8cd8",
+    "assetSha256": "1d757f935e2c2880f9189ebf2f3f125d1930320d04367898ab0cc90b2c1705d6",
+    "cropPixels": [
+      425,
+      270,
+      1015,
+      755
+    ],
+    "privacyMaskPixels": null
+  },
+  {
+    "source": "qa/2026-10-23-admin/fixes/DASH-03/screenshots/settings-profile-count.png",
+    "asset": "figures/screenshots/admin-database-summary.png",
+    "sourceSha256": "b49e28dcb87402cc2f948b5d53b19c2f6ab4f624e1a9e2fadfc9e684c90e1c0e",
+    "assetSha256": "a622f55e9d5d6bb807b34d6edb5e62f663b33ca8ceb6bd5bd457a91c42536351",
+    "cropPixels": [
+      280,
+      520,
+      1570,
+      1070
+    ],
+    "privacyMaskPixels": null
+  }
+]

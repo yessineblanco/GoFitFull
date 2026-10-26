@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import { notificationInboxService } from '@/services/notificationInbox';
 import { pushNotificationService } from '@/services/pushNotification';
 import { notificationService } from '@/services/notifications';
+import { isSessionDuration } from '@/utils/sessionDuration';
 
 export interface AvailabilitySlot {
   id: string;
@@ -77,6 +78,43 @@ export interface CreateBookingInput {
 }
 
 export const bookingsService = {
+  async getSessionTerms(coachId: string): Promise<{ duration: number; amount: number }> {
+    const { data, error } = await supabase.from('coach_profiles')
+      .select('default_session_duration,hourly_rate').eq('id', coachId).single();
+    if (error) throw error;
+    if (!isSessionDuration(data?.default_session_duration) || !Number.isFinite(Number(data?.hourly_rate)) || Number(data?.hourly_rate) <= 0) {
+      throw new Error('Invalid coach session price or duration');
+    }
+    return { duration: data.default_session_duration, amount: Math.round(Math.round(Number(data.hourly_rate) * 100) * data.default_session_duration / 60) / 100 };
+  },
+
+  async getBusySessionTimes(coachId: string): Promise<{ scheduled_at: string; duration_minutes: number }[]> {
+    const { data, error } = await supabase.functions.invoke('stripe-payment', { body: { action: 'session_slots', coachId } });
+    if (error) throw error;
+    if (!Array.isArray(data?.busySlots)) throw new Error('Unable to load booked times');
+    return data.busySlots;
+  },
+
+  async confirmPaidSession(paymentIntentId: string): Promise<Booking> {
+    const { data, error } = await supabase.functions.invoke('stripe-payment', { body: { action: 'fulfill_session', paymentIntentId } });
+    if (error) throw new Error(`Session payment confirmation needs review. Keep payment reference ${paymentIntentId} before trying again.`);
+    if (!data?.booking?.id) throw new Error('Payment did not confirm the session');
+    return data.booking;
+  },
+
+  async getSessionDuration(coachId: string): Promise<number> {
+    const { data, error } = await supabase
+      .from('coach_profiles')
+      .select('default_session_duration')
+      .eq('id', coachId)
+      .single();
+    if (error) throw error;
+    if (!isSessionDuration(data?.default_session_duration)) {
+      throw new Error('Invalid coach session duration');
+    }
+    return data.default_session_duration;
+  },
+
   // --- Availability ---
 
   async getAvailability(coachId: string): Promise<AvailabilitySlot[]> {

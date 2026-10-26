@@ -1,0 +1,103 @@
+{
+  "checked_date": "2026-10-21",
+  "project_ref": "rdozeaacwaisgkpxjycn",
+  "read_only": true,
+  "scope": "Sprint 3 table definitions and primary/foreign/unique keys; no user records queried",
+  "tables": [
+    {
+      "table_name": "admin_audit_logs",
+      "columns": "id:uuid, admin_user_id:uuid, action:character varying(100), resource_type:character varying(50), resource_id:uuid?, details:jsonb?, ip_address:character varying(45)?, user_agent:text?, created_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (admin_user_id) REFERENCES auth.users(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "ai_session_notes",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, summary:text, context:jsonb?, generated_by:text?, created_at:timestamp with time zone, expires_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "bookings",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, pack_purchase_id:uuid?, scheduled_at:timestamp with time zone, duration_minutes:integer, status:text, video_room_id:text?, notes:text?, cancelled_at:timestamp with time zone?, cancel_reason:text?, rescheduled_from:uuid?, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE RESTRICT; FOREIGN KEY (pack_purchase_id) REFERENCES purchased_packs(id) ON DELETE SET NULL; FOREIGN KEY (rescheduled_from) REFERENCES bookings(id) ON DELETE SET NULL; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "check_in_responses",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, response_date:date, mood:integer, energy:integer, soreness:integer, sleep_quality:integer, notes:text?, responded_at:timestamp with time zone, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id); UNIQUE (client_id, coach_id, response_date)"
+    },
+    {
+      "table_name": "check_in_schedules",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, enabled:boolean, frequency:text, check_in_days:integer[], check_in_time:time without time zone, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id); UNIQUE (coach_id, client_id)"
+    },
+    {
+      "table_name": "coach_availability",
+      "columns": "id:uuid, coach_id:uuid, day_of_week:integer, start_time:time without time zone, end_time:time without time zone, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "coach_certifications",
+      "columns": "id:uuid, coach_id:uuid, name:text, issuer:text?, document_url:text?, verified_at:timestamp with time zone?, status:text, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "coach_client_notes",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, note:text, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "coach_profiles",
+      "columns": "id:uuid, user_id:uuid, bio:text?, specialties:text[]?, hourly_rate:numeric(8,2)?, cv_url:text?, profile_picture_url:text?, is_verified:boolean, average_rating:numeric(3,2)?, total_reviews:integer, total_sessions:integer, status:text, cancellation_policy:text, stripe_account_id:text?, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE; PRIMARY KEY (id); UNIQUE (user_id)"
+    },
+    {
+      "table_name": "conversations",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid, last_message_at:timestamp with time zone?, created_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id); UNIQUE (coach_id, client_id)"
+    },
+    {
+      "table_name": "custom_programs",
+      "columns": "id:uuid, coach_id:uuid, client_id:uuid?, title:text, description:text?, type:text, program_data:jsonb, status:text, created_at:timestamp with time zone, updated_at:timestamp with time zone, is_template:boolean",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "messages",
+      "columns": "id:uuid, conversation_id:uuid, sender_id:uuid, content:text?, type:text, media_url:text?, media_metadata:jsonb?, read_at:timestamp with time zone?, created_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE; FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "purchased_packs",
+      "columns": "id:uuid, client_id:uuid, pack_id:uuid, coach_id:uuid, sessions_remaining:integer, sessions_total:integer, purchased_at:timestamp with time zone, expires_at:timestamp with time zone?, stripe_payment_id:text?, status:text, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (client_id) REFERENCES auth.users(id) ON DELETE CASCADE; FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE RESTRICT; FOREIGN KEY (pack_id) REFERENCES session_packs(id) ON DELETE RESTRICT; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "session_packs",
+      "columns": "id:uuid, coach_id:uuid, name:text, session_count:integer, price:numeric(10,2), currency:text, description:text?, is_active:boolean, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "transactions",
+      "columns": "id:uuid, wallet_id:uuid, type:text, amount:numeric(10,2), description:text?, booking_id:uuid?, stripe_transfer_id:text?, created_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL; FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE; PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "wallets",
+      "columns": "id:uuid, coach_id:uuid, balance:numeric(12,2), currency:text, created_at:timestamp with time zone, updated_at:timestamp with time zone",
+      "keys": "FOREIGN KEY (coach_id) REFERENCES coach_profiles(id) ON DELETE CASCADE; PRIMARY KEY (id); UNIQUE (coach_id)"
+    }
+  ],
+  "queried_but_absent": [
+    "client_coach_assignments",
+    "video_sessions",
+    "consultation_rooms",
+    "admin_users"
+  ],
+  "roster_function": {
+    "name": "get_coach_clients",
+    "references_bookings": true,
+    "references_purchased_packs": true
+  },
+  "limits": [
+    "Existence does not prove feature tests, RLS correctness, payment settlement, or video-call success.",
+    "The model describes current deployed structures, not a verified historical sprint-end snapshot."
+  ]
+}

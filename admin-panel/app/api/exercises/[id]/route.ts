@@ -127,12 +127,18 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const adminUserId = await getAdminUserIdFromRequest(request);
+    if (!adminUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const adminClient = createAdminClient();
 
-    const { error } = await adminClient
+    const { data, error } = await adminClient
       .from("exercises")
       .delete()
-      .eq("id", id);
+      .eq("id", id)
+      .select("id, name, category")
+      .maybeSingle();
 
     if (error) {
       console.error("Error deleting exercise:", error);
@@ -141,6 +147,20 @@ export async function DELETE(
         { status: 500 }
       );
     }
+
+    if (!data) {
+      return NextResponse.json({ error: "Exercise not found" }, { status: 404 });
+    }
+
+    await createAuditLog({
+      adminUserId,
+      action: AuditActions.DELETE_EXERCISE,
+      resourceType: "exercise",
+      resourceId: data.id,
+      details: { name: data.name, category: data.category },
+      ipAddress: getClientIP(request),
+      userAgent: getUserAgent(request),
+    });
 
     return NextResponse.json({ message: "Exercise deleted successfully" }, { status: 200 });
   } catch (error: unknown) {

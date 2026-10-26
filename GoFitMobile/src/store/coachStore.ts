@@ -9,6 +9,7 @@ const COACH_ONBOARDING_DATA_KEY = 'coach_onboarding_temporary_data';
 
 interface CoachStore {
   profile: CoachProfile | null;
+  profileLoadedUserId: string | null;
   certifications: CoachCertification[];
   loading: boolean;
   error: string | null;
@@ -34,6 +35,7 @@ interface CoachStore {
 
 export const useCoachStore = create<CoachStore>((set, get) => ({
   profile: null,
+  profileLoadedUserId: null,
   certifications: [],
   loading: false,
   error: null,
@@ -54,7 +56,8 @@ export const useCoachStore = create<CoachStore>((set, get) => ({
 
   hasCompletedCoachOnboarding: (userId: string | null) => {
     if (!userId) return false;
-    return get().completedUserIds.has(userId);
+    const { profile, completedUserIds } = get();
+    return (profile?.user_id === userId && profile.status === 'approved') || completedUserIds.has(userId);
   },
 
   setCoachOnboardingCompleted: async (userId: string) => {
@@ -88,13 +91,18 @@ export const useCoachStore = create<CoachStore>((set, get) => ({
     const { user } = useAuthStore.getState();
     if (!user?.id) return;
 
-    if (!force && get().profile) return;
+    if (!force && get().profileLoadedUserId === user.id) return;
 
+    if (get().profileLoadedUserId !== user.id) {
+      set({ profile: null, profileLoadedUserId: null });
+    }
     set({ loading: true, error: null });
     try {
       const profile = await coachProfileService.getProfile(user.id);
-      set({ profile, loading: false });
+      if (useAuthStore.getState().user?.id !== user.id) return;
+      set({ profile, profileLoadedUserId: user.id, loading: false });
     } catch (error: any) {
+      if (useAuthStore.getState().user?.id !== user.id) return;
       set({ loading: false, error: error.message || 'Failed to load coach profile' });
       logger.error('Failed to load coach profile:', error);
     }
@@ -189,7 +197,7 @@ export const useCoachStore = create<CoachStore>((set, get) => ({
   },
 
   clearCoachData: () => {
-    set({ profile: null, certifications: [], loading: false, error: null });
+    set({ profile: null, profileLoadedUserId: null, certifications: [], loading: false, error: null });
   },
 }));
 

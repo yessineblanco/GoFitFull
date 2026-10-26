@@ -23,7 +23,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">User Growth</CardTitle>
+          <CardTitle className="text-lg">Profile Growth</CardTitle>
           <Select
             value={viewType}
             onValueChange={(value) => setViewType(value as typeof viewType)}
@@ -33,7 +33,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="cumulative">Cumulative</SelectItem>
-              <SelectItem value="new">New Users</SelectItem>
+              <SelectItem value="new">New profiles</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -55,7 +55,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
               <Line
                 type="monotone"
                 dataKey="cumulative"
-                name="Total Users"
+                name="Total profiles"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 dot={false}
@@ -64,7 +64,7 @@ export default function UserGrowthChart({ data }: UserGrowthChartProps) {
               <Line
                 type="monotone"
                 dataKey="users"
-                name="New Users"
+                name="New profiles"
                 stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 dot={false}

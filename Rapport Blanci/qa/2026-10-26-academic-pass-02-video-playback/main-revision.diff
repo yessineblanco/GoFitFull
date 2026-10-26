@@ -1,0 +1,23 @@
+--- before/main.tex
++++ after/main.tex
+@@ -981,12 +981,14 @@
+ into local AsyncStorage, and presents immediate positive feedback so the user's flow is uninterrupted. Concurrently, a NetInfo network listener registered at the application root (App.tsx) detects when Internet connectivity is re-established. The queue processor then automatically dequeues, synchronizes, and confirms the stored workout sessions against Supabase in the background with deduplication safeguards.
+ 
+ 
+-\subsection{Cloudflare R2 Video Demonstration Streaming Pipeline}
+-
+-High-definition visual instruction is crucial for proper exercise execution and injury prevention. However, storing hundreds of high-resolution MP4 video demonstrations directly in standard database byte storage or high-egress cloud buckets introduces severe egress bandwidth costs and latency bottlenecks.
+-
+-
+-GoFit solves this through a dedicated Cloudflare R2 object storage architecture utilizing the S3-compatible AWS SDK (@aws-sdk/client-s3). A catalog of over 90 unique exercise videos (encompassing 99 canonical exercises in Supabase) was uploaded to an R2 bucket (gofit-content) with zero egress bandwidth charges. On the mobile client, ExerciseDetailScreen leverages expo-video with hardware-accelerated playback, automatic loop buffering, and smooth scrub controls, ensuring fluid video streaming with minimal device battery drain.
++\subsection{Exercise Video Storage and Playback}
++
++The administration panel implements a media-upload path to Cloudflare R2 using an S3-compatible client. The upload service sends the file as an object and returns a URL constructed from the configured public base URL. The mobile exercise-detail screen reads the stored \texttt{video\_url}; this separates the media reference from the binary object. The upload implementation alone does not establish a complete inventory of uploaded videos, project-specific bandwidth charges or comparative delivery performance.
++
++
++\texttt{ExerciseDetailScreen} uses \texttt{expo-video} to load the stored URL, configures looping and tracks playback position. Custom controls implement play/pause, seeking and fullscreen entry, while player-status events update loading and error states. These source-defined mechanisms do not constitute measurements of decoding mode, buffering behavior, playback smoothness or energy consumption.
++
++The retained Android observation, EXERCISE-04, records rendered video frames, a five-second timeline and reachable play/pause and fullscreen entry. It also records inconsistent control-tap responses and fullscreen-control visibility issues. No startup-latency, rebuffering, frame-rate or battery-consumption benchmark is retained. The playback scenario therefore remains Partial in the Sprint 1 validation matrix (Table~\ref{tab:pdf-42-21}); reliable performance across devices and network conditions requires further testing.
+ 
+ 
+ The workout-session interactions and persistence boundaries are detailed in Figures~\ref{fig:seq_workout_ssd}, \ref{fig:seq_workout_detailed} and \ref{fig:seq_workout_offline}. Their associated use-case description distinguishes prescribed repetitions from entered weights and completion flags, and remote completion from a pending local retry.

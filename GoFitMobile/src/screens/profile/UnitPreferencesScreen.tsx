@@ -22,7 +22,7 @@ import { dialogManager } from '@/components/shared/CustomDialog';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getTextSecondaryColor } from '@/utils/colorUtils';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'UnitPreferences'>;
 
@@ -64,7 +64,7 @@ export const UnitPreferencesScreen: React.FC<UnitPreferencesScreenProps> = ({ na
       color: BRAND_WHITE,
     },
     sectionDescription: {
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
     },
     checkmarkText: {
       color: BRAND_WHITE,
@@ -82,14 +82,14 @@ export const UnitPreferencesScreen: React.FC<UnitPreferencesScreenProps> = ({ na
       backgroundColor: 'transparent',
     },
     optionTextActive: {
-      color: theme.colors.primary,
+      color: isDark ? theme.colors.primary : BRAND_WHITE,
     },
     unitOption: {
       backgroundColor: 'rgba(255, 255, 255, 0.08)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     unitOptionText: {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
     },
   }), [isDark]);
 
@@ -206,7 +206,7 @@ export const UnitPreferencesScreen: React.FC<UnitPreferencesScreenProps> = ({ na
                 <Text style={[
                   styles.unitOptionText,
                   dynamicStyles.unitOptionText,
-                  weightUnit === 'lb' && styles.unitOptionTextActive,
+                  weightUnit === 'lb' && [styles.unitOptionTextActive, dynamicStyles.optionTextActive],
                 ]}>
                   {t('units.pound')}
                 </Text>

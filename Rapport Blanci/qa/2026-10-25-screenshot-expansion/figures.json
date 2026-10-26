@@ -1,0 +1,81 @@
+[
+  {
+    "label": "fig:ui-client-settings",
+    "caption": "Client interface walkthrough: profile overview, unit preferences and language selection.",
+    "assets": [
+      "figures/screenshots/client-profile-overview.png",
+      "figures/screenshots/client-unit-preferences.png",
+      "figures/screenshots/client-language-options.png"
+    ]
+  },
+  {
+    "label": "fig:ui-client-reminder-settings",
+    "caption": "Client interface walkthrough: reminder preferences as captured; scheduled delivery is assessed separately.",
+    "assets": [
+      "figures/screenshots/client-reminder-preferences.png"
+    ]
+  },
+  {
+    "label": "fig:ui-workout-selection-save",
+    "caption": "Client workout walkthrough: exercise selection and the created disposable workout in the custom catalog.",
+    "assets": [
+      "figures/screenshots/client-exercise-selection.png",
+      "figures/screenshots/client-created-workout.png"
+    ]
+  },
+  {
+    "label": "fig:ui-nutrition-extended",
+    "caption": "Client nutrition walkthrough: goal settings, disposable food log and visible saved-meal entry.",
+    "assets": [
+      "figures/screenshots/client-nutrition-goals.png",
+      "figures/screenshots/client-disposable-food-log.png",
+      "figures/screenshots/client-saved-meal.png"
+    ]
+  },
+  {
+    "label": "fig:ui-coach-followup-extended",
+    "caption": "Coach interface walkthrough: dashboard, client progress and displayed check-in scheduling; client identifiers masked.",
+    "assets": [
+      "figures/screenshots/coach-dashboard-clean.png",
+      "figures/screenshots/coach-client-progress.png",
+      "figures/screenshots/coach-checkin-schedule.png"
+    ]
+  },
+  {
+    "label": "fig:ui-coach-program-pack",
+    "caption": "Coach/client program walkthrough: configured draft, session-pack offer and an existing assigned-program detail.",
+    "assets": [
+      "figures/screenshots/coach-configured-program-draft.png",
+      "figures/screenshots/coach-pack-management.png",
+      "figures/screenshots/client-assigned-program-detail.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-users",
+    "caption": "Administration panel: user-account management, role filters and record actions; names and emails masked for the report.",
+    "assets": [
+      "figures/screenshots/admin-user-management-masked.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-coaches",
+    "caption": "Administration panel: coach-profile review, status filters and decision controls; personal identifiers masked.",
+    "assets": [
+      "figures/screenshots/admin-coach-management-masked.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-saved-view",
+    "caption": "Administration panel: disposable saved BI view shown in its dialog; the QA view was subsequently removed.",
+    "assets": [
+      "figures/screenshots/admin-saved-view-dialog.png"
+    ]
+  },
+  {
+    "label": "fig:ui-admin-settings-summary",
+    "caption": "Administration panel: settings-page database summary, including the corrected user-profile label; captured totals belong to the QA environment.",
+    "assets": [
+      "figures/screenshots/admin-database-summary.png"
+    ]
+  }
+]

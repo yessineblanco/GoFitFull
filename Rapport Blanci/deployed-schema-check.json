@@ -1,0 +1,599 @@
+{
+  "checked_date": "2026-10-21",
+  "project": {
+    "name": "GoFit",
+    "ref": "rdozeaacwaisgkpxjycn",
+    "status": "ACTIVE_HEALTHY",
+    "region": "eu-central-1",
+    "postgres_engine": 17
+  },
+  "read_only": true,
+  "public_table_count": 40,
+  "recorded_migration_count": 60,
+  "recorded_migrations": [
+    {
+      "version": "20260414111922",
+      "name": "extend_get_coach_clients_profile_picture_drop_first"
+    },
+    {
+      "version": "20260414112034",
+      "name": "get_coach_clients_no_user_profiles_display_name"
+    },
+    {
+      "version": "20260414112912",
+      "name": "get_conversations_enriched_join_user_profiles_client_picture"
+    },
+    {
+      "version": "20260417090031",
+      "name": "add_body_measurement_ondevice_columns"
+    },
+    {
+      "version": "20260424075135",
+      "name": "create_admin_settings"
+    },
+    {
+      "version": "20260424091401",
+      "name": "marketplace_coach_profiles_select_approved"
+    },
+    {
+      "version": "20260424091640",
+      "name": "marketplace_coaches_directory_v1"
+    },
+    {
+      "version": "20260427073147",
+      "name": "create_progress_photos_v1"
+    },
+    {
+      "version": "20260427075901",
+      "name": "create_health_data_wearables_v1"
+    },
+    {
+      "version": "20260427080906",
+      "name": "fix_bi_views_security_invoker"
+    },
+    {
+      "version": "20260428063114",
+      "name": "gofit_coach_ai_templates_and_ai_session_notes_v1"
+    },
+    {
+      "version": "20260428065628",
+      "name": "gofit_small_automated_check_ins_v1"
+    },
+    {
+      "version": "20260505093744",
+      "name": "create_daily_coach_loop_v1"
+    },
+    {
+      "version": "20260505093937",
+      "name": "optimize_daily_coach_loop_rls_v1"
+    },
+    {
+      "version": "20260505094733",
+      "name": "extend_health_data_recovery_metrics_v1"
+    },
+    {
+      "version": "20260505103700",
+      "name": "extend_nutrition_water_fiber_v1"
+    },
+    {
+      "version": "20260505141326",
+      "name": "extend_workouts_wellness_categories_v1"
+    },
+    {
+      "version": "20260505141742",
+      "name": "seed_wellness_native_workouts_v1"
+    },
+    {
+      "version": "20260505143006",
+      "name": "add_food_item_barcodes_v1"
+    },
+    {
+      "version": "20260505144857",
+      "name": "add_food_item_source_attribution_v1"
+    },
+    {
+      "version": "20260505181714",
+      "name": "create_saved_meals_v1"
+    },
+    {
+      "version": "20260505183505",
+      "name": "add_saved_meal_item_update_policy_v1"
+    },
+    {
+      "version": "20260505185411",
+      "name": "fix_advisor_function_search_paths_v1"
+    },
+    {
+      "version": "20260505185453",
+      "name": "add_advisor_missing_fk_indexes_v1"
+    },
+    {
+      "version": "20260610213453",
+      "name": "restrict_trigger_function_execute_v1"
+    },
+    {
+      "version": "20260610213918",
+      "name": "fix_advisor_rls_and_storage_policies_v1"
+    },
+    {
+      "version": "20260610214009",
+      "name": "restrict_authenticated_rpc_execute_v1"
+    },
+    {
+      "version": "20260610222516",
+      "name": "harden_privileged_rpc_callers_v1"
+    },
+    {
+      "version": "20260610223335",
+      "name": "harden_client_progress_rpc_v1"
+    },
+    {
+      "version": "20260611122248",
+      "name": "consolidate_workout_rls_policies_v1"
+    },
+    {
+      "version": "20260611122358",
+      "name": "optimize_workout_sessions_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122455",
+      "name": "optimize_health_data_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122555",
+      "name": "optimize_meal_logs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122645",
+      "name": "optimize_progress_photos_rls_initplan_v1"
+    },
+    {
+      "version": "20260611123818",
+      "name": "optimize_user_profiles_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124309",
+      "name": "optimize_coach_profiles_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124420",
+      "name": "optimize_body_measurements_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124529",
+      "name": "optimize_nutrition_goals_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124640",
+      "name": "optimize_simple_owner_policies_rls_initplan_v1"
+    },
+    {
+      "version": "20260611125727",
+      "name": "optimize_coach_certifications_rls_initplan_v1"
+    },
+    {
+      "version": "20260611125855",
+      "name": "optimize_coach_reviews_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130249",
+      "name": "optimize_coach_availability_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130422",
+      "name": "optimize_purchased_packs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130740",
+      "name": "optimize_bookings_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130904",
+      "name": "optimize_custom_programs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131152",
+      "name": "optimize_wallets_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131153",
+      "name": "optimize_transactions_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131155",
+      "name": "optimize_coach_client_notes_rls_initplan_v1"
+    },
+    {
+      "version": "20260611205410",
+      "name": "optimize_ai_session_notes_rls_initplan_v1"
+    },
+    {
+      "version": "20260611205412",
+      "name": "optimize_check_in_responses_rls_initplan_v1"
+    },
+    {
+      "version": "20260611214538",
+      "name": "optimize_check_in_schedules_rls_initplan_v1"
+    },
+    {
+      "version": "20260611215057",
+      "name": "optimize_exercises_rls_initplan_v1"
+    },
+    {
+      "version": "20260611222921",
+      "name": "optimize_admin_audit_logs_rls_initplan_v1"
+    },
+    {
+      "version": "20260612000039",
+      "name": "optimize_admin_notifications_rls_initplan_v1"
+    },
+    {
+      "version": "20260612000301",
+      "name": "optimize_session_packs_rls_initplan_v1"
+    },
+    {
+      "version": "20260612001025",
+      "name": "optimize_conversations_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110053",
+      "name": "optimize_messages_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110329",
+      "name": "optimize_admin_settings_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110850",
+      "name": "consolidate_wallet_select_policies_v1"
+    },
+    {
+      "version": "20260612111142",
+      "name": "consolidate_transaction_select_policies_v1"
+    }
+  ],
+  "local_migration_file_count": 101,
+  "exact_name_matches": [
+    {
+      "version": "20260414112912",
+      "name": "get_conversations_enriched_join_user_profiles_client_picture"
+    },
+    {
+      "version": "20260417090031",
+      "name": "add_body_measurement_ondevice_columns"
+    },
+    {
+      "version": "20260424075135",
+      "name": "create_admin_settings"
+    },
+    {
+      "version": "20260424091401",
+      "name": "marketplace_coach_profiles_select_approved"
+    },
+    {
+      "version": "20260427073147",
+      "name": "create_progress_photos_v1"
+    },
+    {
+      "version": "20260427075901",
+      "name": "create_health_data_wearables_v1"
+    },
+    {
+      "version": "20260427080906",
+      "name": "fix_bi_views_security_invoker"
+    },
+    {
+      "version": "20260428063114",
+      "name": "gofit_coach_ai_templates_and_ai_session_notes_v1"
+    },
+    {
+      "version": "20260428065628",
+      "name": "gofit_small_automated_check_ins_v1"
+    },
+    {
+      "version": "20260505093744",
+      "name": "create_daily_coach_loop_v1"
+    },
+    {
+      "version": "20260505093937",
+      "name": "optimize_daily_coach_loop_rls_v1"
+    },
+    {
+      "version": "20260505094733",
+      "name": "extend_health_data_recovery_metrics_v1"
+    },
+    {
+      "version": "20260505103700",
+      "name": "extend_nutrition_water_fiber_v1"
+    },
+    {
+      "version": "20260505141326",
+      "name": "extend_workouts_wellness_categories_v1"
+    },
+    {
+      "version": "20260505141742",
+      "name": "seed_wellness_native_workouts_v1"
+    },
+    {
+      "version": "20260505143006",
+      "name": "add_food_item_barcodes_v1"
+    },
+    {
+      "version": "20260505144857",
+      "name": "add_food_item_source_attribution_v1"
+    },
+    {
+      "version": "20260505181714",
+      "name": "create_saved_meals_v1"
+    },
+    {
+      "version": "20260505183505",
+      "name": "add_saved_meal_item_update_policy_v1"
+    },
+    {
+      "version": "20260505185411",
+      "name": "fix_advisor_function_search_paths_v1"
+    },
+    {
+      "version": "20260505185453",
+      "name": "add_advisor_missing_fk_indexes_v1"
+    },
+    {
+      "version": "20260610213453",
+      "name": "restrict_trigger_function_execute_v1"
+    },
+    {
+      "version": "20260610213918",
+      "name": "fix_advisor_rls_and_storage_policies_v1"
+    },
+    {
+      "version": "20260610214009",
+      "name": "restrict_authenticated_rpc_execute_v1"
+    },
+    {
+      "version": "20260610222516",
+      "name": "harden_privileged_rpc_callers_v1"
+    },
+    {
+      "version": "20260610223335",
+      "name": "harden_client_progress_rpc_v1"
+    },
+    {
+      "version": "20260611122248",
+      "name": "consolidate_workout_rls_policies_v1"
+    },
+    {
+      "version": "20260611122358",
+      "name": "optimize_workout_sessions_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122455",
+      "name": "optimize_health_data_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122555",
+      "name": "optimize_meal_logs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611122645",
+      "name": "optimize_progress_photos_rls_initplan_v1"
+    },
+    {
+      "version": "20260611123818",
+      "name": "optimize_user_profiles_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124309",
+      "name": "optimize_coach_profiles_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124420",
+      "name": "optimize_body_measurements_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124529",
+      "name": "optimize_nutrition_goals_rls_initplan_v1"
+    },
+    {
+      "version": "20260611124640",
+      "name": "optimize_simple_owner_policies_rls_initplan_v1"
+    },
+    {
+      "version": "20260611125727",
+      "name": "optimize_coach_certifications_rls_initplan_v1"
+    },
+    {
+      "version": "20260611125855",
+      "name": "optimize_coach_reviews_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130249",
+      "name": "optimize_coach_availability_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130422",
+      "name": "optimize_purchased_packs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130740",
+      "name": "optimize_bookings_rls_initplan_v1"
+    },
+    {
+      "version": "20260611130904",
+      "name": "optimize_custom_programs_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131152",
+      "name": "optimize_wallets_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131153",
+      "name": "optimize_transactions_rls_initplan_v1"
+    },
+    {
+      "version": "20260611131155",
+      "name": "optimize_coach_client_notes_rls_initplan_v1"
+    },
+    {
+      "version": "20260611205410",
+      "name": "optimize_ai_session_notes_rls_initplan_v1"
+    },
+    {
+      "version": "20260611205412",
+      "name": "optimize_check_in_responses_rls_initplan_v1"
+    },
+    {
+      "version": "20260611214538",
+      "name": "optimize_check_in_schedules_rls_initplan_v1"
+    },
+    {
+      "version": "20260611215057",
+      "name": "optimize_exercises_rls_initplan_v1"
+    },
+    {
+      "version": "20260611222921",
+      "name": "optimize_admin_audit_logs_rls_initplan_v1"
+    },
+    {
+      "version": "20260612000039",
+      "name": "optimize_admin_notifications_rls_initplan_v1"
+    },
+    {
+      "version": "20260612000301",
+      "name": "optimize_session_packs_rls_initplan_v1"
+    },
+    {
+      "version": "20260612001025",
+      "name": "optimize_conversations_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110053",
+      "name": "optimize_messages_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110329",
+      "name": "optimize_admin_settings_rls_initplan_v1"
+    },
+    {
+      "version": "20260612110850",
+      "name": "consolidate_wallet_select_policies_v1"
+    },
+    {
+      "version": "20260612111142",
+      "name": "consolidate_transaction_select_policies_v1"
+    }
+  ],
+  "recorded_without_exact_local_filename": [
+    {
+      "version": "20260414111922",
+      "name": "extend_get_coach_clients_profile_picture_drop_first"
+    },
+    {
+      "version": "20260414112034",
+      "name": "get_coach_clients_no_user_profiles_display_name"
+    },
+    {
+      "version": "20260424091640",
+      "name": "marketplace_coaches_directory_v1"
+    }
+  ],
+  "local_without_exact_recorded_name": [
+    "add_activity_level_age_gender_columns",
+    "add_admin_role",
+    "add_body_measurement_height_cm",
+    "add_body_measurement_lengths",
+    "add_conversations_enriched_view",
+    "add_display_name_and_public_read",
+    "add_exercise_images",
+    "add_get_client_progress",
+    "add_native_workouts_table",
+    "add_native_workouts_with_day_splits",
+    "add_notification_preferences_column",
+    "add_notifications_insert_policy",
+    "add_profile_picture_column",
+    "add_rest_timer_preferences",
+    "add_user_dietary_preferences_v1",
+    "add_user_type_column",
+    "add_workout_exercises_junction_tables",
+    "add_workout_split_days",
+    "cleanup_old_workout_tables",
+    "create_admin_audit_logs",
+    "create_admin_notifications",
+    "create_bi_client_health_daily_view",
+    "create_bi_coach_ops_daily_view",
+    "create_bi_finance_daily_view",
+    "create_bi_user_lifecycle_daily_view",
+    "create_body_measurements",
+    "create_nutrition_tracking",
+    "enable_realtime_messages",
+    "ensure_conversations_enriched_view",
+    "extend_get_coach_clients",
+    "extend_get_coach_clients_profile_picture",
+    "fix_admin_rls_policies",
+    "fix_calculate_workout_session_stats_reps",
+    "fix_conversations_enriched_security",
+    "fix_function_search_path",
+    "fix_get_client_progress_relationship",
+    "fix_workout_session_stats_reps_parsing",
+    "fix_workout_session_stats_trigger",
+    "fix_workout_structure",
+    "get_conversations_enriched_client_profile",
+    "marketplace_coaches_public_directory_rpc",
+    "migrate_add_exercise_defaults",
+    "remove_old_audit_log_table",
+    "unify_workouts_design"
+  ],
+  "checked_table_columns": [
+    {
+      "table_name": "body_measurements",
+      "columns": "id:uuid, user_id:uuid, measurement_date:date, photo_url:text?, shoulder_width:numeric?, chest:numeric?, waist:numeric?, hips:numeric?, left_arm:numeric?, right_arm:numeric?, left_thigh:numeric?, right_thigh:numeric?, landmarks:jsonb?, manual_overrides:jsonb?, source:text, created_at:timestamptz, height_cm:numeric?, chest_cm:numeric?, waist_cm:numeric?, hip_cm:numeric?, shoulder_cm:numeric?, measurement_confidence:numeric?"
+    },
+    {
+      "table_name": "food_items",
+      "columns": "id:uuid, name:text, serving_label:text, calories:numeric, protein_g:numeric, carbs_g:numeric, fat_g:numeric, created_at:timestamptz?, fiber_g:numeric, barcode:text?, food_source:text, source_id:text?, source_url:text?, source_checked_at:timestamptz?"
+    },
+    {
+      "table_name": "meal_logs",
+      "columns": "id:uuid, user_id:uuid, food_item_id:uuid, logged_date:date, meal_type:text, servings:numeric, created_at:timestamptz?"
+    },
+    {
+      "table_name": "nutrition_goals",
+      "columns": "user_id:uuid, calories_goal:int4, protein_g:numeric, carbs_g:numeric, fat_g:numeric, updated_at:timestamptz?, fiber_g:numeric, water_ml_goal:int4"
+    },
+    {
+      "table_name": "progress_photos",
+      "columns": "id:uuid, user_id:uuid, storage_path:text, photo_date:date, category:text, note:text?, created_at:timestamptz, updated_at:timestamptz"
+    },
+    {
+      "table_name": "user_profiles",
+      "columns": "id:uuid, weight:numeric?, weight_unit:text?, height:numeric?, height_unit:text?, goal:text?, created_at:timestamptz, updated_at:timestamptz, profile_picture_url:text?, notification_preferences:jsonb?, activity_level:text?, age:int4?, gender:text?, rest_timer_preferences:jsonb?, is_admin:bool, user_type:text, display_name:text?, dietary_preferences:_text?, food_allergies:_text?, food_dislikes:_text?"
+    },
+    {
+      "table_name": "workout_exercises",
+      "columns": "id:uuid, workout_id:uuid, exercise_id:uuid, sets:int4, reps:text, rest_time:int4, exercise_order:int4, created_at:timestamptz, exercise_name:text?, exercise_image_url:text?, exercise_equipment:_text?, exercise_difficulty:text?, day:int4"
+    },
+    {
+      "table_name": "workout_sessions",
+      "columns": "id:uuid, user_id:uuid, workout_id:uuid?, started_at:timestamptz, completed_at:timestamptz?, duration_minutes:int4?, exercises_completed:jsonb?, notes:text?, created_at:timestamptz, date:date?, calories:int4?"
+    },
+    {
+      "table_name": "workouts",
+      "columns": "id:uuid, user_id:uuid?, duration:int4?, notes:text?, created_at:timestamp?, exercise_id:uuid?, name:text?, difficulty:text?, image_url:text?, workout_type:text, updated_at:timestamptz, split_days:jsonb?, wellness_category:text"
+    }
+  ],
+  "confirmed_constraints": {
+    "nutrition_goals": "PRIMARY KEY (user_id); FOREIGN KEY (user_id) REFERENCES auth.users(id)",
+    "meal_logs": "Required user_id and food_item_id; food FK ON DELETE RESTRICT",
+    "body_measurements": "Required user_id FK to auth.users; no is_verified field",
+    "progress_photos": "Required user_id FK to auth.users; no body_measurement FK",
+    "user_profiles": "PRIMARY KEY (id); FK to auth.users; nullable dietary collections and notification_preferences",
+    "workout_sessions": "Nullable workout_id FK to workouts ON DELETE SET NULL; required user_id FK",
+    "workout_exercises": "Required workout/exercise FKs; UNIQUE (workout_id, day, exercise_id)",
+    "workouts": "Native => user_id NULL; custom => user_id NOT NULL; owner FK to auth.users"
+  },
+  "limits": [
+    "Migration-name matches do not establish identical SQL contents.",
+    "Absence of an entry does not establish that a script was never executed manually or under a different name.",
+    "Schema verification does not establish successful feature tests or exact historical sprint boundaries."
+  ]
+}

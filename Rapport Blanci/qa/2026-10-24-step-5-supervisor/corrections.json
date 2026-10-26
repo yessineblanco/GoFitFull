@@ -1,0 +1,273 @@
+[
+  {
+    "topic": "Confirmed internship period",
+    "old": "Internship: February 2026 - June 2026",
+    "new": "Internship: 26 January 2026 - 26 July 2026",
+    "originalLine": 136,
+    "revisedLine": 136
+  },
+  {
+    "topic": "Confirmed internship period",
+    "old": "spanning from February to June 2026",
+    "new": "spanning from 26 January to 26 July 2026",
+    "originalLine": 201,
+    "revisedLine": 201
+  },
+  {
+    "topic": "Later QA chronology",
+    "old": "after the February--June 2026 internship period",
+    "new": "after the 26 January--26 July 2026 internship period",
+    "originalLine": 2326,
+    "revisedLine": 2310
+  },
+  {
+    "topic": "Separate existing conditions, limitations and proposed solution",
+    "old": "An analysis of the existing fitness application ecosystem reveals significant functional fragmentation and isolated operational workflows across five core domains:\n\nIn the domain of workout tracking, conventional mobile applications generally provide static exercise catalogs and session logging. However, these tools operate in complete isolation from personal coaching workflows, calendar schedules, and personalized trainer marketplaces. Athletes execute workouts without direct coach visibility, and coaches have no real-time insight into actual set performance or fatigue levels. GoFit addresses this limitation by connecting custom workout creation, active session execution with haptic rest timing, and workout history directly to client-coach relationship models.\n\nIn the area of coaching management, fitness professionals commonly depend on manual spreadsheets, direct messaging channels, paper logs, and external payment links. This ad-hoc setup scatters client data, creates high administrative overhead, and makes tracking longitudinal athletic progression error-prone. GoFit resolves this by providing coaches with a dedicated mobile dashboard encompassing client rosters, custom program assignment, session pack monetization, and structured check-ins.\n\nRegarding anthropometric progress tracking, existing applications typically rely on manual tape measurements, uncalibrated selfie photos, and simple bodyweight plots. In practice, users find manual tape measurements tedious, frequently log inconsistent numbers, and struggle to evaluate physical silhouette changes objectively over time. GoFit introduces an on-device computer vision pipeline that estimates anthropometric dimensions from front and side photos, providing quality indicators while allowing users to review and manually correct values.\n\nIn platform administration, many digital fitness services either lack back-office interfaces or require operators to run direct database queries. This approach introduces severe operational and security risks, prevents audit logging, and leaves platform managers without high-level visibility. GoFit incorporates a Next.js administration portal providing role-based access control, coach-profile review, exercise catalog curation, transaction inspection, and business intelligence analytics. Administrative approval records a platform decision; it does not establish independent verification of professional accreditation.\n\nFinally, in the area of intelligent assistance, existing systems either omit automation entirely or rely on ungrounded conversational agents that hallucinate inaccurate workout advice. GoFit implements strictly scoped, backend-controlled language-model prompts and event-driven automation workflows (via Supabase Edge Functions and n8n) that generate post-session briefings and administrative digests under strict human supervision.\n\n\\section{Limits and Inconveniences of Existing Solution}\n\n\nAn in-depth analysis of existing market offerings and conventional coaching workflows reveals several structural and operational limitations that hinder athlete progression, coach productivity, and platform governance:\n\n\\begin{itemize}\n    \\item \\textbf{Application Fragmentation:} Athletes are forced to use multiple separate applications for workout planning, nutrition logging, progress photos, and coach communication, creating fragmented health histories and high user attrition.\n    \\item \\textbf{Operational Overhead for Coaches:} Personal trainers rely on manual spreadsheets, messaging apps, and calendar tools, which scatters client data, limits their coaching capacity, and makes consistent athletic follow-up difficult to sustain.\n    \\item \\textbf{Subjective and Error-Prone Progress Tracking:} Manual tape measurements and uncalibrated progress photos produce irregular, inconsistent records that do not provide objective feedback on body composition changes over time.\n    \\item \\textbf{Absence of Centralized Administrative Oversight:} Fitness platforms frequently lack a dedicated management portal, forcing administrators to perform risky manual database modifications without audit logging or consolidated business intelligence.\n    \\item \\textbf{Compromised Data Security and Privacy Governance:} Combining disparate third-party services exposes sensitive biometric data, progress photos, and payment information to fragmented access controls and security vulnerabilities.\n\\end{itemize}\n\n\\section{Proposed Solution}\n\n\nTo overcome these structural limitations, GoFit proposes a comprehensive, multi-tier fitness and athletic coaching platform structured across five complementary architectural layers:\n\n\\begin{enumerate}\n    \\item \\textbf{Mobile Client Layer:} Serves as the primary operational interface for athletes and coaches, built using Expo SDK 54 and React Native running on the Hermes JavaScript engine. It provides a cohesive mobile experience for authentication, profile personalization, workout template building, active session tracking with interactive rest timing, progress analytics, nutrition tracking, coach discovery, session bookings, and real-time communication.\n    \\item \\textbf{AI and Automation Layer:} Delivers targeted intelligent capabilities without replacing human judgment. It encompasses on-device computer vision models (MediaPipe Pose Landmarker and Selfie Segmentation) for landmark extraction, backend-controlled Groq LPU language-model prompts for workout recommendations and coach session briefing preparation, and automated n8n workflows for scheduled notifications and administrative digests.\n    \\item \\textbf{Administration Layer:} A responsive web portal developed with Next.js 16.1.3 (App Router) and Tailwind CSS, granting platform administrators operational control over users, coach-profile approvals, exercise and workout catalogs, financial transactions, notifications, system activity logs, and business intelligence analytics.\n    \\item \\textbf{Backend Layer:} Powered by Supabase, combining a PostgreSQL relational database with Row-Level Security (RLS), GoTrue JWT-based authentication, real-time WebSocket subscriptions, S3-compatible object storage for media and progress photos, and Deno-based Edge Functions for privileged serverless operations.\n    \\item \\textbf{External Integration Layer:} Includes Expo Push, LiveKit video-token and consultation components, Stripe payment APIs, and Groq inference endpoints. Their integration paths do not establish successful delivery, consultation authorization, payment recovery, or measured response-time guarantees.\n\\end{enumerate}\n\n",
+    "new": "The existing-condition analysis considers a fragmented workflow in which training, nutrition, measurements, coaching communication and appointments are maintained in separate tools. It is a project problem scenario used to derive requirements, rather than a comparative market survey or an observation of every fitness application. The retained project material does not establish a representative user sample, measured administrative workload or adoption statistics. Consequently, the following analysis identifies integration needs without ranking competing products or claiming that they universally lack these capabilities.\n\nFor the client, a workout log, food diary and measurement history maintained separately make it necessary to consult several records when reviewing progress. The requirement is to associate those records with the same account while preserving their distinct meanings: prescribed repetitions differ from recorded completion, and estimated body dimensions differ from independently measured reference values.\n\nFor the coach, separate messages, calendars, payment records and program documents can make it difficult to connect an appointment with its client context. The proposed integration therefore concerns the continuity between discovery, booking, communication, programs and follow-up. No reduction in administrative time or improvement in coaching outcomes has been measured in this project.\n\nFor progress tracking, manually entered measurements and photographs provide different kinds of information. Their interpretation depends on capture conditions, measurement procedure and consistency over time. This motivates recording provenance and allowing correction of an estimated draft; it does not establish that computer vision is more accurate than a standardized manual measurement protocol.\n\nFor administration, the project requires identifiable access boundaries, catalog management, coach-profile review and inspection of operational records. Centralizing these functions can support oversight, but does not itself prove policy correctness, complete audit coverage or independent professional accreditation. For intelligent assistance, the identified need is to prepare contextual drafts and reminders; response quality, scheduled execution and human review must be evaluated separately.\n\n\\section{Limits and Inconveniences of the Existing Workflow}\n\nThe problem scenario leads to five design concerns. These are requirements to address and assess, rather than measured deficiencies shared by all existing products:\n\n\\begin{itemize}\n    \\item \\textbf{Fragmented records:} Separate training, nutrition and coaching records make cross-domain review less direct and can require repeated entry of the same context.\n    \\item \\textbf{Coordination overhead:} Independent program documents, appointments and messages require explicit reconciliation; the project does not quantify the time involved.\n    \\item \\textbf{Uncertain progress interpretation:} Changes in capture or measurement conditions can affect comparability. Neither manual entry nor an AI estimate alone establishes body-composition accuracy.\n    \\item \\textbf{Operational traceability:} Role-based interfaces and selected audit records must be assessed against the actions they actually protect and record.\n    \\item \\textbf{Privacy and access boundaries:} Local captures, remotely stored records and external-service requests need distinct access and retention rules. Combining them in one application does not automatically resolve those risks.\n\\end{itemize}\n\n\\section{Proposed Solution}\n\nGoFit proposes an integrated client, coach and administrator workflow organized into five architectural layers. This section states the intended response to the identified needs. The implementation evidence matrix in Table~\\ref{tab:implementation-evidence} distinguishes present code paths, scoped verification and remaining work; the proposal is not a declaration that every target is complete.\n\n\\begin{enumerate}\n    \\item \\textbf{Mobile Client Layer:} A shared Expo and React Native application provides client and coach interfaces for profile management, workout prescriptions and execution, progress, nutrition and coaching activities. It connects related records through account identity while leaving platform-specific support and complete workflow validation to separate checks.\n    \\item \\textbf{AI and Automation Layer:} Local capture and computer-vision components prepare reviewable measurement estimates. Backend language-model requests prepare workout suggestions and coach-facing client-context briefings, while n8n exports define scheduled operational workflows. These paths do not establish measurement accuracy, post-consultation synthesis, mandatory review of every generated record or successful scheduled delivery.\n    \\item \\textbf{Administration Layer:} A Next.js App Router portal supports protected management pages, coach-profile decisions, catalog maintenance and operational inspection. Administrative approval is a platform decision; audit coverage and authorization must be verified for each relevant action.\n    \\item \\textbf{Backend Layer:} Authentication, relational records, access policies, storage, realtime subscriptions and server functions connect the interfaces. Their presence establishes architectural mechanisms rather than a complete security assessment or evidence that every integration is deployed.\n    \\item \\textbf{External Integration Layer:} Stripe, LiveKit, Expo Push, Groq and food lookup services provide specialized payment, communication, notification, inference and nutrition capabilities. The October EUR payment follow-up is distinguished from internship-period delivery; recovery, media authorization and provider/device behavior retain their stated validation limits.\n\\end{enumerate}\n\n",
+    "originalLine": 237,
+    "revisedLine": 237
+  },
+  {
+    "topic": "Project origin evidence boundary",
+    "old": "The internship focuses on designing, architecting, and developing a complete end-to-end fitness platform from initial requirements specification through to full cloud deployment. The project was initiated based on a real market observation in the contemporary fitness and athletic training domain: most local fitness clubs, gyms, and independent personal coaches lack any digital tool to manage their daily activity, track client athletic performance, or deliver personalized programs online.",
+    "new": "The internship concerns the analysis, design and implementation of a fitness and coaching platform, including deployment preparation and validation. Its problem statement considers fragmented training and coaching workflows. The retained material does not provide a survey supporting a claim that most local clubs or coaches lack digital tools; the existing-condition analysis below is therefore framed as the project scenario rather than a market-wide finding.",
+    "originalLine": 204,
+    "revisedLine": 204
+  },
+  {
+    "topic": "Planning chronology and competing source plans",
+    "old": "Sprint planning formalizes the partitioning of the Product Backlog into three sequential, time-boxed development sprints across the five-month graduation internship period (February to June 2026). This division adheres to a logical dependency model, ensuring that foundational infrastructure and core execution engines are thoroughly validated before dependent tracking and collaborative features are implemented:",
+    "new": "The confirmed internship period is 26 January--26 July 2026. This report organizes its development account into three scope groups titled Sprint 1, Sprint 2 and Sprint 3, preceded by Sprint 0. These chapter labels identify the reported functional organization; the retained files do not establish a one-to-one mapping to three dated Scrum time boxes. The source plans use different numbering and must be distinguished from the report structure.\n\nThe planning pair \\path{../docs/gantt/SCRUM_SPRINT_BREAKDOWN.md} and \\path{../docs/gantt/GANTT_SCRUM.csv} defines 13 numbered iterations across the confirmed period. The alternative \\path{../docs/gantt/SPRINT_BREAKDOWN.md} declares 22 iterations, whereas its companion \\path{../docs/gantt/GANTT_SPRINTS.csv} lists 23 smaller entries across the same interval. The partial logbook follows the smaller-iteration numbering and retains identity placeholders; it does not independently resolve these alternatives. No confirmed execution log maps either scheme to the three development chapters. Exact chapter-level sprint dates are therefore left unverified rather than inferred from implementation files, migration identifiers or the later October audit.\n\nThe report's scope organization follows functional dependencies, without implying that every foundation was fully validated before later work began:",
+    "originalLine": 512,
+    "revisedLine": 508
+  },
+  {
+    "topic": "Planned closing versus achieved release",
+    "old": "Following implementation, a closing consolidation phase is dedicated to multi-tier deployment, end-to-end integration testing, performance optimization, and final report documentation.",
+    "new": "Deployment preparation, integration checks and report consolidation are treated as closing activities. Their appearance in a plan does not establish completed release validation or publication. The later October checks are explicitly identified in the implementation and QA evidence.",
+    "originalLine": 520,
+    "revisedLine": 520
+  },
+  {
+    "topic": "Methodology versus demonstrated events",
+    "old": "The development lifecycle was organized into three consecutive development sprints preceded by an initial preparation phase (Sprint 0). Each sprint executed the standard Scrum lifecycle: sprint planning, backlog refinement, daily tracking, implementation, validation testing, and sprint retrospective \\cite{scrumguide2020}.",
+    "new": "The report uses Sprint 0 and three development scope groups to explain the project. Scrum provides the reference for planning, refinement, implementation, review and retrospective activities \\cite{scrumguide2020}; the retained planning alternatives do not independently establish that every event occurred at a documented cadence. The chronology and limits of the available sprint evidence are discussed in the sprint-planning section.",
+    "originalLine": 328,
+    "revisedLine": 324
+  },
+  {
+    "topic": "Documentation table planning status",
+    "old": "Sprint and Gantt documentation & Connects implementation work to Agile planning. & Sprint dates, objectives, deliverables, dependencies, release preparation.",
+    "new": "Sprint and Gantt documentation & Records alternative planning schedules; not a completed execution log. & January--July dates, differing iteration schemes, objectives, dependencies and planned release activities.",
+    "originalLine": 556,
+    "revisedLine": 556
+  },
+  {
+    "topic": "Sprint 0 introduction",
+    "old": "Sprint 0 established the methodological and technical foundation of the GoFit project prior to feature implementation. It encompassed the formal identification of human actors, categorization of functional and non-functional requirements, specification of AI and privacy constraints, product backlog construction, sprint planning, and global use case modeling.",
+    "new": "This chapter presents the preparatory requirements and planning framework designated Sprint 0: actors, functional and non-functional targets, AI and privacy boundaries, the product backlog and global use cases. It distinguishes the confirmed internship interval from competing iteration plans and from the later source and QA evidence.",
+    "originalLine": 357,
+    "revisedLine": 353
+  },
+  {
+    "topic": "Sprint 0 conclusion",
+    "old": "Sprint 0 established the functional and technical base of the project. It clarified actors, requirements, backlog priorities, sprint grouping, and the global use case perimeter. The next chapter presents Sprint 1, focused on the mobile foundation and core workout features.",
+    "new": "This chapter defined the actors, requirement targets, backlog priorities and principal user goals used to structure GoFit. The internship interval is confirmed, while exact mapping between the planning iterations and report scope groups remains unverified. The next chapter examines the mobile foundation and workout paths under the Sprint 1 heading.",
+    "originalLine": 566,
+    "revisedLine": 566
+  },
+  {
+    "topic": "Sprint 1 chapter roadmap",
+    "old": "This chapter documents sprint 1 as an engineering increment rather than as a simple list of implemented screens. It presents the sprint objective, selected product backlog decomposed into engineering tasks, structural class model, refined use cases, sequence flow, architectural realisation, quality assurance validation matrix, and burn-down chart interpretation.",
+    "new": "This chapter examines the scope designated Sprint 1 through planned tasks, cumulative domain views, selected use cases and interaction sequences, implementation descriptions and reconciled validation criteria. The models project the inspected implementation, while the retained October observations are later evidence. The closing management subsection states the limits of available progress-tracking data.",
+    "originalLine": 579,
+    "revisedLine": 579
+  },
+  {
+    "topic": "Sprint 2 chapter roadmap",
+    "old": "This chapter documents sprint 2 as an engineering increment rather than as a simple list of implemented screens. It presents the sprint objective, selected product backlog decomposed into engineering tasks, structural class model, refined use cases, sequence flow, architectural realisation, quality assurance validation matrix, and burn-down chart interpretation.",
+    "new": "This chapter examines the scope designated Sprint 2 through planned tasks, cumulative domain views, selected use cases and interaction sequences, implementation descriptions and reconciled validation criteria. The models project the inspected implementation, while the retained October observations are later evidence. The closing management subsection states the limits of available progress-tracking data.",
+    "originalLine": 885,
+    "revisedLine": 869
+  },
+  {
+    "topic": "Sprint 3 chapter roadmap",
+    "old": "This chapter documents sprint 3 as an engineering increment rather than as a simple list of implemented screens. It presents the sprint objective, selected product backlog decomposed into engineering tasks, structural class model, refined use cases, sequence flow, architectural realisation, quality assurance validation matrix, and burn-down chart interpretation.",
+    "new": "This chapter examines the scope designated Sprint 3 through planned tasks, cumulative domain views, selected use cases and interaction sequences, implementation descriptions and reconciled validation criteria. The models project the inspected implementation, while the retained October observations are later evidence. The closing management subsection states the limits of available progress-tracking data.",
+    "originalLine": 1328,
+    "revisedLine": 1312
+  },
+  {
+    "topic": "Sprint 2 introduction",
+    "old": "\nSprint 2 expanded GoFit with comprehensive progress tracking, on-device AI computer vision body measurements (MediaPipe BlazePose), daily nutrition logging with OpenFoodFacts barcode scanning, dietary preference filtering, and adaptive AI workout recommendations powered by Groq LLaMA-3.3.",
+    "new": "\nThe Sprint 2 scope concerns progress history, nutrition and saved food records, measurement capture and review, recommendation requests and reminder configuration. It examines the corresponding source paths and distinguishes them from unverified barcode execution, fresh AI measurement accuracy, recommendation generation and scheduled delivery.",
+    "originalLine": 881,
+    "revisedLine": 865
+  },
+  {
+    "topic": "Sprint 2 objective",
+    "old": "Sprint objective: Sprint 2 expanded GoFit with comprehensive progress tracking, on-device AI computer vision body measurements (MediaPipe BlazePose), daily nutrition logging with OpenFoodFacts barcode scanning, dietary preference filtering, and adaptive AI workout recommendations powered by Groq LLaMA-3.3.",
+    "new": "The Sprint 2 objective is to connect workout history with progress, nutrition and assisted self-monitoring. The backlog records development and testing targets; its presence does not establish complete implementation or successful execution.",
+    "originalLine": 893,
+    "revisedLine": 877
+  },
+  {
+    "topic": "Sprint 3 introduction",
+    "old": "Sprint 3 delivered the coach marketplace ecosystem, professional coach workspace, Stripe session pack monetization, LiveKit WebRTC video calls, AI coaching session notes (Groq LLaMA-3.3), and the comprehensive Next.js web administration portal.",
+    "new": "The Sprint 3 scope concerns marketplace discovery, coach-client follow-up, purchases and appointments, communication components, coach-facing AI briefings and web administration. It separates these implementation paths from retained sandbox payment evidence and the outstanding booking, media, automation and administrative checks.",
+    "originalLine": 1325,
+    "revisedLine": 1309
+  },
+  {
+    "topic": "Sprint 3 objective",
+    "old": "Sprint objective: Sprint 3 delivered the coach marketplace ecosystem, professional coach workspace, Stripe session pack monetization, LiveKit WebRTC video calls, AI coaching session notes (Groq LLaMA- 3.3), and the comprehensive Next.js web administration portal.",
+    "new": "The Sprint 3 objective is to connect client, coach and administrator activities through shared records and controlled service boundaries. Its backlog remains a statement of planned work; the dated payment follow-up and scoped QA results are assessed separately.",
+    "originalLine": 1336,
+    "revisedLine": 1320
+  },
+  {
+    "topic": "Sprint 1 conclusion",
+    "old": "Sprint 1 established the operational base of the mobile application. Authentication, onboarding, protected navigation, workout templates, active workout execution, persistence, and rest timer behavior became the foundation for later progress tracking. The next sprint builds on this foundation by transforming workout data into progress, measurement, notification, and nutrition-oriented features.",
+    "new": "This chapter described authentication, client onboarding, workout prescriptions, embedded execution snapshots and rest-timer configuration. The sequences distinguish remote session creation, successful completion updates and conditional offline retry. Retained existing-account observations do not establish fresh onboarding, controlled background timer behavior or complete offline reconciliation. These limits remain visible in the sprint matrix and Table~\\ref{tab:implementation-evidence}. The next chapter examines progress, measurements and nutrition.",
+    "originalLine": 872,
+    "revisedLine": 856
+  },
+  {
+    "topic": "Sprint 2 conclusion",
+    "old": "Sprint 2 transformed the mobile foundation into a progress-oriented experience. It connected exercise browsing, history, progress dashboards, body measurements, nutrition foundations, reminders, and AI-assisted measurement research. The sprint also clarified the limits of computer-vision estimation and the need for manual review. The next sprint extends GoFit from individual tracking to coach marketplace and administration workflows.",
+    "new": "This chapter connected the workout foundation to progress records, nutrition data and assisted measurement drafts. The cumulative model retains the earlier workout concepts, while the measurement and nutrition sequences distinguish local processing, review and persistence. Display and permission observations remain narrower than fresh inference, numerical accuracy, positive barcode resolution or generated-workout validation. The next chapter examines coaching and administration without treating these pending checks as completed prerequisites.",
+    "originalLine": 1315,
+    "revisedLine": 1299
+  },
+  {
+    "topic": "Sprint 3 conclusion",
+    "old": "Sprint 3 completed the platform dimension of GoFit by adding coach marketplace, coach-client follow-up, administration, and LLM-assisted preparation workflows. This sprint connects users, coaches, administrators, backend services, and automations into a broader operational system. The following chapter therefore focuses on deployment, architecture, security, limitations, and closing considerations.",
+    "new": "This chapter described marketplace, follow-up, communication and administrative paths within the cumulative domain model. The October native pack purchase and standalone API capture provide scoped sandbox evidence; they do not validate pack-credit redemption, production recovery or coach payouts. Two-party video, fresh scheduled briefing execution and complete coach-review side effects remain unverified. The next chapter consolidates architecture, deployment targets and the implementation evidence with these limitations intact.",
+    "originalLine": 1811,
+    "revisedLine": 1825
+  },
+  {
+    "topic": "Project Study conclusion",
+    "old": "This chapter presented the industrial and academic context of the GoFit project within Antigone Creative Agency, formulated the core problem statement, analyzed the limitations of fragmented fitness solutions, detailed the five architectural layers of the proposed platform, and justified the adoption of the Scrum Agile methodology \\cite{scrumguide2020} and UML 2.5 modeling language \\cite{omg2015uml}. The following chapter presents Sprint 0, establishing the foundation of actors, functional and non-functional requirements, product backlog decomposition, and global project organization.",
+    "new": "This chapter situated GoFit within its internship context, formulated the fragmented-workflow problem scenario and derived integration, traceability and privacy concerns. It presented the five-layer proposal separately from evidence of implementation and introduced Scrum and UML as methodological references \\cite{scrumguide2020,omg2015uml}. The next chapter formalizes actors, requirement targets, backlog organization and the limits of the available planning chronology.",
+    "originalLine": 348,
+    "revisedLine": 344
+  },
+  {
+    "topic": "Three absent burn-down charts",
+    "occurrences": 3,
+    "old": "\\section{Sprint Burn Down Chart}\n\nThe burn-down chart is represented as a formal sprint-management artifact demonstrating team velocity, story point consumption, and burndown progress across the iteration.",
+    "new": "\\section{Progress Tracking and Evidence Limits}\n\nThe retained backlog provides planned tasks and estimates, but no dated series of remaining work, scope changes or accepted completions is available for this report scope group. A burn-down chart and measured velocity cannot be reconstructed from the current source tree or later QA outcomes. No chart is therefore presented as evidence of sprint performance. The validation matrix reports the narrower implementation and execution evidence instead.",
+    "revisedLine": 848
+  },
+  {
+    "topic": "Remove obsolete workout-flow table",
+    "old": "\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.20}\n\\setlength{\\LTpre}{5pt}\n\\setlength{\\LTpost}{10pt}\n\\begin{longtable}{|L{3.67cm}|L{5.29cm}|L{5.73cm}|}\n\\caption{Workout-session data flow}\\label{tab:pdf-42-20} \\\\\n\\hline\nStep & User action & System behavior \\\\ \\hline\n1 & User selects or creates a workout. & The app loads workout metadata, exercise list, and saved configuration. \\\\ \\hline\n2 & User starts a session. & A session state is initialized with start time, current exercise, set counters, and timer preferences. \\\\ \\hline\n3 & User completes sets. & The app records repetitions, weights, rest periods, and exercise completion state. \\\\ \\hline\n4 & Rest timer runs between sets. & Timer UI, haptics, audio cues, warning intervals, and auto-advance settings are applied. \\\\ \\hline\n5 & User finishes the workout. & Summary values are calculated and stored in workout sessions for \\_ progress screens. \\\\ \\hline\n\\end{longtable}\n\\endgroup",
+    "new": "The workout-session interactions and persistence boundaries are detailed in Figures~\\ref{fig:seq_workout_ssd}, \\ref{fig:seq_workout_detailed} and \\ref{fig:seq_workout_offline}. Their associated use-case description distinguishes prescribed repetitions from entered weights and completion flags, and remote completion from a pending local retry.",
+    "originalLine": 821,
+    "revisedLine": 821
+  },
+  {
+    "topic": "Replace obsolete component names and timing",
+    "old": "State management was organized with stores so that authentication state, profile state, workout state, timer preferences, and user settings could be reused across screens without duplicating logic. Service files were used to isolate communication with Supabase and local modules. This layered separation ensures strict modularity and maintainability across the mobile client codebase, decoupling UI presentation from state persistence and hardware drivers. Table \\ref{tab:pdf-41-19} summarizes the concrete software artifacts implemented during Sprint 1 mapped against their respective architectural tiers.",
+    "new": "Stores organize reusable authentication, profile, workout and timer state, while service modules separate selected data operations from screen code. Table~\\ref{tab:pdf-41-19} maps these responsibilities to inspected file names; it is not a historical sprint-end inventory or proof of maintainability.",
+    "originalLine": 773,
+    "revisedLine": 773
+  },
+  {
+    "topic": "Component table evidence heading",
+    "old": "Architectural Tier & Technical Responsibility & Implemented Artifacts in Sprint 1",
+    "new": "Architectural Tier & Technical Responsibility & Inspected artifacts for this scope",
+    "originalLine": 785,
+    "revisedLine": 785
+  },
+  {
+    "topic": "Component table routing names",
+    "old": "Presentation \\& Routing & Renders responsive interfaces and enforces role-aware navigation guards. & AuthNavigator, OnboardingNavigator, ClientTabNavigator, AuthScreen, OnboardingScreen, WorkoutSessionScreen.",
+    "new": "Presentation \\& Routing & Organizes authentication, onboarding and workout interaction. & AuthNavigator.tsx, OnboardingNavigator.tsx and WorkoutSessionScreen.tsx.",
+    "originalLine": 786,
+    "revisedLine": 786
+  },
+  {
+    "topic": "Component table store names",
+    "old": "Client State Management & Maintains reactive in-memory state and handles optimistic cache updates. & Zustand stores: authStore, workoutStore, timerStore, uiStore.",
+    "new": "Client State Management & Organizes reusable application state. & authStore.ts, profileStore.ts, workoutsStore.ts, timerStore.ts and uiStore.ts.",
+    "originalLine": 787,
+    "revisedLine": 787
+  },
+  {
+    "topic": "Component table service names",
+    "old": "Domain Services & Encapsulates business rules, data transformations, and API communications. & authService.ts, workoutService.ts, offlineQueue.ts, userService.ts.",
+    "new": "Domain Services & Implements authentication, workout data operations and completion retry. & services/auth.ts, services/workouts.ts and services/offlineQueue.ts.",
+    "originalLine": 788,
+    "revisedLine": 788
+  },
+  {
+    "topic": "Component table hardware scope",
+    "old": "Hardware Integration & Bridges native device sensors, audio outputs, and tactile haptic feedback. & expo-haptics, expo-av, expo-video, Android background task triggers.",
+    "new": "Hardware Integration & Connects selected timer, feedback and media paths to device APIs. & Expo haptic, audio and video integration code; background execution requires separate device evidence.",
+    "originalLine": 790,
+    "revisedLine": 790
+  },
+  {
+    "topic": "Adjacent workout terminology",
+    "old": "A workout session records what the user actually performed: start time, completion time, sets, reps, weights, notes, duration, and summary data.",
+    "new": "A workout session stores timestamps, duration, notes and exercise snapshots with configured sets/repetitions, entered weights and completion flags. Those snapshots do not independently measure performed repetitions or RPE.",
+    "originalLine": 796,
+    "revisedLine": 796
+  },
+  {
+    "topic": "General Introduction chapter 1 roadmap",
+    "old": "analyzes existing market solutions and their limitations",
+    "new": "analyzes the fragmented-workflow scenario and its evidence limits",
+    "originalLine": 177,
+    "revisedLine": 177
+  },
+  {
+    "topic": "General Introduction offline roadmap",
+    "old": "and local offline data synchronization.",
+    "new": "and conditional retry of existing-session completion updates.",
+    "originalLine": 179,
+    "revisedLine": 179
+  },
+  {
+    "topic": "General Introduction deployment roadmap",
+    "old": "physical and logical deployment architectures, automated CI/CD pipelines, and final quality assurance testing.",
+    "new": "physical and logical architecture views, deployment targets and evidence, and scoped quality assurance results.",
+    "originalLine": 182,
+    "revisedLine": 182
+  },
+  {
+    "topic": "Remove absent appendix promise",
+    "old": "followed by bibliographic references and technical appendices.",
+    "new": "followed by bibliographic references.",
+    "originalLine": 184,
+    "revisedLine": 184
+  },
+  {
+    "topic": "Remove obsolete Step 4 pending statement",
+    "old": "Earlier sprint-level validation tables require separate reconciliation and must not be read as independently verified results on the strength of this follow-up.",
+    "new": "The sprint-level matrices have been reconciled with this retained evidence; their original task identifiers do not turn later observations into verified sprint-period results.",
+    "originalLine": 2326,
+    "revisedLine": 2310
+  },
+  {
+    "topic": "Update completed supervisor review reference",
+    "old": "Sprint dates, burn-down histories and unsupported chronology require the separate supervisor-checklist review; none is inferred from October source inspection.",
+    "new": "The confirmed internship interval and the conflicting iteration plans are distinguished in the planning section. No dated burn-down history or exact chapter-to-iteration mapping is inferred from October source inspection.",
+    "originalLine": 1842,
+    "revisedLine": 1820
+  },
+  {
+    "topic": "Project Study introduction matches revised analysis",
+    "old": "the analysis of existing solutions and their limitations",
+    "new": "the analysis of the fragmented-workflow scenario and its evidence limits",
+    "revisedLine": 197
+  },
+  {
+    "topic": "Place cross-sprint traceability before the Sprint 3 conclusion",
+    "old": "\\phantomsection\n\\section*{Conclusion}\n\nThis chapter described marketplace, follow-up, communication and administrative paths within the cumulative domain model. The October native pack purchase and standalone API capture provide scoped sandbox evidence; they do not validate pack-credit redemption, production recovery or coach payouts. Two-party video, fresh scheduled briefing execution and complete coach-review side effects remain unverified. The next chapter consolidates architecture, deployment targets and the implementation evidence with these limitations intact.\n\n\n\\subsection{Cross-sprint artifact traceability}\n\nTable~\\ref{tab:sprint-traceability} preserves the existing product and sprint identifiers while connecting them to the inspected domain views, selected sequences and retained evidence. The models are cumulative implementation projections: Sprint 2 retains the Sprint 1 foundation, and Sprint 3 retains both earlier views. They do not reconstruct the database or application at a historical sprint-end date. Use-case associations identify participating roles, not navigation order or passed tests. Exercise browsing occurs in both the Sprint 1 catalog foundation and Sprint 2 progress context; its placement in S2-T01 does not imply a second independent implementation.\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.2}\n\\begin{longtable}{|L{1.35cm}|L{3.0cm}|L{1.75cm}|L{8.0cm}|}\n\\caption{Product, sprint and implementation evidence cross-reference}\\label{tab:sprint-traceability} \\\\\n\\hline\n\\rowcolor{entetetab}\nStory & Product / requirement & Evidence index & Model, interaction and validation boundary \\\\ \\hline\nUS-3.1 & PB-01; FR-01 & M01--02 & Account/profile; auth and onboarding sequences; S1-T01--02 \\\\ \\hline\nUS-3.2 & PB-02--03; FR-02 & M03--04 & Workout prescriptions; builder completion not fully exercised \\\\ \\hline\nUS-3.3 & PB-02; FR-03 & M05 & Embedded snapshots; online session sequence; S1-T03--04 \\\\ \\hline\nUS-3.4 & PB-02--03; FR-03 & M06 & Existing-session offline UPDATE; S1-T05 \\\\ \\hline\nUS-4.1 & PB-04; FR-04 & M08 & Measurement record; capture/review/save; S2-T03 \\\\ \\hline\nUS-4.2 & PB-04; FR-05 & M09 & MealLog/FoodItem; lookup and logging; S2-T04--05 \\\\ \\hline\nUS-4.3 & PB-04; FR-04 & M07 & ProgressPhoto and derived statistics; S2-T02 \\\\ \\hline\nUS-4.4 & PB-04; supplementary & M19--20 & Reminder configuration and recommendation source; S2-T06, S3-T06 \\\\ \\hline\nUS-5.1 & PB-05; FR-06 & M10--12 & Marketplace/purchase/booking; updated payment sequences; S3-T01--03 \\\\ \\hline\nUS-5.2 & PB-05; FR-07 & M14--15 & Programs/check-ins/private notes; scoped coach ledger only \\\\ \\hline\nUS-5.3 & PB-05; FR-06--07 & M13, M16 & Messages and AI briefing; no post-call synthesis; S3-T04, S3-T06 \\\\ \\hline\nUS-5.4 & PB-06; FR-08 & M17--18 & Admin authorization/audit model; approval sequence; S3-T05 \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\nThis cross-reference is selective, as are the detailed use cases. A story without its own interaction figure still requires evidence for its implemented path; a domain-class association does not replace that evidence. Planned webhook fulfilment, post-consultation synthesis, encrypted messaging, unrestricted offline execution and signed-document review are not established by the current artifacts. The confirmed internship interval and the conflicting iteration plans are distinguished in the planning section. No dated burn-down history or exact chapter-to-iteration mapping is inferred from October source inspection.\n\n",
+    "new": "\\section{Cross-sprint artifact traceability}\n\nTable~\\ref{tab:sprint-traceability} preserves the existing product and sprint identifiers while connecting them to the inspected domain views, selected sequences and retained evidence. The models are cumulative implementation projections: Sprint 2 retains the Sprint 1 foundation, and Sprint 3 retains both earlier views. They do not reconstruct the database or application at a historical sprint-end date. Use-case associations identify participating roles, not navigation order or passed tests. Exercise browsing occurs in both the Sprint 1 catalog foundation and Sprint 2 progress context; its placement in S2-T01 does not imply a second independent implementation.\n\n\\begingroup\n\\footnotesize\n\\setlength{\\tabcolsep}{3pt}\n\\renewcommand{\\arraystretch}{1.2}\n\\begin{longtable}{|L{1.35cm}|L{3.0cm}|L{1.75cm}|L{8.0cm}|}\n\\caption{Product, sprint and implementation evidence cross-reference}\\label{tab:sprint-traceability} \\\\\n\\hline\n\\rowcolor{entetetab}\nStory & Product / requirement & Evidence index & Model, interaction and validation boundary \\\\ \\hline\nUS-3.1 & PB-01; FR-01 & M01--02 & Account/profile; auth and onboarding sequences; S1-T01--02 \\\\ \\hline\nUS-3.2 & PB-02--03; FR-02 & M03--04 & Workout prescriptions; builder completion not fully exercised \\\\ \\hline\nUS-3.3 & PB-02; FR-03 & M05 & Embedded snapshots; online session sequence; S1-T03--04 \\\\ \\hline\nUS-3.4 & PB-02--03; FR-03 & M06 & Existing-session offline UPDATE; S1-T05 \\\\ \\hline\nUS-4.1 & PB-04; FR-04 & M08 & Measurement record; capture/review/save; S2-T03 \\\\ \\hline\nUS-4.2 & PB-04; FR-05 & M09 & MealLog/FoodItem; lookup and logging; S2-T04--05 \\\\ \\hline\nUS-4.3 & PB-04; FR-04 & M07 & ProgressPhoto and derived statistics; S2-T02 \\\\ \\hline\nUS-4.4 & PB-04; supplementary & M19--20 & Reminder configuration and recommendation source; S2-T06, S3-T06 \\\\ \\hline\nUS-5.1 & PB-05; FR-06 & M10--12 & Marketplace/purchase/booking; updated payment sequences; S3-T01--03 \\\\ \\hline\nUS-5.2 & PB-05; FR-07 & M14--15 & Programs/check-ins/private notes; scoped coach ledger only \\\\ \\hline\nUS-5.3 & PB-05; FR-06--07 & M13, M16 & Messages and AI briefing; no post-call synthesis; S3-T04, S3-T06 \\\\ \\hline\nUS-5.4 & PB-06; FR-08 & M17--18 & Admin authorization/audit model; approval sequence; S3-T05 \\\\ \\hline\n\\end{longtable}\n\\endgroup\n\nThis cross-reference is selective, as are the detailed use cases. A story without its own interaction figure still requires evidence for its implemented path; a domain-class association does not replace that evidence. Planned webhook fulfilment, post-consultation synthesis, encrypted messaging, unrestricted offline execution and signed-document review are not established by the current artifacts. The confirmed internship interval and the conflicting iteration plans are distinguished in the planning section. No dated burn-down history or exact chapter-to-iteration mapping is inferred from October source inspection.\n\n\\phantomsection\n\\section*{Conclusion}\n\nThis chapter described marketplace, follow-up, communication and administrative paths within the cumulative domain model. The October native pack purchase and standalone API capture provide scoped sandbox evidence; they do not validate pack-credit redemption, production recovery or coach payouts. Two-party video, fresh scheduled briefing execution and complete coach-review side effects remain unverified. The next chapter consolidates architecture, deployment targets and the implementation evidence with these limitations intact.\n\n\n",
+    "revisedLine": 1792
+  }
+]

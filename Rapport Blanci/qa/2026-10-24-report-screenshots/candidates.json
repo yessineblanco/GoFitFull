@@ -1,0 +1,45 @@
+{
+  "client": [
+    "qa/2026-10-22/screenshots/CLIENT-001-onboarding-before-skip.png",
+    "qa/2026-10-22/screenshots/CLIENT-089-library-native.png",
+    "qa/2026-10-22/screenshots/CLIENT-012-exercise-detail.png",
+    "qa/2026-10-22/screenshots/CLIENT-097-builder-form.png",
+    "qa/2026-10-22/screenshots/CLIENT-103-edited-workout-detail.png",
+    "qa/2026-10-22/screenshots/CLIENT-037-progress-loaded.png",
+    "qa/2026-10-22/screenshots/CLIENT-024-nutrition-dashboard.png",
+    "qa/2026-10-22/screenshots/CLIENT-031-food-added.png",
+    "qa/2026-10-22/screenshots/CLIENT-058-body-measurement-form.png",
+    "qa/2026-10-22/screenshots/CLIENT-060-camera-denial-handled.png",
+    "qa/2026-10-22/screenshots/CLIENT-134-coach-marketplace.png",
+    "qa/2026-10-22/screenshots/CLIENT-180-duration-booking-45.png"
+  ],
+  "coach": [
+    "qa/2026-10-23-coach/screenshots/COACH-004-app-welcome.png",
+    "qa/2026-10-23-coach/screenshots/COACH-092-fixed-restart-dashboard.png",
+    "qa/2026-10-23-coach/screenshots/COACH-023-client-list.png",
+    "qa/2026-10-23-coach/screenshots/COACH-124-current-streak-corrected.png",
+    "qa/2026-10-23-coach/screenshots/COACH-099-fixed-return-october.png",
+    "qa/2026-10-23-coach/screenshots/COACH-106-availability-preserved-after-fix.png",
+    "qa/2026-10-23-coach/screenshots/COACH-117-duration-60-restored.png",
+    "qa/2026-10-23-coach/screenshots/COACH-068-programs-list.png",
+    "qa/2026-10-23-coach/screenshots/COACH-069-program-builder-empty.png",
+    "qa/2026-10-23-coach/screenshots/COACH-035-note-persisted.png",
+    "qa/2026-10-23-coach/screenshots/COACH-064-session-packs.png",
+    "qa/2026-10-23-coach/screenshots/COACH-062-conversations.png"
+  ],
+  "payment": [
+    "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/PACK-003-test-card.png",
+    "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/PACK-006-payment-result.png",
+    "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/PACK-007-saved.png",
+    "qa/2026-10-22/fixes/COACHING-07/payment-fulfillment/screenshots/ADMIN-verified-sandbox-payment.png",
+    "qa/2026-10-24-session-payments/screenshots/session-payment-admin.png"
+  ],
+  "admin": [
+    "qa/2026-10-23-admin/fixes/DASH-03/screenshots/dashboard-profile-count.png",
+    "qa/2026-10-23-admin/screenshots/ADMIN-028-coaches-ready.png",
+    "qa/2026-10-23-admin/screenshots/ADMIN-029-coach-approval-confirmation.png",
+    "qa/2026-10-23-admin/screenshots/ADMIN-010-exercises.png",
+    "qa/2026-10-23-admin/fixes/WORK-05/02-edited-and-reloaded.png",
+    "qa/2026-10-23-admin/fixes/AUDIT-03/screenshots/activity-log-api-consistency.png"
+  ]
+}

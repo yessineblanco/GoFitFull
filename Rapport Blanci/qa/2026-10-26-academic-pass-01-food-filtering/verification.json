@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-26",
+  "onlyTargetSubsectionChanged": true,
+  "qaAndRequirementRowsUnchanged": true,
+  "allFigureReferencesUnchanged": true,
+  "oldSafetyGuaranteeRemoved": true,
+  "pendingExclusionStatusPreserved": true,
+  "applicationOrDatabaseChanges": false,
+  "newTestsClaimed": false,
+  "sourceSha256": "b4a2aeaa702edbf52402e440d9e6f965b823b1fbf2c5a5d240f45122d3c8b6df",
+  "supportingFiles": [
+    {
+      "file": "GoFitMobile/src/services/nutrition.ts",
+      "sha256": "0dba58e07f0796e08500a9f63f98d2f55bc92d40c3e7249d81e57073e2e30367"
+    },
+    {
+      "file": "GoFitMobile/src/screens/nutrition/AddFoodScreen.tsx",
+      "sha256": "760be9b21f6efd18a18429d12815db40628c5a3d0d90a15b1a8714854342c98f"
+    },
+    {
+      "file": "Rapport Blanci/qa/2026-10-22/results.json",
+      "sha256": "3d8e3f1c69b4d12cee3067fac7e2430874c5a93617a5d5c2c2d06fa8ba7e28ef"
+    }
+  ],
+  "compile": "built-in editor success",
+  "visualReview": "affected pages 68 and 69 visually inspected; no clipping or overlap observed",
+  "reviewPdfPages": 136,
+  "inspectedPages": [
+    68,
+    69
+  ],
+  "unresolvedReferences": []
+}

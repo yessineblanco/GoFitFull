@@ -1048,13 +1048,15 @@ const QuickPeekOverlay: React.FC<{
             <View style={styles.quickPeekStatsRow}>
               <View style={styles.quickPeekStatItem}>
                 <Clock size={16} color={BRAND_PRIMARY} strokeWidth={2.5} />
-                <AppText variant="bodyBold" style={styles.quickPeekStatText}>45 min</AppText>
+                <AppText variant="bodyBold" style={styles.quickPeekStatText}>{t('library.durationNotEstimated')}</AppText>
               </View>
               <View style={styles.quickPeekDivider} />
               <View style={styles.quickPeekStatItem}>
                 <Dumbbell size={16} color={BRAND_PRIMARY} strokeWidth={2.5} />
                 <AppText variant="bodyBold" style={styles.quickPeekStatText}>
-                  {t('library.exerciseCount', { count: detailedWorkout?.exercises?.length || 0 })}
+                  {detailedWorkout?.exercises
+                    ? t('library.exerciseCount', { count: detailedWorkout.exercises.length })
+                    : t('library.summaryUnavailable')}
                 </AppText>
               </View>
             </View>

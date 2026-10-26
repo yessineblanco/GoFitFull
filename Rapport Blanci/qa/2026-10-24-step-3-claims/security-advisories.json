@@ -1,0 +1,185 @@
+{
+  "lints": [
+    {
+      "name": "anon_security_definer_function_executable",
+      "title": "Public Can Execute SECURITY DEFINER Function",
+      "level": "WARN",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+      "count": 2,
+      "findings": [
+        {
+          "detail": "Function `public.get_coach_profile_identity(p_user_id uuid)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_coach_profile_identity`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_coach_profile_identity",
+            "schema": "public",
+            "language": "sql",
+            "arguments": "p_user_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.list_approved_coaches_for_marketplace()` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/list_approved_coaches_for_marketplace`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "list_approved_coaches_for_marketplace",
+            "schema": "public",
+            "language": "sql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        }
+      ]
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+      "level": "WARN",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+      "count": 10,
+      "findings": [
+        {
+          "detail": "Function `public.deduct_session(p_pack_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/deduct_session`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "deduct_session",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_pack_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.delete_user_account()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/delete_user_account`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "delete_user_account",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_admin_user_ids()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_admin_user_ids`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_admin_user_ids",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_client_progress(p_client_id uuid, p_coach_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_client_progress`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_client_progress",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_client_id uuid, p_coach_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_coach_clients(p_coach_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_coach_clients`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_coach_clients",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_coach_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_coach_dashboard_stats(p_coach_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_coach_dashboard_stats`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_coach_dashboard_stats",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_coach_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_coach_profile_identity(p_user_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_coach_profile_identity`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_coach_profile_identity",
+            "schema": "public",
+            "language": "sql",
+            "arguments": "p_user_id uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.get_conversations_enriched(p_role text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/get_conversations_enriched`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "get_conversations_enriched",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_role text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.is_admin()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/is_admin`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "is_admin",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        },
+        {
+          "detail": "Function `public.list_approved_coaches_for_marketplace()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/list_approved_coaches_for_marketplace`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "list_approved_coaches_for_marketplace",
+            "schema": "public",
+            "language": "sql",
+            "arguments": "",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-24T16:59:57.796Z"
+        }
+      ]
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "title": "Leaked Password Protection Disabled",
+      "level": "WARN",
+      "facing": "EXTERNAL",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Leaked password protection is currently disabled.",
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+      "count": 1,
+      "findings": [
+        {
+          "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+          "metadata": {
+            "type": "auth",
+            "entity": "Auth"
+          }
+        }
+      ]
+    }
+  ]
+}

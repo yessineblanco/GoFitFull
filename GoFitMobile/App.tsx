@@ -6,13 +6,14 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { StatusBar, Platform, Linking } from 'react-native';
-import { View, ActivityIndicator, StyleSheet, Easing, LogBox } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Easing, LogBox } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import * as Notifications from 'expo-notifications';
 import * as ExpoSplashScreen from 'expo-splash-screen'; // Import SplashScreen
 import { StripeProvider } from '@stripe/stripe-react-native';
+import { getStripePublishableKey } from '@/config/stripe';
 import { Easing120Hz } from './src/utils/animations';
 import {
   Barlow_400Regular,
@@ -78,7 +79,7 @@ LogBox.ignoreLogs([
 export default function App() {
   const { initialize, initialized, session, isResettingPassword, user, userType, loadRememberedEmail } = useAuthStore();
   const { hasCompletedOnboarding } = useOnboardingStore();
-  const { hasCompletedCoachOnboarding } = useCoachStore();
+  const { hasCompletedCoachOnboarding, loadProfile: loadCoachProfile, profileLoadedUserId, error: coachProfileError } = useCoachStore();
   const { isDark } = useThemeStore();
   const [fontsLoaded, fontError] = useFonts({
     'Designer': require('./assets/fonts/Designer.otf'),
@@ -108,6 +109,12 @@ export default function App() {
   const [dialog, setDialog] = useState<any>(null);
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
   const { setPending, consumePending } = useDeepLinkStore();
+
+  useEffect(() => {
+    if (initialized && session && !isResettingPassword && userType === 'coach' && user?.id) {
+      void loadCoachProfile();
+    }
+  }, [initialized, session, isResettingPassword, userType, user?.id, loadCoachProfile]);
 
   useEffect(() => {
     const handleUrl = (url: string | null) => {
@@ -316,6 +323,26 @@ export default function App() {
     );
   }
 
+  if (session && !isResettingPassword && userType === 'coach' &&
+      !hasCompletedCoachOnboarding(user?.id || null) && profileLoadedUserId !== user?.id) {
+    return (
+      <View style={[styles.coachProfileGate, { backgroundColor: isDark ? '#030303' : '#FFFFFF' }]}>
+        {coachProfileError ? (
+          <>
+            <Text style={{ color: isDark ? '#FFFFFF' : '#030303', textAlign: 'center' }}>
+              Unable to load your coach profile. Please try again.
+            </Text>
+            <TouchableOpacity onPress={() => void loadCoachProfile(true)} style={styles.coachProfileRetry}>
+              <Text style={{ color: '#030303' }}>Retry</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <ActivityIndicator size="large" color="#B4F04E" accessibilityLabel="Loading coach profile" />
+        )}
+      </View>
+    );
+  }
+
   // Once splash is done and we are initialized, show the app
   // Note: initialized should be true here because SplashScreen waits for isReady=true
 
@@ -351,7 +378,7 @@ export default function App() {
   };
 
   return (
-    <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''}>
+    <StripeProvider publishableKey={getStripePublishableKey()}>
       <SafeAreaProvider>
       <ErrorBoundary>
         <NavigationContainer ref={navigationRef} linking={linking} theme={navigationTheme}>
@@ -454,6 +481,19 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  coachProfileGate: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 16,
+  },
+  coachProfileRetry: {
+    backgroundColor: '#B4F04E',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
   backgroundImage: {
     flex: 1,
     width: '100%',

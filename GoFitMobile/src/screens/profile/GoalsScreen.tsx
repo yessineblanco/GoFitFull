@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/themeStore';
 import { scaleWidth, scaleHeight, getResponsiveSpacing, getResponsiveFontSize } from '@/utils/responsive';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity } from '@/utils/colorUtils';
+import { getBackgroundColor, getTextColor, getPrimaryWithOpacity, getTextColorWithOpacity, getTextSecondaryColor } from '@/utils/colorUtils';
 import { GradientBackground } from '@/components/shared/GradientBackground';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'Goals'>;
@@ -107,13 +107,13 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
       color: BRAND_WHITE,
     },
     goalDescription: {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
     },
     currentGoalDescription: {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
     },
     optionDescription: {
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
     },
   }), [isDark]);
 
@@ -192,7 +192,7 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
       disabled={disabled}
     >
       <View style={styles.optionContent}>
-        <Text style={[styles.optionLabel, optionLabelStyle, isSelected && styles.optionLabelSelected]}>
+        <Text style={[styles.optionLabel, optionLabelStyle, isSelected && styles.optionLabelSelected, !isDark && { color: BRAND_WHITE }]}>
           {getGoalLabel(option.id)}
         </Text>
         <Text style={[styles.optionDescription, optionDescriptionStyle]}>{getGoalDescription(option.id)}</Text>
@@ -221,7 +221,7 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
           {saving ? (
             <ActivityIndicator size="small" color={BRAND_PRIMARY} />
           ) : (
-            <Text style={styles.saveButtonText}>{t('common.save')}</Text>
+            <Text style={[styles.saveButtonText, !isDark && { color: BRAND_WHITE }]}>{t('common.save')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -240,7 +240,7 @@ export const GoalsScreen: React.FC<GoalsScreenProps> = ({ navigation }) => {
             </View>
             <View style={dynamicStyles.glowWrapper}>
               <View style={[styles.currentGoalCard, dynamicStyles.currentGoalCard]}>
-                <Text style={styles.currentGoalText}>{getGoalLabel(selectedGoal)}</Text>
+                <Text style={[styles.currentGoalText, !isDark && { color: BRAND_WHITE }]}>{getGoalLabel(selectedGoal)}</Text>
                 <Text style={[styles.currentGoalDescription, dynamicStyles.currentGoalDescription]}>
                   {getGoalDescription(selectedGoal)}
                 </Text>

@@ -31,10 +31,10 @@ import { dialogManager } from '@/components/shared/CustomDialog';
 import { useThemeStore } from '@/store/themeStore';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { getBackgroundColor, getGlassBg, getGlassBorder } from '@/utils/colorUtils';
+import { SESSION_DURATION_OPTIONS } from '@/utils/sessionDuration';
 
 const PRIMARY_GREEN = '#B4F04E';
 const CANCELLATION_OPTIONS = ['flexible', 'moderate', 'strict'] as const;
-const DURATION_OPTIONS = [30, 45, 60, 90, 120] as const;
 
 export const CoachSettingsScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -51,7 +51,8 @@ export const CoachSettingsScreen: React.FC = () => {
   const [reviewNotifs, setReviewNotifs] = useState(notifPrefs.review_notifications !== false);
   const [profileVisible, setProfileVisible] = useState(coachProfile?.status === 'approved');
   const [cancellationPolicy, setCancellationPolicy] = useState(coachProfile?.cancellation_policy || 'flexible');
-  const [sessionDuration, setSessionDuration] = useState(60);
+  const sessionDuration = coachProfile?.default_session_duration ?? 60;
+  const [durationPickerOpen, setDurationPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -110,14 +111,19 @@ export const CoachSettingsScreen: React.FC = () => {
 
   const showDurationPicker = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      'Default Session Duration',
-      'Select your default session length',
-      DURATION_OPTIONS.map((mins) => ({
-        text: `${mins} min`,
-        onPress: () => setSessionDuration(mins),
-      })),
-    );
+    setDurationPickerOpen(open => !open);
+  };
+
+  const saveDuration = async (minutes: number) => {
+    setSaving(true);
+    try {
+      await updateProfile({ default_session_duration: minutes });
+      setDurationPickerOpen(false);
+    } catch {
+      dialogManager.error('Error', 'Failed to save session duration');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const showPolicyPicker = () => {
@@ -235,16 +241,22 @@ export const CoachSettingsScreen: React.FC = () => {
 
         <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Session defaults</Text>
         <View style={[styles.card, { backgroundColor: getGlassBg(isDark), borderColor: getGlassBorder(isDark) }]}>
-          <TouchableOpacity style={styles.navRow} onPress={showDurationPicker} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.navRow} onPress={showDurationPicker} disabled={saving || !coachProfile} activeOpacity={0.7}>
             <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>
               <Clock size={20} color={colors.primary} />
             </View>
             <Text style={[styles.rowLabel, { color: colors.text }]}>Default Session Duration</Text>
             <View style={styles.navRight}>
               <Text style={styles.valueText}>{sessionDuration} min</Text>
-              <ChevronRight size={18} color={chevronColor} />
+              {saving ? <ActivityIndicator color={PRIMARY_GREEN} /> : <ChevronRight size={18} color={chevronColor} />}
             </View>
           </TouchableOpacity>
+          {durationPickerOpen && SESSION_DURATION_OPTIONS.map(minutes => (
+            <TouchableOpacity key={minutes} style={styles.navRow} disabled={saving} onPress={() => void saveDuration(minutes)}>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>{minutes} min</Text>
+              {sessionDuration === minutes && <Check size={18} color={PRIMARY_GREEN} />}
+            </TouchableOpacity>
+          ))}
           <View style={[styles.divider, { backgroundColor: dividerColor }]} />
           <TouchableOpacity style={styles.navRowMulti} onPress={showPolicyPicker} activeOpacity={0.7}>
             <View style={[styles.iconWrap, { backgroundColor: iconWrapBg }]}>

@@ -16,6 +16,7 @@ export interface CoachProfile {
   total_sessions: number;
   status: 'pending' | 'approved' | 'rejected';
   cancellation_policy: 'flexible' | 'moderate' | 'strict';
+  default_session_duration: number;
   stripe_account_id?: string;
   created_at: string;
   updated_at: string;

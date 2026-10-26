@@ -16,7 +16,7 @@ import { useThemeStore } from '@/store/themeStore';
 import { dialogManager } from '@/components/shared/CustomDialog';
 import { useTranslation } from 'react-i18next';
 import { theme } from '@/theme';
-import { getBackgroundColor, getTextColor, getPrimaryWithOpacity } from '@/utils/colorUtils';
+import { getTextColor, getPrimaryWithOpacity, getTextSecondaryColor } from '@/utils/colorUtils';
 import { AppText } from '@/components/shared/AppText';
 
 type NavigationProp = StackNavigationProp<ProfileStackParamList, 'ThemeSettings'>;
@@ -38,7 +38,6 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ naviga
   const { t } = useTranslation();
   const { theme: themePreference, setTheme, isDark } = useThemeStore();
 
-  const BRAND_BLACK = getBackgroundColor(isDark);
   const BRAND_WHITE = getTextColor(isDark);
   const BRAND_PRIMARY = theme.colors.primary;
 
@@ -54,7 +53,7 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ naviga
       color: BRAND_WHITE,
     },
     description: {
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: getTextSecondaryColor(isDark),
       marginBottom: 24,
     },
     optionTitle: {
@@ -62,13 +61,13 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ naviga
       marginBottom: 4,
     },
     optionTitleSelected: {
-      color: theme.colors.primary,
+      color: isDark ? theme.colors.primary : BRAND_WHITE,
     },
     optionDesc: {
-      color: 'rgba(255, 255, 255, 0.6)',
+      color: getTextSecondaryColor(isDark),
     },
     optionDescSelected: {
-      color: 'rgba(132, 196, 65, 0.8)',
+      color: getTextSecondaryColor(isDark),
     },
     checkmarkText: {
       color: '#030303',
@@ -143,7 +142,7 @@ export const ThemeSettingsScreen: React.FC<ThemeSettingsScreenProps> = ({ naviga
                     <View style={[styles.iconContainer, isSelected && styles.iconContainerSelected]}>
                       <IconComponent
                         size={24}
-                        color={isSelected ? BRAND_BLACK : BRAND_WHITE}
+                        color={isSelected ? theme.colors.black : BRAND_WHITE}
                       />
                     </View>
                     <View style={styles.optionTextContainer}>
